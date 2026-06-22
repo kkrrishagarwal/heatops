@@ -1,0 +1,267 @@
+{
+  "nav": {
+    "signIn": "ਸਾਈਨ ਇਨ ਕਰੋ",
+    "signOut": "ਲੌਗਆਉਟ",
+    "backToMap": "ਨਕਸ਼ੇ ਤੇ ਵਾਪਸ ਜਾਓ",
+    "analyze": "ਵਿਸ਼ਲੇਸ਼ਣ ਕਰੋ",
+    "searchPlaceholder": "ਭਾਰਤ ਵਿੱਚ ਕੋਈ ਵੀ ਸ਼ਹਿਰ ਖੋਜੋ...",
+    "searchCityPlaceholder": "ਸ਼ਹਿਰ ਖੋਜੋ...",
+    "enterName": "ਆਪਣਾ ਨਾਮ ਦਰਜ ਕਰੋ",
+    "enterEmail": "ਆਪਣੀ ਈਮੇਲ ਦਰਜ ਕਰੋ",
+    "register": "ਰਜਿਸਟਰ ਕਰੋ",
+    "showPassword": "ਪਾਸਵਰਡ ਦਿਖਾਓ",
+    "hidePassword": "ਪਾਸਵਰਡ ਲੁਕਾਓ",
+    "rememberMe": "ਮੈਨੂੰ ਯਾਦ ਰੱਖੋ (30 ਦਿਨ)",
+    "forgotPassword": "ਪਾਸਵਰਡ ਭੁੱਲ ਗਏ?",
+    "sendRecoveryHint": "ਰਿਕਵਰੀ ਸੰਕੇਤ ਭੇਜੋ"
+  },
+  "tabs": {
+    "overview": "ਜਾਣਕਾਰੀ",
+    "analysis": "ਵਿਸ਼ਲੇਸ਼ਣ",
+    "interventions": "ਦਖਲਅੰਦਾਜ਼ੀ",
+    "aiExport": "AI + ਐਕਸਪੋਰਟ"
+  },
+  "panels": {
+    "weatherConditions": "ਮੌਸਮ ਦੀ ਸਥਿਤੀ",
+    "satelliteIndices": "ਸੈਟੇਲਾਈਟ ਸੂਚਕਾਂਕ",
+    "heatRiskGauge": "ਗਰਮੀ ਜੋਖਮ ਮੀਟਰ",
+    "activeAlerts": "ਸਰਗਰਮ ਚੇਤਾਵਨੀਆਂ",
+    "healthSafety": "ਸਿਹਤ ਅਤੇ ਸੁਰੱਖਿਆ ਸਾਵਧਾਨੀਆਂ",
+    "climateOscillations": "ਗਲੋਬਲ ਜਲਵਾਯੂ ਪ੍ਰਣਾਲੀਆਂ",
+    "heatmapGrid": "ਤਾਪਮਾਨ ਹੀਟਮੈਪ ਗਰਿੱਡ",
+    "mlModel": "ਰੈਂਡਮ ਫੌਰੈਸਟ ਮਾਡਲ",
+    "historicalTrend": "10-ਸਾਲ ਦਾ ਰੁਝਾਨ (2015-2025)",
+    "cityComparison": "ਸ਼ਹਿਰਾਂ ਦੀ ਤੁਲਨਾ ਕਰੋ",
+    "interventionSliders": "UHI ਦਖਲਅੰਦਾਜ਼ੀ (ਰੀਅਲ-ਟਾਈਮ ਕੂਲਿੰਗ)",
+    "physicsExplanation": "ਭੌਤਿਕ ਵਿਗਿਆਨ ਵਿਆਖਿਆ",
+    "spatialRecommendation": "ਸਥਾਨਿਕ ਸਿਫਾਰਸ਼",
+    "aiAnalyst": "AI ਵਿਸ਼ਲੇਸ਼ਕ",
+    "gamification": "ਪੁਆਇੰਟ ਅਤੇ ਬੈਜ",
+    "glossary": "ਸ਼ਬਦਕੋਸ਼",
+    "exportShare": "ਐਕਸਪੋਰਟ ਅਤੇ ਸਾਂਝਾ ਕਰੋ",
+    "progressTracker": "HeatOps 2026 ਪ੍ਰਗਤੀ",
+    "aboutTeam": "ਟੀਮ ਅਤੇ ਵਿਧੀ",
+    "hottestCities": "ਸਭ ਤੋਂ ਗਰਮ ਸ਼ਹਿਰ",
+    "selectCity": "ਸ਼ਹਿਰ ਚੁਣੋ",
+    "dayNightTemp": "ਦਿਨ ਬਨਾਮ ਰਾਤ ਦਾ ਤਾਪਮਾਨ",
+    "windAtmosphere": "ਹਵਾ ਅਤੇ ਵਾਯੂਮੰਡਲ",
+    "pollenAirQuality": "ਪੋਲਨ ਅਤੇ ਹਵਾ ਦੀ ਗੁਣਵੱਤਾ",
+    "heatwaveTimeline": "ਇਤਿਹਾਸਕ ਗਰਮੀ ਲਹਿਰ ਸਮਾਂਰੇਖਾ",
+    "recentSignIns": "ਹਾਲ ਦੀਆਂ ਸਾਈਨ-ਇਨ",
+    "heatLegend": "ਗਰਮੀ ਲੈਜੈਂਡ",
+    "adminDashboard": "ਐਡਮਿਨ ਐਨਾਲਿਟਿਕਸ ਡੈਸ਼ਬੋਰਡ"
+  },
+  "buttons": {
+    "copySummary": "ਸਾਰ ਕਾਪੀ ਕਰੋ",
+    "whatsappShare": "ਵਾਟਸਐਪ ਤੇ ਸਾਂਝਾ ਕਰੋ",
+    "csvDownload": "CSV ਡਾਊਨਲੋਡ ਕਰੋ",
+    "askAI": "AI ਨੂੰ ਪੁੱਛੋ",
+    "showGlossary": "ਸ਼ਬਦਕੋਸ਼ ਦਿਖਾਓ",
+    "hideGlossary": "ਸ਼ਬਦਕੋਸ਼ ਲੁਕਾਓ"
+  },
+  "glossary": {
+    "LST": { "term": "LST", "definition": "ਸੈਟੇਲਾਈਟ ਤੋਂ ਜ਼ਮੀਨੀ ਸਤਹ ਦਾ ਤਾਪਮਾਨ" },
+    "NDVI": { "term": "NDVI", "definition": "ਨਾਰਮਲਾਈਜ਼ਡ ਵੈਜੀਟੇਸ਼ਨ ਇੰਡੈਕਸ (ਹਰੀ ਬਨਸਪਤੀ)" },
+    "NDBI": { "term": "NDBI", "definition": "ਨਾਰਮਲਾਈਜ਼ਡ ਡਿਫਰੈਂਸ ਬਿਲਟ-ਅੱਪ ਇੰਡੈਕਸ (ਸ਼ਹਿਰੀ/ਕੰਕਰੀਟ)" },
+    "NDWI": { "term": "NDWI", "definition": "ਨਾਰਮਲਾਈਜ਼ਡ ਵਾਟਰ ਇੰਡੈਕਸ (ਜਲ ਸਰੋਤ)" },
+    "UHI": { "term": "UHI", "definition": "ਸ਼ਹਿਰਾਂ ਵਿੱਚ ਅਰਬਨ ਹੀਟ ਆਈਲੈਂਡ ਪ੍ਰਭਾਵ" },
+    "ENSO": { "term": "ENSO", "definition": "ਐਲ ਨੀਨੋ ਸਾਊਥਰਨ ਆਸਿਲੇਸ਼ਨ ਜਲਵਾਯੂ ਪੈਟਰਨ" },
+    "IOD": { "term": "IOD", "definition": "ਹਿੰਦ ਮਹਾਸਾਗਰ ਡਾਈਪੋਲ ਮੌਨਸੂਨ ਚਾਲਕ" },
+    "MJO": { "term": "MJO", "definition": "ਮੈਡਨ-ਜੂਲੀਅਨ ਆਸਿਲੇਸ਼ਨ ਵਾਯੂਮੰਡਲ ਲਹਿਰਾਂ" }
+  },
+  "precautions": {
+    "HOT": {
+      "0": "ਦੁਪਹਿਰ 12 ਤੋਂ 4 ਵਜੇ ਤੱਕ ਬਾਹਰੀ ਗਤੀਵਿਧੀਆਂ ਤੋਂ ਬਚੋ",
+      "1": "ਹਾਈਡ੍ਰੇਟਿਡ ਰਹੋ — ਪਿਆਸ ਨਾ ਲੱਗਣ ਤੇ ਵੀ ਹਰ 20-30 ਮਿੰਟਾਂ ਵਿੱਚ ਪਾਣੀ ਪੀਓ",
+      "2": "ਹੀਟ ਐਗਜ਼ੌਸ਼ਨ ਦੇ ਲੱਛਣਾਂ ਵੱਲ ਧਿਆਨ ਦਿਓ (ਚੱਕਰ ਆਉਣਾ, ਉਲਟੀ, ਤੇਜ਼ ਧੜਕਣ)",
+      "3": "ਹਲਕੇ, ਢਿੱਲੇ, ਹਲਕੇ ਰੰਗ ਦੇ ਸੂਤੀ ਕੱਪੜੇ ਪਾਓ",
+      "4": "ਜ਼ਿਆਦਾ ਪਸੀਨਾ ਆਉਣ ਤੇ ORS/ਇਲੈਕਟ੍ਰੋਲਾਈਟਸ ਵਰਤੋ",
+      "5": "ਬਜ਼ੁਰਗਾਂ, ਬੱਚਿਆਂ, ਬਾਹਰ ਕੰਮ ਕਰਨ ਵਾਲਿਆਂ ਤੇ ਵਾਧੂ ਧਿਆਨ ਰੱਖੋ",
+      "6": "AQI ਵੀ ਵੱਧ ਹੈ — ਬਾਹਰ ਰਹਿਣਾ ਹੋਰ ਸੀਮਤ ਕਰੋ",
+      "7": "ਬਾਹਰ N95 ਮਾਸਕ ਪਾਉਣ ਬਾਰੇ ਸੋਚੋ"
+    },
+    "COLD": {
+      "0": "ਕੱਪੜਿਆਂ ਦੀਆਂ ਪਰਤਾਂ ਪਾਓ, ਹੱਥ, ਕੰਨ, ਸਿਰ ਢੱਕੋ",
+      "1": "ਬਜ਼ੁਰਗਾਂ/ਬੱਚਿਆਂ ਵਿੱਚ ਹਾਈਪੋਥਰਮੀਆ ਦੇ ਲੱਛਣਾਂ ਵੱਲ ਧਿਆਨ ਦਿਓ",
+      "2": "ਠੰਡ ਤੋਂ ਗਰਮੀ ਵੱਲ ਅਚਾਨਕ ਤਬਦੀਲੀ ਤੋਂ ਬਚੋ",
+      "3": "ਅੰਦਰੂਨੀ ਹੀਟਿੰਗ/ਹਵਾਦਾਰੀ ਸੰਤੁਲਿਤ ਰੱਖੋ (ਬਿਨਾਂ ਹਵਾਦਾਰੀ ਵਾਲੇ ਹੀਟਰਾਂ ਨਾਲ CO ਜ਼ਹਿਰ ਦਾ ਖਤਰਾ)",
+      "4": "ਸੁੱਕੇ ਰਹੋ — ਠੰਡ ਵਿੱਚ ਗਿੱਲੇ ਕੱਪੜੇ ਗਰਮੀ ਦੇ ਨੁਕਸਾਨ ਨੂੰ ਤੇਜ਼ ਕਰਦੇ ਹਨ"
+    },
+    "MILD": {
+      "0": "ਆਮ ਸੂਰਜ ਸੁਰੱਖਿਆ (ਸਨਸਕ੍ਰੀਨ, ਟੋਪੀ, ਸਨਗਲਾਸ)",
+      "1": "ਹਾਈਡ੍ਰੇਟਿਡ ਰਹੋ",
+      "2": "ਕਿਸੇ ਵੱਡੀ ਸਾਵਧਾਨੀ ਦੀ ਲੋੜ ਨਹੀਂ"
+    },
+    "vulnerableNote": "ਇਸ ਗਰਮੀ ਸ਼੍ਰੇਣੀ ਵਿੱਚ ਬਜ਼ੁਰਗਾਂ, ਬੱਚਿਆਂ ਅਤੇ ਬਾਹਰ ਕੰਮ ਕਰਨ ਵਾਲਿਆਂ ਲਈ ਵਾਧੂ ਸਾਵਧਾਨੀ ਦੀ ਸਿਫਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ"
+  },
+  "alerts": {
+    "extremeHeat": "ਅਤਿਅੰਤ ਗਰਮੀ: LST > 45°C",
+    "highAqi": "ਉੱਚ AQI: > 300",
+    "moderateHeat": "ਦਰਮਿਆਨੀ ਸ਼ਹਿਰੀ ਗਰਮੀ",
+    "marineHeatwave": "ਸਮੁੰਦਰੀ ਗਰਮੀ ਲਹਿਰ ਸਰਗਰਮ",
+    "polarVortexWatch": "ਚੇਤਾਵਨੀ: ਧਰੁਵੀ ਵੌਰਟੈਕਸ ਵਿਘਨ",
+    "allNormal": "ਸਾਰੇ ਮੁੱਲ ਆਮ ਹਨ"
+  },
+  "tooltips": {
+    "clickToExplore": "ਸ਼ਹਿਰਾਂ ਨੂੰ ਦੇਖਣ ਲਈ ਕਲਿੱਕ ਕਰੋ →",
+    "clickStateForDetails": "ਵੇਰਵੇ ਦੇਖਣ ਲਈ ਨਕਸ਼ੇ ਤੇ ਇੱਕ ਰਾਜ ਤੇ ਕਲਿੱਕ ਕਰੋ।",
+    "clickCityToAnalyze": "👆 ਵਿਸ਼ਲੇਸ਼ਣ ਲਈ ਉੱਪਰ ਕਿਸੇ ਵੀ ਸ਼ਹਿਰ ਤੇ ਕਲਿੱਕ ਕਰੋ"
+  },
+  "dayNight": {
+    "day": "ਦਿਨ (ਦੁਪਹਿਰ 12)",
+    "night": "ਰਾਤ (12 ਵਜੇ)"
+  },
+  "climate": {
+    "enso": "ਐਲ ਨੀਨੋ",
+    "iod": "IOD",
+    "mjo": "MJO",
+    "pdo": "PDO",
+    "nao": "NAO",
+    "polarVortex": "ਧਰੁਵੀ ਵੌਰਟੈਕਸ",
+    "phase": "ਪੜਾਅ",
+    "values": {
+      "El Niño": "ਐਲ ਨੀਨੋ",
+      "La Niña": "ਲਾ ਨੀਨਾ",
+      "Neutral": "ਨਿਊਟਰਲ",
+      "STRONG": "ਮਜ਼ਬੂਤ",
+      "WEAK": "ਕਮਜ਼ੋਰ",
+      "DISRUPTED": "ਵਿਘਨਿਤ",
+      "Positive Phase": "ਸਕਾਰਾਤਮਕ ਪੜਾਅ",
+      "Negative Phase": "ਨਕਾਰਾਤਮਕ ਪੜਾਅ",
+      "Warm Phase": "ਗਰਮ ਪੜਾਅ",
+      "Cool Phase": "ਠੰਡਾ ਪੜਾਅ"
+    }
+  },
+  "historicalTrend": {
+    "urbanCore": "ਸ਼ਹਿਰੀ ਕੇਂਦਰ",
+    "ruralAreas": "ਪਿੰਡੂ ਖੇਤਰ",
+    "warmer": "ਵਧੇਰੇ ਗਰਮ"
+  },
+  "sliders": {
+    "urbanGreening": "🌳 ਸ਼ਹਿਰੀ ਹਰਿਆਲੀ (NDVI +0.3):",
+    "coolRoofs": "🏠 ਕੂਲ ਰੂਫ (ਐਲਬੀਡੋ +0.2):",
+    "waterBodies": "💧 ਜਲ ਸਰੋਤ (NDWI +0.1):"
+  },
+  "compareCities": {
+    "selectPlaceholder": "ਤੁਲਨਾ ਲਈ ਸ਼ਹਿਰ ਚੁਣੋ..."
+  },
+  "windAtmosphere": {
+    "direction": "ਦਿਸ਼ਾ",
+    "speed": "ਗਤੀ",
+    "gust": "ਤੇਜ਼ ਹਵਾ ਝੋਕਾ",
+    "pressure": "ਦਬਾਅ"
+  },
+  "pollen": {
+    "grass": "ਘਾਹ",
+    "tree": "ਰੁੱਖ",
+    "weed": "ਜੰਗਲੀ ਬੂਟੀ",
+    "mold": "ਉੱਲੀ",
+    "moderate": "ਦਰਮਿਆਨਾ",
+    "high": "ਉੱਚਾ",
+    "low": "ਘੱਟ"
+  },
+  "progressTracker": {
+    "dataCollection": "✅ ਡੇਟਾ ਇਕੱਠਾ ਕਰਨਾ (GEE + Landsat 8)",
+    "lstCalculation": "✅ LST ਗਣਨਾ",
+    "indexCalculation": "✅ ਸੂਚਕਾਂਕ ਗਣਨਾ (NDVI, NDBI)",
+    "correlationAnalysis": "✅ ਸਬੰਧ ਵਿਸ਼ਲੇਸ਼ਣ",
+    "randomForestModel": "✅ ਰੈਂਡਮ ਫੌਰੈਸਟ ਮਾਡਲ",
+    "interventionSimulation": "✅ ਦਖਲਅੰਦਾਜ਼ੀ ਸਿਮੂਲੇਸ਼ਨ",
+    "dashboardCreation": "✅ ਡੈਸ਼ਬੋਰਡ ਨਿਰਮਾਣ",
+    "reportSubmission": "🔲 ਰਿਪੋਰਟ ਜਮ੍ਹਾਂ"
+  },
+  "cityList": {
+    "noResultsFor": "\"{{search}}\" ਲਈ ਕੋਈ ਸ਼ਹਿਰ ਨਹੀਂ ਮਿਲਿਆ",
+    "showingOf": "{{total}} ਵਿੱਚੋਂ {{shown}} ਦਿਖਾਏ ਜਾ ਰਹੇ ਹਨ"
+  },
+  "signIn": {
+    "noRecentSignIns": "ਅਜੇ ਤੱਕ ਕੋਈ ਹਾਲ ਦੀਆਂ ਸਾਈਨ-ਇਨ ਨਹੀਂ। ਲਾਂਚ ਤੋਂ ਬਾਅਦ ਤੁਹਾਡਾ ਸੈਸ਼ਨ ਲੌਗ ਕੀਤਾ ਜਾਵੇਗਾ।"
+  },
+  "heatLegend": {
+    "extreme": "ਅਤਿਅੰਤ",
+    "high": "ਉੱਚਾ",
+    "moderate": "ਦਰਮਿਆਨਾ",
+    "cool": "ਠੰਡਾ"
+  },
+  "admin": {
+    "totalUsers": "ਕੁੱਲ ਵਰਤੋਂਕਾਰ",
+    "totalLoginEvents": "ਕੁੱਲ ਲੌਗਇਨ ਘਟਨਾਵਾਂ",
+    "citiesAnalyzed": "ਵਿਸ਼ਲੇਸ਼ਣ ਕੀਤੇ ਸ਼ਹਿਰ",
+    "successRate": "ਸਫਲਤਾ ਦਰ",
+    "hourlyLoginPattern": "📊 ਘੰਟਾਵਾਰ ਲੌਗਇਨ ਪੈਟਰਨ",
+    "dailyLoginTrend": "📈 ਰੋਜ਼ਾਨਾ ਲੌਗਇਨ ਰੁਝਾਨ (30 ਦਿਨ)",
+    "topCitiesAnalyzed": "🏙️ ਚੋਟੀ ਦੇ 10 ਵਿਸ਼ਲੇਸ਼ਣ ਕੀਤੇ ਸ਼ਹਿਰ",
+    "recentLoginActivity": "📝 ਹਾਲ ਦੀ ਲੌਗਇਨ ਗਤੀਵਿਧੀ",
+    "tableUser": "ਵਰਤੋਂਕਾਰ",
+    "tableEmail": "ਈਮੇਲ",
+    "tableTime": "ਸਮਾਂ",
+    "tableStatus": "ਸਥਿਤੀ",
+    "tableDuration": "ਅਵਧੀ"
+  },
+  "physics": {
+    "panelTitle": "⚛️ UHI ਦਖਲਅੰਦਾਜ਼ੀ ਦਾ ਭੌਤਿਕ ਵਿਗਿਆਨ",
+    "where": "ਕਿੱਥੇ:",
+    "cost": "ਲਾਗਤ:",
+    "items": {
+      "urbanGreening": "ਸ਼ਹਿਰੀ ਹਰਿਆਲੀ",
+      "coolRoofs": "ਕੂਲ ਰੂਫ",
+      "waterBodies": "ਜਲ ਸਰੋਤ"
+    }
+  },
+  "spatial": {
+    "panelTitle": "📍 {{cityName}} ਵਿੱਚ ਕਿੱਥੇ ਦਖਲ ਦੇਣਾ ਹੈ",
+    "hottestZones": "🔴 ਸਭ ਤੋਂ ਗਰਮ ਖੇਤਰ:",
+    "greenPriority": "🌳 ਹਰਿਆਲੀ ਤਰਜੀਹ:",
+    "waterPriority": "💧 ਪਾਣੀ ਤਰਜੀਹ:",
+    "areaNeeded": "📏 ਲੋੜੀਂਦਾ ਖੇਤਰ:",
+    "estimatedCost": "💰 ਅੰਦਾਜ਼ਨ ਲਾਗਤ:",
+    "hotZonesCBD": "ਕੇਂਦਰੀ ਵਪਾਰ ਜ਼ਿਲ੍ਹਾ, ਉਦਯੋਗਿਕ ਖੇਤਰ",
+    "hotZonesResidential": "ਸੰਘਣੇ ਰਿਹਾਇਸ਼ੀ ਖੇਤਰ, ਵਪਾਰਕ ਕੋਰੀਡੋਰ",
+    "greenCritical": "ਗੰਭੀਰ — 20% ਤੋਂ ਘੱਟ ਬਨਸਪਤੀ",
+    "greenHigh": "ਉੱਚਾ — ਦਰਮਿਆਨੀ ਬਨਸਪਤੀ ਘਾਟ",
+    "waterUrgent": "ਜਲ ਸਰੋਤ ਨਿਰਮਾਣ ਤੁਰੰਤ ਲੋੜੀਂਦਾ",
+    "waterMaintain": "ਮੌਜੂਦਾ ਜਲ ਸਰੋਤਾਂ ਨੂੰ ਬਰਕਰਾਰ ਰੱਖੋ",
+    "areaDescription": "ਟਾਰਗੇਟ NDVI ≥ 0.35 ਲਈ ਵਰਗ ਕਿਲੋਮੀਟਰ ਹਰਿਤ ਕਵਰ",
+    "costNote": "(@ ₹3 ਲੱਖ/ਹੈਕਟੇਅਰ ਔਸਤ)"
+  },
+  "mlModel": {
+    "panelTitle": "🤖 ਰੈਂਡਮ ਫੌਰੈਸਟ ਮਾਡਲ — {{cityName}}",
+    "r2Score": "R² ਸਕੋਰ",
+    "testSet": "ਟੈਸਟ ਸੈੱਟ",
+    "mae": "MAE",
+    "meanAbsError": "ਔਸਤ ਪੂਰਨ ਗਲਤੀ",
+    "trainTest": "ਟ੍ਰੇਨ/ਟੈਸਟ",
+    "splitRatio": "ਸਪਲਿਟ ਅਨੁਪਾਤ",
+    "datasetSplit": "ਡੇਟਾਸੈੱਟ ਸਪਲਿਟ ({{n}} ਨਮੂਨੇ)",
+    "trainSamples": "ਟ੍ਰੇਨ ({{n}} ਨਮੂਨੇ)",
+    "testSamples": "ਟੈਸਟ ({{n}})",
+    "featureImportance": "ਫੀਚਰ ਮਹੱਤਤਾ (ਗਿਨੀ)",
+    "elevation": "ਉਚਾਈ",
+    "model": "ਮਾਡਲ:",
+    "features": "ਫੀਚਰ:",
+    "target": "ਟਾਰਗੇਟ:",
+    "scene": "ਸੀਨ:"
+  },
+  "geePipeline": {
+    "panelTitle": "📡 ਡੇਟਾ ਪਾਈਪਲਾਈਨ — Google Earth Engine → HeatOps"
+  },
+  "satellitePass": {
+    "lastPass": "ਆਖਰੀ ਸੈਟੇਲਾਈਟ ਪਾਸ:",
+    "landsatNote": "Landsat 8 ਹਰ ~16 ਦਿਨਾਂ ਵਿੱਚ ਮੁੜ ਆਉਂਦਾ ਹੈ",
+    "sentinelNote": "Sentinel-2 ਹਰ ~5 ਦਿਨਾਂ ਵਿੱਚ ਮੁੜ ਆਉਂਦਾ ਹੈ",
+    "notRealtime": "ਰੀਅਲ-ਟਾਈਮ ਨਹੀਂ"
+  },
+  "yoyComparison": {
+    "today": "ਅੱਜ",
+    "sameDateLastYear": "ਪਿਛਲੇ ਸਾਲ ਇਸੇ ਮਿਤੀ ਤੇ"
+  },
+  "heatwaveTimeline": {
+    "peakTemp": "ਸਿਖਰ ਤਾਪਮਾਨ",
+    "duration": "ਅਵਧੀ",
+    "days": "ਦਿਨ",
+    "noEvents": "ਇਸ ਸ਼ਹਿਰ ਲਈ ਇਤਿਹਾਸਕ ਅਵਧੀ ਵਿੱਚ ਕੋਈ ਮਹੱਤਵਪੂਰਨ ਗਰਮੀ ਲਹਿਰ ਘਟਨਾਵਾਂ ਦਰਜ ਨਹੀਂ ਕੀਤੀਆਂ ਗਈਆਂ।"
+  },
+  "aiAnalyst": {
+    "inputPlaceholder": "ਗਰਮੀ, ਮੌਸਮ, ਜਾਂ ਇਸ ਸ਼ਹਿਰ ਬਾਰੇ ਪੁੱਛੋ..."
+  }
+}

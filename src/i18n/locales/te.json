@@ -1,0 +1,267 @@
+{
+  "nav": {
+    "signIn": "సైన్ ఇన్ చేయండి",
+    "signOut": "లాగ్ అవుట్",
+    "backToMap": "మ్యాప్‌కు తిరిగి వెళ్లండి",
+    "analyze": "విశ్లేషించండి",
+    "searchPlaceholder": "భారతదేశంలో ఏదైనా నగరాన్ని శోధించండి...",
+    "searchCityPlaceholder": "నగరాన్ని శోధించండి...",
+    "enterName": "మీ పేరు నమోదు చేయండి",
+    "enterEmail": "మీ ఇమెయిల్ నమోదు చేయండి",
+    "register": "నమోదు చేయండి",
+    "showPassword": "పాస్‌వర్డ్ చూపించు",
+    "hidePassword": "పాస్‌వర్డ్ దాచు",
+    "rememberMe": "నన్ను గుర్తుంచుకో (30 రోజులు)",
+    "forgotPassword": "పాస్‌వర్డ్ మర్చిపోయారా?",
+    "sendRecoveryHint": "రికవరీ హింట్ పంపండి"
+  },
+  "tabs": {
+    "overview": "అవలోకనం",
+    "analysis": "విశ్లేషణ",
+    "interventions": "జోక్యాలు",
+    "aiExport": "AI + ఎగుమతి"
+  },
+  "panels": {
+    "weatherConditions": "వాతావరణ పరిస్థితులు",
+    "satelliteIndices": "ఉపగ్రహ సూచికలు",
+    "heatRiskGauge": "ఉష్ణ ప్రమాద మీటర్",
+    "activeAlerts": "క్రియాశీల హెచ్చరికలు",
+    "healthSafety": "ఆరోగ్యం & భద్రతా జాగ్రత్తలు",
+    "climateOscillations": "ప్రపంచ వాతావరణ వ్యవస్థలు",
+    "heatmapGrid": "ఉష్ణోగ్రత హీట్‌మ్యాప్ గ్రిడ్",
+    "mlModel": "రాండమ్ ఫారెస్ట్ మోడల్",
+    "historicalTrend": "10-సంవత్సరాల ధోరణి (2015-2025)",
+    "cityComparison": "నగరాలను పోల్చండి",
+    "interventionSliders": "UHI జోక్యాలు (రియల్-టైమ్ కూలింగ్)",
+    "physicsExplanation": "భౌతిక శాస్త్ర వివరణ",
+    "spatialRecommendation": "ప్రాదేశిక సిఫారసు",
+    "aiAnalyst": "AI విశ్లేషకుడు",
+    "gamification": "పాయింట్లు & బ్యాడ్జీలు",
+    "glossary": "పదకోశం",
+    "exportShare": "ఎగుమతి & భాగస్వామ్యం",
+    "progressTracker": "HeatOps 2026 పురోగతి",
+    "aboutTeam": "బృందం & పద్ధతి",
+    "hottestCities": "అత్యంత వేడి నగరాలు",
+    "selectCity": "నగరాన్ని ఎంచుకోండి",
+    "dayNightTemp": "పగలు vs రాత్రి ఉష్ణోగ్రత",
+    "windAtmosphere": "గాలి & వాతావరణం",
+    "pollenAirQuality": "పుప్పొడి & గాలి నాణ్యత",
+    "heatwaveTimeline": "చారిత్రక వేడిగాలుల కాలరేఖ",
+    "recentSignIns": "ఇటీవలి సైన్-ఇన్‌లు",
+    "heatLegend": "ఉష్ణ లెజెండ్",
+    "adminDashboard": "అడ్మిన్ అనలిటిక్స్ డాష్‌బోర్డ్"
+  },
+  "buttons": {
+    "copySummary": "సారాంశాన్ని కాపీ చేయండి",
+    "whatsappShare": "వాట్సాప్‌లో షేర్ చేయండి",
+    "csvDownload": "CSV డౌన్‌లోడ్ చేయండి",
+    "askAI": "AIని అడగండి",
+    "showGlossary": "పదకోశం చూపించు",
+    "hideGlossary": "పదకోశం దాచు"
+  },
+  "glossary": {
+    "LST": { "term": "LST", "definition": "ఉపగ్రహం నుండి భూ ఉపరితల ఉష్ణోగ్రత" },
+    "NDVI": { "term": "NDVI", "definition": "నార్మలైజ్డ్ వెజిటేషన్ ఇండెక్స్ (పచ్చని వృక్షసంపద)" },
+    "NDBI": { "term": "NDBI", "definition": "నార్మలైజ్డ్ డిఫరెన్స్ బిల్ట్-అప్ ఇండెక్స్ (పట్టణ/కాంక్రీట్)" },
+    "NDWI": { "term": "NDWI", "definition": "నార్మలైజ్డ్ వాటర్ ఇండెక్స్ (నీటి వనరులు)" },
+    "UHI": { "term": "UHI", "definition": "నగరాల్లో అర్బన్ హీట్ ఐలాండ్ ప్రభావం" },
+    "ENSO": { "term": "ENSO", "definition": "ఎల్ నినో సదర్న్ ఆసిలేషన్ వాతావరణ నమూనా" },
+    "IOD": { "term": "IOD", "definition": "ఇండియన్ ఓషన్ డైపోల్ మాన్సూన్ చోదకం" },
+    "MJO": { "term": "MJO", "definition": "మాడెన్-జూలియన్ ఆసిలేషన్ వాతావరణ తరంగాలు" }
+  },
+  "precautions": {
+    "HOT": {
+      "0": "మధ్యాహ్నం 12 నుండి 4 గంటల వరకు బయట కార్యకలాపాలను నివారించండి",
+      "1": "హైడ్రేటెడ్‌గా ఉండండి — దాహం వేయకపోయినా ప్రతి 20-30 నిమిషాలకు నీరు త్రాగండి",
+      "2": "హీట్ ఎగ్జాషన్ సంకేతాల పట్ల జాగ్రత్త వహించండి (తలతిరగడం, వాంతులు, వేగవంతమైన పల్స్)",
+      "3": "తేలికపాటి, వదులుగా, తేలికరంగు కాటన్ దుస్తులు ధరించండి",
+      "4": "ఎక్కువ చెమట పడితే ORS/ఎలక్ట్రోలైట్స్ ఉపయోగించండి",
+      "5": "వృద్ధులు, పిల్లలు, బయట పనిచేసే వారిపై అదనపు దృష్టి పెట్టండి",
+      "6": "AQI కూడా ఎక్కువగా ఉంది — బయట గడిపే సమయాన్ని మరింత తగ్గించండి",
+      "7": "బయట N95 మాస్క్ ధరించడాన్ని పరిగణించండి"
+    },
+    "COLD": {
+      "0": "దుస్తులను పొరలుగా వేసుకోండి, చేతులు, చెవులు, తల కప్పండి",
+      "1": "వృద్ధులు/శిశువులలో హైపోథెర్మియా సంకేతాల పట్ల జాగ్రత్త వహించండి",
+      "2": "చలి నుండి వేడికి అకస్మాత్తుగా మారడాన్ని నివారించండి",
+      "3": "ఇండోర్ హీటింగ్/వెంటిలేషన్‌ను సమతుల్యంగా ఉంచండి (వెంటిలేషన్ లేని హీటర్లతో CO విషప్రభావం ప్రమాదం)",
+      "4": "పొడిగా ఉండండి — చలిలో తడి దుస్తులు వేడి నష్టాన్ని వేగవంతం చేస్తాయి"
+    },
+    "MILD": {
+      "0": "సాధారణ సూర్య భద్రత (సన్‌స్క్రీన్, హాట్, సన్‌గ్లాసెస్)",
+      "1": "హైడ్రేటెడ్‌గా ఉండండి",
+      "2": "ఎలాంటి ప్రధాన జాగ్రత్తలు అవసరం లేదు"
+    },
+    "vulnerableNote": "ఈ ఉష్ణ వర్గంలో వృద్ధులు, పిల్లలు మరియు బయట పనిచేసే వారికి అదనపు జాగ్రత్త సిఫారసు చేయబడింది"
+  },
+  "alerts": {
+    "extremeHeat": "విపరీతమైన వేడి: LST > 45°C",
+    "highAqi": "అధిక AQI: > 300",
+    "moderateHeat": "మధ్యస్థ పట్టణ వేడి",
+    "marineHeatwave": "సముద్ర వేడిగాలి క్రియాశీలంగా ఉంది",
+    "polarVortexWatch": "హెచ్చరిక: పోలార్ వోర్టెక్స్ అంతరాయం",
+    "allNormal": "అన్ని విలువలు సాధారణం"
+  },
+  "tooltips": {
+    "clickToExplore": "నగరాలను అన్వేషించడానికి క్లిక్ చేయండి →",
+    "clickStateForDetails": "వివరాలను చూడటానికి మ్యాప్‌లో ఒక రాష్ట్రాన్ని క్లిక్ చేయండి.",
+    "clickCityToAnalyze": "👆 విశ్లేషించడానికి పైన ఉన్న ఏదైనా నగరంపై క్లిక్ చేయండి"
+  },
+  "dayNight": {
+    "day": "పగలు (మధ్యాహ్నం 12)",
+    "night": "రాత్రి (12 గంటలు)"
+  },
+  "climate": {
+    "enso": "ఎల్ నినో",
+    "iod": "IOD",
+    "mjo": "MJO",
+    "pdo": "PDO",
+    "nao": "NAO",
+    "polarVortex": "పోలార్ వోర్టెక్స్",
+    "phase": "దశ",
+    "values": {
+      "El Niño": "ఎల్ నినో",
+      "La Niña": "లా నినా",
+      "Neutral": "న్యూట్రల్",
+      "STRONG": "బలమైన",
+      "WEAK": "బలహీనమైన",
+      "DISRUPTED": "అంతరాయం",
+      "Positive Phase": "సానుకూల దశ",
+      "Negative Phase": "ప్రతికూల దశ",
+      "Warm Phase": "వెచ్చని దశ",
+      "Cool Phase": "శీతల దశ"
+    }
+  },
+  "historicalTrend": {
+    "urbanCore": "పట్టణ కేంద్రం",
+    "ruralAreas": "గ్రామీణ ప్రాంతాలు",
+    "warmer": "వేడిగా"
+  },
+  "sliders": {
+    "urbanGreening": "🌳 పట్టణ హరితీకరణ (NDVI +0.3):",
+    "coolRoofs": "🏠 కూల్ రూఫ్‌లు (ఆల్బిడో +0.2):",
+    "waterBodies": "💧 నీటి వనరులు (NDWI +0.1):"
+  },
+  "compareCities": {
+    "selectPlaceholder": "పోల్చడానికి నగరాన్ని ఎంచుకోండి..."
+  },
+  "windAtmosphere": {
+    "direction": "దిశ",
+    "speed": "వేగం",
+    "gust": "గాలి విసురు",
+    "pressure": "పీడనం"
+  },
+  "pollen": {
+    "grass": "గడ్డి",
+    "tree": "చెట్టు",
+    "weed": "కలుపు మొక్క",
+    "mold": "మూస",
+    "moderate": "మధ్యస్థం",
+    "high": "ఎక్కువ",
+    "low": "తక్కువ"
+  },
+  "progressTracker": {
+    "dataCollection": "✅ డేటా సేకరణ (GEE + Landsat 8)",
+    "lstCalculation": "✅ LST గణన",
+    "indexCalculation": "✅ సూచిక గణన (NDVI, NDBI)",
+    "correlationAnalysis": "✅ సహసంబంధ విశ్లేషణ",
+    "randomForestModel": "✅ రాండమ్ ఫారెస్ట్ మోడల్",
+    "interventionSimulation": "✅ జోక్యం అనుకరణ",
+    "dashboardCreation": "✅ డాష్‌బోర్డ్ సృష్టి",
+    "reportSubmission": "🔲 నివేదిక సమర్పణ"
+  },
+  "cityList": {
+    "noResultsFor": "\"{{search}}\" కోసం నగరాలు కనుగొనబడలేదు",
+    "showingOf": "{{total}}లో {{shown}} చూపిస్తోంది"
+  },
+  "signIn": {
+    "noRecentSignIns": "ఇంకా ఇటీవలి సైన్-ఇన్‌లు లేవు. ప్రారంభించిన తర్వాత మీ సెషన్ లాగ్ చేయబడుతుంది."
+  },
+  "heatLegend": {
+    "extreme": "విపరీతం",
+    "high": "ఎక్కువ",
+    "moderate": "మధ్యస్థం",
+    "cool": "శీతలం"
+  },
+  "admin": {
+    "totalUsers": "మొత్తం వినియోగదారులు",
+    "totalLoginEvents": "మొత్తం లాగిన్ ఈవెంట్‌లు",
+    "citiesAnalyzed": "విశ్లేషించిన నగరాలు",
+    "successRate": "విజయ రేటు",
+    "hourlyLoginPattern": "📊 గంట వారీ లాగిన్ నమూనా",
+    "dailyLoginTrend": "📈 రోజువారీ లాగిన్ ధోరణి (30 రోజులు)",
+    "topCitiesAnalyzed": "🏙️ టాప్ 10 విశ్లేషించిన నగరాలు",
+    "recentLoginActivity": "📝 ఇటీవలి లాగిన్ కార్యకలాపం",
+    "tableUser": "వినియోగదారు",
+    "tableEmail": "ఇమెయిల్",
+    "tableTime": "సమయం",
+    "tableStatus": "స్థితి",
+    "tableDuration": "వ్యవధి"
+  },
+  "physics": {
+    "panelTitle": "⚛️ UHI జోక్యాల భౌతిక శాస్త్రం",
+    "where": "ఎక్కడ:",
+    "cost": "ఖర్చు:",
+    "items": {
+      "urbanGreening": "పట్టణ హరితీకరణ",
+      "coolRoofs": "కూల్ రూఫ్‌లు",
+      "waterBodies": "నీటి వనరులు"
+    }
+  },
+  "spatial": {
+    "panelTitle": "📍 {{cityName}}లో ఎక్కడ జోక్యం చేసుకోవాలి",
+    "hottestZones": "🔴 అత్యంత వేడి ప్రాంతాలు:",
+    "greenPriority": "🌳 హరిత ప్రాధాన్యత:",
+    "waterPriority": "💧 నీటి ప్రాధాన్యత:",
+    "areaNeeded": "📏 అవసరమైన ప్రాంతం:",
+    "estimatedCost": "💰 అంచనా ఖర్చు:",
+    "hotZonesCBD": "సెంట్రల్ బిజినెస్ డిస్ట్రిక్ట్, పారిశ్రామిక మండలాలు",
+    "hotZonesResidential": "దట్టమైన నివాస ప్రాంతాలు, వాణిజ్య కారిడార్లు",
+    "greenCritical": "క్రిటికల్ — 20% కంటే తక్కువ వృక్షసంపద",
+    "greenHigh": "ఎక్కువ — మధ్యస్థ వృక్షసంపద లోటు",
+    "waterUrgent": "నీటి వనరుల సృష్టి అత్యవసరం",
+    "waterMaintain": "ఉన్న నీటి వనరులను నిర్వహించండి",
+    "areaDescription": "లక్ష్య NDVI ≥ 0.35 కోసం చ.కి.మీ హరిత కవరేజ్",
+    "costNote": "(@ ₹3 లక్షలు/హెక్టారు సగటు)"
+  },
+  "mlModel": {
+    "panelTitle": "🤖 రాండమ్ ఫారెస్ట్ మోడల్ — {{cityName}}",
+    "r2Score": "R² స్కోర్",
+    "testSet": "టెస్ట్ సెట్",
+    "mae": "MAE",
+    "meanAbsError": "సగటు సంపూర్ణ లోపం",
+    "trainTest": "ట్రెయిన్/టెస్ట్",
+    "splitRatio": "స్ప్లిట్ నిష్పత్తి",
+    "datasetSplit": "డేటాసెట్ స్ప్లిట్ ({{n}} నమూనాలు)",
+    "trainSamples": "ట్రెయిన్ ({{n}} నమూనాలు)",
+    "testSamples": "టెస్ట్ ({{n}})",
+    "featureImportance": "ఫీచర్ ప్రాముఖ్యత (గిని)",
+    "elevation": "ఎత్తు",
+    "model": "మోడల్:",
+    "features": "ఫీచర్లు:",
+    "target": "లక్ష్యం:",
+    "scene": "సన్నివేశం:"
+  },
+  "geePipeline": {
+    "panelTitle": "📡 డేటా పైప్‌లైన్ — Google Earth Engine → HeatOps"
+  },
+  "satellitePass": {
+    "lastPass": "చివరి ఉపగ్రహ గమనం:",
+    "landsatNote": "Landsat 8 ప్రతి ~16 రోజులకు తిరిగి వస్తుంది",
+    "sentinelNote": "Sentinel-2 ప్రతి ~5 రోజులకు తిరిగి వస్తుంది",
+    "notRealtime": "రియల్-టైమ్ కాదు"
+  },
+  "yoyComparison": {
+    "today": "ఈరోజు",
+    "sameDateLastYear": "గత సంవత్సరం ఇదే తేదీన"
+  },
+  "heatwaveTimeline": {
+    "peakTemp": "గరిష్ట ఉష్ణోగ్రత",
+    "duration": "వ్యవధి",
+    "days": "రోజులు",
+    "noEvents": "ఈ నగరానికి చారిత్రక కాలంలో ఎలాంటి ముఖ్యమైన వేడిగాలి సంఘటనలు నమోదు కాలేదు."
+  },
+  "aiAnalyst": {
+    "inputPlaceholder": "వేడి, వాతావరణం లేదా ఈ నగరం గురించి అడగండి..."
+  }
+}

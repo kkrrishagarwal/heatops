@@ -1,0 +1,267 @@
+{
+  "nav": {
+    "signIn": "साइन इन करा",
+    "signOut": "लॉगआउट",
+    "backToMap": "मॅपवर परत जा",
+    "analyze": "विश्लेषण करा",
+    "searchPlaceholder": "भारतातील कोणतेही शहर शोधा...",
+    "searchCityPlaceholder": "शहर शोधा...",
+    "enterName": "तुमचे नाव टाका",
+    "enterEmail": "तुमचा ईमेल टाका",
+    "register": "नोंदणी करा",
+    "showPassword": "पासवर्ड दर्शवा",
+    "hidePassword": "पासवर्ड लपवा",
+    "rememberMe": "मला लक्षात ठेवा (३० दिवस)",
+    "forgotPassword": "पासवर्ड विसरलात?",
+    "sendRecoveryHint": "रिकव्हरी हिंट पाठवा"
+  },
+  "tabs": {
+    "overview": "आढावा",
+    "analysis": "विश्लेषण",
+    "interventions": "हस्तक्षेप",
+    "aiExport": "एआय + एक्सपोर्ट"
+  },
+  "panels": {
+    "weatherConditions": "हवामान स्थिती",
+    "satelliteIndices": "उपग्रह निर्देशांक",
+    "heatRiskGauge": "उष्णता धोका मापक",
+    "activeAlerts": "सक्रिय सूचना",
+    "healthSafety": "आरोग्य आणि सुरक्षा सावधगिरी",
+    "climateOscillations": "जागतिक हवामान प्रणाली",
+    "heatmapGrid": "तापमान हीटमॅप ग्रिड",
+    "mlModel": "रँडम फॉरेस्ट मॉडेल",
+    "historicalTrend": "१०-वर्षांचा कल (२०१५-२०२५)",
+    "cityComparison": "शहरांची तुलना करा",
+    "interventionSliders": "यूएचआय हस्तक्षेप (रिअल-टाइम कूलिंग)",
+    "physicsExplanation": "भौतिकशास्त्र स्पष्टीकरण",
+    "spatialRecommendation": "स्थानिक शिफारस",
+    "aiAnalyst": "एआय विश्लेषक",
+    "gamification": "पॉइंट्स आणि बॅज",
+    "glossary": "शब्दकोश",
+    "exportShare": "एक्सपोर्ट आणि शेअर करा",
+    "progressTracker": "HeatOps 2026 प्रगती",
+    "aboutTeam": "टीम आणि कार्यपद्धती",
+    "hottestCities": "सर्वात उष्ण शहरे",
+    "selectCity": "शहर निवडा",
+    "dayNightTemp": "दिवस वि. रात्र तापमान",
+    "windAtmosphere": "वारा आणि वातावरण",
+    "pollenAirQuality": "परागकण आणि हवेची गुणवत्ता",
+    "heatwaveTimeline": "ऐतिहासिक उष्णतेच्या लाटेची टाइमलाइन",
+    "recentSignIns": "अलीकडील साइन-इन",
+    "heatLegend": "उष्णता लेजेंड",
+    "adminDashboard": "अॅडमिन अॅनालिटिक्स डॅशबोर्ड"
+  },
+  "buttons": {
+    "copySummary": "सारांश कॉपी करा",
+    "whatsappShare": "व्हॉट्सअॅपवर शेअर करा",
+    "csvDownload": "सीएसव्ही डाउनलोड करा",
+    "askAI": "एआयला विचारा",
+    "showGlossary": "शब्दकोश दर्शवा",
+    "hideGlossary": "शब्दकोश लपवा"
+  },
+  "glossary": {
+    "LST": { "term": "एलएसटी", "definition": "उपग्रहावरून जमिनीच्या पृष्ठभागाचे तापमान" },
+    "NDVI": { "term": "एनडीव्हीआय", "definition": "सामान्यीकृत वनस्पती निर्देशांक (हरित वनस्पती)" },
+    "NDBI": { "term": "एनडीबीआय", "definition": "सामान्यीकृत फरक बांधकाम निर्देशांक (शहरी/काँक्रीट)" },
+    "NDWI": { "term": "एनडीडब्ल्यूआय", "definition": "सामान्यीकृत जल निर्देशांक (जलसाठे)" },
+    "UHI": { "term": "यूएचआय", "definition": "शहरांमधील अर्बन हीट आयलंड प्रभाव" },
+    "ENSO": { "term": "एल निनो", "definition": "एल निनो दक्षिणी दोलन हवामान पॅटर्न" },
+    "IOD": { "term": "आयओडी", "definition": "हिंद महासागर द्विध्रुव मॉन्सून चालक" },
+    "MJO": { "term": "एमजेओ", "definition": "मॅडेन-ज्युलियन ऑसिलेशन वातावरणीय लाटा" }
+  },
+  "precautions": {
+    "HOT": {
+      "0": "दुपारी १२ ते ४ या वेळेत बाहेरील कामे टाळा",
+      "1": "हायड्रेटेड राहा — तहान नसली तरी दर २०-३० मिनिटांनी पाणी प्या",
+      "2": "उष्णतेच्या थकव्याच्या लक्षणांकडे लक्ष द्या (चक्कर येणे, मळमळ, जलद नाडी)",
+      "3": "सैल, हलक्या रंगाचे सुती कपडे घाला",
+      "4": "जास्त घाम आल्यास ओआरएस/इलेक्ट्रोलाइट्स वापरा",
+      "5": "वृद्ध, लहान मुले, बाहेर काम करणाऱ्यांकडे जास्त लक्ष द्या",
+      "6": "एक्यूआय देखील जास्त आहे — बाहेर राहणे आणखी मर्यादित करा",
+      "7": "बाहेर एन९५ मास्क घालण्याचा विचार करा"
+    },
+    "COLD": {
+      "0": "कपड्यांचे थर घाला, हात, कान, डोके झाका",
+      "1": "वृद्ध/लहान मुलांमध्ये हायपोथर्मियाच्या लक्षणांकडे लक्ष द्या",
+      "2": "थंडीपासून उष्णतेकडे अचानक बदल टाळा",
+      "3": "घरातील हीटिंग/वेंटिलेशन संतुलित ठेवा (वेंटिलेशन नसलेल्या हीटरमुळे सीओ विषबाधेचा धोका)",
+      "4": "कोरडे राहा — थंडीत ओले कपडे उष्णता कमी होण्याचा वेग वाढवतात"
+    },
+    "MILD": {
+      "0": "सामान्य सूर्य सुरक्षा (सनस्क्रीन, टोपी, सनग्लासेस)",
+      "1": "हायड्रेटेड राहा",
+      "2": "कोणत्याही मोठ्या सावधगिरीची आवश्यकता नाही"
+    },
+    "vulnerableNote": "या उष्णता श्रेणीत वृद्ध, लहान मुले आणि बाहेर काम करणाऱ्यांसाठी अतिरिक्त सावधगिरीचा सल्ला दिला जातो"
+  },
+  "alerts": {
+    "extremeHeat": "अत्यंत उष्णता: एलएसटी > ४५°C",
+    "highAqi": "उच्च एक्यूआय: > ३००",
+    "moderateHeat": "मध्यम शहरी उष्णता",
+    "marineHeatwave": "सागरी उष्णतेची लाट सक्रिय",
+    "polarVortexWatch": "सावधान: ध्रुवीय व्होर्टेक्स विस्कळीत",
+    "allNormal": "सर्व मूल्ये सामान्य"
+  },
+  "tooltips": {
+    "clickToExplore": "शहरे एक्सप्लोर करण्यासाठी क्लिक करा →",
+    "clickStateForDetails": "तपशील पाहण्यासाठी मॅपवर एका राज्यावर क्लिक करा.",
+    "clickCityToAnalyze": "👆 विश्लेषणासाठी वरील कोणत्याही शहरावर क्लिक करा"
+  },
+  "dayNight": {
+    "day": "दिवस (दुपारी १२)",
+    "night": "रात्र (१२ वा.)"
+  },
+  "climate": {
+    "enso": "एल निनो",
+    "iod": "आयओडी",
+    "mjo": "एमजेओ",
+    "pdo": "पीडीओ",
+    "nao": "एनएओ",
+    "polarVortex": "ध्रुवीय व्होर्टेक्स",
+    "phase": "टप्पा",
+    "values": {
+      "El Niño": "एल निनो",
+      "La Niña": "ला निना",
+      "Neutral": "न्यूट्रल",
+      "STRONG": "तीव्र",
+      "WEAK": "कमजोर",
+      "DISRUPTED": "विस्कळीत",
+      "Positive Phase": "सकारात्मक टप्पा",
+      "Negative Phase": "नकारात्मक टप्पा",
+      "Warm Phase": "उष्ण टप्पा",
+      "Cool Phase": "थंड टप्पा"
+    }
+  },
+  "historicalTrend": {
+    "urbanCore": "शहरी गाभा",
+    "ruralAreas": "ग्रामीण भाग",
+    "warmer": "अधिक उष्ण"
+  },
+  "sliders": {
+    "urbanGreening": "🌳 शहरी हरितीकरण (एनडीव्हीआय +0.3):",
+    "coolRoofs": "🏠 कूल रूफ (अल्बेडो +0.2):",
+    "waterBodies": "💧 जलसाठे (एनडीडब्ल्यूआय +0.1):"
+  },
+  "compareCities": {
+    "selectPlaceholder": "तुलनेसाठी शहर निवडा..."
+  },
+  "windAtmosphere": {
+    "direction": "दिशा",
+    "speed": "वेग",
+    "gust": "वाऱ्याचा झोत",
+    "pressure": "दाब"
+  },
+  "pollen": {
+    "grass": "गवत",
+    "tree": "झाड",
+    "weed": "गवताळ वनस्पती",
+    "mold": "बुरशी",
+    "moderate": "मध्यम",
+    "high": "उच्च",
+    "low": "कमी"
+  },
+  "progressTracker": {
+    "dataCollection": "✅ डेटा संकलन (GEE + Landsat 8)",
+    "lstCalculation": "✅ एलएसटी गणना",
+    "indexCalculation": "✅ निर्देशांक गणना (एनडीव्हीआय, एनडीबीआय)",
+    "correlationAnalysis": "✅ सहसंबंध विश्लेषण",
+    "randomForestModel": "✅ रँडम फॉरेस्ट मॉडेल",
+    "interventionSimulation": "✅ हस्तक्षेप सिम्युलेशन",
+    "dashboardCreation": "✅ डॅशबोर्ड निर्मिती",
+    "reportSubmission": "🔲 अहवाल सादरीकरण"
+  },
+  "cityList": {
+    "noResultsFor": "\"{{search}}\" साठी कोणतीही शहरे आढळली नाहीत",
+    "showingOf": "{{total}} पैकी {{shown}} दर्शवित आहे"
+  },
+  "signIn": {
+    "noRecentSignIns": "अद्याप अलीकडील साइन-इन नाहीत. लाँचनंतर तुमचे सत्र लॉग केले जाईल."
+  },
+  "heatLegend": {
+    "extreme": "अत्यंत",
+    "high": "उच्च",
+    "moderate": "मध्यम",
+    "cool": "थंड"
+  },
+  "admin": {
+    "totalUsers": "एकूण वापरकर्ते",
+    "totalLoginEvents": "एकूण लॉगिन इव्हेंट्स",
+    "citiesAnalyzed": "विश्लेषित शहरे",
+    "successRate": "यश दर",
+    "hourlyLoginPattern": "📊 तासाभराचा लॉगिन पॅटर्न",
+    "dailyLoginTrend": "📈 दैनिक लॉगिन कल (३० दिवस)",
+    "topCitiesAnalyzed": "🏙️ टॉप १० विश्लेषित शहरे",
+    "recentLoginActivity": "📝 अलीकडील लॉगिन क्रियाकलाप",
+    "tableUser": "वापरकर्ता",
+    "tableEmail": "ईमेल",
+    "tableTime": "वेळ",
+    "tableStatus": "स्थिती",
+    "tableDuration": "कालावधी"
+  },
+  "physics": {
+    "panelTitle": "⚛️ यूएचआय हस्तक्षेपांचे भौतिकशास्त्र",
+    "where": "कुठे:",
+    "cost": "किंमत:",
+    "items": {
+      "urbanGreening": "शहरी हरितीकरण",
+      "coolRoofs": "कूल रूफ",
+      "waterBodies": "जलसाठे"
+    }
+  },
+  "spatial": {
+    "panelTitle": "📍 {{cityName}} मध्ये कुठे हस्तक्षेप करावा",
+    "hottestZones": "🔴 सर्वात उष्ण क्षेत्रे:",
+    "greenPriority": "🌳 हरित प्राधान्य:",
+    "waterPriority": "💧 जल प्राधान्य:",
+    "areaNeeded": "📏 आवश्यक क्षेत्र:",
+    "estimatedCost": "💰 अंदाजित किंमत:",
+    "hotZonesCBD": "मध्यवर्ती व्यापार जिल्हा, औद्योगिक क्षेत्रे",
+    "hotZonesResidential": "दाट निवासी क्षेत्रे, व्यावसायिक कॉरिडॉर",
+    "greenCritical": "गंभीर — २०% पेक्षा कमी वनस्पती",
+    "greenHigh": "उच्च — मध्यम वनस्पती तफावत",
+    "waterUrgent": "जलसाठा निर्मिती तातडीची आहे",
+    "waterMaintain": "विद्यमान जलसाठे राखा",
+    "areaDescription": "लक्ष्य एनडीव्हीआय ≥ ०.३५ साठी चौ. किमी हरित आच्छादन",
+    "costNote": "(@ ₹3 लाख/हेक्टर सरासरी)"
+  },
+  "mlModel": {
+    "panelTitle": "🤖 रँडम फॉरेस्ट मॉडेल — {{cityName}}",
+    "r2Score": "R² स्कोअर",
+    "testSet": "टेस्ट सेट",
+    "mae": "एमएई",
+    "meanAbsError": "सरासरी निरपेक्ष त्रुटी",
+    "trainTest": "ट्रेन/टेस्ट",
+    "splitRatio": "स्प्लिट प्रमाण",
+    "datasetSplit": "डेटासेट स्प्लिट ({{n}} नमुने)",
+    "trainSamples": "ट्रेन ({{n}} नमुने)",
+    "testSamples": "टेस्ट ({{n}})",
+    "featureImportance": "फीचर महत्त्व (गिनी)",
+    "elevation": "उंची",
+    "model": "मॉडेल:",
+    "features": "फीचर्स:",
+    "target": "लक्ष्य:",
+    "scene": "सीन:"
+  },
+  "geePipeline": {
+    "panelTitle": "📡 डेटा पाइपलाइन — Google Earth Engine → HeatOps"
+  },
+  "satellitePass": {
+    "lastPass": "शेवटचा उपग्रह पास:",
+    "landsatNote": "Landsat 8 साधारण दर १६ दिवसांनी पुन्हा येतो",
+    "sentinelNote": "Sentinel-2 साधारण दर ५ दिवसांनी पुन्हा येतो",
+    "notRealtime": "रिअल-टाइम नाही"
+  },
+  "yoyComparison": {
+    "today": "आज",
+    "sameDateLastYear": "मागील वर्षी याच तारखेला"
+  },
+  "heatwaveTimeline": {
+    "peakTemp": "कमाल तापमान",
+    "duration": "कालावधी",
+    "days": "दिवस",
+    "noEvents": "या शहरासाठी ऐतिहासिक कालावधीत कोणतीही लक्षणीय उष्णतेची लाट नोंदवली गेली नाही."
+  },
+  "aiAnalyst": {
+    "inputPlaceholder": "उष्णता, हवामान किंवा या शहराबद्दल विचारा..."
+  }
+}

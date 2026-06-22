@@ -1,0 +1,267 @@
+{
+  "nav": {
+    "signIn": "SIGN IN",
+    "signOut": "LOGOUT",
+    "backToMap": "Back to Map",
+    "analyze": "Analyze",
+    "searchPlaceholder": "Search any city in India...",
+    "searchCityPlaceholder": "Search city...",
+    "enterName": "Enter your name",
+    "enterEmail": "Enter your email",
+    "register": "Register",
+    "showPassword": "SHOW PASSWORD",
+    "hidePassword": "HIDE PASSWORD",
+    "rememberMe": "Remember me (30 days)",
+    "forgotPassword": "Forgot password?",
+    "sendRecoveryHint": "Send Recovery Hint"
+  },
+  "tabs": {
+    "overview": "OVERVIEW",
+    "analysis": "ANALYSIS",
+    "interventions": "INTERVENTIONS",
+    "aiExport": "AI + EXPORT"
+  },
+  "panels": {
+    "weatherConditions": "WEATHER CONDITIONS",
+    "satelliteIndices": "SATELLITE INDICES",
+    "heatRiskGauge": "HEAT RISK GAUGE",
+    "activeAlerts": "ACTIVE ALERTS",
+    "healthSafety": "HEALTH & SAFETY PRECAUTIONS",
+    "climateOscillations": "GLOBAL CLIMATE SYSTEMS",
+    "heatmapGrid": "TEMPERATURE HEATMAP GRID",
+    "mlModel": "RANDOM FOREST MODEL",
+    "historicalTrend": "10-YEAR TREND (2015-2025)",
+    "cityComparison": "COMPARE CITIES",
+    "interventionSliders": "UHI INTERVENTIONS (Real-time cooling)",
+    "physicsExplanation": "PHYSICS EXPLANATION",
+    "spatialRecommendation": "SPATIAL RECOMMENDATION",
+    "aiAnalyst": "AI ANALYST",
+    "gamification": "POINTS & BADGES",
+    "glossary": "GLOSSARY",
+    "exportShare": "EXPORT & SHARE",
+    "progressTracker": "HeatOps 2026 PROGRESS",
+    "aboutTeam": "TEAM & METHODOLOGY",
+    "hottestCities": "Hottest Cities",
+    "selectCity": "SELECT CITY",
+    "dayNightTemp": "DAY vs NIGHT TEMPERATURE",
+    "windAtmosphere": "WIND & ATMOSPHERE",
+    "pollenAirQuality": "POLLEN & AIR QUALITY",
+    "heatwaveTimeline": "HISTORICAL HEATWAVE TIMELINE",
+    "recentSignIns": "Recent Sign-ins",
+    "heatLegend": "Heat Legend",
+    "adminDashboard": "Admin Analytics Dashboard"
+  },
+  "buttons": {
+    "copySummary": "Copy Summary",
+    "whatsappShare": "WhatsApp Share",
+    "csvDownload": "CSV Download",
+    "askAI": "Ask AI",
+    "showGlossary": "Show Glossary",
+    "hideGlossary": "Hide Glossary"
+  },
+  "glossary": {
+    "LST": { "term": "LST", "definition": "Land Surface Temperature from satellite" },
+    "NDVI": { "term": "NDVI", "definition": "Normalized Vegetation Index (green vegetation)" },
+    "NDBI": { "term": "NDBI", "definition": "Normalized Difference Built-up Index (urban/concrete)" },
+    "NDWI": { "term": "NDWI", "definition": "Normalized Water Index (water bodies)" },
+    "UHI": { "term": "UHI", "definition": "Urban Heat Island effect in cities" },
+    "ENSO": { "term": "ENSO", "definition": "El Niño Southern Oscillation climate pattern" },
+    "IOD": { "term": "IOD", "definition": "Indian Ocean Dipole monsoon driver" },
+    "MJO": { "term": "MJO", "definition": "Madden-Julian Oscillation atmospheric waves" }
+  },
+  "precautions": {
+    "HOT": {
+      "0": "Avoid outdoor activity 12pm–4pm",
+      "1": "Stay hydrated — drink water every 20-30 min even if not thirsty",
+      "2": "Watch for heat exhaustion signs (dizziness, nausea, rapid pulse)",
+      "3": "Wear light, loose, light-colored cotton clothing",
+      "4": "Use ORS/electrolytes if sweating heavily",
+      "5": "Keep elderly, children, outdoor workers under extra watch",
+      "6": "AQI is also high — limit outdoor exposure further",
+      "7": "Consider wearing an N95 mask outdoors"
+    },
+    "COLD": {
+      "0": "Layer clothing, cover extremities (hands, ears, head)",
+      "1": "Watch for hypothermia signs in elderly/infants",
+      "2": "Avoid sudden cold-to-warm transitions",
+      "3": "Keep indoor heating/ventilation balanced (CO poisoning risk with unventilated heaters)",
+      "4": "Stay dry — wet clothing in cold accelerates heat loss"
+    },
+    "MILD": {
+      "0": "General sun safety (sunscreen, hat, sunglasses)",
+      "1": "Stay hydrated",
+      "2": "No major restrictions needed"
+    },
+    "vulnerableNote": "Extra caution advised for elderly, children, and outdoor workers in this heat category"
+  },
+  "alerts": {
+    "extremeHeat": "EXTREME heat: LST > 45°C",
+    "highAqi": "HIGH AQI: > 300",
+    "moderateHeat": "MODERATE urban heat",
+    "marineHeatwave": "Marine heatwave active",
+    "polarVortexWatch": "WATCH: Polar vortex disrupted",
+    "allNormal": "All values normal"
+  },
+  "tooltips": {
+    "clickToExplore": "Click to explore cities →",
+    "clickStateForDetails": "Click a state on the map to view details.",
+    "clickCityToAnalyze": "👆 Click any city above to analyze"
+  },
+  "dayNight": {
+    "day": "Day (12 PM)",
+    "night": "Night (12 AM)"
+  },
+  "climate": {
+    "enso": "ENSO",
+    "iod": "IOD",
+    "mjo": "MJO",
+    "pdo": "PDO",
+    "nao": "NAO",
+    "polarVortex": "Polar Vortex",
+    "phase": "Phase",
+    "values": {
+      "El Niño": "El Niño",
+      "La Niña": "La Niña",
+      "Neutral": "Neutral",
+      "STRONG": "STRONG",
+      "WEAK": "WEAK",
+      "DISRUPTED": "DISRUPTED",
+      "Positive Phase": "Positive Phase",
+      "Negative Phase": "Negative Phase",
+      "Warm Phase": "Warm Phase",
+      "Cool Phase": "Cool Phase"
+    }
+  },
+  "historicalTrend": {
+    "urbanCore": "Urban Core",
+    "ruralAreas": "Rural Areas",
+    "warmer": "warmer"
+  },
+  "sliders": {
+    "urbanGreening": "🌳 Urban Greening (NDVI +0.3):",
+    "coolRoofs": "🏠 Cool Roofs (Albedo +0.2):",
+    "waterBodies": "💧 Water Bodies (NDWI +0.1):"
+  },
+  "compareCities": {
+    "selectPlaceholder": "Select city to compare..."
+  },
+  "windAtmosphere": {
+    "direction": "Direction",
+    "speed": "Speed",
+    "gust": "Gust",
+    "pressure": "Pressure"
+  },
+  "pollen": {
+    "grass": "Grass",
+    "tree": "Tree",
+    "weed": "Weed",
+    "mold": "Mold",
+    "moderate": "MODERATE",
+    "high": "HIGH",
+    "low": "LOW"
+  },
+  "progressTracker": {
+    "dataCollection": "✅ Data Collection (GEE + Landsat 8)",
+    "lstCalculation": "✅ LST Calculation",
+    "indexCalculation": "✅ Index Calculation (NDVI, NDBI)",
+    "correlationAnalysis": "✅ Correlation Analysis",
+    "randomForestModel": "✅ Random Forest Model",
+    "interventionSimulation": "✅ Intervention Simulation",
+    "dashboardCreation": "✅ Dashboard Creation",
+    "reportSubmission": "🔲 Report Submission"
+  },
+  "cityList": {
+    "noResultsFor": "No cities found for \"{{search}}\"",
+    "showingOf": "Showing {{shown}} of {{total}}"
+  },
+  "signIn": {
+    "noRecentSignIns": "No recent sign-ins yet. Your session will be logged after launch."
+  },
+  "heatLegend": {
+    "extreme": "Extreme",
+    "high": "High",
+    "moderate": "Moderate",
+    "cool": "Cool"
+  },
+  "admin": {
+    "totalUsers": "Total Users",
+    "totalLoginEvents": "Total Login Events",
+    "citiesAnalyzed": "Cities Analyzed",
+    "successRate": "Success Rate",
+    "hourlyLoginPattern": "📊 Hourly Login Pattern",
+    "dailyLoginTrend": "📈 Daily Login Trend (30 days)",
+    "topCitiesAnalyzed": "🏙️ Top 10 Cities Analyzed",
+    "recentLoginActivity": "📝 Recent Login Activity",
+    "tableUser": "User",
+    "tableEmail": "Email",
+    "tableTime": "Time",
+    "tableStatus": "Status",
+    "tableDuration": "Duration"
+  },
+  "physics": {
+    "panelTitle": "⚛️ Physics of UHI Interventions",
+    "where": "Where:",
+    "cost": "Cost:",
+    "items": {
+      "urbanGreening": "Urban Greening",
+      "coolRoofs": "Cool Roofs",
+      "waterBodies": "Water Bodies"
+    }
+  },
+  "spatial": {
+    "panelTitle": "📍 WHERE to Intervene in {{cityName}}",
+    "hottestZones": "🔴 Hottest Zones:",
+    "greenPriority": "🌳 Green Priority:",
+    "waterPriority": "💧 Water Priority:",
+    "areaNeeded": "📏 Area needed:",
+    "estimatedCost": "💰 Estimated cost:",
+    "hotZonesCBD": "Central Business District, Industrial zones",
+    "hotZonesResidential": "Dense residential areas, Commercial corridors",
+    "greenCritical": "CRITICAL — Less than 20% vegetation",
+    "greenHigh": "HIGH — Moderate vegetation deficit",
+    "waterUrgent": "Water body creation urgent",
+    "waterMaintain": "Maintain existing water bodies",
+    "areaDescription": "km² of green cover for target NDVI ≥ 0.35",
+    "costNote": "(@ ₹3 lakh/hectare avg)"
+  },
+  "mlModel": {
+    "panelTitle": "🤖 Random Forest Model — {{cityName}}",
+    "r2Score": "R² Score",
+    "testSet": "Test set",
+    "mae": "MAE",
+    "meanAbsError": "Mean Abs Error",
+    "trainTest": "Train/Test",
+    "splitRatio": "Split ratio",
+    "datasetSplit": "Dataset Split ({{n}} samples)",
+    "trainSamples": "Train ({{n}} samples)",
+    "testSamples": "Test ({{n}})",
+    "featureImportance": "Feature Importance (Gini)",
+    "elevation": "Elevation",
+    "model": "Model:",
+    "features": "Features:",
+    "target": "Target:",
+    "scene": "Scene:"
+  },
+  "geePipeline": {
+    "panelTitle": "📡 Data Pipeline — Google Earth Engine → HeatOps"
+  },
+  "satellitePass": {
+    "lastPass": "Last satellite pass:",
+    "landsatNote": "Landsat 8 revisits ~every 16 days",
+    "sentinelNote": "Sentinel-2 revisits ~every 5 days",
+    "notRealtime": "not real-time"
+  },
+  "yoyComparison": {
+    "today": "Today",
+    "sameDateLastYear": "Same date last year"
+  },
+  "heatwaveTimeline": {
+    "peakTemp": "Peak temp",
+    "duration": "duration",
+    "days": "days",
+    "noEvents": "No significant heatwave events recorded for this city in the historical window."
+  },
+  "aiAnalyst": {
+    "inputPlaceholder": "Ask about heat, weather, or this city..."
+  }
+}

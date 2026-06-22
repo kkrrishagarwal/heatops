@@ -1,0 +1,267 @@
+{
+  "nav": {
+    "signIn": "ସାଇନ୍ ଇନ୍ କରନ୍ତୁ",
+    "signOut": "ଲଗଆଉଟ୍",
+    "backToMap": "ମାନଚିତ୍ରକୁ ଫେରନ୍ତୁ",
+    "analyze": "ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "searchPlaceholder": "ଭାରତର କୌଣସି ସହର ଖୋଜନ୍ତୁ...",
+    "searchCityPlaceholder": "ସହର ଖୋଜନ୍ତୁ...",
+    "enterName": "ଆପଣଙ୍କ ନାମ ଲେଖନ୍ତୁ",
+    "enterEmail": "ଆପଣଙ୍କ ଇମେଲ୍ ଲେଖନ୍ତୁ",
+    "register": "ପଞ୍ଜିକରଣ କରନ୍ତୁ",
+    "showPassword": "ପାସୱାର୍ଡ ଦେଖାନ୍ତୁ",
+    "hidePassword": "ପାସୱାର୍ଡ ଲୁଚାନ୍ତୁ",
+    "rememberMe": "ମୋତେ ମନେରଖ (30 ଦିନ)",
+    "forgotPassword": "ପାସୱାର୍ଡ ଭୁଲିଗଲେ?",
+    "sendRecoveryHint": "ରିକଭରୀ ସୂଚନା ପଠାନ୍ତୁ"
+  },
+  "tabs": {
+    "overview": "ସମୀକ୍ଷା",
+    "analysis": "ବିଶ୍ଳେଷଣ",
+    "interventions": "ହସ୍ତକ୍ଷେପ",
+    "aiExport": "AI + ରପ୍ତାନି"
+  },
+  "panels": {
+    "weatherConditions": "ପାଣିପାଗ ସ୍ଥିତି",
+    "satelliteIndices": "ଉପଗ୍ରହ ସୂଚକାଙ୍କ",
+    "heatRiskGauge": "ଉତ୍ତାପ ବିପଦ ମିଟର",
+    "activeAlerts": "ସକ୍ରିୟ ଚେତାବନୀ",
+    "healthSafety": "ସ୍ୱାସ୍ଥ୍ୟ ଏବଂ ସୁରକ୍ଷା ସତର୍କତା",
+    "climateOscillations": "ବିଶ୍ୱ ପାଣିପାଗ ପ୍ରଣାଳୀ",
+    "heatmapGrid": "ତାପମାତ୍ରା ହିଟମ୍ୟାପ ଗ୍ରିଡ୍",
+    "mlModel": "ରାଣ୍ଡମ ଫରେଷ୍ଟ ମଡେଲ୍",
+    "historicalTrend": "10-ବର୍ଷର ଧାରା (2015-2025)",
+    "cityComparison": "ସହରଗୁଡିକର ତୁଳନା କରନ୍ତୁ",
+    "interventionSliders": "UHI ହସ୍ତକ୍ଷେପ (ରିଅଲ-ଟାଇମ କୁଲିଙ୍ଗ)",
+    "physicsExplanation": "ପଦାର୍ଥ ବିଜ୍ଞାନ ବ୍ୟାଖ୍ୟା",
+    "spatialRecommendation": "ସ୍ଥାନିକ ସୁପାରିଶ",
+    "aiAnalyst": "AI ବିଶ୍ଳେଷକ",
+    "gamification": "ପଏଣ୍ଟ ଏବଂ ବ୍ୟାଜ୍",
+    "glossary": "ଶବ୍ଦକୋଷ",
+    "exportShare": "ରପ୍ତାନି ଏବଂ ସେୟାର କରନ୍ତୁ",
+    "progressTracker": "HeatOps 2026 ପ୍ରଗତି",
+    "aboutTeam": "ଦଳ ଏବଂ ପଦ୍ଧତି",
+    "hottestCities": "ସବୁଠାରୁ ଗରମ ସହର",
+    "selectCity": "ସହର ବାଛନ୍ତୁ",
+    "dayNightTemp": "ଦିନ vs ରାତି ତାପମାତ୍ରା",
+    "windAtmosphere": "ପବନ ଏବଂ ବାୟୁମଣ୍ଡଳ",
+    "pollenAirQuality": "ପୋଲେନ୍ ଏବଂ ବାୟୁ ଗୁଣବତ୍ତା",
+    "heatwaveTimeline": "ଐତିହାସିକ ଉତ୍ତାପ ଲହରୀ ସମୟରେଖା",
+    "recentSignIns": "ସାମ୍ପ୍ରତିକ ସାଇନ୍-ଇନ୍",
+    "heatLegend": "ଉତ୍ତାପ ଚିହ୍ନ",
+    "adminDashboard": "ଆଡମିନ୍ ଆନାଲିଟିକ୍ସ ଡାସବୋର୍ଡ"
+  },
+  "buttons": {
+    "copySummary": "ସାରାଂଶ କପି କରନ୍ତୁ",
+    "whatsappShare": "ହ୍ୱାଟସଅପରେ ସେୟାର କରନ୍ତୁ",
+    "csvDownload": "CSV ଡାଉନଲୋଡ୍ କରନ୍ତୁ",
+    "askAI": "AI କୁ ପଚାରନ୍ତୁ",
+    "showGlossary": "ଶବ୍ଦକୋଷ ଦେଖାନ୍ତୁ",
+    "hideGlossary": "ଶବ୍ଦକୋଷ ଲୁଚାନ୍ତୁ"
+  },
+  "glossary": {
+    "LST": { "term": "LST", "definition": "ଉପଗ୍ରହରୁ ଭୂପୃଷ୍ଠ ତାପମାତ୍ରା" },
+    "NDVI": { "term": "NDVI", "definition": "ନରମାଲାଇଜଡ୍ ଭେଜିଟେସନ୍ ଇଣ୍ଡେକ୍ସ (ହରିଆ ଉଦ୍ଭିଦ)" },
+    "NDBI": { "term": "NDBI", "definition": "ନରମାଲାଇଜଡ୍ ଡିଫରେନ୍ସ ବିଲ୍ଟ-ଅପ୍ ଇଣ୍ଡେକ୍ସ (ସହରାଞ୍ଚଳ/କଂକ୍ରିଟ୍)" },
+    "NDWI": { "term": "NDWI", "definition": "ନରମାଲାଇଜଡ୍ ୱାଟର ଇଣ୍ଡେକ୍ସ (ଜଳଭଣ୍ଡାର)" },
+    "UHI": { "term": "UHI", "definition": "ସହରଗୁଡିକରେ ଅର୍ବାନ ହିଟ୍ ଆଇଲ୍ୟାଣ୍ଡ ପ୍ରଭାବ" },
+    "ENSO": { "term": "ENSO", "definition": "ଏଲ୍ ନିନୋ ସାଉଥର୍ନ ଅସିଲେସନ୍ ପାଣିପାଗ ଢାଞ୍ଚା" },
+    "IOD": { "term": "IOD", "definition": "ଭାରତ ମହାସାଗର ଦ୍ୱିଧ୍ରୁବ ମୌସୁମୀ ଚାଳକ" },
+    "MJO": { "term": "MJO", "definition": "ମ୍ୟାଡେନ୍-ଜୁଲିଆନ୍ ଅସିଲେସନ୍ ବାୟୁମଣ୍ଡଳ ତରଙ୍ଗ" }
+  },
+  "precautions": {
+    "HOT": {
+      "0": "ଦିନ 12 ଠାରୁ 4 ଘଣ୍ଟା ପର୍ଯ୍ୟନ୍ତ ବାହାର କାର୍ଯ୍ୟକଳାପ ଏଡାଇ ଚାଲନ୍ତୁ",
+      "1": "ହାଇଡ୍ରେଟେଡ୍ ରୁହନ୍ତୁ — ତୃଷା ନ ଲାଗିଲେ ସୁଦ୍ଧା ପ୍ରତି 20-30 ମିନିଟରେ ପାଣି ପିଅନ୍ତୁ",
+      "2": "ଉତ୍ତାପ ଥକାପଣର ଲକ୍ଷଣ ପ୍ରତି ଯତ୍ନବାନ ହୁଅନ୍ତୁ (ମୁଣ୍ଡ ବୁଲାଇବା, ବାନ୍ତି, ତୀବ୍ର ହୃଦସ୍ପନ୍ଦନ)",
+      "3": "ହାଲୁକା, ଢିଲା, ହାଲୁକା ରଙ୍ଗର ସୁତା ବସ୍ତ୍ର ପିନ୍ଧନ୍ତୁ",
+      "4": "ଅଧିକ ବେଦ ହେଲେ ORS/ଇଲେକ୍ଟ୍ରୋଲାଇଟ୍ ବ୍ୟବହାର କରନ୍ତୁ",
+      "5": "ବୟସ୍କ, ଶିଶୁ, ବାହାରେ କାମ କରୁଥିବା ଲୋକଙ୍କ ପ୍ରତି ଅଧିକ ଧ୍ୟାନ ଦିଅନ୍ତୁ",
+      "6": "AQI ମଧ୍ୟ ଅଧିକ ଅଛି — ବାହାରେ ରହିବାକୁ ଅଧିକ ସୀମିତ କରନ୍ତୁ",
+      "7": "ବାହାରେ N95 ମାସ୍କ ପିନ୍ଧିବାକୁ ବିଚାର କରନ୍ତୁ"
+    },
+    "COLD": {
+      "0": "ସ୍ତରରେ ବସ୍ତ୍ର ପିନ୍ଧନ୍ତୁ, ହାତ, କାନ, ମୁଣ୍ଡ ଘୋଡାନ୍ତୁ",
+      "1": "ବୟସ୍କ/ଶିଶୁମାନଙ୍କଠାରେ ହାଇପୋଥର୍ମିଆ ଲକ୍ଷଣ ପ୍ରତି ଯତ୍ନବାନ ହୁଅନ୍ତୁ",
+      "2": "ଥଣ୍ଡାରୁ ଗରମକୁ ଆକସ୍ମିକ ପରିବର୍ତ୍ତନ ଏଡାଇ ଚାଲନ୍ତୁ",
+      "3": "ଘର ଭିତର ଗରମ/ବାୟୁ ସଞ୍ଚାଳନ ସନ୍ତୁଳିତ ରଖନ୍ତୁ (ବାୟୁ ସଞ୍ଚାଳନ ବିନା ହିଟରରେ CO ବିଷ ବିପଦ)",
+      "4": "ଶୁଖିଲା ରୁହନ୍ତୁ — ଥଣ୍ଡାରେ ଓଦା ବସ୍ତ୍ର ଉତ୍ତାପ ହ୍ରାସକୁ ତ୍ୱରିତ କରେ"
+    },
+    "MILD": {
+      "0": "ସାଧାରଣ ସୂର୍ଯ୍ୟ ସୁରକ୍ଷା (ସନ୍‌ସ୍କ୍ରିନ୍, ଟୋପି, ସନ୍‌ଗ୍ଲାସ୍)",
+      "1": "ହାଇଡ୍ରେଟେଡ୍ ରୁହନ୍ତୁ",
+      "2": "କୌଣସି ବଡ ସତର୍କତାର ଆବଶ୍ୟକତା ନାହିଁ"
+    },
+    "vulnerableNote": "ଏହି ଉତ୍ତାପ ବର୍ଗରେ ବୟସ୍କ, ଶିଶୁ ଏବଂ ବାହାରେ କାମ କରୁଥିବା ଲୋକଙ୍କ ପାଇଁ ଅଧିକ ସତର୍କତା ସୁପାରିଶ କରାଯାଏ"
+  },
+  "alerts": {
+    "extremeHeat": "ଅତ୍ୟଧିକ ଉତ୍ତାପ: LST > 45°C",
+    "highAqi": "ଉଚ୍ଚ AQI: > 300",
+    "moderateHeat": "ମଧ୍ୟମ ସହରାଞ୍ଚଳ ଉତ୍ତାପ",
+    "marineHeatwave": "ସାମୁଦ୍ରିକ ଉତ୍ତାପ ଲହରୀ ସକ୍ରିୟ",
+    "polarVortexWatch": "ଚେତାବନୀ: ଧ୍ରୁବୀୟ ଭର୍ଟେକ୍ସ ବ୍ୟାହତ",
+    "allNormal": "ସମସ୍ତ ମୂଲ୍ୟ ସାଧାରଣ ଅଛି"
+  },
+  "tooltips": {
+    "clickToExplore": "ସହରଗୁଡିକ ଦେଖିବାକୁ କ୍ଲିକ୍ କରନ୍ତୁ →",
+    "clickStateForDetails": "ବିବରଣୀ ଦେଖିବାକୁ ମାନଚିତ୍ରରେ ଏକ ରାଜ୍ୟରେ କ୍ଲିକ୍ କରନ୍ତୁ।",
+    "clickCityToAnalyze": "👆 ବିଶ୍ଳେଷଣ ପାଇଁ ଉପରେ କୌଣସି ସହରରେ କ୍ଲିକ୍ କରନ୍ତୁ"
+  },
+  "dayNight": {
+    "day": "ଦିନ (ଦିନ 12)",
+    "night": "ରାତି (12)"
+  },
+  "climate": {
+    "enso": "ଏଲ୍ ନିନୋ",
+    "iod": "IOD",
+    "mjo": "MJO",
+    "pdo": "PDO",
+    "nao": "NAO",
+    "polarVortex": "ଧ୍ରୁବୀୟ ଭର୍ଟେକ୍ସ",
+    "phase": "ପର୍ଯ୍ୟାୟ",
+    "values": {
+      "El Niño": "ଏଲ୍ ନିନୋ",
+      "La Niña": "ଲା ନିନା",
+      "Neutral": "ନିଉଟ୍ରାଲ",
+      "STRONG": "ଶକ୍ତିଶାଳୀ",
+      "WEAK": "ଦୁର୍ବଳ",
+      "DISRUPTED": "ବ୍ୟାହତ",
+      "Positive Phase": "ସକାରାତ୍ମକ ପର୍ଯ୍ୟାୟ",
+      "Negative Phase": "ନକାରାତ୍ମକ ପର୍ଯ୍ୟାୟ",
+      "Warm Phase": "ଗରମ ପର୍ଯ୍ୟାୟ",
+      "Cool Phase": "ଥଣ୍ଡା ପର୍ଯ୍ୟାୟ"
+    }
+  },
+  "historicalTrend": {
+    "urbanCore": "ସହର କେନ୍ଦ୍ର",
+    "ruralAreas": "ଗ୍ରାମୀଣ ଅଞ୍ଚଳ",
+    "warmer": "ଅଧିକ ଗରମ"
+  },
+  "sliders": {
+    "urbanGreening": "🌳 ସହର ହରିତୀକରଣ (NDVI +0.3):",
+    "coolRoofs": "🏠 କୁଲ୍ ରୁଫ୍ (ଆଲବେଡୋ +0.2):",
+    "waterBodies": "💧 ଜଳଭଣ୍ଡାର (NDWI +0.1):"
+  },
+  "compareCities": {
+    "selectPlaceholder": "ତୁଳନା ପାଇଁ ସହର ବାଛନ୍ତୁ..."
+  },
+  "windAtmosphere": {
+    "direction": "ଦିଗ",
+    "speed": "ବେଗ",
+    "gust": "ପ୍ରବଳ ପବନ",
+    "pressure": "ଚାପ"
+  },
+  "pollen": {
+    "grass": "ଘାସ",
+    "tree": "ବୃକ୍ଷ",
+    "weed": "ଘାସଳତା",
+    "mold": "ଫଙ୍ଗସ୍",
+    "moderate": "ମଧ୍ୟମ",
+    "high": "ଉଚ୍ଚ",
+    "low": "କମ"
+  },
+  "progressTracker": {
+    "dataCollection": "✅ ତଥ୍ୟ ସଂଗ୍ରହ (GEE + Landsat 8)",
+    "lstCalculation": "✅ LST ଗଣନା",
+    "indexCalculation": "✅ ସୂଚକାଙ୍କ ଗଣନା (NDVI, NDBI)",
+    "correlationAnalysis": "✅ ସମ୍ପର୍କ ବିଶ୍ଳେଷଣ",
+    "randomForestModel": "✅ ରାଣ୍ଡମ ଫରେଷ୍ଟ ମଡେଲ୍",
+    "interventionSimulation": "✅ ହସ୍ତକ୍ଷେପ ସିମୁଲେସନ୍",
+    "dashboardCreation": "✅ ଡାସବୋର୍ଡ ନିର୍ମାଣ",
+    "reportSubmission": "🔲 ରିପୋର୍ଟ ଦାଖଲ"
+  },
+  "cityList": {
+    "noResultsFor": "\"{{search}}\" ପାଇଁ କୌଣସି ସହର ମିଳିଲା ନାହିଁ",
+    "showingOf": "{{total}} ମଧ୍ୟରୁ {{shown}} ଦେଖାଯାଉଛି"
+  },
+  "signIn": {
+    "noRecentSignIns": "ବର୍ତ୍ତମାନ ସୁଦ୍ଧା କୌଣସି ସାମ୍ପ୍ରତିକ ସାଇନ୍-ଇନ୍ ନାହିଁ। ଲଞ୍ଚ ପରେ ଆପଣଙ୍କ ସେସନ୍ ଲଗ୍ ହେବ।"
+  },
+  "heatLegend": {
+    "extreme": "ଅତ୍ୟଧିକ",
+    "high": "ଉଚ୍ଚ",
+    "moderate": "ମଧ୍ୟମ",
+    "cool": "ଥଣ୍ଡା"
+  },
+  "admin": {
+    "totalUsers": "ସମୁଦାୟ ଉପଭୋକ୍ତା",
+    "totalLoginEvents": "ସମୁଦାୟ ଲଗଇନ୍ ଘଟଣା",
+    "citiesAnalyzed": "ବିଶ୍ଳେଷିତ ସହର",
+    "successRate": "ସଫଳତା ହାର",
+    "hourlyLoginPattern": "📊 ପ୍ରତି ଘଣ୍ଟା ଲଗଇନ୍ ଢାଞ୍ଚା",
+    "dailyLoginTrend": "📈 ଦୈନିକ ଲଗଇନ୍ ଧାରା (30 ଦିନ)",
+    "topCitiesAnalyzed": "🏙️ ଶୀର୍ଷ 10 ବିଶ୍ଳେଷିତ ସହର",
+    "recentLoginActivity": "📝 ସାମ୍ପ୍ରତିକ ଲଗଇନ୍ କାର୍ଯ୍ୟକଳାପ",
+    "tableUser": "ଉପଭୋକ୍ତା",
+    "tableEmail": "ଇମେଲ୍",
+    "tableTime": "ସମୟ",
+    "tableStatus": "ସ୍ଥିତି",
+    "tableDuration": "ଅବଧି"
+  },
+  "physics": {
+    "panelTitle": "⚛️ UHI ହସ୍ତକ୍ଷେପର ପଦାର୍ଥ ବିଜ୍ଞାନ",
+    "where": "କେଉଁଠାରେ:",
+    "cost": "ମୂଲ୍ୟ:",
+    "items": {
+      "urbanGreening": "ସହର ହରିତୀକରଣ",
+      "coolRoofs": "କୁଲ୍ ରୁଫ୍",
+      "waterBodies": "ଜଳଭଣ୍ଡାର"
+    }
+  },
+  "spatial": {
+    "panelTitle": "📍 {{cityName}} ରେ କେଉଁଠାରେ ହସ୍ତକ୍ଷେପ କରିବେ",
+    "hottestZones": "🔴 ସବୁଠାରୁ ଗରମ ଅଞ୍ଚଳ:",
+    "greenPriority": "🌳 ହରିତ ଅଗ୍ରାଧିକାର:",
+    "waterPriority": "💧 ଜଳ ଅଗ୍ରାଧିକାର:",
+    "areaNeeded": "📏 ଆବଶ୍ୟକ ଅଞ୍ଚଳ:",
+    "estimatedCost": "💰 ଆକଳିତ ମୂଲ୍ୟ:",
+    "hotZonesCBD": "କେନ୍ଦ୍ରୀୟ ବ୍ୟବସାୟ ଜିଲ୍ଲା, ଶିଳ୍ପ ଅଞ୍ଚଳ",
+    "hotZonesResidential": "ଘନ ବାସଗୃହ ଅଞ୍ଚଳ, ବ୍ୟବସାୟିକ କରିଡର",
+    "greenCritical": "ଗମ୍ଭୀର — 20% କୁ କମ ଉଦ୍ଭିଦ",
+    "greenHigh": "ଉଚ୍ଚ — ମଧ୍ୟମ ଉଦ୍ଭିଦ ଅଭାବ",
+    "waterUrgent": "ଜଳଭଣ୍ଡାର ସୃଷ୍ଟି ତୁରନ୍ତ ଆବଶ୍ୟକ",
+    "waterMaintain": "ବିଦ୍ୟମାନ ଜଳଭଣ୍ଡାର ବଜାୟ ରଖନ୍ତୁ",
+    "areaDescription": "ଲକ୍ଷ୍ୟ NDVI ≥ 0.35 ପାଇଁ ବର୍ଗ କିମି ହରିତ ଆଚ୍ଛାଦନ",
+    "costNote": "(@ ₹3 ଲକ୍ଷ/ହେକ୍ଟର ହାରାହାରି)"
+  },
+  "mlModel": {
+    "panelTitle": "🤖 ରାଣ୍ଡମ ଫରେଷ୍ଟ ମଡେଲ୍ — {{cityName}}",
+    "r2Score": "R² ସ୍କୋର",
+    "testSet": "ଟେସ୍ଟ ସେଟ୍",
+    "mae": "MAE",
+    "meanAbsError": "ହାରାହାରି ସମ୍ପୂର୍ଣ୍ଣ ତ୍ରୁଟି",
+    "trainTest": "ଟ୍ରେନ୍/ଟେସ୍ଟ",
+    "splitRatio": "ବିଭାଜନ ଅନୁପାତ",
+    "datasetSplit": "ଡାଟାସେଟ୍ ବିଭାଜନ ({{n}} ନମୁନା)",
+    "trainSamples": "ଟ୍ରେନ୍ ({{n}} ନମୁନା)",
+    "testSamples": "ଟେସ୍ଟ ({{n}})",
+    "featureImportance": "ଫିଚର ମହତ୍ତ୍ୱ (ଗିନି)",
+    "elevation": "ଉଚ୍ଚତା",
+    "model": "ମଡେଲ୍:",
+    "features": "ଫିଚରଗୁଡିକ:",
+    "target": "ଲକ୍ଷ୍ୟ:",
+    "scene": "ଦୃଶ୍ୟ:"
+  },
+  "geePipeline": {
+    "panelTitle": "📡 ତଥ୍ୟ ପାଇପଲାଇନ୍ — Google Earth Engine → HeatOps"
+  },
+  "satellitePass": {
+    "lastPass": "ଅନ୍ତିମ ଉପଗ୍ରହ ଗତି:",
+    "landsatNote": "Landsat 8 ପ୍ରତି ~16 ଦିନରେ ପୁନର୍ବାର ଆସେ",
+    "sentinelNote": "Sentinel-2 ପ୍ରତି ~5 ଦିନରେ ପୁନର୍ବାର ଆସେ",
+    "notRealtime": "ରିଅଲ-ଟାଇମ ନୁହେଁ"
+  },
+  "yoyComparison": {
+    "today": "ଆଜି",
+    "sameDateLastYear": "ଗତ ବର୍ଷ ଏହି ତାରିଖରେ"
+  },
+  "heatwaveTimeline": {
+    "peakTemp": "ସର୍ବାଧିକ ତାପମାତ୍ରା",
+    "duration": "ଅବଧି",
+    "days": "ଦିନ",
+    "noEvents": "ଏହି ସହର ପାଇଁ ଐତିହାସିକ ଅବଧିରେ କୌଣସି ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ଉତ୍ତାପ ଲହରୀ ଘଟଣା ଲିପିବଦ୍ଧ ହୋଇନାହିଁ।"
+  },
+  "aiAnalyst": {
+    "inputPlaceholder": "ଉତ୍ତାପ, ପାଣିପାଗ, କିମ୍ବା ଏହି ସହର ବିଷୟରେ ପଚାରନ୍ତୁ..."
+  }
+}

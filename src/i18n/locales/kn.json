@@ -1,0 +1,267 @@
+{
+  "nav": {
+    "signIn": "ಸೈನ್ ಇನ್ ಮಾಡಿ",
+    "signOut": "ಲಾಗ್ ಔಟ್",
+    "backToMap": "ಮ್ಯಾಪ್‌ಗೆ ಹಿಂತಿರುಗಿ",
+    "analyze": "ವಿಶ್ಲೇಷಿಸಿ",
+    "searchPlaceholder": "ಭಾರತದ ಯಾವುದೇ ನಗರವನ್ನು ಹುಡುಕಿ...",
+    "searchCityPlaceholder": "ನಗರವನ್ನು ಹುಡುಕಿ...",
+    "enterName": "ನಿಮ್ಮ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
+    "enterEmail": "ನಿಮ್ಮ ಇಮೇಲ್ ನಮೂದಿಸಿ",
+    "register": "ನೋಂದಣಿ ಮಾಡಿ",
+    "showPassword": "ಪಾಸ್‌ವರ್ಡ್ ತೋರಿಸಿ",
+    "hidePassword": "ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ",
+    "rememberMe": "ನನ್ನನ್ನು ನೆನಪಿಡಿ (30 ದಿನಗಳು)",
+    "forgotPassword": "ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ?",
+    "sendRecoveryHint": "ರಿಕವರಿ ಸುಳಿವು ಕಳುಹಿಸಿ"
+  },
+  "tabs": {
+    "overview": "ಅವಲೋಕನ",
+    "analysis": "ವಿಶ್ಲೇಷಣೆ",
+    "interventions": "ಮಧ್ಯಸ್ಥಿಕೆಗಳು",
+    "aiExport": "AI + ಎಕ್ಸ್‌ಪೋರ್ಟ್"
+  },
+  "panels": {
+    "weatherConditions": "ಹವಾಮಾನ ಪರಿಸ್ಥಿತಿಗಳು",
+    "satelliteIndices": "ಉಪಗ್ರಹ ಸೂಚ್ಯಂಕಗಳು",
+    "heatRiskGauge": "ಶಾಖ ಅಪಾಯ ಮಾಪಕ",
+    "activeAlerts": "ಸಕ್ರಿಯ ಎಚ್ಚರಿಕೆಗಳು",
+    "healthSafety": "ಆರೋಗ್ಯ ಮತ್ತು ಸುರಕ್ಷತಾ ಮುನ್ನೆಚ್ಚರಿಕೆಗಳು",
+    "climateOscillations": "ಜಾಗತಿಕ ಹವಾಮಾನ ವ್ಯವಸ್ಥೆಗಳು",
+    "heatmapGrid": "ತಾಪಮಾನ ಹೀಟ್‌ಮ್ಯಾಪ್ ಗ್ರಿಡ್",
+    "mlModel": "ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ಮಾಡೆಲ್",
+    "historicalTrend": "10-ವರ್ಷದ ಪ್ರವೃತ್ತಿ (2015-2025)",
+    "cityComparison": "ನಗರಗಳನ್ನು ಹೋಲಿಸಿ",
+    "interventionSliders": "UHI ಮಧ್ಯಸ್ಥಿಕೆಗಳು (ರಿಯಲ್-ಟೈಮ್ ಕೂಲಿಂಗ್)",
+    "physicsExplanation": "ಭೌತಶಾಸ್ತ್ರ ವಿವರಣೆ",
+    "spatialRecommendation": "ಪ್ರಾದೇಶಿಕ ಶಿಫಾರಸು",
+    "aiAnalyst": "AI ವಿಶ್ಲೇಷಕ",
+    "gamification": "ಪಾಯಿಂಟ್‌ಗಳು ಮತ್ತು ಬ್ಯಾಡ್ಜ್‌ಗಳು",
+    "glossary": "ಪದಕೋಶ",
+    "exportShare": "ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಮತ್ತು ಶೇರ್ ಮಾಡಿ",
+    "progressTracker": "HeatOps 2026 ಪ್ರಗತಿ",
+    "aboutTeam": "ತಂಡ ಮತ್ತು ವಿಧಾನ",
+    "hottestCities": "ಅತ್ಯಂತ ಬಿಸಿಯಾದ ನಗರಗಳು",
+    "selectCity": "ನಗರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    "dayNightTemp": "ಹಗಲು vs ರಾತ್ರಿ ತಾಪಮಾನ",
+    "windAtmosphere": "ಗಾಳಿ ಮತ್ತು ವಾತಾವರಣ",
+    "pollenAirQuality": "ಪರಾಗ ಮತ್ತು ಗಾಳಿಯ ಗುಣಮಟ್ಟ",
+    "heatwaveTimeline": "ಐತಿಹಾಸಿಕ ಶಾಖ ಅಲೆಯ ಟೈಮ್‌ಲೈನ್",
+    "recentSignIns": "ಇತ್ತೀಚಿನ ಸೈನ್-ಇನ್‌ಗಳು",
+    "heatLegend": "ಶಾಖ ಲೆಜೆಂಡ್",
+    "adminDashboard": "ಅಡ್ಮಿನ್ ಅನಾಲಿಟಿಕ್ಸ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್"
+  },
+  "buttons": {
+    "copySummary": "ಸಾರಾಂಶವನ್ನು ನಕಲಿಸಿ",
+    "whatsappShare": "ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಶೇರ್ ಮಾಡಿ",
+    "csvDownload": "CSV ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
+    "askAI": "AI ಗೆ ಕೇಳಿ",
+    "showGlossary": "ಪದಕೋಶ ತೋರಿಸಿ",
+    "hideGlossary": "ಪದಕೋಶ ಮರೆಮಾಡಿ"
+  },
+  "glossary": {
+    "LST": { "term": "LST", "definition": "ಉಪಗ್ರಹದಿಂದ ಭೂ ಮೇಲ್ಮೈ ತಾಪಮಾನ" },
+    "NDVI": { "term": "NDVI", "definition": "ನಾರ್ಮಲೈಸ್ಡ್ ವೆಜಿಟೇಶನ್ ಇಂಡೆಕ್ಸ್ (ಹಸಿರು ಸಸ್ಯವರ್ಗ)" },
+    "NDBI": { "term": "NDBI", "definition": "ನಾರ್ಮಲೈಸ್ಡ್ ಡಿಫರೆನ್ಸ್ ಬಿಲ್ಟ್-ಅಪ್ ಇಂಡೆಕ್ಸ್ (ನಗರ/ಕಾಂಕ್ರೀಟ್)" },
+    "NDWI": { "term": "NDWI", "definition": "ನಾರ್ಮಲೈಸ್ಡ್ ವಾಟರ್ ಇಂಡೆಕ್ಸ್ (ಜಲಮೂಲಗಳು)" },
+    "UHI": { "term": "UHI", "definition": "ನಗರಗಳಲ್ಲಿ ಅರ್ಬನ್ ಹೀಟ್ ಐಲ್ಯಾಂಡ್ ಪರಿಣಾಮ" },
+    "ENSO": { "term": "ENSO", "definition": "ಎಲ್ ನಿನೋ ದಕ್ಷಿಣ ಆಂದೋಲನ ಹವಾಮಾನ ಮಾದರಿ" },
+    "IOD": { "term": "IOD", "definition": "ಹಿಂದೂ ಮಹಾಸಾಗರ ದ್ವಿಧ್ರುವ ಮಾನ್ಸೂನ್ ಚಾಲಕ" },
+    "MJO": { "term": "MJO", "definition": "ಮ್ಯಾಡೆನ್-ಜೂಲಿಯನ್ ಆಂದೋಲನ ವಾತಾವರಣ ಅಲೆಗಳು" }
+  },
+  "precautions": {
+    "HOT": {
+      "0": "ಮಧ್ಯಾಹ್ನ 12 ರಿಂದ 4 ಗಂಟೆಯ ವರೆಗೆ ಹೊರಗಿನ ಚಟುವಟಿಕೆಗಳನ್ನು ತಪ್ಪಿಸಿ",
+      "1": "ಹೈಡ್ರೇಟೆಡ್ ಆಗಿರಿ — ಬಾಯಾರಿಕೆ ಇಲ್ಲದಿದ್ದರೂ ಪ್ರತಿ 20-30 ನಿಮಿಷಗಳಿಗೆ ನೀರು ಕುಡಿಯಿರಿ",
+      "2": "ಶಾಖದ ಬಳಲಿಕೆಯ ಲಕ್ಷಣಗಳಿಗೆ ಗಮನ ಕೊಡಿ (ತಲೆ ತಿರುಗುವಿಕೆ, ವಾಕರಿಕೆ, ವೇಗದ ನಾಡಿ)",
+      "3": "ತೆಳುವಾದ, ಸಡಿಲವಾದ, ತಿಳಿ ಬಣ್ಣದ ಹತ್ತಿ ಬಟ್ಟೆಗಳನ್ನು ಧರಿಸಿ",
+      "4": "ಹೆಚ್ಚು ಬೆವರು ಬಂದರೆ ORS/ಎಲೆಕ್ಟ್ರೋಲೈಟ್‌ಗಳನ್ನು ಬಳಸಿ",
+      "5": "ವೃದ್ಧರು, ಮಕ್ಕಳು, ಹೊರಗೆ ಕೆಲಸ ಮಾಡುವವರ ಮೇಲೆ ಹೆಚ್ಚುವರಿ ನಿಗಾ ಇಡಿ",
+      "6": "AQI ಸಹ ಹೆಚ್ಚಾಗಿದೆ — ಹೊರಗೆ ಇರುವುದನ್ನು ಮತ್ತಷ್ಟು ಸೀಮಿತಗೊಳಿಸಿ",
+      "7": "ಹೊರಗೆ N95 ಮಾಸ್ಕ್ ಧರಿಸುವುದನ್ನು ಪರಿಗಣಿಸಿ"
+    },
+    "COLD": {
+      "0": "ಬಟ್ಟೆಗಳನ್ನು ಪದರಗಳಲ್ಲಿ ಧರಿಸಿ, ಕೈಗಳು, ಕಿವಿಗಳು, ತಲೆಯನ್ನು ಮುಚ್ಚಿ",
+      "1": "ವೃದ್ಧರು/ಶಿಶುಗಳಲ್ಲಿ ಹೈಪೋಥರ್ಮಿಯಾ ಲಕ್ಷಣಗಳಿಗೆ ಗಮನ ಕೊಡಿ",
+      "2": "ಶೀತದಿಂದ ಬೆಚ್ಚಗಿನ ಸ್ಥಿತಿಗೆ ಹಠಾತ್ ಬದಲಾವಣೆಗಳನ್ನು ತಪ್ಪಿಸಿ",
+      "3": "ಒಳಾಂಗಣ ಹೀಟಿಂಗ್/ವೆಂಟಿಲೇಶನ್ ಸಮತೋಲನದಲ್ಲಿಡಿ (ವೆಂಟಿಲೇಶನ್ ಇಲ್ಲದ ಹೀಟರ್‌ಗಳಿಂದ CO ವಿಷದ ಅಪಾಯ)",
+      "4": "ಒಣಗಿರಿ — ಶೀತದಲ್ಲಿ ಒದ್ದೆ ಬಟ್ಟೆಗಳು ಶಾಖದ ನಷ್ಟವನ್ನು ವೇಗಗೊಳಿಸುತ್ತವೆ"
+    },
+    "MILD": {
+      "0": "ಸಾಮಾನ್ಯ ಸೂರ್ಯ ಸುರಕ್ಷತೆ (ಸನ್‌ಸ್ಕ್ರೀನ್, ಹ್ಯಾಟ್, ಸನ್‌ಗ್ಲಾಸ್‌ಗಳು)",
+      "1": "ಹೈಡ್ರೇಟೆಡ್ ಆಗಿರಿ",
+      "2": "ಯಾವುದೇ ಪ್ರಮುಖ ಎಚ್ಚರಿಕೆಗಳ ಅಗತ್ಯವಿಲ್ಲ"
+    },
+    "vulnerableNote": "ಈ ಶಾಖ ವರ್ಗದಲ್ಲಿ ವೃದ್ಧರು, ಮಕ್ಕಳು ಮತ್ತು ಹೊರಗೆ ಕೆಲಸ ಮಾಡುವವರಿಗೆ ಹೆಚ್ಚುವರಿ ಎಚ್ಚರಿಕೆಯನ್ನು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ"
+  },
+  "alerts": {
+    "extremeHeat": "ತೀವ್ರ ಶಾಖ: LST > 45°C",
+    "highAqi": "ಹೆಚ್ಚಿನ AQI: > 300",
+    "moderateHeat": "ಮಧ್ಯಮ ನಗರ ಶಾಖ",
+    "marineHeatwave": "ಸಮುದ್ರ ಶಾಖ ಅಲೆ ಸಕ್ರಿಯವಾಗಿದೆ",
+    "polarVortexWatch": "ಎಚ್ಚರಿಕೆ: ಧ್ರುವೀಯ ವರ್ಟೆಕ್ಸ್ ಅಡ್ಡಿಪಡಿಸಲಾಗಿದೆ",
+    "allNormal": "ಎಲ್ಲಾ ಮೌಲ್ಯಗಳು ಸಾಮಾನ್ಯವಾಗಿವೆ"
+  },
+  "tooltips": {
+    "clickToExplore": "ನಗರಗಳನ್ನು ಅನ್ವೇಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ →",
+    "clickStateForDetails": "ವಿವರಗಳನ್ನು ನೋಡಲು ಮ್ಯಾಪ್‌ನಲ್ಲಿ ಒಂದು ರಾಜ್ಯವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.",
+    "clickCityToAnalyze": "👆 ವಿಶ್ಲೇಷಿಸಲು ಮೇಲಿನ ಯಾವುದೇ ನಗರವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ"
+  },
+  "dayNight": {
+    "day": "ಹಗಲು (ಮಧ್ಯಾಹ್ನ 12)",
+    "night": "ರಾತ್ರಿ (12 ಗಂಟೆ)"
+  },
+  "climate": {
+    "enso": "ಎಲ್ ನಿನೋ",
+    "iod": "IOD",
+    "mjo": "MJO",
+    "pdo": "PDO",
+    "nao": "NAO",
+    "polarVortex": "ಧ್ರುವೀಯ ವರ್ಟೆಕ್ಸ್",
+    "phase": "ಹಂತ",
+    "values": {
+      "El Niño": "ಎಲ್ ನಿನೋ",
+      "La Niña": "ಲಾ ನಿನಾ",
+      "Neutral": "ನ್ಯೂಟ್ರಲ್",
+      "STRONG": "ಬಲಶಾಲಿ",
+      "WEAK": "ದುರ್ಬಲ",
+      "DISRUPTED": "ಅಡ್ಡಿಪಡಿಸಲಾಗಿದೆ",
+      "Positive Phase": "ಧನಾತ್ಮಕ ಹಂತ",
+      "Negative Phase": "ಋಣಾತ್ಮಕ ಹಂತ",
+      "Warm Phase": "ಬೆಚ್ಚಗಿನ ಹಂತ",
+      "Cool Phase": "ತಂಪಾದ ಹಂತ"
+    }
+  },
+  "historicalTrend": {
+    "urbanCore": "ನಗರ ಕೇಂದ್ರ",
+    "ruralAreas": "ಗ್ರಾಮೀಣ ಪ್ರದೇಶಗಳು",
+    "warmer": "ಹೆಚ್ಚು ಬೆಚ್ಚಗಿನ"
+  },
+  "sliders": {
+    "urbanGreening": "🌳 ನಗರ ಹಸಿರೀಕರಣ (NDVI +0.3):",
+    "coolRoofs": "🏠 ಕೂಲ್ ರೂಫ್‌ಗಳು (ಆಲ್ಬಿಡೋ +0.2):",
+    "waterBodies": "💧 ಜಲಮೂಲಗಳು (NDWI +0.1):"
+  },
+  "compareCities": {
+    "selectPlaceholder": "ಹೋಲಿಸಲು ನಗರವನ್ನು ಆಯ್ಕೆಮಾಡಿ..."
+  },
+  "windAtmosphere": {
+    "direction": "ದಿಕ್ಕು",
+    "speed": "ವೇಗ",
+    "gust": "ಗಾಳಿಯ ಸುಳಿ",
+    "pressure": "ಒತ್ತಡ"
+  },
+  "pollen": {
+    "grass": "ಹುಲ್ಲು",
+    "tree": "ಮರ",
+    "weed": "ಕಳೆ",
+    "mold": "ಶಿಲೀಂಧ್ರ",
+    "moderate": "ಮಧ್ಯಮ",
+    "high": "ಹೆಚ್ಚು",
+    "low": "ಕಡಿಮೆ"
+  },
+  "progressTracker": {
+    "dataCollection": "✅ ಡೇಟಾ ಸಂಗ್ರಹಣೆ (GEE + Landsat 8)",
+    "lstCalculation": "✅ LST ಗಣನೆ",
+    "indexCalculation": "✅ ಸೂಚ್ಯಂಕ ಗಣನೆ (NDVI, NDBI)",
+    "correlationAnalysis": "✅ ಸಂಬಂಧ ವಿಶ್ಲೇಷಣೆ",
+    "randomForestModel": "✅ ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ಮಾಡೆಲ್",
+    "interventionSimulation": "✅ ಮಧ್ಯಸ್ಥಿಕೆ ಸಿಮ್ಯುಲೇಶನ್",
+    "dashboardCreation": "✅ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ರಚನೆ",
+    "reportSubmission": "🔲 ವರದಿ ಸಲ್ಲಿಕೆ"
+  },
+  "cityList": {
+    "noResultsFor": "\"{{search}}\" ಗಾಗಿ ಯಾವುದೇ ನಗರಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
+    "showingOf": "{{total}} ರಲ್ಲಿ {{shown}} ತೋರಿಸಲಾಗುತ್ತಿದೆ"
+  },
+  "signIn": {
+    "noRecentSignIns": "ಇನ್ನೂ ಯಾವುದೇ ಇತ್ತೀಚಿನ ಸೈನ್-ಇನ್‌ಗಳಿಲ್ಲ. ಲಾಂಚ್ ನಂತರ ನಿಮ್ಮ ಸೆಶನ್ ಲಾಗ್ ಮಾಡಲಾಗುತ್ತದೆ."
+  },
+  "heatLegend": {
+    "extreme": "ತೀವ್ರ",
+    "high": "ಹೆಚ್ಚು",
+    "moderate": "ಮಧ್ಯಮ",
+    "cool": "ತಂಪು"
+  },
+  "admin": {
+    "totalUsers": "ಒಟ್ಟು ಬಳಕೆದಾರರು",
+    "totalLoginEvents": "ಒಟ್ಟು ಲಾಗಿನ್ ಘಟನೆಗಳು",
+    "citiesAnalyzed": "ವಿಶ್ಲೇಷಿಸಿದ ನಗರಗಳು",
+    "successRate": "ಯಶಸ್ಸಿನ ಪ್ರಮಾಣ",
+    "hourlyLoginPattern": "📊 ಗಂಟೆಗೊಮ್ಮೆಯ ಲಾಗಿನ್ ಮಾದರಿ",
+    "dailyLoginTrend": "📈 ದೈನಂದಿನ ಲಾಗಿನ್ ಪ್ರವೃತ್ತಿ (30 ದಿನಗಳು)",
+    "topCitiesAnalyzed": "🏙️ ಟಾಪ್ 10 ವಿಶ್ಲೇಷಿಸಿದ ನಗರಗಳು",
+    "recentLoginActivity": "📝 ಇತ್ತೀಚಿನ ಲಾಗಿನ್ ಚಟುವಟಿಕೆ",
+    "tableUser": "ಬಳಕೆದಾರ",
+    "tableEmail": "ಇಮೇಲ್",
+    "tableTime": "ಸಮಯ",
+    "tableStatus": "ಸ್ಥಿತಿ",
+    "tableDuration": "ಅವಧಿ"
+  },
+  "physics": {
+    "panelTitle": "⚛️ UHI ಮಧ್ಯಸ್ಥಿಕೆಗಳ ಭೌತಶಾಸ್ತ್ರ",
+    "where": "ಎಲ್ಲಿ:",
+    "cost": "ವೆಚ್ಚ:",
+    "items": {
+      "urbanGreening": "ನಗರ ಹಸಿರೀಕರಣ",
+      "coolRoofs": "ಕೂಲ್ ರೂಫ್‌ಗಳು",
+      "waterBodies": "ಜಲಮೂಲಗಳು"
+    }
+  },
+  "spatial": {
+    "panelTitle": "📍 {{cityName}} ನಲ್ಲಿ ಎಲ್ಲಿ ಮಧ್ಯಸ್ಥಿಕೆ ವಹಿಸಬೇಕು",
+    "hottestZones": "🔴 ಅತ್ಯಂತ ಬಿಸಿಯಾದ ವಲಯಗಳು:",
+    "greenPriority": "🌳 ಹಸಿರು ಆದ್ಯತೆ:",
+    "waterPriority": "💧 ನೀರಿನ ಆದ್ಯತೆ:",
+    "areaNeeded": "📏 ಅಗತ್ಯವಿರುವ ಪ್ರದೇಶ:",
+    "estimatedCost": "💰 ಅಂದಾಜು ವೆಚ್ಚ:",
+    "hotZonesCBD": "ಕೇಂದ್ರ ವ್ಯಾಪಾರ ಜಿಲ್ಲೆ, ಕೈಗಾರಿಕಾ ವಲಯಗಳು",
+    "hotZonesResidential": "ದಟ್ಟ ವಸತಿ ಪ್ರದೇಶಗಳು, ವಾಣಿಜ್ಯ ಕಾರಿಡಾರ್‌ಗಳು",
+    "greenCritical": "ನಿರ್ಣಾಯಕ — 20% ಗಿಂತ ಕಡಿಮೆ ಸಸ್ಯವರ್ಗ",
+    "greenHigh": "ಹೆಚ್ಚು — ಮಧ್ಯಮ ಸಸ್ಯವರ್ಗದ ಕೊರತೆ",
+    "waterUrgent": "ಜಲಮೂಲ ಸೃಷ್ಟಿ ತುರ್ತಾಗಿ ಅಗತ್ಯವಿದೆ",
+    "waterMaintain": "ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ಜಲಮೂಲಗಳನ್ನು ನಿರ್ವಹಿಸಿ",
+    "areaDescription": "ಗುರಿ NDVI ≥ 0.35 ಗಾಗಿ ಚ.ಕಿಮೀ ಹಸಿರು ಹೊದಿಕೆ",
+    "costNote": "(@ ₹3 ಲಕ್ಷ/ಹೆಕ್ಟೇರ್ ಸರಾಸರಿ)"
+  },
+  "mlModel": {
+    "panelTitle": "🤖 ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ಮಾಡೆಲ್ — {{cityName}}",
+    "r2Score": "R² ಸ್ಕೋರ್",
+    "testSet": "ಟೆಸ್ಟ್ ಸೆಟ್",
+    "mae": "MAE",
+    "meanAbsError": "ಸರಾಸರಿ ಸಂಪೂರ್ಣ ದೋಷ",
+    "trainTest": "ಟ್ರೈನ್/ಟೆಸ್ಟ್",
+    "splitRatio": "ಸ್ಪ್ಲಿಟ್ ಅನುಪಾತ",
+    "datasetSplit": "ಡೇಟಾಸೆಟ್ ಸ್ಪ್ಲಿಟ್ ({{n}} ಮಾದರಿಗಳು)",
+    "trainSamples": "ಟ್ರೈನ್ ({{n}} ಮಾದರಿಗಳು)",
+    "testSamples": "ಟೆಸ್ಟ್ ({{n}})",
+    "featureImportance": "ಫೀಚರ್ ಪ್ರಾಮುಖ್ಯತೆ (ಗಿನಿ)",
+    "elevation": "ಎತ್ತರ",
+    "model": "ಮಾಡೆಲ್:",
+    "features": "ಫೀಚರ್‌ಗಳು:",
+    "target": "ಗುರಿ:",
+    "scene": "ದೃಶ್ಯ:"
+  },
+  "geePipeline": {
+    "panelTitle": "📡 ಡೇಟಾ ಪೈಪ್‌ಲೈನ್ — Google Earth Engine → HeatOps"
+  },
+  "satellitePass": {
+    "lastPass": "ಕೊನೆಯ ಉಪಗ್ರಹ ಪಾಸ್:",
+    "landsatNote": "Landsat 8 ಪ್ರತಿ ~16 ದಿನಗಳಿಗೆ ಮರಳಿ ಬರುತ್ತದೆ",
+    "sentinelNote": "Sentinel-2 ಪ್ರತಿ ~5 ದಿನಗಳಿಗೆ ಮರಳಿ ಬರುತ್ತದೆ",
+    "notRealtime": "ರಿಯಲ್-ಟೈಮ್ ಅಲ್ಲ"
+  },
+  "yoyComparison": {
+    "today": "ಇಂದು",
+    "sameDateLastYear": "ಕಳೆದ ವರ್ಷ ಇದೇ ದಿನಾಂಕದಂದು"
+  },
+  "heatwaveTimeline": {
+    "peakTemp": "ಗರಿಷ್ಠ ತಾಪಮಾನ",
+    "duration": "ಅವಧಿ",
+    "days": "ದಿನಗಳು",
+    "noEvents": "ಈ ನಗರಕ್ಕೆ ಐತಿಹಾಸಿಕ ಅವಧಿಯಲ್ಲಿ ಯಾವುದೇ ಗಮನಾರ್ಹ ಶಾಖ ಅಲೆ ಘಟನೆಗಳು ದಾಖಲಾಗಿಲ್ಲ."
+  },
+  "aiAnalyst": {
+    "inputPlaceholder": "ಶಾಖ, ಹವಾಮಾನ ಅಥವಾ ಈ ನಗರದ ಬಗ್ಗೆ ಕೇಳಿ..."
+  }
+}

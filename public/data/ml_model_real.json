@@ -1,0 +1,46 @@
+{
+  "model": "RandomForestRegressor",
+  "params": {
+    "n_estimators": 100,
+    "max_depth": null,
+    "random_state": 42
+  },
+  "features": [
+    "NDVI",
+    "NDBI",
+    "Elevation"
+  ],
+  "target": "LST_Day_MODIS_1KM (\u00b0C)",
+  "r2_score": 0.95,
+  "mae": 0.906,
+  "validation_method": "Random 80/20 row split (same cities, different years can appear in both train and test)",
+  "city_holdout": {
+    "r2_score": -0.389,
+    "mae": 5.541,
+    "method": "Entire cities held out of training (true unseen-city generalization test)",
+    "held_out_cities": [
+      "Berlin",
+      "Brussels",
+      "Los Angeles",
+      "Shanghai",
+      "Sydney"
+    ],
+    "note": "R2 drops sharply here because elevation is near-constant per city, so the random-split model partly memorizes each city via elevation rather than learning a relationship that transfers to a city it has never seen."
+  },
+  "feature_importance": {
+    "ndvi": 0.106,
+    "ndbi": 0.389,
+    "elevation": 0.505
+  },
+  "train_samples": 272,
+  "test_samples": 69,
+  "total_samples": 341,
+  "cities": 20,
+  "year_range": "2000-2017",
+  "source": {
+    "title": "Time-series dataset on land surface temperature, vegetation, built up areas and other climatic factors in top 20 global cities (2000\u20132018)",
+    "publisher": "Data in Brief, Elsevier",
+    "doi": "10.1016/j.dib.2019.103803"
+  },
+  "disclosure": "Model trained on MODIS-derived satellite data from 20 global megacities (2000-2018), Data in Brief, Elsevier \u2014 DOI: 10.1016/j.dib.2019.103803. Predicts general LST-vegetation-urbanization relationships; not India-specific training data."
+}

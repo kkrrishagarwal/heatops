@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>India Weather Forecast Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2Z0p8S7VtCjs3s7Nrf8J/PO8+X1F8+1u2D1u5T0=" crossorigin="" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    <div id="app" class="app-shell dark-mode">
+      <header class="topbar glass-panel">
+        <div class="brand">
+          <div class="brand-icon">☁️</div>
+          <div>
+            <h1>HeatMap India</h1>
+            <p>Live district weather forecast with heat overlays</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button id="themeToggle" class="pill-btn">Light mode</button>
+          <button id="locateBtn" class="pill-btn">Locate me</button>
+        </div>
+      </header>
+
+      <div class="main-grid">
+        <aside class="control-panel glass-panel">
+          <div class="panel-header">
+            <h2>Controls</h2>
+            <span class="tag">Refresh every 5 mins</span>
+          </div>
+
+          <div class="search-wrapper">
+            <input id="searchInput" type="search" placeholder="Search district" autocomplete="off" />
+            <button id="searchBtn" class="icon-btn">🔍</button>
+          </div>
+
+          <div class="toggles">
+            <button id="zoomInBtn" class="control-btn">Zoom In</button>
+            <button id="zoomOutBtn" class="control-btn">Zoom Out</button>
+            <button id="resetBtn" class="control-btn">Reset View</button>
+            <button id="heatToggleBtn" class="control-btn active">Heat Map</button>
+            <button id="borderToggleBtn" class="control-btn active">District Borders</button>
+            <button id="stationToggleBtn" class="control-btn active">Weather Stations</button>
+            <button id="satelliteToggleBtn" class="control-btn">Satellite View</button>
+            <button id="terrainToggleBtn" class="control-btn">Terrain View</button>
+            <button id="fullscreenBtn" class="control-btn">Fullscreen</button>
+          </div>
+
+          <div class="legend glass-card">
+            <h3>Temperature Legend</h3>
+            <div class="legend-bar">
+              <span class="legend-swatch cold">Very Cold</span>
+              <span class="legend-swatch cool">Cool</span>
+              <span class="legend-swatch moderate">Moderate</span>
+              <span class="legend-swatch warm">Warm</span>
+              <span class="legend-swatch hot">Hot</span>
+              <span class="legend-swatch extreme">Very Hot</span>
+            </div>
+          </div>
+
+          <div class="forecast-preview glass-card" id="detailCard">
+            <div class="detail-header">
+              <div>
+                <h3 id="detailTitle">Select a district</h3>
+                <p id="detailSubtitle">Click any red station dot</p>
+              </div>
+            </div>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span>Temp</span>
+                <strong id="detailTemp">--</strong>
+              </div>
+              <div class="detail-item">
+                <span>Humidity</span>
+                <strong id="detailHumidity">--</strong>
+              </div>
+              <div class="detail-item">
+                <span>Wind</span>
+                <strong id="detailWind">--</strong>
+              </div>
+              <div class="detail-item">
+                <span>AQI</span>
+                <strong id="detailAqi">--</strong>
+              </div>
+              <div class="detail-item">
+                <span>Rain</span>
+                <strong id="detailRain">--</strong>
+              </div>
+              <div class="detail-item">
+                <span>Sunrise</span>
+                <strong id="detailSunrise">--</strong>
+              </div>
+              <div class="detail-item">
+                <span>Sunset</span>
+                <strong id="detailSunset">--</strong>
+              </div>
+            </div>
+            <div id="forecastList" class="forecast-list"></div>
+          </div>
+        </aside>
+
+        <section class="map-shell glass-panel">
+          <div id="map" class="map"></div>
+          <div id="tooltip" class="map-tooltip hidden"></div>
+          <div id="statusBadge" class="status-badge">Loading district layers…</div>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j7gxvE5Xki0p6mxobcb2g7fOy7c+Utw6Yh6kM6A=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+</html>
