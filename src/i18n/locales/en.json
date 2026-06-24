@@ -60,14 +60,38 @@
     "hideGlossary": "Hide Glossary"
   },
   "glossary": {
-    "LST": { "term": "LST", "definition": "Land Surface Temperature from satellite" },
-    "NDVI": { "term": "NDVI", "definition": "Normalized Vegetation Index (green vegetation)" },
-    "NDBI": { "term": "NDBI", "definition": "Normalized Difference Built-up Index (urban/concrete)" },
-    "NDWI": { "term": "NDWI", "definition": "Normalized Water Index (water bodies)" },
-    "UHI": { "term": "UHI", "definition": "Urban Heat Island effect in cities" },
-    "ENSO": { "term": "ENSO", "definition": "El Niño Southern Oscillation climate pattern" },
-    "IOD": { "term": "IOD", "definition": "Indian Ocean Dipole monsoon driver" },
-    "MJO": { "term": "MJO", "definition": "Madden-Julian Oscillation atmospheric waves" }
+    "LST": {
+      "term": "LST",
+      "definition": "Land Surface Temperature from satellite"
+    },
+    "NDVI": {
+      "term": "NDVI",
+      "definition": "Normalized Vegetation Index (green vegetation)"
+    },
+    "NDBI": {
+      "term": "NDBI",
+      "definition": "Normalized Difference Built-up Index (urban/concrete)"
+    },
+    "NDWI": {
+      "term": "NDWI",
+      "definition": "Normalized Water Index (water bodies)"
+    },
+    "UHI": {
+      "term": "UHI",
+      "definition": "Urban Heat Island effect in cities"
+    },
+    "ENSO": {
+      "term": "ENSO",
+      "definition": "El Niño Southern Oscillation climate pattern"
+    },
+    "IOD": {
+      "term": "IOD",
+      "definition": "Indian Ocean Dipole monsoon driver"
+    },
+    "MJO": {
+      "term": "MJO",
+      "definition": "Madden-Julian Oscillation atmospheric waves"
+    }
   },
   "precautions": {
     "HOT": {
@@ -161,9 +185,9 @@
     "low": "LOW"
   },
   "progressTracker": {
-    "dataCollection": "✅ Data Collection (GEE + Landsat 8)",
-    "lstCalculation": "✅ LST Calculation",
-    "indexCalculation": "✅ Index Calculation (NDVI, NDBI)",
+    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "✅ Live Surface Temperature",
+    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
     "correlationAnalysis": "✅ Correlation Analysis",
     "randomForestModel": "✅ Random Forest Model",
     "interventionSimulation": "✅ Intervention Simulation",
@@ -243,7 +267,7 @@
     "scene": "Scene:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Google Earth Engine → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
   },
   "satellitePass": {
     "lastPass": "Last satellite pass:",

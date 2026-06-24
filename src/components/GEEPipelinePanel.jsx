@@ -19,39 +19,36 @@ export function GEEPipelinePanel() {
     marginBottom: "16px"
   }
 
+  // This panel previously described a Google Earth Engine pipeline that was never actually
+  // built — no GEE auth, no service account, no ee.Initialize() call anywhere in this repo.
+  // Rewritten to describe what the app genuinely runs today.
   const steps = [
     {
       step: "1",
-      title: "Google Earth Engine",
-      detail: "COPERNICUS/S2_SR_HARMONIZED + LANDSAT/LC08/C02/T1_L2",
+      title: "Open-Meteo (live)",
+      detail: "Live surface/skin temperature, elevation (SRTM), AQI (CAMS) — no auth, free, real-time",
       color: "#00d4ff"
     },
     {
-      step: "2", 
-      title: "Landsat 8 LST",
-      detail: "Band ST_B10 → LST = 0.00341802 × DN + 149.0",
-      color: "#ff6b35"
-    },
-    {
-      step: "3",
-      title: "Sentinel-2 Indices",
-      detail: "NDVI=(B8-B4)/(B8+B4) | NDBI=(B11-B8)/(B11+B8) | NDWI=(B3-B8)/(B3+B8)",
+      step: "2",
+      title: "ESA WorldCover 10m (2021)",
+      detail: "Real Sentinel-1/2 classification, public AWS S3 — vegetation/built-up/water fractions for 36 representative cities",
       color: "#00ff88"
     },
     {
-      step: "4",
+      step: "3",
       title: "SRTM Elevation",
-      detail: "USGS/SRTMGL1_003 30m resolution DEM",
+      detail: "30m DEM, returned directly by the Open-Meteo Elevation API",
       color: "#ffcc00"
     },
     {
-      step: "5",
+      step: "4",
       title: "Random Forest ML",
-      detail: "sklearn RandomForestRegressor n=100 R²=0.95 MAE=0.91°C (real, see Random Forest panel below)",
+      detail: "sklearn RandomForestRegressor n=100, trained on real MODIS-derived data from 20 global cities (real, see Random Forest panel below — not India-specific)",
       color: "#ff2222"
     },
     {
-      step: "6",
+      step: "5",
       title: "HeatOps Dashboard",
       detail: "React + D3 + Recharts real-time visualization",
       color: "#ffd700"
@@ -61,7 +58,7 @@ export function GEEPipelinePanel() {
   return (
     <div style={cardStyle}>
       <div style={titleStyle}>
-        {t('geePipeline.panelTitle', '📡 Data Pipeline — Google Earth Engine → HeatOps')}
+        {t('geePipeline.panelTitle', '📡 Data Pipeline — Real Sources → HeatOps')}
       </div>
       <div style={{
         display:"flex",

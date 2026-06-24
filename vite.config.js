@@ -1,5 +1,45 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { createReadStream } from 'fs'
+import { stat } from 'fs/promises'
+import path from 'path'
+
+// Vite's dev server serves files under public/ as plain static files with no
+// compression and Cache-Control: no-cache — fine for small files, but the
+// India districts/states GeoJSON are 10s of MB, so every map load/reload was
+// re-transferring the full uncompressed file with no caching at all. This
+// only matters in dev (Vercel/most static hosts already gzip + cache
+// production assets), but it's exactly what local `npm run dev` testing hits.
+//
+// IMPORTANT: this serves a pre-compressed *.geojson.gz sitting next to the
+// source file (generated once via `gzip -9 -k`), NOT live on-the-fly gzip —
+// compressing a 17MB file fresh on every request is CPU-bound and took ~10s
+// per request, which made things much worse, not better. Pre-compressing
+// once ahead of time costs nothing at request time.
+function geoJsonCompressionMiddleware() {
+  return {
+    name: 'geojson-compression-dev-middleware',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url?.startsWith('/data/') || !req.url.endsWith('.geojson')) return next()
+        const acceptsGzip = (req.headers['accept-encoding'] || '').includes('gzip')
+        if (!acceptsGzip) return next()
+
+        const gzPath = path.join(process.cwd(), 'public', req.url.split('?')[0]) + '.gz'
+        try {
+          await stat(gzPath)
+        } catch {
+          return next()
+        }
+
+        res.setHeader('Content-Type', 'application/geo+json')
+        res.setHeader('Content-Encoding', 'gzip')
+        res.setHeader('Cache-Control', 'public, max-age=3600')
+        createReadStream(gzPath).pipe(res)
+      })
+    }
+  }
+}
 
 // Dev-only middleware so `npm run dev` serves POST /api/ask-ai the same way
 // Vercel/Netlify do in production, without needing `vercel dev`. It calls the
@@ -53,7 +93,7 @@ function askAIDevMiddleware(mode) {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), askAIDevMiddleware(mode)],
+  plugins: [react(), askAIDevMiddleware(mode), geoJsonCompressionMiddleware()],
   build: {
     outDir: 'dist',
     sourcemap: false,

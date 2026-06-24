@@ -60,14 +60,38 @@
     "hideGlossary": "لغت چھپائیں"
   },
   "glossary": {
-    "LST": { "term": "LST", "definition": "سیٹلائٹ سے زمین کی سطح کا درجہ حرارت" },
-    "NDVI": { "term": "NDVI", "definition": "نارملائزڈ ویجیٹیشن انڈیکس (سرسبز نباتات)" },
-    "NDBI": { "term": "NDBI", "definition": "نارملائزڈ ڈفرنس بلٹ اپ انڈیکس (شہری/کنکریٹ)" },
-    "NDWI": { "term": "NDWI", "definition": "نارملائزڈ واٹر انڈیکس (آبی ذخائر)" },
-    "UHI": { "term": "UHI", "definition": "شہروں میں اربن ہیٹ آئی لینڈ اثر" },
-    "ENSO": { "term": "ENSO", "definition": "ال نینو سدرن آسیلیشن موسمیاتی پیٹرن" },
-    "IOD": { "term": "IOD", "definition": "بحر ہند ڈائی پول مون سون ڈرائیور" },
-    "MJO": { "term": "MJO", "definition": "میڈن جولین آسیلیشن ماحولیاتی لہریں" }
+    "LST": {
+      "term": "LST",
+      "definition": "سیٹلائٹ سے زمین کی سطح کا درجہ حرارت"
+    },
+    "NDVI": {
+      "term": "NDVI",
+      "definition": "نارملائزڈ ویجیٹیشن انڈیکس (سرسبز نباتات)"
+    },
+    "NDBI": {
+      "term": "NDBI",
+      "definition": "نارملائزڈ ڈفرنس بلٹ اپ انڈیکس (شہری/کنکریٹ)"
+    },
+    "NDWI": {
+      "term": "NDWI",
+      "definition": "نارملائزڈ واٹر انڈیکس (آبی ذخائر)"
+    },
+    "UHI": {
+      "term": "UHI",
+      "definition": "شہروں میں اربن ہیٹ آئی لینڈ اثر"
+    },
+    "ENSO": {
+      "term": "ENSO",
+      "definition": "ال نینو سدرن آسیلیشن موسمیاتی پیٹرن"
+    },
+    "IOD": {
+      "term": "IOD",
+      "definition": "بحر ہند ڈائی پول مون سون ڈرائیور"
+    },
+    "MJO": {
+      "term": "MJO",
+      "definition": "میڈن جولین آسیلیشن ماحولیاتی لہریں"
+    }
   },
   "precautions": {
     "HOT": {
@@ -161,9 +185,9 @@
     "low": "کم"
   },
   "progressTracker": {
-    "dataCollection": "✅ ڈیٹا اکٹھا کرنا (GEE + Landsat 8)",
+    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
     "lstCalculation": "✅ LST کا حساب",
-    "indexCalculation": "✅ انڈیکس کا حساب (NDVI, NDBI)",
+    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
     "correlationAnalysis": "✅ ارتباط کا تجزیہ",
     "randomForestModel": "✅ رینڈم فاریسٹ ماڈل",
     "interventionSimulation": "✅ مداخلت کی نقالی",
@@ -243,7 +267,7 @@
     "scene": "منظر:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ڈیٹا پائپ لائن — Google Earth Engine → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
   },
   "satellitePass": {
     "lastPass": "آخری سیٹلائٹ گزر:",

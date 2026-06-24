@@ -60,14 +60,38 @@
     "hideGlossary": "పదకోశం దాచు"
   },
   "glossary": {
-    "LST": { "term": "LST", "definition": "ఉపగ్రహం నుండి భూ ఉపరితల ఉష్ణోగ్రత" },
-    "NDVI": { "term": "NDVI", "definition": "నార్మలైజ్డ్ వెజిటేషన్ ఇండెక్స్ (పచ్చని వృక్షసంపద)" },
-    "NDBI": { "term": "NDBI", "definition": "నార్మలైజ్డ్ డిఫరెన్స్ బిల్ట్-అప్ ఇండెక్స్ (పట్టణ/కాంక్రీట్)" },
-    "NDWI": { "term": "NDWI", "definition": "నార్మలైజ్డ్ వాటర్ ఇండెక్స్ (నీటి వనరులు)" },
-    "UHI": { "term": "UHI", "definition": "నగరాల్లో అర్బన్ హీట్ ఐలాండ్ ప్రభావం" },
-    "ENSO": { "term": "ENSO", "definition": "ఎల్ నినో సదర్న్ ఆసిలేషన్ వాతావరణ నమూనా" },
-    "IOD": { "term": "IOD", "definition": "ఇండియన్ ఓషన్ డైపోల్ మాన్సూన్ చోదకం" },
-    "MJO": { "term": "MJO", "definition": "మాడెన్-జూలియన్ ఆసిలేషన్ వాతావరణ తరంగాలు" }
+    "LST": {
+      "term": "LST",
+      "definition": "ఉపగ్రహం నుండి భూ ఉపరితల ఉష్ణోగ్రత"
+    },
+    "NDVI": {
+      "term": "NDVI",
+      "definition": "నార్మలైజ్డ్ వెజిటేషన్ ఇండెక్స్ (పచ్చని వృక్షసంపద)"
+    },
+    "NDBI": {
+      "term": "NDBI",
+      "definition": "నార్మలైజ్డ్ డిఫరెన్స్ బిల్ట్-అప్ ఇండెక్స్ (పట్టణ/కాంక్రీట్)"
+    },
+    "NDWI": {
+      "term": "NDWI",
+      "definition": "నార్మలైజ్డ్ వాటర్ ఇండెక్స్ (నీటి వనరులు)"
+    },
+    "UHI": {
+      "term": "UHI",
+      "definition": "నగరాల్లో అర్బన్ హీట్ ఐలాండ్ ప్రభావం"
+    },
+    "ENSO": {
+      "term": "ENSO",
+      "definition": "ఎల్ నినో సదర్న్ ఆసిలేషన్ వాతావరణ నమూనా"
+    },
+    "IOD": {
+      "term": "IOD",
+      "definition": "ఇండియన్ ఓషన్ డైపోల్ మాన్సూన్ చోదకం"
+    },
+    "MJO": {
+      "term": "MJO",
+      "definition": "మాడెన్-జూలియన్ ఆసిలేషన్ వాతావరణ తరంగాలు"
+    }
   },
   "precautions": {
     "HOT": {
@@ -161,9 +185,9 @@
     "low": "తక్కువ"
   },
   "progressTracker": {
-    "dataCollection": "✅ డేటా సేకరణ (GEE + Landsat 8)",
+    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
     "lstCalculation": "✅ LST గణన",
-    "indexCalculation": "✅ సూచిక గణన (NDVI, NDBI)",
+    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
     "correlationAnalysis": "✅ సహసంబంధ విశ్లేషణ",
     "randomForestModel": "✅ రాండమ్ ఫారెస్ట్ మోడల్",
     "interventionSimulation": "✅ జోక్యం అనుకరణ",
@@ -243,7 +267,7 @@
     "scene": "సన్నివేశం:"
   },
   "geePipeline": {
-    "panelTitle": "📡 డేటా పైప్‌లైన్ — Google Earth Engine → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
   },
   "satellitePass": {
     "lastPass": "చివరి ఉపగ్రహ గమనం:",

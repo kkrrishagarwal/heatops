@@ -60,14 +60,38 @@
     "hideGlossary": "শব্দকোষ লুকান"
   },
   "glossary": {
-    "LST": { "term": "এলএসটি", "definition": "উপগ্রহ থেকে ভূপৃষ্ঠের তাপমাত্রা" },
-    "NDVI": { "term": "এনডিভিআই", "definition": "স্বাভাবিকীকৃত উদ্ভিদ সূচক (সবুজ গাছপালা)" },
-    "NDBI": { "term": "এনডিবিআই", "definition": "স্বাভাবিকীকৃত নির্মিত এলাকা সূচক (শহুরে/কংক্রিট)" },
-    "NDWI": { "term": "এনডিডব্লিউআই", "definition": "স্বাভাবিকীকৃত জল সূচক (জলাশয়)" },
-    "UHI": { "term": "ইউএইচআই", "definition": "শহরে আর্বান হিট আইল্যান্ড প্রভাব" },
-    "ENSO": { "term": "এনসো", "definition": "এল নিনো দক্ষিণী দোলন জলবায়ু প্যাটার্ন" },
-    "IOD": { "term": "আইওডি", "definition": "ভারত মহাসাগরীয় দ্বিপদ মৌসুমি চালক" },
-    "MJO": { "term": "এমজেও", "definition": "ম্যাডেন-জুলিয়ান অসিলেশন বায়ুমণ্ডলীয় তরঙ্গ" }
+    "LST": {
+      "term": "এলএসটি",
+      "definition": "উপগ্রহ থেকে ভূপৃষ্ঠের তাপমাত্রা"
+    },
+    "NDVI": {
+      "term": "এনডিভিআই",
+      "definition": "স্বাভাবিকীকৃত উদ্ভিদ সূচক (সবুজ গাছপালা)"
+    },
+    "NDBI": {
+      "term": "এনডিবিআই",
+      "definition": "স্বাভাবিকীকৃত নির্মিত এলাকা সূচক (শহুরে/কংক্রিট)"
+    },
+    "NDWI": {
+      "term": "এনডিডব্লিউআই",
+      "definition": "স্বাভাবিকীকৃত জল সূচক (জলাশয়)"
+    },
+    "UHI": {
+      "term": "ইউএইচআই",
+      "definition": "শহরে আর্বান হিট আইল্যান্ড প্রভাব"
+    },
+    "ENSO": {
+      "term": "এনসো",
+      "definition": "এল নিনো দক্ষিণী দোলন জলবায়ু প্যাটার্ন"
+    },
+    "IOD": {
+      "term": "আইওডি",
+      "definition": "ভারত মহাসাগরীয় দ্বিপদ মৌসুমি চালক"
+    },
+    "MJO": {
+      "term": "এমজেও",
+      "definition": "ম্যাডেন-জুলিয়ান অসিলেশন বায়ুমণ্ডলীয় তরঙ্গ"
+    }
   },
   "precautions": {
     "HOT": {
@@ -161,7 +185,7 @@
     "low": "নিম্ন"
   },
   "progressTracker": {
-    "dataCollection": "✅ ডেটা সংগ্রহ (GEE + Landsat 8)",
+    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
     "lstCalculation": "✅ এলএসটি গণনা",
     "indexCalculation": "✅ সূচক গণনা (এনডিভিআই, এনডিবিআই)",
     "correlationAnalysis": "✅ সম্পর্ক বিশ্লেষণ",
@@ -243,7 +267,7 @@
     "scene": "দৃশ্য:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ডেটা পাইপলাইন — Google Earth Engine → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
   },
   "satellitePass": {
     "lastPass": "শেষ উপগ্রহ পাস:",

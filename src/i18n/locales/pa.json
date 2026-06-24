@@ -60,14 +60,38 @@
     "hideGlossary": "ਸ਼ਬਦਕੋਸ਼ ਲੁਕਾਓ"
   },
   "glossary": {
-    "LST": { "term": "LST", "definition": "ਸੈਟੇਲਾਈਟ ਤੋਂ ਜ਼ਮੀਨੀ ਸਤਹ ਦਾ ਤਾਪਮਾਨ" },
-    "NDVI": { "term": "NDVI", "definition": "ਨਾਰਮਲਾਈਜ਼ਡ ਵੈਜੀਟੇਸ਼ਨ ਇੰਡੈਕਸ (ਹਰੀ ਬਨਸਪਤੀ)" },
-    "NDBI": { "term": "NDBI", "definition": "ਨਾਰਮਲਾਈਜ਼ਡ ਡਿਫਰੈਂਸ ਬਿਲਟ-ਅੱਪ ਇੰਡੈਕਸ (ਸ਼ਹਿਰੀ/ਕੰਕਰੀਟ)" },
-    "NDWI": { "term": "NDWI", "definition": "ਨਾਰਮਲਾਈਜ਼ਡ ਵਾਟਰ ਇੰਡੈਕਸ (ਜਲ ਸਰੋਤ)" },
-    "UHI": { "term": "UHI", "definition": "ਸ਼ਹਿਰਾਂ ਵਿੱਚ ਅਰਬਨ ਹੀਟ ਆਈਲੈਂਡ ਪ੍ਰਭਾਵ" },
-    "ENSO": { "term": "ENSO", "definition": "ਐਲ ਨੀਨੋ ਸਾਊਥਰਨ ਆਸਿਲੇਸ਼ਨ ਜਲਵਾਯੂ ਪੈਟਰਨ" },
-    "IOD": { "term": "IOD", "definition": "ਹਿੰਦ ਮਹਾਸਾਗਰ ਡਾਈਪੋਲ ਮੌਨਸੂਨ ਚਾਲਕ" },
-    "MJO": { "term": "MJO", "definition": "ਮੈਡਨ-ਜੂਲੀਅਨ ਆਸਿਲੇਸ਼ਨ ਵਾਯੂਮੰਡਲ ਲਹਿਰਾਂ" }
+    "LST": {
+      "term": "LST",
+      "definition": "ਸੈਟੇਲਾਈਟ ਤੋਂ ਜ਼ਮੀਨੀ ਸਤਹ ਦਾ ਤਾਪਮਾਨ"
+    },
+    "NDVI": {
+      "term": "NDVI",
+      "definition": "ਨਾਰਮਲਾਈਜ਼ਡ ਵੈਜੀਟੇਸ਼ਨ ਇੰਡੈਕਸ (ਹਰੀ ਬਨਸਪਤੀ)"
+    },
+    "NDBI": {
+      "term": "NDBI",
+      "definition": "ਨਾਰਮਲਾਈਜ਼ਡ ਡਿਫਰੈਂਸ ਬਿਲਟ-ਅੱਪ ਇੰਡੈਕਸ (ਸ਼ਹਿਰੀ/ਕੰਕਰੀਟ)"
+    },
+    "NDWI": {
+      "term": "NDWI",
+      "definition": "ਨਾਰਮਲਾਈਜ਼ਡ ਵਾਟਰ ਇੰਡੈਕਸ (ਜਲ ਸਰੋਤ)"
+    },
+    "UHI": {
+      "term": "UHI",
+      "definition": "ਸ਼ਹਿਰਾਂ ਵਿੱਚ ਅਰਬਨ ਹੀਟ ਆਈਲੈਂਡ ਪ੍ਰਭਾਵ"
+    },
+    "ENSO": {
+      "term": "ENSO",
+      "definition": "ਐਲ ਨੀਨੋ ਸਾਊਥਰਨ ਆਸਿਲੇਸ਼ਨ ਜਲਵਾਯੂ ਪੈਟਰਨ"
+    },
+    "IOD": {
+      "term": "IOD",
+      "definition": "ਹਿੰਦ ਮਹਾਸਾਗਰ ਡਾਈਪੋਲ ਮੌਨਸੂਨ ਚਾਲਕ"
+    },
+    "MJO": {
+      "term": "MJO",
+      "definition": "ਮੈਡਨ-ਜੂਲੀਅਨ ਆਸਿਲੇਸ਼ਨ ਵਾਯੂਮੰਡਲ ਲਹਿਰਾਂ"
+    }
   },
   "precautions": {
     "HOT": {
@@ -161,9 +185,9 @@
     "low": "ਘੱਟ"
   },
   "progressTracker": {
-    "dataCollection": "✅ ਡੇਟਾ ਇਕੱਠਾ ਕਰਨਾ (GEE + Landsat 8)",
+    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
     "lstCalculation": "✅ LST ਗਣਨਾ",
-    "indexCalculation": "✅ ਸੂਚਕਾਂਕ ਗਣਨਾ (NDVI, NDBI)",
+    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
     "correlationAnalysis": "✅ ਸਬੰਧ ਵਿਸ਼ਲੇਸ਼ਣ",
     "randomForestModel": "✅ ਰੈਂਡਮ ਫੌਰੈਸਟ ਮਾਡਲ",
     "interventionSimulation": "✅ ਦਖਲਅੰਦਾਜ਼ੀ ਸਿਮੂਲੇਸ਼ਨ",
@@ -243,7 +267,7 @@
     "scene": "ਸੀਨ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ਡੇਟਾ ਪਾਈਪਲਾਈਨ — Google Earth Engine → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
   },
   "satellitePass": {
     "lastPass": "ਆਖਰੀ ਸੈਟੇਲਾਈਟ ਪਾਸ:",

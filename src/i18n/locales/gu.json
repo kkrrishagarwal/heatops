@@ -60,14 +60,38 @@
     "hideGlossary": "શબ્દકોશ છુપાવો"
   },
   "glossary": {
-    "LST": { "term": "LST", "definition": "ઉપગ્રહ પરથી જમીન સપાટીનું તાપમાન" },
-    "NDVI": { "term": "NDVI", "definition": "નોર્મલાઇઝ્ડ વેજિટેશન ઇન્ડેક્સ (હરિયાળી વનસ્પતિ)" },
-    "NDBI": { "term": "NDBI", "definition": "નોર્મલાઇઝ્ડ ડિફરન્સ બિલ્ટ-અપ ઇન્ડેક્સ (શહેરી/કોંક્રીટ)" },
-    "NDWI": { "term": "NDWI", "definition": "નોર્મલાઇઝ્ડ વોટર ઇન્ડેક્સ (જળાશયો)" },
-    "UHI": { "term": "UHI", "definition": "શહેરોમાં અર્બન હીટ આઇલેન્ડ અસર" },
-    "ENSO": { "term": "ENSO", "definition": "અલ નિનો સાઉથર્ન ઓસિલેશન હવામાન પેટર્ન" },
-    "IOD": { "term": "IOD", "definition": "ભારતીય મહાસાગર દ્વિધ્રુવ મોન્સૂન ચાલક" },
-    "MJO": { "term": "MJO", "definition": "મેડન-જુલિયન ઓસિલેશન વાતાવરણીય તરંગો" }
+    "LST": {
+      "term": "LST",
+      "definition": "ઉપગ્રહ પરથી જમીન સપાટીનું તાપમાન"
+    },
+    "NDVI": {
+      "term": "NDVI",
+      "definition": "નોર્મલાઇઝ્ડ વેજિટેશન ઇન્ડેક્સ (હરિયાળી વનસ્પતિ)"
+    },
+    "NDBI": {
+      "term": "NDBI",
+      "definition": "નોર્મલાઇઝ્ડ ડિફરન્સ બિલ્ટ-અપ ઇન્ડેક્સ (શહેરી/કોંક્રીટ)"
+    },
+    "NDWI": {
+      "term": "NDWI",
+      "definition": "નોર્મલાઇઝ્ડ વોટર ઇન્ડેક્સ (જળાશયો)"
+    },
+    "UHI": {
+      "term": "UHI",
+      "definition": "શહેરોમાં અર્બન હીટ આઇલેન્ડ અસર"
+    },
+    "ENSO": {
+      "term": "ENSO",
+      "definition": "અલ નિનો સાઉથર્ન ઓસિલેશન હવામાન પેટર્ન"
+    },
+    "IOD": {
+      "term": "IOD",
+      "definition": "ભારતીય મહાસાગર દ્વિધ્રુવ મોન્સૂન ચાલક"
+    },
+    "MJO": {
+      "term": "MJO",
+      "definition": "મેડન-જુલિયન ઓસિલેશન વાતાવરણીય તરંગો"
+    }
   },
   "precautions": {
     "HOT": {
@@ -161,9 +185,9 @@
     "low": "નીચું"
   },
   "progressTracker": {
-    "dataCollection": "✅ ડેટા સંગ્રહ (GEE + Landsat 8)",
+    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
     "lstCalculation": "✅ LST ગણતરી",
-    "indexCalculation": "✅ ઇન્ડેક્સ ગણતરી (NDVI, NDBI)",
+    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
     "correlationAnalysis": "✅ સહસંબંધ વિશ્લેષણ",
     "randomForestModel": "✅ રેન્ડમ ફોરેસ્ટ મોડેલ",
     "interventionSimulation": "✅ હસ્તક્ષેપ સિમ્યુલેશન",
@@ -243,7 +267,7 @@
     "scene": "સીન:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ડેટા પાઇપલાઇન — Google Earth Engine → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
   },
   "satellitePass": {
     "lastPass": "છેલ્લો ઉપગ્રહ પાસ:",

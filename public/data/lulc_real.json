@@ -1,0 +1,336 @@
+{
+  "source": {
+    "title": "ESA WorldCover 10m v200 (2021)",
+    "publisher": "ESA / VITO, distributed via AWS Open Data",
+    "url": "https://esa-worldcover.org",
+    "resolution": "10m",
+    "sampleAreaRadiusKm": 5
+  },
+  "note": "Computed for one representative city per state/UT only (state capital or largest city). Cities not listed below do not have a real classification yet \u2014 do not estimate a value for them.",
+  "cities": {
+    "Visakhapatnam": {
+      "builtUp": 33.3,
+      "vegetation": 60.1,
+      "water": 3.4,
+      "bareOther": 3.2,
+      "state": "Andhra Pradesh",
+      "lat": 17.6801,
+      "lon": 83.2016
+    },
+    "Itanagar": {
+      "builtUp": 8.8,
+      "vegetation": 90.2,
+      "water": 0.1,
+      "bareOther": 1.0,
+      "state": "Arunachal Pradesh",
+      "lat": 27.0869,
+      "lon": 93.6099
+    },
+    "Guwahati": {
+      "builtUp": 35.6,
+      "vegetation": 40.4,
+      "water": 22.8,
+      "bareOther": 1.2,
+      "state": "Assam",
+      "lat": 26.1844,
+      "lon": 91.7458
+    },
+    "Patna": {
+      "builtUp": 57.1,
+      "vegetation": 37.7,
+      "water": 3.8,
+      "bareOther": 1.4,
+      "state": "Bihar",
+      "lat": 25.5941,
+      "lon": 85.1356
+    },
+    "Raipur": {
+      "builtUp": 57.8,
+      "vegetation": 38.6,
+      "water": 2.3,
+      "bareOther": 1.4,
+      "state": "Chhattisgarh",
+      "lat": 21.2333,
+      "lon": 81.6333
+    },
+    "Panaji": {
+      "builtUp": 1.5,
+      "vegetation": 98.5,
+      "water": 0.0,
+      "bareOther": 0.0,
+      "state": "Goa",
+      "lat": 23.0403,
+      "lon": 73.1786
+    },
+    "Ahmedabad": {
+      "builtUp": 80.2,
+      "vegetation": 14.4,
+      "water": 3.8,
+      "bareOther": 1.6,
+      "state": "Gujarat",
+      "lat": 23.0258,
+      "lon": 72.5873
+    },
+    "Faridabad": {
+      "builtUp": 60.2,
+      "vegetation": 37.4,
+      "water": 0.5,
+      "bareOther": 1.9,
+      "state": "Haryana",
+      "lat": 28.4112,
+      "lon": 77.3132
+    },
+    "Shimla": {
+      "builtUp": 7.0,
+      "vegetation": 92.3,
+      "water": 0.0,
+      "bareOther": 0.7,
+      "state": "Himachal Pradesh",
+      "lat": 31.1044,
+      "lon": 77.1666
+    },
+    "Ranchi": {
+      "builtUp": 43.7,
+      "vegetation": 55.2,
+      "water": 0.4,
+      "bareOther": 0.7,
+      "state": "Jharkhand",
+      "lat": 23.3432,
+      "lon": 85.3094
+    },
+    "Bengaluru": {
+      "builtUp": 71.4,
+      "vegetation": 27.1,
+      "water": 0.8,
+      "bareOther": 0.7,
+      "state": "Karnataka",
+      "lat": 12.9719,
+      "lon": 77.5937
+    },
+    "Thiruvananthapuram": {
+      "builtUp": 45.5,
+      "vegetation": 41.9,
+      "water": 12.2,
+      "bareOther": 0.5,
+      "state": "Kerala",
+      "lat": 8.4855,
+      "lon": 76.9492
+    },
+    "Bhopal": {
+      "builtUp": 49.8,
+      "vegetation": 40.5,
+      "water": 9.2,
+      "bareOther": 0.6,
+      "state": "Madhya Pradesh",
+      "lat": 23.2547,
+      "lon": 77.4029
+    },
+    "Mumbai": {
+      "builtUp": 61.6,
+      "vegetation": 34.0,
+      "water": 1.9,
+      "bareOther": 2.6,
+      "state": "Maharashtra",
+      "lat": 19.0728,
+      "lon": 72.8826
+    },
+    "Imphal": {
+      "builtUp": 46.9,
+      "vegetation": 52.0,
+      "water": 0.4,
+      "bareOther": 0.6,
+      "state": "Manipur",
+      "lat": 24.8081,
+      "lon": 93.9442
+    },
+    "Shillong": {
+      "builtUp": 21.1,
+      "vegetation": 77.9,
+      "water": 0.1,
+      "bareOther": 0.8,
+      "state": "Meghalaya",
+      "lat": 25.5689,
+      "lon": 91.8831
+    },
+    "Aizawl": {
+      "builtUp": 11.0,
+      "vegetation": 88.9,
+      "water": 0.0,
+      "bareOther": 0.1,
+      "state": "Mizoram",
+      "lat": 23.7289,
+      "lon": 92.7179
+    },
+    "Kohima": {
+      "builtUp": 11.8,
+      "vegetation": 87.9,
+      "water": 0.0,
+      "bareOther": 0.3,
+      "state": "Nagaland",
+      "lat": 25.6747,
+      "lon": 94.111
+    },
+    "Bhubaneswar": {
+      "builtUp": 47.0,
+      "vegetation": 51.1,
+      "water": 1.3,
+      "bareOther": 0.6,
+      "state": "Odisha",
+      "lat": 20.2724,
+      "lon": 85.8338
+    },
+    "Ludhiana": {
+      "builtUp": 81.0,
+      "vegetation": 17.5,
+      "water": 0.1,
+      "bareOther": 1.4,
+      "state": "Punjab",
+      "lat": 30.912,
+      "lon": 75.8538
+    },
+    "Jaipur": {
+      "builtUp": 75.3,
+      "vegetation": 23.8,
+      "water": 0.1,
+      "bareOther": 0.9,
+      "state": "Rajasthan",
+      "lat": 26.9196,
+      "lon": 75.7878
+    },
+    "Gangtok": {
+      "builtUp": 4.8,
+      "vegetation": 95.1,
+      "water": 0.0,
+      "bareOther": 0.1,
+      "state": "Sikkim",
+      "lat": 27.3257,
+      "lon": 88.6122
+    },
+    "Chennai": {
+      "builtUp": 51.2,
+      "vegetation": 14.2,
+      "water": 32.7,
+      "bareOther": 2.0,
+      "state": "Tamil Nadu",
+      "lat": 13.0878,
+      "lon": 80.2785
+    },
+    "Hyderabad": {
+      "builtUp": 77.8,
+      "vegetation": 18.2,
+      "water": 3.5,
+      "bareOther": 0.6,
+      "state": "Telangana",
+      "lat": 17.384,
+      "lon": 78.4564
+    },
+    "Agartala": {
+      "builtUp": 29.0,
+      "vegetation": 70.4,
+      "water": 0.1,
+      "bareOther": 0.5,
+      "state": "Tripura",
+      "lat": 23.8361,
+      "lon": 91.2794
+    },
+    "Lucknow": {
+      "builtUp": 65.3,
+      "vegetation": 32.9,
+      "water": 0.9,
+      "bareOther": 0.9,
+      "state": "Uttar Pradesh",
+      "lat": 26.8393,
+      "lon": 80.9231
+    },
+    "Dehradun": {
+      "builtUp": 57.6,
+      "vegetation": 41.8,
+      "water": 0.0,
+      "bareOther": 0.6,
+      "state": "Uttarakhand",
+      "lat": 30.3244,
+      "lon": 78.0339
+    },
+    "Kolkata": {
+      "builtUp": 72.5,
+      "vegetation": 20.5,
+      "water": 6.5,
+      "bareOther": 0.4,
+      "state": "West Bengal",
+      "lat": 22.5626,
+      "lon": 88.363
+    },
+    "Jammu": {
+      "builtUp": 44.9,
+      "vegetation": 48.4,
+      "water": 2.0,
+      "bareOther": 4.8,
+      "state": "Jammu and Kashmir",
+      "lat": 32.7353,
+      "lon": 74.8617
+    },
+    "Leh": {
+      "builtUp": 5.5,
+      "vegetation": 8.9,
+      "water": 0.0,
+      "bareOther": 85.6,
+      "state": "Ladakh",
+      "lat": 34.165,
+      "lon": 77.584
+    },
+    "New Delhi": {
+      "builtUp": 50.8,
+      "vegetation": 47.0,
+      "water": 1.6,
+      "bareOther": 0.6,
+      "state": "Delhi",
+      "lat": 28.6214,
+      "lon": 77.2148
+    },
+    "Chandigarh": {
+      "builtUp": 42.0,
+      "vegetation": 56.3,
+      "water": 1.3,
+      "bareOther": 0.4,
+      "state": "Chandigarh",
+      "lat": 30.7363,
+      "lon": 76.7884
+    },
+    "Puducherry": {
+      "builtUp": 29.3,
+      "vegetation": 26.4,
+      "water": 43.6,
+      "bareOther": 0.7,
+      "state": "Puducherry",
+      "lat": 11.9338,
+      "lon": 79.8298
+    },
+    "Port Blair": {
+      "builtUp": 7.9,
+      "vegetation": 28.3,
+      "water": 63.5,
+      "bareOther": 0.3,
+      "state": "Andaman and Nicobar Islands",
+      "lat": 11.6661,
+      "lon": 92.7464
+    },
+    "Kavaratti": {
+      "builtUp": 0.0,
+      "vegetation": 0.0,
+      "water": 100.0,
+      "bareOther": 0.0,
+      "state": "Lakshadweep",
+      "lat": 10.5669,
+      "lon": 72.642
+    },
+    "Silvassa": {
+      "builtUp": 12.3,
+      "vegetation": 84.9,
+      "water": 2.2,
+      "bareOther": 0.6,
+      "state": "Dadra and Nagar Haveli and Daman and Diu",
+      "lat": 20.2739,
+      "lon": 72.9967
+    }
+  }
+}

@@ -63,7 +63,7 @@ export function AIAnalystPanel({
 
     setAiLoading(true)
 
-    const context = `City: ${city}, LST: ${typeof lst === 'number' ? lst.toFixed(1) : lst}°C, NDVI: ${ndvi}, NDBI: ${ndbi}, AQI: ${aqi ?? 'N/A'} (live).`
+    const context = `City: ${city}, Surface Temp: ${typeof lst === 'number' ? lst.toFixed(1) + '°C (live)' : 'not available'}, Vegetation Fraction: ${typeof ndvi === 'number' ? ndvi + '% (ESA WorldCover)' : 'not available for this city'}, Built-up Fraction: ${typeof ndbi === 'number' ? ndbi + '% (ESA WorldCover)' : 'not available for this city'}, AQI: ${aqi ?? 'N/A'} (live).`
     const requestBody = { question, context }
     console.log('[AIAnalystPanel] sending request to /api/ask-ai:', requestBody)
 

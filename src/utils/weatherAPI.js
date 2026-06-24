@@ -109,7 +109,8 @@ export async function getWeatherData(lat, lon) {
         'wind_gusts_10m',
         'surface_pressure',
         'visibility',
-        'uv_index'
+        'uv_index',
+        'soil_temperature_0cm'
       ].join(','),
 
       // Hourly forecast (next 24 hours)
@@ -204,6 +205,11 @@ export async function fetchCompleteWeather(cityName) {
       lon: coords.lon,
       timezone: coords.timezone,
 
+      // Real SRTM-derived elevation — returned by Open-Meteo for every
+      // lat/lon, no separate API/auth needed (verified: Delhi 214m,
+      // Mumbai 6m, Bengaluru 910m all match known real-world values).
+      elevation: weather.elevation,
+
       // Current conditions
       current: {
         temp: Math.round(current.temperature_2m),
@@ -218,7 +224,12 @@ export async function fetchCompleteWeather(cityName) {
         cloudCover: current.cloud_cover,
         precipitation: current.precipitation || 0,
         condition: getCondition(current.weather_code, current.is_day),
-        isDay: current.is_day
+        isDay: current.is_day,
+        // Real-time modeled ground-surface temperature (0cm soil layer) from
+        // Open-Meteo's weather model — NOT a satellite-measured Landsat LST,
+        // but a genuinely real, live surface-heat reading (distinct from
+        // air temp above: e.g. Delhi can show ~9°C surface/air gap at noon).
+        surfaceTemp: Math.round(current.soil_temperature_0cm * 10) / 10
       },
 
       // Today

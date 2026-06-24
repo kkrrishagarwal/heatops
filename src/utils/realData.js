@@ -1,20 +1,23 @@
-// SECTION 1 - REAL DATA PIPELINE
-// Source labels for every data point
-const DATA_SOURCES = {
-  lst:       "Landsat 8 Band ST_B10 (USGS)",
-  ndvi:      "Sentinel-2 MSI Band B8/B4",
-  ndbi:      "Sentinel-2 MSI Band B11/B8",
-  ndwi:      "Sentinel-2 MSI Band B3/B8",
-  elevation: "SRTM 30m DEM (NASA)",
-  aqi:       "CPCB Real-time Monitor",
-  humidity:  "ERA5 Reanalysis (ECMWF)",
-  wind:      "ERA5 Reanalysis (ECMWF)",
-  urban:     "GHSL Urban Morphology 2020"
-}
+// SECTION 1 - CITY BASELINE DATA (illustrative, NOT a real data pipeline)
+//
+// getCityData() below is a city-name-seeded illustrative baseline, NOT real satellite/
+// reanalysis/monitoring data. It still backs a few non-data-citing features deliberately
+// left as-is (dashboard theme color, the heat-zone what-if simulator, the city-compare
+// panel, and the spatial-recommendation area/cost estimate) — none of those present
+// themselves as a real measurement. Anywhere a number is shown WITH a specific source
+// citation (Satellite Indices panel, AI Analyst context, exports), the app uses real data
+// instead — see liveWeather (Open-Meteo, fetched in App.jsx) for live surface temperature/
+// elevation/AQI, and lulcReal (public/data/lulc_real.json, real ESA WorldCover
+// classification) for vegetation/built-up/water fractions — falling back to an explicit
+// "not available" rather than ever substituting a value from this file under a
+// real-sounding label.
+//
+// A previous version of this file shipped a DATA_SOURCES map citing Landsat/Sentinel/
+// ERA5/CPCB/GHSL for these seeded numbers; that was false and has been removed for the
+// same reason the original fake Random Forest model was rebuilt on real data instead
+// (see scripts/train_lst_model.py).
 
-// Proxy data removed — using state-level calibrated calculations instead
-
-// State-level base data for fallback calculations
+// State-level illustrative baseline (NOT a real measurement — see file header)
 const STATE_DATA = {
   "Andhra Pradesh": { avgLST: 41, ndvi: 0.28, ndbi: 0.37, ndwi: -0.09, aqi: 130, elevation: 100 },
   "Arunachal Pradesh": { avgLST: 25, ndvi: 0.70, ndbi: 0.08, ndwi: 0.25, aqi: 35, elevation: 1500 },
@@ -54,7 +57,7 @@ const STATE_DATA = {
   "Dadra and Nagar Haveli and Daman and Diu": { avgLST: 42, ndvi: 0.26, ndbi: 0.40, ndwi: -0.08, aqi: 140, elevation: 150 }
 }
 
-// Get city data with state-level calibrated calculation
+// Get city data with state-level calibrated calculation (illustrative — see file header)
 function getCityData(cityName, stateName) {
   // Generate calibrated data for all cities using state baseline
   const stateBase = STATE_DATA[stateName] || {}
@@ -78,33 +81,12 @@ function getCityData(cityName, stateName) {
     elevation: Math.round(
       (stateBase.elevation||100) + s*50 - 25
     ),
-    humidity:  Math.round(30 + s*50),
-    wind:      Math.round(8 + s*22),
-    aqi:       Math.round(
-      (stateBase.aqi||120) + s*60 - 30
-    ),
-    urban_density:    parseFloat((0.5+s*0.4).toFixed(2)),
-    green_cover_pct:  parseFloat((5+s*30).toFixed(1)),
     water_body_pct:   parseFloat((1+s*10).toFixed(1)),
-    impervious_pct:   parseFloat((40+s*35).toFixed(1)),
-    population_lakh:  Math.round(2 + s*50),
-    area_sqkm:        Math.round(50 + s*500),
-    source_date:      "2024-05-15",
-    landsat_scene:    "LC08_ESTIMATED",
-    sentinel_scene:   "S2_ESTIMATED",
-    r2_score:         parseFloat((0.84+s*0.10).toFixed(2)),
-    mae:              parseFloat((1.1+s*0.8).toFixed(2)),
-    feature_importance: {
-      ndbi:      parseFloat((0.75+s*0.15).toFixed(2)),
-      ndvi:      parseFloat((0.65+s*0.15).toFixed(2)),
-      ndwi:      parseFloat((0.55+s*0.15).toFixed(2)),
-      elevation: parseFloat((0.15+s*0.25).toFixed(2))
-    }
+    area_sqkm:        Math.round(50 + s*500)
   }
 }
 
-export { 
-  DATA_SOURCES, 
+export {
   getCityData,
   STATE_DATA
 }

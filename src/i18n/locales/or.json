@@ -60,14 +60,38 @@
     "hideGlossary": "ଶବ୍ଦକୋଷ ଲୁଚାନ୍ତୁ"
   },
   "glossary": {
-    "LST": { "term": "LST", "definition": "ଉପଗ୍ରହରୁ ଭୂପୃଷ୍ଠ ତାପମାତ୍ରା" },
-    "NDVI": { "term": "NDVI", "definition": "ନରମାଲାଇଜଡ୍ ଭେଜିଟେସନ୍ ଇଣ୍ଡେକ୍ସ (ହରିଆ ଉଦ୍ଭିଦ)" },
-    "NDBI": { "term": "NDBI", "definition": "ନରମାଲାଇଜଡ୍ ଡିଫରେନ୍ସ ବିଲ୍ଟ-ଅପ୍ ଇଣ୍ଡେକ୍ସ (ସହରାଞ୍ଚଳ/କଂକ୍ରିଟ୍)" },
-    "NDWI": { "term": "NDWI", "definition": "ନରମାଲାଇଜଡ୍ ୱାଟର ଇଣ୍ଡେକ୍ସ (ଜଳଭଣ୍ଡାର)" },
-    "UHI": { "term": "UHI", "definition": "ସହରଗୁଡିକରେ ଅର୍ବାନ ହିଟ୍ ଆଇଲ୍ୟାଣ୍ଡ ପ୍ରଭାବ" },
-    "ENSO": { "term": "ENSO", "definition": "ଏଲ୍ ନିନୋ ସାଉଥର୍ନ ଅସିଲେସନ୍ ପାଣିପାଗ ଢାଞ୍ଚା" },
-    "IOD": { "term": "IOD", "definition": "ଭାରତ ମହାସାଗର ଦ୍ୱିଧ୍ରୁବ ମୌସୁମୀ ଚାଳକ" },
-    "MJO": { "term": "MJO", "definition": "ମ୍ୟାଡେନ୍-ଜୁଲିଆନ୍ ଅସିଲେସନ୍ ବାୟୁମଣ୍ଡଳ ତରଙ୍ଗ" }
+    "LST": {
+      "term": "LST",
+      "definition": "ଉପଗ୍ରହରୁ ଭୂପୃଷ୍ଠ ତାପମାତ୍ରା"
+    },
+    "NDVI": {
+      "term": "NDVI",
+      "definition": "ନରମାଲାଇଜଡ୍ ଭେଜିଟେସନ୍ ଇଣ୍ଡେକ୍ସ (ହରିଆ ଉଦ୍ଭିଦ)"
+    },
+    "NDBI": {
+      "term": "NDBI",
+      "definition": "ନରମାଲାଇଜଡ୍ ଡିଫରେନ୍ସ ବିଲ୍ଟ-ଅପ୍ ଇଣ୍ଡେକ୍ସ (ସହରାଞ୍ଚଳ/କଂକ୍ରିଟ୍)"
+    },
+    "NDWI": {
+      "term": "NDWI",
+      "definition": "ନରମାଲାଇଜଡ୍ ୱାଟର ଇଣ୍ଡେକ୍ସ (ଜଳଭଣ୍ଡାର)"
+    },
+    "UHI": {
+      "term": "UHI",
+      "definition": "ସହରଗୁଡିକରେ ଅର୍ବାନ ହିଟ୍ ଆଇଲ୍ୟାଣ୍ଡ ପ୍ରଭାବ"
+    },
+    "ENSO": {
+      "term": "ENSO",
+      "definition": "ଏଲ୍ ନିନୋ ସାଉଥର୍ନ ଅସିଲେସନ୍ ପାଣିପାଗ ଢାଞ୍ଚା"
+    },
+    "IOD": {
+      "term": "IOD",
+      "definition": "ଭାରତ ମହାସାଗର ଦ୍ୱିଧ୍ରୁବ ମୌସୁମୀ ଚାଳକ"
+    },
+    "MJO": {
+      "term": "MJO",
+      "definition": "ମ୍ୟାଡେନ୍-ଜୁଲିଆନ୍ ଅସିଲେସନ୍ ବାୟୁମଣ୍ଡଳ ତରଙ୍ଗ"
+    }
   },
   "precautions": {
     "HOT": {
@@ -161,9 +185,9 @@
     "low": "କମ"
   },
   "progressTracker": {
-    "dataCollection": "✅ ତଥ୍ୟ ସଂଗ୍ରହ (GEE + Landsat 8)",
+    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
     "lstCalculation": "✅ LST ଗଣନା",
-    "indexCalculation": "✅ ସୂଚକାଙ୍କ ଗଣନା (NDVI, NDBI)",
+    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
     "correlationAnalysis": "✅ ସମ୍ପର୍କ ବିଶ୍ଳେଷଣ",
     "randomForestModel": "✅ ରାଣ୍ଡମ ଫରେଷ୍ଟ ମଡେଲ୍",
     "interventionSimulation": "✅ ହସ୍ତକ୍ଷେପ ସିମୁଲେସନ୍",
@@ -243,7 +267,7 @@
     "scene": "ଦୃଶ୍ୟ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ତଥ୍ୟ ପାଇପଲାଇନ୍ — Google Earth Engine → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
   },
   "satellitePass": {
     "lastPass": "ଅନ୍ତିମ ଉପଗ୍ରହ ଗତି:",

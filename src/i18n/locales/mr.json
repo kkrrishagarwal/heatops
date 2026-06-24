@@ -60,14 +60,38 @@
     "hideGlossary": "शब्दकोश लपवा"
   },
   "glossary": {
-    "LST": { "term": "एलएसटी", "definition": "उपग्रहावरून जमिनीच्या पृष्ठभागाचे तापमान" },
-    "NDVI": { "term": "एनडीव्हीआय", "definition": "सामान्यीकृत वनस्पती निर्देशांक (हरित वनस्पती)" },
-    "NDBI": { "term": "एनडीबीआय", "definition": "सामान्यीकृत फरक बांधकाम निर्देशांक (शहरी/काँक्रीट)" },
-    "NDWI": { "term": "एनडीडब्ल्यूआय", "definition": "सामान्यीकृत जल निर्देशांक (जलसाठे)" },
-    "UHI": { "term": "यूएचआय", "definition": "शहरांमधील अर्बन हीट आयलंड प्रभाव" },
-    "ENSO": { "term": "एल निनो", "definition": "एल निनो दक्षिणी दोलन हवामान पॅटर्न" },
-    "IOD": { "term": "आयओडी", "definition": "हिंद महासागर द्विध्रुव मॉन्सून चालक" },
-    "MJO": { "term": "एमजेओ", "definition": "मॅडेन-ज्युलियन ऑसिलेशन वातावरणीय लाटा" }
+    "LST": {
+      "term": "एलएसटी",
+      "definition": "उपग्रहावरून जमिनीच्या पृष्ठभागाचे तापमान"
+    },
+    "NDVI": {
+      "term": "एनडीव्हीआय",
+      "definition": "सामान्यीकृत वनस्पती निर्देशांक (हरित वनस्पती)"
+    },
+    "NDBI": {
+      "term": "एनडीबीआय",
+      "definition": "सामान्यीकृत फरक बांधकाम निर्देशांक (शहरी/काँक्रीट)"
+    },
+    "NDWI": {
+      "term": "एनडीडब्ल्यूआय",
+      "definition": "सामान्यीकृत जल निर्देशांक (जलसाठे)"
+    },
+    "UHI": {
+      "term": "यूएचआय",
+      "definition": "शहरांमधील अर्बन हीट आयलंड प्रभाव"
+    },
+    "ENSO": {
+      "term": "एल निनो",
+      "definition": "एल निनो दक्षिणी दोलन हवामान पॅटर्न"
+    },
+    "IOD": {
+      "term": "आयओडी",
+      "definition": "हिंद महासागर द्विध्रुव मॉन्सून चालक"
+    },
+    "MJO": {
+      "term": "एमजेओ",
+      "definition": "मॅडेन-ज्युलियन ऑसिलेशन वातावरणीय लाटा"
+    }
   },
   "precautions": {
     "HOT": {
@@ -161,7 +185,7 @@
     "low": "कमी"
   },
   "progressTracker": {
-    "dataCollection": "✅ डेटा संकलन (GEE + Landsat 8)",
+    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
     "lstCalculation": "✅ एलएसटी गणना",
     "indexCalculation": "✅ निर्देशांक गणना (एनडीव्हीआय, एनडीबीआय)",
     "correlationAnalysis": "✅ सहसंबंध विश्लेषण",
@@ -243,7 +267,7 @@
     "scene": "सीन:"
   },
   "geePipeline": {
-    "panelTitle": "📡 डेटा पाइपलाइन — Google Earth Engine → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
   },
   "satellitePass": {
     "lastPass": "शेवटचा उपग्रह पास:",

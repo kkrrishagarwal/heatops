@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react'
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import {
   RadarChart,
   Radar,
@@ -23,9 +23,11 @@ import {
   Marker
 } from 'react-simple-maps'
 import './App.css'
-import { getCityData, DATA_SOURCES } from './utils/realData'
+import { getCityData } from './utils/realData'
+import { getBuildingDensity } from './utils/osmUtils'
 import { SourceBadge } from './components/DataBadges'
 import { MLModelPanel } from './components/MLModelPanel'
+import { LandCoverPanel } from './components/LandCoverPanel'
 import { PhysicsPanel } from './components/PhysicsPanel'
 import { GEEPipelinePanel } from './components/GEEPipelinePanel'
 import { SpatialRecommendation } from './components/SpatialRecommendation'
@@ -37,6 +39,7 @@ import { useTranslation } from 'react-i18next'
 import { SUPPORTED_LANGUAGES, changeLanguage } from './i18n'
 import { AIAnalystPanel } from './components/AIAnalystPanel'
 import { FloatingAIAssistant } from './components/FloatingAIAssistant'
+import { CompareCitiesPanel } from './components/CompareCitiesPanel'
 
 // Gemini API key is never read on the client. The AI Analyst calls the secure
 // /api/ask-ai backend proxy (see api/ask-ai.js + api/_lib/askAI.js), which reads
@@ -69,14 +72,14 @@ const STATE_ABBR = {
 const STATE_DATA = {
 
 "Andhra Pradesh": {
-  avgLST:41, risk:"HIGH",
+  avgLST:42, risk:"HIGH",
   ndvi:0.28, ndbi:0.37, ndwi:-0.09, aqi:130,
   coastal:true,
   cities:["Visakhapatnam","Vijayawada","Guntur","Tirupati","Kurnool","Nellore","Rajahmundry","Kakinada","Kadapa","Anantapur","Vizianagaram","Eluru","Ongole","Nandyal","Machilipatnam","Adoni","Tenali","Proddatur","Chittoor","Hindupur","Bhimavaram","Madanapalle","Guntakal","Dharmavaram","Gudivada","Narasaraopet","Tadipatri","Tadepalligudem","Chilakaluripet","Yemmiganur","Kavali","Palacole","Srikakulam","Bobbili","Rajam","Pithapuram","Amalapuram","Ponnur","Bapatla","Mangalagiri","Amaravati","Puttaparthi","Sullurpeta","Nakkalammapeta","Rajampet","Pileru","Venkatagiri","Gudur","Srikalahasti","Nagari","Puttur"]
 },
 
 "Arunachal Pradesh": {
-  avgLST:25, risk:"COOL",
+  avgLST:28, risk:"COOL",
   ndvi:0.70, ndbi:0.08, ndwi:0.25, aqi:35,
   coastal:false,
   cities:["Itanagar","Naharlagun","Pasighat","Tawang","Ziro","Bomdila","Along","Tezu","Roing","Namsai","Changlang","Khonsa","Longding","Anini","Daporijo","Yingkiong","Seppa","Koloriang","Hayuliang","Deomali","Miao","Jairampur","Margherita","Bordumsa","Wakro","Manmao","Chowkham","Lekang","Pumao","Borduria","Talung","Mechuka","Tuting","Gelling","Kibithoo","Walong","Pangkang","Hawai"]
@@ -90,14 +93,14 @@ const STATE_DATA = {
 },
 
 "Bihar": {
-  avgLST:43, risk:"EXTREME",
+  avgLST:44, risk:"EXTREME",
   ndvi:0.30, ndbi:0.38, ndwi:-0.08, aqi:190,
   coastal:false,
   cities:["Patna","Gaya","Muzaffarpur","Bhagalpur","Darbhanga","Purnia","Arrah","Bihar Sharif","Begusarai","Katihar","Munger","Chapra","Saharsa","Hajipur","Dehri","Siwan","Motihari","Nawada","Bettiah","Bagaha","Kishanganj","Sitamarhi","Buxar","Jehanabad","Aurangabad","Sasaram","Mokama","Jamalpur","Madhubani","Supaul","Khagaria","Lakhisarai","Sheikhpura","Nalanda","Rajgir","Bodhgaya","Forbesganj","Jogbani","Narkatiaganj","Raxaul","Mairwa","Gopalganj","Vaishali","Sonepur","Biharsharif","Barbigha","Sheohar","Araria","Madhepura","Samastipur","Rosera","Dalsinghsarai","Tajpur","Barauni","Barh","Fatuha","Khusrupur","Bakhtiyarpur","Hilsa","Islampur","Nokha","Sherghati"]
 },
 
 "Chhattisgarh": {
-  avgLST:41, risk:"HIGH",
+  avgLST:40, risk:"HIGH",
   ndvi:0.40, ndbi:0.32, ndwi:-0.05, aqi:130,
   coastal:false,
   cities:["Raipur","Bhilai","Bilaspur","Korba","Durg","Rajnandgaon","Jagdalpur","Ambikapur","Raigarh","Chirmiri","Dhamtari","Mahasamund","Kanker","Kondagaon","Narayanpur","Bijapur","Sukma","Dantewada","Bemetara","Baloda Bazar","Gariaband","Balod","Mungeli","Kabirdham","Janjgir","Champa","Sakti","Jashpur","Surajpur","Manendragarh","Balrampur","Korea","Surguja","Pendra","Baikunthpur","Pathalgaon","Ramanujganj","Pakhanjore","Konta","Bhanupratappur","Antagarh","Deobhog","Mainpur","Bastar","Tokapal"]
@@ -111,7 +114,7 @@ const STATE_DATA = {
 },
 
 "Gujarat": {
-  avgLST:44, risk:"EXTREME",
+  avgLST:45, risk:"EXTREME",
   ndvi:0.15, ndbi:0.45, ndwi:-0.16, aqi:175,
   coastal:true,
   cities:["Ahmedabad","Surat","Vadodara","Rajkot","Bhavnagar","Jamnagar","Junagadh","Gandhinagar","Anand","Navsari","Morbi","Nadiad","Surendranagar","Bharuch","Mehsana","Bhuj","Porbandar","Palanpur","Valsad","Amreli","Ankleshwar","Botad","Dahod","Godhra","Himatnagar","Kalol","Kapadvanj","Keshod","Kheda","Kutch","Limbdi","Lunawada","Mahuva","Mangrol","Modasa","Morva Hadaf","Mundra","Patan","Petlad","Radhanpur","Rajpipla","Sanand","Savarkundla","Sidhpur","Umreth","Una","Upleta","Veraval","Visnagar","Vyara","Wadhwan","Wankaner","Dholka","Dholera","Deesa","Dhoraji","Dwarka","Jetpur","Kalyanpur","Kandla","Lathi","Lodhika","Mandvi","Mithapur","Okha","Palitana","Rajula","Songadh","Talaja","Vapi","Bilimora","Bardoli"]
@@ -125,28 +128,28 @@ const STATE_DATA = {
 },
 
 "Himachal Pradesh": {
-  avgLST:28, risk:"COOL",
+  avgLST:22, risk:"COOL",
   ndvi:0.62, ndbi:0.12, ndwi:0.18, aqi:45,
   coastal:false,
   cities:["Shimla","Dharamshala","Manali","Solan","Mandi","Kullu","Hamirpur","Una","Bilaspur","Chamba","Kangra","Kinnaur","Lahaul","Spiti","Sirmaur","Kasauli","Palampur","Nahan","Baddi","Nalagarh","Paonta Sahib","Nurpur","Dalhousie","Keylong","Kaza","Reckong Peo","Rampur","Sundernagar","Jogindernagar","Bhuntar","Banjar","Anni","Nichar","Sarahan","Rohru","Chopal","Theog","Jubbal","Kotkhai","Kumarsain","Narkanda","Baghi","Arki","Kandaghat","Dharampur","Rajgarh","Sangrah","Shillai","Pachhad","Renuka","Dadahu","Haripurdhar"]
 },
 
 "Jharkhand": {
-  avgLST:40, risk:"HIGH",
+  avgLST:38, risk:"HIGH",
   ndvi:0.38, ndbi:0.34, ndwi:-0.06, aqi:145,
   coastal:false,
   cities:["Ranchi","Jamshedpur","Dhanbad","Bokaro","Deoghar","Hazaribagh","Giridih","Ramgarh","Medininagar","Chatra","Gumla","Simdega","Lohardaga","Khunti","Saraikela","West Singhbhum","East Singhbhum","Dumka","Jamtara","Sahibganj","Pakur","Godda","Koderma","Latehar","Garhwa","Palamu","Chaibasa","Chakradharpur","Baharagora","Ghatsila","Musabani","Jadugoda","Noamundi","Kiriburu","Meghahatuburu","Sindri","Nirsa","Katras","Jharia","Kenduadih","Govindpur","Topchanchi","Gomoh","Phusro","Chas","Bermo","Petarbar","Bundu","Tamar","Silli","Angara","Nagri"]
 },
 
 "Karnataka": {
-  avgLST:38, risk:"HIGH",
+  avgLST:36, risk:"HIGH",
   ndvi:0.38, ndbi:0.32, ndwi:-0.04, aqi:110,
   coastal:true,
   cities:["Bengaluru","Mysuru","Mangaluru","Hubli","Belagavi","Davangere","Ballari","Vijayapura","Shivamogga","Tumkuru","Raichur","Bidar","Gulbarga","Dharwad","Hospet","Gadag","Bagalkot","Hassan","Chitradurga","Mandya","Udupi","Chikkamagaluru","Kolar","Ramanagara","Chamarajanagar","Kodagu","Yadgir","Koppal","Haveri","Uttara Kannada","Karwar","Sirsi","Dandeli","Honnavar","Kumta","Bhatkal","Kundapura","Manipal","Puttur","Sullia","Madikeri","Virajpet","Kushalnagar","Sringeri","Sagara","Soraba","Shiralakoppa","Bhadravati","Tarikere","Kadur","Birur","Tiptur","Arsikere","Belur","Halebidu","Sakleshpur","Alur","Holenarasipur","Channarayapatna","Nagamangala","Malavalli","Srirangapatna","Nanjangud","Gundlupet","Kollegal","Yelandur","Doddaballapur","Chikkaballapur","Gauribidanur","Bangarpet","Robertsonpet","Srinivaspur","Mulbagal","Sidlaghatta","Chintamani"]
 },
 
 "Kerala": {
-  avgLST:34, risk:"MODERATE",
+  avgLST:33, risk:"MODERATE",
   ndvi:0.55, ndbi:0.18, ndwi:0.12, aqi:75,
   coastal:true,
   cities:["Thiruvananthapuram","Kochi","Kozhikode","Thrissur","Kollam","Kannur","Alappuzha","Palakkad","Malappuram","Kottayam","Irinjalakuda","Kayamkulam","Vatakara","Kanhangad","Thalassery","Ponnani","Chalakudy","Changanassery","Punalur","Tirur","Manjeri","Perinthalmanna","Nedumangad","Varkala","Paravur","Karunagappally","Pathanamthitta","Thiruvalla","Adoor","Pandalam","Mavelikara","Cherthala","Aroor","Vaikom","Ettumanoor","Pala","Thodupuzha","Kattappana","Idukki","Munnar","Devikulam","Udumbanchola","Mananthavady","Sultan Bathery","Kalpetta","Payyannur","Mattannur","Thalipparamba","Nileshwar","Kasaragod","Manjeshwar","Perambra","Quilandy","Feroke","Ramanattukara","Tanur","Kuttippuram","Pattambi","Shoranur","Ottappalam","Mannarkkad","Wandoor"]
@@ -160,7 +163,7 @@ const STATE_DATA = {
 },
 
 "Maharashtra": {
-  avgLST:42, risk:"HIGH",
+  avgLST:39, risk:"HIGH",
   ndvi:0.28, ndbi:0.38, ndwi:-0.08, aqi:160,
   coastal:true,
   cities:["Mumbai","Pune","Nagpur","Nashik","Aurangabad","Solapur","Amravati","Kolhapur","Nanded","Sangli","Malegaon","Jalgaon","Akola","Latur","Dhule","Ahmednagar","Chandrapur","Parbhani","Ichalkaranji","Jalna","Ambarnath","Bhiwandi","Shirdi","Satara","Ratnagiri","Yavatmal","Achalpur","Osmanabad","Nandurbar","Wardha","Buldhana","Hingoli","Washim","Gadchiroli","Gondia","Bhandara","Thane","Vasai Virar","Kalyan Dombivali","Mira Bhayandar","Navi Mumbai","Ulhasnagar","Panvel","Khopoli","Lonavala","Khandala","Mahabaleshwar","Panchgani","Alibag","Roha","Murud","Shrivardhan","Mahad","Chiplun","Khed","Dapoli","Guhagar","Velneshwar","Sindhudurg","Malvan","Sawantwadi","Kudal","Vengurla","Banda","Shiroda","Dodamarg","Kolad","Igatpuri","Ghoti","Sinnar","Niphad","Manmad","Nandgaon","Kopargaon","Sangamner","Shrirampur","Rahuri","Pathardi","Shevgaon","Nevasa","Jamkhed","Karjat","Baramati","Indapur","Pandharpur","Mangalvedhe","Barshi","Akalkot","Tuljapur","Mukheda"]
@@ -174,7 +177,7 @@ const STATE_DATA = {
 },
 
 "Meghalaya": {
-  avgLST:26, risk:"COOL",
+  avgLST:25, risk:"COOL",
   ndvi:0.68, ndbi:0.10, ndwi:0.22, aqi:40,
   coastal:false,
   cities:["Shillong","Tura","Jowai","Nongstoin","Baghmara","Williamnagar","Resubelpara","Ampati","Mawkyrwat","Mairang","Nongpoh","Byrnihat","Cherrapunji","Mawsynram","Dawki","Pynursla","Mawlai","Laitumkhrah","Nongthymmai","Pynthorumkhrah","Mawngap","Ranikor","Mahendraganj","Phulbari","Rajabala","Betasing","Mendipathar","Kharkutta","Nengkhra","Rongjeng","Dadenggre","Chokpot","Bali","Nongtalang","Khliehriat","Amlarem","Muktapur","Shella","Padu","Mawphlang","Mylliem"]
@@ -195,42 +198,42 @@ const STATE_DATA = {
 },
 
 "Odisha": {
-  avgLST:40, risk:"HIGH",
+  avgLST:41, risk:"HIGH",
   ndvi:0.38, ndbi:0.33, ndwi:-0.04, aqi:120,
   coastal:true,
   cities:["Bhubaneswar","Cuttack","Rourkela","Berhampur","Sambalpur","Puri","Balasore","Bhadrak","Baripada","Jharsuguda","Bargarh","Angul","Dhenkanal","Keonjhar","Kendrapara","Jeypore","Rayagada","Koraput","Nabarangpur","Kalahandi","Phulbani","Bolangir","Sonepur","Titilagarh","Bhawanipatna","Paralakhemundi","Gunupur","Sundargarh","Talcher","Jajpur","Jajpur Road","Kalinganagar","Paradip","Chandikhol","Kendujhar","Anandapur","Champua","Barbil","Udala","Karanjia","Jashipur","Rairangpur","Betnoti","Bangriposi","Subarnapur","Kantabanji","Titlagarh","Patnagarh","Kesinga","Muribahal","Boudh","Kantamal","Balliguda","Chatrapur","Digapahandi","Chhatrapur","Ganjam","Aska","Bhanjanagar","Polasara","Kabisuryanagar"]
 },
 
 "Punjab": {
-  avgLST:41, risk:"HIGH",
+  avgLST:44, risk:"HIGH",
   ndvi:0.35, ndbi:0.36, ndwi:-0.07, aqi:165,
   coastal:false,
   cities:["Ludhiana","Amritsar","Jalandhar","Patiala","Bathinda","Mohali","Hoshiarpur","Gurdaspur","Pathankot","Fatehgarh Sahib","Moga","Firozpur","Kapurthala","Ropar","Sangrur","Muktsar","Barnala","Faridkot","Fazilka","Mansa","Nawanshahr","Tarn Taran","Phagwara","Khanna","Morinda","Sirhind","Abohar","Malout","Gidderbaha","Zira","Rampura Phul","Bagha Purana","Jagraon","Samrala","Gobindgarh","Rajpura","Dera Bassi","Zirakpur","Kharar","Anandpur Sahib","Nangal","Rupnagar","Chamkaur Sahib","Bassi Pathana","Fatehgarh Churian","Dera Baba Nanak","Qadian","Batala","Sujanpur","Dinanagar","Dhariwal","Mukerian","Dasuya","Mehatpur"]
 },
 
 "Rajasthan": {
-  avgLST:47, risk:"EXTREME",
+  avgLST:48, risk:"EXTREME",
   ndvi:0.12, ndbi:0.51, ndwi:-0.18, aqi:180,
   coastal:false,
   cities:["Jaipur","Jodhpur","Udaipur","Kota","Bikaner","Ajmer","Bharatpur","Alwar","Bhilwara","Sri Ganganagar","Sikar","Pali","Tonk","Barmer","Jaisalmer","Churu","Jhunjhunu","Nagaur","Jhalawar","Baran","Dungarpur","Banswara","Chittorgarh","Sawai Madhopur","Dausa","Hanumangarh","Karauli","Dholpur","Rajsamand","Sirohi","Pratapgarh","Jalor","Bundi","Kishangarh","Beawar","Gangapur City","Hindaun","Makrana","Sujangarh","Sardarshahar","Nokha","Deshnoke","Kolayat","Phalodi","Balotra","Pachpadra","Sanchore","Raniwara","Sumerpur","Falna","Jalore","Bhinmal","Sheogarh","Bagidora","Sagwara","Chorasi","Aspur","Simalwara","Mandal","Shahpura","Todaraisingh","Niwai","Malpura","Deoli","Kekri","Nasirabad","Pushkar","Marwar Junction","Ras","Sojat","Desuri","Jaitaran","Piplia","Nimaj","Shergarh","Bhopalgarh"]
 },
 
 "Sikkim": {
-  avgLST:22, risk:"COOL",
+  avgLST:20, risk:"COOL",
   ndvi:0.72, ndbi:0.07, ndwi:0.28, aqi:30,
   coastal:false,
   cities:["Gangtok","Namchi","Mangan","Gyalshing","Ravangla","Pelling","Yuksom","Jorethang","Nayabazar","Rangpo","Singtam","Rongli","Pakyong","Rhenock","Temi","Dentam","Hee Bermoik","Kaluk","Sombaria","Uttarey","Tashiding","Khecheopalri","Pemayangste","Legship","Daramdin","Soreng","Chakung","Lachen","Lachung","Chungthang","Dikchu","Singhik","Phensang","Phodong","Rumtek","Ranka","Martam","Aritar","Padamchen","Lingtam","Chujachen","Zuluk"]
 },
 
 "Tamil Nadu": {
-  avgLST:39, risk:"HIGH",
+  avgLST:38, risk:"HIGH",
   ndvi:0.32, ndbi:0.34, ndwi:-0.06, aqi:125,
   coastal:true,
   cities:["Chennai","Coimbatore","Madurai","Tiruchirappalli","Salem","Tirunelveli","Tiruppur","Ranipet","Nagercoil","Thanjavur","Dindigul","Vellore","Cuddalore","Kanchipuram","Erode","Hosur","Kumbakonam","Karur","Udhagamandalam","Ariyalur","Thoothukudi","Pudukkottai","Nagapattinam","Sivaganga","Virudhunagar","Theni","Ramanathapuram","Villupuram","Kallakurichi","Tiruvannamalai","Krishnagiri","Dharmapuri","Namakkal","Perambalur","Nilgiris","Tenkasi","Chengalpattu","Tirupattur","Mayiladuthurai","Kanniyakumari","Maduranthakam","Cheyyar","Arani","Ambur","Vaniyambadi","Gudiyatham","Arcot","Sholingur","Polur","Tirukkoyilur","Ulundurpet","Sankarapuram","Gingee","Tindivanam","Vandavasi","Sriperumbudur","Tiruvallur","Gummidipoondi","Ponneri","Thiruvottiyur","Ambattur","Avadi","Tambaram","Pallavaram","Chromepet","Perungalathur","Kundrathur","Poonamallee","Uthiramerur","Maraimalai Nagar","Oragadam","Srirangam","Lalgudi","Musiri","Thuraiyur","Jayankondam","Papanasam","Mayavaram","Sirkazhi","Chidambaram","Panruti","Neyveli","Virudhachalam","Tittagudi"]
 },
 
 "Telangana": {
-  avgLST:42, risk:"HIGH",
+  avgLST:43, risk:"HIGH",
   ndvi:0.22, ndbi:0.41, ndwi:-0.13, aqi:148,
   coastal:false,
   cities:["Hyderabad","Warangal","Nizamabad","Karimnagar","Khammam","Nalgonda","Ramagundam","Mahabubnagar","Adilabad","Suryapet","Miryalaguda","Siddipet","Bodhan","Nirmal","Mancherial","Asifabad","Bhongir","Vikarabad","Wanaparthy","Gadwal","Narayanpet","Jogulamba","Nagarkurnool","Medak","Sangareddy","Zaheerabad","Sadasivpet","Tandur","Shadnagar","Mahbubnagar","Jadcherla","Achampet","Kollapur","Kalwakurthy","Devarakonda","Kodad","Huzurnagar","Alair","Jangaon","Narsampet","Mahabubabad","Mulugu","Bhadrachalam","Kothagudem","Palvancha","Yellandu","Paloncha","Burgampadu","Pinapaka","Dummugudem","Aswaraopeta","Sathupally","Madhira","Wyra","Nellikuduru","Chandrugonda","Thirumalayapalem","Peddapalli","Manthani","Jagtial","Korutla","Metpally","Dharmapuri","Armur","Banswada","Kamareddy","Yellareddy","Bichkunda"]
@@ -244,42 +247,42 @@ const STATE_DATA = {
 },
 
 "Uttar Pradesh": {
-  avgLST:44, risk:"EXTREME",
+  avgLST:47, risk:"EXTREME",
   ndvi:0.22, ndbi:0.42, ndwi:-0.12, aqi:210,
   coastal:false,
   cities:["Lucknow","Kanpur","Agra","Varanasi","Prayagraj","Meerut","Ghaziabad","Noida","Mathura","Moradabad","Bareilly","Aligarh","Gorakhpur","Saharanpur","Firozabad","Muzaffarnagar","Jhansi","Rampur","Shahjahanpur","Hapur","Unnao","Bahraich","Hardoi","Ballia","Sitapur","Faizabad","Sultanpur","Gonda","Etawah","Budaun","Azamgarh","Jaunpur","Mirzapur","Bijnor","Amroha","Bulandshahr","Etah","Mainpuri","Farrukhabad","Banda","Fatehpur","Raebareli","Pratapgarh","Ghazipur","Deoria","Basti","Ambedkar Nagar","Barabanki","Rae Bareli","Amethi","Chitrakoot","Hamirpur","Lalitpur","Mahoba","Lakhimpur Kheri","Pilibhit","Chandauli","Sant Kabir Nagar","Maharajganj","Kushinagar","Siddharth Nagar","Shravasti","Balrampur","Kanpur Dehat","Kanpur Nagar","Auraiya","Kannauj","Kasganj","Sambhal","Hathras","Baghpat","Shamli","Gautam Buddha Nagar","Orai","Jalaun","Kaushambi","Allahabad","Siddharthnagar","Mau","Sant Ravidas Nagar","Sonbhadra"]
 },
 
 "Uttarakhand": {
-  avgLST:30, risk:"MODERATE",
+  avgLST:29, risk:"MODERATE",
   ndvi:0.58, ndbi:0.15, ndwi:0.15, aqi:60,
   coastal:false,
   cities:["Dehradun","Haridwar","Rishikesh","Nainital","Roorkee","Haldwani","Rudrapur","Kashipur","Ramnagar","Mussoorie","Kotdwar","Tehri","Pauri","Srinagar","Lansdowne","Almora","Bageshwar","Chamoli","Gopeshwar","Joshimath","Pithoragarh","Uttarkashi","Barkot","Purola","Mori","Karnaprayag","Nandprayag","Rudraprayag","Ukhimath","Augustmuni","Agastyamuni","Tilwara","Satpuli","Dwarahat","Ranikhet","Chaukori","Munsiari","Dharchula","Didihat","Gangolihat","Berinag","Champawat","Tanakpur","Lohaghat","Bazpur","Jaspur","Kichha","Sitarganj","Khatima","Gadarpur","Dineshpur","Nagla","Laksar","Manglaur","Bhagwanpur","Jwalapur","Landhaura","Doiwala","Vikas Nagar","Chakrata"]
 },
 
 "West Bengal": {
-  avgLST:40, risk:"HIGH",
+  avgLST:38, risk:"HIGH",
   ndvi:0.35, ndbi:0.35, ndwi:-0.05, aqi:145,
   coastal:true,
   cities:["Kolkata","Howrah","Asansol","Siliguri","Durgapur","Bardhaman","Malda","Baharampur","Habra","Kharagpur","Shantipur","Dankuni","Dhulian","Ranaghat","Haldia","Raiganj","Krishnanagar","Nabadwip","Medinipur","Jalpaiguri","Balurghat","Basirhat","Bankura","Chakdaha","Darjeeling","Alipurduar","Cooch Behar","Purulia","Bolpur","Suri","Bishnupur","Arambagh","Tamluk","Contai","Baruipur","Diamond Harbour","Kalyani","Nadia","Bongaon","Barasat","Dum Dum","Barrackpore","Titagarh","Naihati","Budge Budge","Maheshtala","Uluberia","Bagnan","Amta","Udaynarayanpur","Champadanga","Pursurah","Goghat","Khanakul","Dhaniakhali","Pandua","Polba","Haripal","Singur","Chanditala","Uttarpara","Serampore","Rishra","Konnagar","Champdany","Bhadreswar","Chandannagar","Hooghly","Chinsurah","Bandel","Tribeni","Magra","Jamalpur","Memari","Katwa","Kalna","Monteswar","Purbasthali","Nadanghat","Burdwan","Galsi","Ausgram","Raina","Khandaghosh","Bhatar"]
 },
 
 "Jammu and Kashmir": {
-  avgLST:29, risk:"MODERATE",
+  avgLST:24, risk:"MODERATE",
   ndvi:0.52, ndbi:0.19, ndwi:0.17, aqi:55,
   coastal:false,
   cities:["Jammu","Kathua","Udhampur","Rajouri","Poonch","Doda","Kishtwar","Ramban","Reasi","Samba","Bishnah","Arnia","Suchetgarh","Marh","Akhnoor","Khour","Pargwal","Nowshera","Sunderbani","Kalakote","Budhal","Thannamandi","Darhal","Manjakote","Gambhir Singh Pura","Behrote","Mendhar","Surankote","Haveli","Ramnagar","Chenani","Nathatop","Nagrota","Batote","Patnitop","Kud","Srinagar","Anantnag","Baramulla","Sopore","Pulwama","Shopian","Kulgam","Bandipora","Ganderbal","Budgam","Kupwara","Handwara","Uri","Gurez","Lolab","Langate","Kreeri","Pattan","Tangmarg","Gulmarg","Pahalgam","Kokernag","Dooru","Achabal","Bijbehara","Qazigund","Banihal"]
 },
 
 "Ladakh": {
-  avgLST:22, risk:"COOL",
+  avgLST:18, risk:"COOL",
   ndvi:0.15, ndbi:0.08, ndwi:0.05, aqi:30,
   coastal:false,
   cities:["Leh","Kargil","Nubra","Zanskar","Drass","Diskit","Hunder","Panamik","Turtuk","Tyakshi","Bogdang","Chalunkha","Partapur","Khalsar","Sumur","Panamic","Warshi","Shyok","Durbuk","Tangtse","Chushul","Nyoma","Hanle","Korzok","Tso Moriri","Mahe","Puga","Sarchu","Pang","Debring","Rumtse","Gya","Mhe","Upshi","Thiksey","Hemis","Shey","Stok","Choglamsar","Phyang","Nimoo","Khalatse","Saspol","Alchi","Rizong","Likir","Basgo","Nimmu","Suru","Sankoo","Panikhar","Parkachik","Rangdum","Padum","Karsha","Zangla","Purne","Ating","Raru","Hamling"]
 },
 
 "Delhi": {
-  avgLST:45, risk:"EXTREME",
+  avgLST:46, risk:"EXTREME",
   ndvi:0.18, ndbi:0.48, ndwi:-0.15, aqi:250,
   coastal:false,
   cities:["New Delhi","Dwarka","Rohini","Noida","Gurugram","Faridabad","Shahdara","Janakpuri","Vasant Kunj","Saket","Lajpat Nagar","Defence Colony","Karol Bagh","Connaught Place","Chandni Chowk","Civil Lines","Model Town","Pitampura","Shalimar Bagh","Wazirabad","Narela","Bawana","Mundka","Uttam Nagar","Vikaspuri","Paschim Vihar","Punjabi Bagh","Mayur Vihar","Patparganj","Preet Vihar","Laxmi Nagar","Vivek Vihar","Geeta Colony","Dilshad Garden","Anand Vihar","Karkarduma","Krishna Nagar","Gandhi Nagar","Ashok Vihar","Lawrence Road","Tri Nagar","Swaroop Nagar","Saraswati Vihar","Mangolpuri","Sultanpuri","Budh Vihar","Peeragarhi","Nangloi","Nilothi","Khyala","Moti Nagar","Tagore Garden","Subhash Nagar","Tilak Nagar","Hari Nagar","Bindapur","Dabri","Palam","Mahipalpur","Bijwasan","Najafgarh","Dichaon Kalan","Kapashera","Aya Nagar","Mandi","Mehrauli","Chhatarpur","Tughlakabad","Badarpur","Sangam Vihar","Govindpuri","Kalkaji","Nehru Place","Okhla","Jasola","Sarita Vihar","Madanpur Khadar","Jaitpur","Mithapur","Ghitorni","Sultanpur","Gadaipur","Rangpuri","Vasant Gaon","Munirka","RK Puram","Safdarjung Enclave","Green Park","Hauz Khas","Malviya Nagar","Pushp Vihar","Sheikh Sarai","Chirag Dilli","Neb Sarai","Lado Sarai","Khirki","Begumpur","Satbari"]
@@ -342,23 +345,6 @@ const leaderBase = [
 
 // CITY lookup helpers will be created inside the App component using useMemo
 
-function normalize(val, min, max) {
-  return Math.round(
-    Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100))
-  )
-}
-
-function getDataForCity(cityName) {
-  // fall back to scanning STATE_DATA if needed
-  let stateName = null
-  for (const [s, data] of Object.entries(STATE_DATA)) {
-    if (data.cities && data.cities.includes(cityName)) {
-      stateName = s
-      break
-    }
-  }
-  return getCityData(cityName, stateName)
-}
 
 
 function getStateName(geo) {
@@ -674,10 +660,8 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
                   <span style={{
                     fontSize: 11,
                     fontWeight: 700,
-                    color: lst >= 44 ? "#ff2222"
-                          : lst >= 38 ? "#ff6b35"
-                          : lst >= 32 ? "#ffcc00"
-                          : "#00cc66"
+                    color: getThemeAccent(parseFloat(lst)),
+                    transition: 'color 0.4s ease'
                   }}>
                     {isLive ? '' : '~'}{lst}°C
                   </span>
@@ -917,35 +901,51 @@ function smoothGeoFeature(feature) {
   return { ...feature, geometry: smoothGeometry(feature.geometry) }
 }
 
+// Single source of truth for heat-index color/risk buckets — used by getHeatIndexColor,
+// getRiskLabel, and the map legend, so they can never drift out of sync with each other.
+const HEAT_INDEX_BUCKETS = [
+  { min: 45, color: '#cc0000', label: 'EXTREME', legend: 'EXTREME 45+' },
+  { min: 40, color: '#e63c00', label: 'VERY HIGH', legend: 'VERY HIGH 40-45' },
+  { min: 35, color: '#cc6600', label: 'HIGH', legend: 'HIGH 35-40' },
+  { min: 30, color: '#aa8800', label: 'MODERATE', legend: 'MODERATE 30-35' },
+  { min: 25, color: '#667700', label: 'LOW-MODERATE', legend: 'LOW-MODERATE 25-30' },
+  { min: -Infinity, color: '#1a6622', label: 'LOW', legend: 'LOW <25' }
+]
+
 function getHeatIndexColor(heatIndex) {
-  if (heatIndex >= 45) return '#cc0000'
-  if (heatIndex >= 40) return '#e63c00'
-  if (heatIndex >= 35) return '#cc6600'
-  if (heatIndex >= 30) return '#aa8800'
-  if (heatIndex >= 25) return '#667700'
-  return '#1a6622'
+  return HEAT_INDEX_BUCKETS.find(b => heatIndex >= b.min).color
 }
 
 function getRiskLabel(heatIndex) {
-  if (heatIndex >= 45) return 'EXTREME'
-  if (heatIndex >= 40) return 'VERY HIGH'
-  if (heatIndex >= 35) return 'HIGH'
-  if (heatIndex >= 30) return 'MODERATE'
-  return 'LOW'
+  return HEAT_INDEX_BUCKETS.find(b => heatIndex >= b.min).label
 }
 
-// Satellite pass freshness — these indices are NOT real-time. Landsat 8 revisits
-// any given point roughly every 16 days, Sentinel-2 roughly every 5 days. We don't
-// have a live "last actual pass" feed, so this derives the most recent date that
-// would fall on that revisit cadence from a fixed epoch — an honest illustrative
-// freshness label, not a claim of exact pass telemetry.
-function getLastSatellitePass(revisitDays) {
-  const epoch = new Date('2024-01-01T00:00:00Z').getTime()
-  const now = Date.now()
-  const daysSinceEpoch = Math.floor((now - epoch) / 86400000)
-  const daysSinceLastPass = daysSinceEpoch % revisitDays
-  const lastPassDate = new Date(now - daysSinceLastPass * 86400000)
-  return lastPassDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+// UI "thermal" accent theme — 3 broad interface categories that drive card borders,
+// glows, headings and button accents via CSS custom properties. Completely separate
+// from HEAT_INDEX_BUCKETS above: the map's 6-bucket legend/fill colors are fixed
+// data-meaning and must never change with this. This is a visual theme layer only.
+const UI_THEME_BUCKETS = [
+  { min: 40, accent: '#ff5c3c', bgStart: '#2a0a08', bgEnd: '#1a0605', glow: 'rgba(255,70,40,0.4)' },
+  { min: 30, accent: '#ffa83c', bgStart: '#2a1c08', bgEnd: '#1a1205', glow: 'rgba(255,170,40,0.3)' },
+  { min: -Infinity, accent: '#3ca8ff', bgStart: '#081c2a', bgEnd: '#05111a', glow: 'rgba(60,160,255,0.4)' }
+]
+
+// Single place every themed surface reads from — pass a heat value, get back the CSS
+// custom properties to spread onto that subtree's wrapper style prop.
+function getThemeVars(heat) {
+  const safe = typeof heat === 'number' && !Number.isNaN(heat) ? heat : 30
+  const bucket = UI_THEME_BUCKETS.find(b => safe >= b.min)
+  return {
+    '--theme-accent': bucket.accent,
+    '--theme-bg-start': bucket.bgStart,
+    '--theme-bg-end': bucket.bgEnd,
+    '--theme-glow': bucket.glow
+  }
+}
+
+function getThemeAccent(heat) {
+  const safe = typeof heat === 'number' && !Number.isNaN(heat) ? heat : 30
+  return UI_THEME_BUCKETS.find(b => safe >= b.min).accent
 }
 
 // Health & Safety Precautions — deterministic rules-based mapping from live current
@@ -1021,6 +1021,274 @@ const EXTREME_HEAT_HOTSPOTS = [
   { name: 'Bihar', coords: [85.3, 25.5] }
 ]
 
+// LAYER 1 extracted + memoized: this never reads hoveredState/tooltip, but living inline
+// inside IndiaMap meant every hover-triggered re-render re-ran react-simple-maps' full
+// Mercator projection (mercatorRaw/polygonContains/streamLine, etc.) for every district in
+// the large districts GeoJSON — confirmed via CPU profile (43% of all sampled time during
+// mouse movement, single re-renders blocking the main thread for 1-8+ seconds). Memoizing
+// this with a prop list that excludes hover state stops that recomputation on every hover,
+// without changing any boundary, color, or projection logic — output is byte-identical.
+const DistrictsLayer = React.memo(function DistrictsLayer({ DATA }) {
+  return (
+    <ComposableMap
+      projection='geoMercator'
+      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      style={INDIA_MAP_LAYER_STYLE}
+    >
+      <GeographiesLayer
+        url={DISTRICTS_URL}
+        render={(geographies) =>
+          geographies.map((geo) => {
+            const p = geo.properties
+            const rawState = p.NAME_1 || p.ST_NM || p.STATE || p.st_nm || ''
+            const stateName = fixStateName(rawState, DATA)
+
+            if (rawState && /jammu|kashmir|ladakh/i.test(stateName || rawState)) {
+              return null
+            }
+
+            const heat = DATA?.[stateName]?.heatIndex || 30
+            const color = getHeatIndexColor(heat)
+            if (!color || typeof color !== 'string') {
+              console.warn('INVALID HEAT COLOR', heat, stateName)
+            }
+            return (
+              <Geography
+                key={geo.rsmKey}
+                geography={geo}
+                style={{
+                  default: {
+                    fill: color,
+                    stroke: '#0a1628',
+                    strokeWidth: 0.35,
+                    outline: 'none',
+                    pointerEvents: 'none',
+                    transition: 'fill 0.4s ease'
+                  },
+                  hover: { fill: color, outline: 'none', transition: 'fill 0.4s ease' },
+                  pressed: { fill: color, outline: 'none', transition: 'fill 0.4s ease' }
+                }}
+              />
+            )
+          })
+        }
+      />
+    </ComposableMap>
+  )
+})
+
+// LAYER 2 extracted + memoized, same reasoning as DistrictsLayer above. The `isHov` check
+// previously read from app-level hoveredState was redundant: react-simple-maps' Geography
+// only applies its `hover:` style to the specific element actually under the cursor (its
+// own internal per-element hover state), so by the time this element's hover style is
+// showing, hoveredState===name is already guaranteed true. Dropping that redundant read
+// removes the need for this layer to depend on hoveredState at all — onHoverEnter/Leave
+// are stable callbacks (useCallback, empty deps) so this never re-renders on hover.
+const StatesInteractiveLayer = React.memo(function StatesInteractiveLayer({ DATA, onStateClick, onHoverEnter, onHoverLeave }) {
+  return (
+    <ComposableMap
+      projection='geoMercator'
+      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      style={INDIA_MAP_LAYER_STYLE}
+    >
+      <GeographiesLayer
+        url={STATES_URL}
+        render={(geographies) =>
+          geographies.map((geo) => {
+            const raw = getRawName(geo)
+            const name = fixStateName(raw, DATA)
+
+            // Skip J&K/Ladakh from standard GeoJSON - they're rendered from custom split GeoJSON
+            if (/jammu|kashmir|ladakh/i.test(name || raw)) {
+              return null
+            }
+
+            const heat = DATA?.[name]?.heatIndex || 30
+            const color = getHeatIndexColor(heat)
+            const baseFill = 'rgba(0,0,0,0)'
+            return (
+              <Geography
+                key={geo.rsmKey + '_state'}
+                geography={geo}
+                onClick={() => onStateClick(name)}
+                onMouseEnter={() => onHoverEnter(name)}
+                onMouseLeave={() => onHoverLeave()}
+                style={{
+                  default: {
+                    fill: baseFill,
+                    stroke: '#ffffff',
+                    strokeWidth: 1.5,
+                    strokeOpacity: 0,
+                    outline: 'none',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto'
+                  },
+                  hover: {
+                    fill: `${color}55`,
+                    stroke: '#ffffff',
+                    strokeWidth: 1.5,
+                    strokeOpacity: 0,
+                    outline: 'none',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto'
+                  },
+                  pressed: { fill: `${color}80`, stroke: '#ffffff', strokeWidth: 1.5, strokeOpacity: 0, outline: 'none', pointerEvents: 'auto' }
+                }}
+              />
+            )
+          })
+        }
+      />
+    </ComposableMap>
+  )
+})
+
+// LAYER 2.5 extracted + memoized — its `isHov` variable was already dead/unused (the J&K
+// hover style was always a fixed color, never conditioned on it), so this is a pure
+// extraction with no logic change at all.
+const JKInteractiveLayer = React.memo(function JKInteractiveLayer({ DATA, onStateClick, onHoverEnter, onHoverLeave }) {
+  return (
+    <ComposableMap
+      projection='geoMercator'
+      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
+    >
+      <GeographiesLayer
+        url={JK_URL}
+        render={(geographies) =>
+          geographies
+            .filter((geo) => /jammu|kashmir|ladakh/i.test(getRawName(geo)))
+            .map((geo) => {
+              const p = geo.properties
+              const rawState = p.NAME_1 || p.ST_NM || p.STATE || p.st_nm || ''
+              const stateName = fixStateName(rawState, DATA)
+
+              const color = getHeatIndexColor(DATA?.[stateName]?.heatIndex || 30)
+              return (
+                <Geography
+                  key={geo.rsmKey + '_jk'}
+                  geography={smoothGeoFeature(geo)}
+                  onClick={() => onStateClick(stateName)}
+                  onMouseEnter={() => onHoverEnter(stateName)}
+                  onMouseLeave={() => onHoverLeave()}
+                  style={{
+                    default: {
+                      fill: color,
+                      stroke: '#0a1628',
+                      strokeWidth: 1.2,
+                      outline: 'none',
+                      cursor: 'pointer',
+                      pointerEvents: 'auto'
+                    },
+                    hover: {
+                      fill: `${color}aa`,
+                      stroke: '#00d4ff',
+                      outline: 'none',
+                      cursor: 'pointer',
+                      pointerEvents: 'auto'
+                    },
+                    pressed: { fill: `${color}80`, outline: 'none', pointerEvents: 'auto' }
+                  }}
+                />
+              )
+            })
+        }
+      />
+    </ComposableMap>
+  )
+})
+
+// LAYER 3 extracted + memoized — always renders the DEFAULT (white) border style; the
+// hovered border's color/width is applied imperatively via registerBorderRef (see IndiaMap),
+// not through this component re-rendering with hoveredState.
+const StateBordersLayer = React.memo(function StateBordersLayer({ DATA, registerBorderRef }) {
+  return (
+    <ComposableMap
+      projection='geoMercator'
+      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
+    >
+      <GeographiesLayer
+        url={STATES_URL}
+        render={(geographies) =>
+          geographies.map((geo) => {
+            const raw = getRawName(geo)
+            const name = fixStateName(raw)
+
+            // Skip J&K/Ladakh from standard GeoJSON - they're rendered from custom split GeoJSON
+            if (/jammu|kashmir|ladakh/i.test(name || raw)) {
+              return null
+            }
+
+            return (
+              <Geography
+                key={geo.rsmKey + '_border'}
+                geography={geo}
+                ref={(el) => registerBorderRef(name, el)}
+                style={{
+                  default: {
+                    fill: 'none',
+                    stroke: '#ffffff',
+                    strokeWidth: 2.0,
+                    strokeOpacity: 0.95,
+                    outline: 'none',
+                    pointerEvents: 'none'
+                  },
+                  hover: { fill: 'none', outline: 'none' },
+                  pressed: { fill: 'none', outline: 'none' }
+                }}
+              />
+            )
+          })
+        }
+      />
+    </ComposableMap>
+  )
+})
+
+// LAYER 3.5 extracted + memoized, same approach as StateBordersLayer above.
+const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorderRef }) {
+  return (
+    <ComposableMap
+      projection='geoMercator'
+      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
+    >
+      <GeographiesLayer
+        url={JK_URL}
+        render={(geographies) =>
+          geographies
+            .filter((geo) => /jammu|kashmir|ladakh/i.test(getRawName(geo)))
+            .map((geo) => {
+              const p = geo.properties
+              const rawState = p.NAME_1 || p.ST_NM || p.STATE || p.st_nm || ''
+              const stateName = fixStateName(rawState)
+              return (
+                <Geography
+                  key={geo.rsmKey + '_jk_border'}
+                  geography={smoothGeoFeature(geo)}
+                  ref={(el) => registerBorderRef(stateName, el)}
+                  style={{
+                    default: {
+                      fill: 'none',
+                      stroke: '#ffffff',
+                      strokeWidth: 2.0,
+                      strokeOpacity: 0.95,
+                      outline: 'none',
+                      pointerEvents: 'none'
+                    },
+                    hover: { fill: 'none', outline: 'none' },
+                    pressed: { fill: 'none', outline: 'none' }
+                  }}
+                />
+              )
+            })
+        }
+      />
+    </ComposableMap>
+  )
+})
+
 const IndiaMap = ({ INDIA_DATA: propINDIA_DATA, onStateClick }) => {
   const [hoveredState, setHoveredState] = useState(null)
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, name: '' })
@@ -1028,12 +1296,73 @@ const IndiaMap = ({ INDIA_DATA: propINDIA_DATA, onStateClick }) => {
   const activeName = tooltip.visible ? tooltip.name : hoveredState
   const activeData = activeName ? DATA?.[activeName] : null
 
+  // Stable callback references (empty deps — setHoveredState/setTooltip are themselves
+  // stable) so the memoized interactive layers below don't re-render just because IndiaMap
+  // re-rendered for an unrelated reason.
+  const handleHoverEnter = useCallback((name) => {
+    setHoveredState(name)
+    setTooltip({ visible: true, x: 0, y: 0, name })
+  }, [])
+  const handleHoverLeave = useCallback(() => {
+    setHoveredState(null)
+    setTooltip({ visible: false, x: 0, y: 0, name: '' })
+  }, [])
+
+  // DOM refs for each state/J&K border path (registered by StateBordersLayer/JKBordersLayer
+  // below), so the hovered border's highlight can be applied by directly mutating style —
+  // see the effect below — instead of passing hoveredState as a prop and forcing those
+  // memoized layers to re-render and recompute their projections on every hover.
+  const borderRefsMap = useRef(new Map())
+  const registerBorderRef = useCallback((name, el) => {
+    if (el) borderRefsMap.current.set(name, el)
+    else borderRefsMap.current.delete(name)
+  }, [])
+  const prevHoveredBorderRef = useRef(null)
+  useEffect(() => {
+    const prev = prevHoveredBorderRef.current
+    if (prev && prev !== hoveredState) {
+      const prevEl = borderRefsMap.current.get(prev)
+      if (prevEl) {
+        prevEl.style.stroke = '#ffffff'
+        prevEl.style.strokeWidth = '2.0'
+      }
+    }
+    if (hoveredState) {
+      const el = borderRefsMap.current.get(hoveredState)
+      if (el) {
+        el.style.stroke = '#00d4ff'
+        el.style.strokeWidth = '2.8'
+      }
+    }
+    prevHoveredBorderRef.current = hoveredState
+  }, [hoveredState])
+
   // DISTRICTS_URL/STATES_URL are large (~35MB/~23MB) geojson files — fetch +
   // parse genuinely takes several seconds. Without this, the map area looks
   // blank/stuck during that window instead of visibly loading.
   const districtsReady = !!useGeoData(DISTRICTS_URL)
   const statesReady = !!useGeoData(STATES_URL)
   const mapDataLoading = !districtsReady || !statesReady
+
+  // Heat values are a static dataset (not a live feed), so "loaded N ago" — tracked from
+  // when this map actually finished loading in THIS session — is the honest framing,
+  // rather than implying a live refresh that doesn't happen.
+  const [loadedAt, setLoadedAt] = useState(null)
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    if (!mapDataLoading && !loadedAt) setLoadedAt(Date.now())
+  }, [mapDataLoading, loadedAt])
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30000)
+    return () => clearInterval(id)
+  }, [])
+  const dataAgeLabel = (() => {
+    if (!loadedAt) return null
+    const mins = Math.max(0, Math.round((now - loadedAt) / 60000))
+    if (mins < 1) return 'Heat data loaded just now'
+    if (mins === 1) return 'Heat data loaded 1 min ago'
+    return `Heat data loaded ${mins} min ago`
+  })()
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -1048,263 +1377,39 @@ const IndiaMap = ({ INDIA_DATA: propINDIA_DATA, onStateClick }) => {
             border: '3px solid rgba(0,212,255,0.25)', borderTopColor: '#00d4ff',
             animation: 'spin 0.9s linear infinite'
           }} />
-          <div style={{ color: '#94a3b8', fontSize: 12, fontFamily: 'monospace' }}>
+          <div style={{ color: '#94a3b8', fontSize: 12 }}>
             Loading map data…
           </div>
         </div>
       )}
-      {/* LAYER 1: District texture colored by parent-state heat */}
-      <ComposableMap
-        projection='geoMercator'
-        projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
-        style={INDIA_MAP_LAYER_STYLE}
-      >
-        <GeographiesLayer
-          url={DISTRICTS_URL}
-          render={(geographies) =>
-            geographies.map((geo) => {
-              const p = geo.properties
-              const rawState = p.NAME_1 || p.ST_NM || p.STATE || p.st_nm || ''
-              const stateName = fixStateName(rawState, DATA)
+      {/* LAYER 1: District texture colored by parent-state heat — extracted + memoized
+          above (DistrictsLayer) so hover-state changes elsewhere on the map don't force
+          this large GeoJSON layer to recompute its projection on every hover. */}
+      <DistrictsLayer DATA={DATA} />
 
-              if (rawState && /jammu|kashmir|ladakh/i.test(stateName || rawState)) {
-                return null
-              }
+      {/* LAYER 2 + 2.5: extracted + memoized above (StatesInteractiveLayer/JKInteractiveLayer)
+          — click/hover detection no longer forces a recompute of these GeoJSON layers on
+          every hover; only the small tooltip panel and border-highlight layers update. */}
+      <StatesInteractiveLayer DATA={DATA} onStateClick={onStateClick} onHoverEnter={handleHoverEnter} onHoverLeave={handleHoverLeave} />
+      <JKInteractiveLayer DATA={DATA} onStateClick={onStateClick} onHoverEnter={handleHoverEnter} onHoverLeave={handleHoverLeave} />
 
-              const heat = DATA?.[stateName]?.heatIndex || 30
-              const color = getHeatIndexColor(heat)
-              if (!color || typeof color !== 'string') {
-                console.warn('INVALID HEAT COLOR', heat, stateName)
-              }
-              return (
-                <Geography
-                  key={geo.rsmKey}
-                  geography={geo}
-                  style={{
-                    default: {
-                      fill: color,
-                      stroke: '#0a1628',
-                      strokeWidth: 0.35,
-                      outline: 'none',
-                      pointerEvents: 'none'
-                    },
-                    hover: { fill: color, outline: 'none' },
-                    pressed: { fill: color, outline: 'none' }
-                  }}
-                />
-              )
-            })
-          }
-        />
-      </ComposableMap>
+      {/* LAYER 3 + 3.5: extracted + memoized (StateBordersLayer/JKBordersLayer below).
+          These can't use react-simple-maps' own per-element hover (pointerEvents:'none'
+          so clicks/hover pass through to Layer 2 underneath), so they genuinely need to
+          know hoveredState from outside — but re-rendering all ~36 border paths through
+          React on every hover was the same expensive recompute as Layers 1/2. Instead,
+          borders render ONCE (memoized on DATA only) and the highlighted one is updated by
+          directly mutating its DOM node's stroke/strokeWidth via a ref (same pattern as
+          CustomCursor.jsx's lag animation) — no re-render, no projection recomputation. */}
+      <StateBordersLayer DATA={DATA} registerBorderRef={registerBorderRef} />
+      <JKBordersLayer DATA={DATA} registerBorderRef={registerBorderRef} />
 
-      {/* LAYER 2: Transparent state layer — click / hover detection */}
-      <ComposableMap
-        projection='geoMercator'
-        projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
-        style={INDIA_MAP_LAYER_STYLE}
-      >
-        <GeographiesLayer
-          url={STATES_URL}
-          render={(geographies) =>
-            geographies.map((geo) => {
-              const raw = getRawName(geo)
-              const name = fixStateName(raw, DATA)
-              
-              // Skip J&K/Ladakh from standard GeoJSON - they're rendered from custom split GeoJSON
-              if (/jammu|kashmir|ladakh/i.test(name || raw)) {
-                return null
-              }
-              
-              const heat = DATA?.[name]?.heatIndex || 30
-              const color = getHeatIndexColor(heat)
-              const isHov = hoveredState === name
-              const baseFill = 'rgba(0,0,0,0)'
-              return (
-                <Geography
-                  key={geo.rsmKey + '_state'}
-                  geography={geo}
-                  onClick={() => onStateClick(name)}
-                  onMouseEnter={(e) => {
-                    setHoveredState(name)
-                    setTooltip({ visible: true, x: e.clientX, y: e.clientY, name })
-                  }}
-                  onMouseMove={(e) =>
-                    setTooltip((t) => (t.visible ? { ...t, x: e.clientX, y: e.clientY } : t))
-                  }
-                  onMouseLeave={() => {
-                    setHoveredState(null)
-                    setTooltip({ visible: false, x: 0, y: 0, name: '' })
-                  }}
-                  style={{
-                    default: {
-                      fill: baseFill,
-                      stroke: '#ffffff',
-                      strokeWidth: 1.5,
-                      strokeOpacity: 0,
-                      outline: 'none',
-                      cursor: 'pointer',
-                      pointerEvents: 'auto'
-                    },
-                    hover: {
-                      fill: isHov ? `${color}55` : baseFill,
-                      stroke: '#ffffff',
-                      strokeWidth: 1.5,
-                      strokeOpacity: 0,
-                      outline: 'none',
-                      cursor: 'pointer',
-                      pointerEvents: 'auto'
-                    },
-                    pressed: { fill: `${color}80`, stroke: '#ffffff', strokeWidth: 1.5, strokeOpacity: 0, outline: 'none', pointerEvents: 'auto' }
-                  }}
-                />
-              )
-            })
-          }
-        />
-      </ComposableMap>
-
-      {/* LAYER 2.5: J&K from custom split GeoJSON */}
-      <ComposableMap
-        projection='geoMercator'
-        projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
-        style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
-      >
-        <GeographiesLayer
-          url={JK_URL}
-          render={(geographies) =>
-            geographies
-              .filter((geo) => /jammu|kashmir|ladakh/i.test(getRawName(geo)))
-              .map((geo) => {
-                const p = geo.properties
-                const rawState = p.NAME_1 || p.ST_NM || p.STATE || p.st_nm || ''
-                const stateName = fixStateName(rawState, DATA)
-
-                const color = getHeatIndexColor(DATA?.[stateName]?.heatIndex || 30)
-                const isHov = hoveredState === stateName
-                return (
-                  <Geography
-                    key={geo.rsmKey + '_jk'}
-                    geography={smoothGeoFeature(geo)}
-                    onClick={() => onStateClick(stateName)}
-                    onMouseEnter={(e) => {
-                      setHoveredState(stateName)
-                      setTooltip({ visible: true, x: e.clientX, y: e.clientY, name: stateName })
-                    }}
-                    onMouseMove={(e) =>
-                      setTooltip((t) => (t.visible ? { ...t, x: e.clientX, y: e.clientY } : t))
-                    }
-                    onMouseLeave={() => {
-                      setHoveredState(null)
-                      setTooltip({ visible: false, x: 0, y: 0, name: '' })
-                    }}
-                    style={{
-                      default: {
-                        fill: color,
-                        stroke: '#0a1628',
-                        strokeWidth: 1.2,
-                        outline: 'none',
-                        cursor: 'pointer',
-                        pointerEvents: 'auto'
-                      },
-                      hover: {
-                        fill: `${color}aa`,
-                        stroke: '#00d4ff',
-                        outline: 'none',
-                        cursor: 'pointer',
-                        pointerEvents: 'auto'
-                      },
-                      pressed: { fill: `${color}80`, outline: 'none', pointerEvents: 'auto' }
-                    }}
-                  />
-                )
-              })
-          }
-        />
-      </ComposableMap>
-
-      {/* LAYER 3: Bold state border lines */}
-      <ComposableMap
-        projection='geoMercator'
-        projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
-        style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
-      >
-        <GeographiesLayer
-          url={STATES_URL}
-          render={(geographies) =>
-            geographies.map((geo) => {
-              const raw = getRawName(geo)
-              const name = fixStateName(raw)
-
-              // Skip J&K/Ladakh from standard GeoJSON - they're rendered from custom split GeoJSON
-              if (/jammu|kashmir|ladakh/i.test(name || raw)) {
-                return null
-              }
-
-              const isHov = hoveredState === name
-              return (
-                <Geography
-                  key={geo.rsmKey + '_border'}
-                  geography={geo}
-                  style={{
-                    default: {
-                      fill: 'none',
-                      stroke: isHov ? '#00d4ff' : '#ffffff',
-                      strokeWidth: isHov ? 2.8 : 2.0,
-                      strokeOpacity: 0.95,
-                      outline: 'none',
-                      pointerEvents: 'none'
-                    },
-                    hover: { fill: 'none', outline: 'none' },
-                    pressed: { fill: 'none', outline: 'none' }
-                  }}
-                />
-              )
-            })
-          }
-        />
-      </ComposableMap>
-
-      {/* LAYER 3.5: J&K border lines */}
-      <ComposableMap
-        projection='geoMercator'
-        projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
-        style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
-      >
-        <GeographiesLayer
-            url={JK_URL}
-            render={(geographies) =>
-              geographies
-                .filter((geo) => /jammu|kashmir|ladakh/i.test(getRawName(geo)))
-                .map((geo) => {
-                  const p = geo.properties
-                  const rawState = p.NAME_1 || p.ST_NM || p.STATE || p.st_nm || ''
-                  const stateName = fixStateName(rawState)
-                  const isHov = hoveredState === stateName
-                  return (
-                    <Geography
-                      key={geo.rsmKey + '_jk_border'}
-                      geography={smoothGeoFeature(geo)}
-                      style={{
-                        default: {
-                          fill: 'none',
-                          stroke: isHov ? '#00d4ff' : '#ffffff',
-                          strokeWidth: isHov ? 2.8 : 2.0,
-                          strokeOpacity: 0.95,
-                          outline: 'none',
-                          pointerEvents: 'none'
-                        },
-                        hover: { fill: 'none', outline: 'none' },
-                        pressed: { fill: 'none', outline: 'none' }
-                      }}
-                    />
-                  )
-                })
-            }
-        />
-      </ComposableMap>
-
-      {/* LAYER 4: Pulsing red hotspot dots */}
+      {/* LAYER 4: Pulsing extreme-heat hotspot markers.
+          Previously red/#ff3333 — same color family as the EXTREME/VERY HIGH
+          heat zones underneath them, so they nearly disappeared into the map.
+          White-with-dark-outline guarantees contrast against red, orange, AND
+          yellow heat zones alike (not just the specific shade behind any one
+          marker), per the suggested fix. */}
       <ComposableMap
         projection='geoMercator'
         projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
@@ -1312,11 +1417,11 @@ const IndiaMap = ({ INDIA_DATA: propINDIA_DATA, onStateClick }) => {
       >
         {EXTREME_HEAT_HOTSPOTS.map((spot) => (
           <Marker key={spot.name} coordinates={spot.coords}>
-            <circle r={5} fill='#ff0000' opacity={0.9}>
-              <animate attributeName='r' values='4;9;4' dur='1.6s' repeatCount='indefinite' />
-              <animate attributeName='opacity' values='0.9;0.2;0.9' dur='1.6s' repeatCount='indefinite' />
+            <circle r={6} fill='none' stroke='#ffffff' strokeWidth={1.5} opacity={0.95}>
+              <animate attributeName='r' values='5;10;5' dur='1.6s' repeatCount='indefinite' />
+              <animate attributeName='opacity' values='0.95;0.4;0.95' dur='1.6s' repeatCount='indefinite' />
             </circle>
-            <circle r={3} fill='#ff3333' />
+            <circle r={3.5} fill='#ffffff' stroke='#0a0e1a' strokeWidth={1.5} />
           </Marker>
         ))}
       </ComposableMap>
@@ -1410,10 +1515,14 @@ const IndiaMap = ({ INDIA_DATA: propINDIA_DATA, onStateClick }) => {
         }}
       >
         <div style={{ fontWeight: 700, marginBottom: 6, letterSpacing: 0.5 }}>HEAT INDEX</div>
-        <LegendRow color='#cc0000' label='EXTREME 45+' />
-        <LegendRow color='#e63c00' label='VERY HIGH 40-45' />
-        <LegendRow color='#cc6600' label='HIGH 35-40' />
-        <LegendRow color='#aa8800' label='MODERATE 30-35' />
+        {HEAT_INDEX_BUCKETS.map(b => (
+          <LegendRow key={b.label} color={b.color} label={b.legend} />
+        ))}
+        {dataAgeLabel && (
+          <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: 10, color: '#64748b' }}>
+            {dataAgeLabel}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -1604,7 +1713,33 @@ const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveS
   )
 }
 
-const CompactNavbar = ({ currentUser, currentTime, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, darkMode, setDarkMode }) => {
+// Self-contained 1Hz clock, isolated in its own leaf component. Previously `currentTime`
+// lived in App's top-level state with a setInterval(...,1000) — every tick re-rendered the
+// ENTIRE App tree, including the unmemoized IndiaMap (large GeoJSON, many SVG paths), which
+// a CDP trace showed costing 1-5+ seconds of synchronous React work per tick — the actual
+// cause of the reported cursor/app lag, confirmed by isolating this state down here.
+const LiveClock = () => {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: 2, fontSize: 10,
+      textAlign: 'right', color: '#cbd5e1'
+    }}>
+      <div style={{ fontWeight: 700, fontSize: 11, letterSpacing: '0.08em' }}>
+        {now.toLocaleTimeString('en-IN', { hour12: false })}
+      </div>
+      <div style={{ fontSize: 8, color: '#64748b', letterSpacing: '0.08em' }}>
+        {now.toLocaleDateString('en-IN', { weekday: 'short' }).toUpperCase().replace(/\./, '')} · IST
+      </div>
+    </div>
+  )
+}
+
+const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, darkMode, setDarkMode }) => {
   const { t, i18n } = useTranslation()
   const isAdmin = currentUser?.role === 'admin'
 
@@ -1657,18 +1792,7 @@ const CompactNavbar = ({ currentUser, currentTime, setScreen, scrollToMap, onLog
 
         {/* Right section */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {/* Clock */}
-          <div style={{
-            display: 'flex', flexDirection: 'column', gap: 2, fontSize: 10,
-            textAlign: 'right', color: '#cbd5e1'
-          }}>
-            <div style={{ fontWeight: 700, fontSize: 11, letterSpacing: '0.08em' }}>
-              {currentTime.toLocaleTimeString('en-IN', { hour12: false })}
-            </div>
-            <div style={{ fontSize: 8, color: '#64748b', letterSpacing: '0.08em' }}>
-              {currentTime.toLocaleDateString('en-IN', { weekday: 'short' }).toUpperCase().replace(/\./, '')} · IST
-            </div>
-          </div>
+          <LiveClock />
 
           {/* Language toggle — manual only, no auto-detect by location/browser */}
           <select
@@ -1801,14 +1925,23 @@ function App({ user }) {
     try { window.localStorage.setItem('heatops_dark_mode', String(darkMode)) } catch {}
   }, [darkMode])
 
-  const [currentTime, setCurrentTime] = useState(new Date())
-  
   // Map & Selection
   const [selectedState, setSelectedState] = useState(null)
   const [selectedCity, setSelectedCity] = useState(null)
+  // Stable reference (useCallback) so IndiaMap's memoized interactive layers don't see a
+  // "new" onStateClick prop — and re-render their full GeoJSON — every time App re-renders
+  // for an unrelated reason (e.g. live weather polling) while the map screen is showing.
+  const handleStateClick = useCallback((name) => {
+    const fixed = fixStateName(name)
+    if (fixed !== selectedState) {
+      setSelectedState(fixed)
+      const defaultCity = (INDIA_DATA[fixed] && Array.isArray(INDIA_DATA[fixed].cities) && INDIA_DATA[fixed].cities.length > 0)
+        ? INDIA_DATA[fixed].cities[0]
+        : null
+      setSelectedCity(defaultCity)
+    }
+  }, [selectedState])
   const [activeTab, setActiveTab] = useState('Overview')
-  const [compareCity, setCompareCity] = useState(null)
-  const [compareDropOpen, setCompareDropOpen] = useState(false)
   const [questionDropOpen, setQuestionDropOpen] = useState(false)
   const [globalSearch, setGlobalSearch] = useState("")
   const [globalResults, setGlobalResults] = useState([])
@@ -1827,9 +1960,6 @@ function App({ user }) {
       (data.cities || []).map(city => ({ city, state, lst: STATE_DATA[state].avgLST, risk: STATE_DATA[state].risk }))
     ).sort((a,b) => a.city.localeCompare(b.city))
   }, [])
-
-  // Backwards-compatible alias used by parts of the UI
-  const ALL_CITIES = ALL_CITIES_FLAT
 
   useEffect(() => {
     if(globalSearch.length < 2) { setGlobalResults([]); return }
@@ -1850,7 +1980,6 @@ function App({ user }) {
     data: liveWeather, error: liveWeatherError, timedOut: liveWeatherTimedOut,
     isStale: liveWeatherStale, cachedAt: liveWeatherCachedAt, forceRefresh: forceRefreshLiveWeather
   } = useWeather(selectedCity, 'App.selectedCity')
-  const { data: compareLiveWeather } = useWeather(compareCity, 'App.compareCity')
 
   // Live weather cache for the MAP screen — same live-data pipeline as above, but pre-fetched
   // in bulk for all ~1,700 geocoded cities (via scripts/refreshWeatherCache.mjs, refreshed every
@@ -1861,13 +1990,18 @@ function App({ user }) {
   const [cacheLastUpdated, setCacheLastUpdated] = useState(null)
 
   useEffect(() => {
-    fetch('/live-weather-cache.json')
-      .then(r => r.json())
-      .then(data => {
-        setLiveCityCache(data.cities || {})
-        setCacheLastUpdated(data.lastUpdated || null)
-      })
-      .catch(() => {})
+    // Defer fetch to avoid blocking UI on sign-in. Delay 500ms to let the
+    // map interactive before heavy JSON parsing starts.
+    const timer = setTimeout(() => {
+      fetch('/live-weather-cache.json')
+        .then(r => r.json())
+        .then(data => {
+          setLiveCityCache(data.cities || {})
+          setCacheLastUpdated(data.lastUpdated || null)
+        })
+        .catch(() => {})
+    }, 500)
+    return () => clearTimeout(timer)
   }, [])
 
   // Real RandomForestRegressor metrics (R², MAE, feature_importances_) trained
@@ -1876,11 +2010,51 @@ function App({ user }) {
   // regardless of which city is selected.
   const [mlModelReal, setMlModelReal] = useState(null)
   useEffect(() => {
-    fetch('/data/ml_model_real.json')
-      .then(r => r.json())
-      .then(setMlModelReal)
-      .catch(() => {})
+    // Defer fetch to avoid blocking UI on sign-in. Delay 1s to let the
+    // map interactive before heavy JSON parsing starts.
+    const timer = setTimeout(() => {
+      fetch('/data/ml_model_real.json')
+        .then(r => r.json())
+        .then(setMlModelReal)
+        .catch(() => {})
+    }, 1000)
+    return () => clearTimeout(timer)
   }, [])
+
+  // Real ESA WorldCover land-cover classification — only computed for one
+  // representative city per state (see scripts/build_lulc_data.py). Cities not
+  // in this file have no real data and must NOT show an estimated number.
+  const [lulcReal, setLulcReal] = useState(null)
+  useEffect(() => {
+    // Defer fetch to avoid blocking UI on sign-in. Delay 1.5s to let the
+    // map interactive before heavy JSON parsing starts.
+    const timer = setTimeout(() => {
+      fetch('/data/lulc_real.json')
+        .then(r => r.json())
+        .then(setLulcReal)
+        .catch(() => {})
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Real, live OpenStreetMap building density (Overpass API) for the selected city — fetched
+  // once liveWeather resolves real coordinates. Overpass is a free shared resource with no
+  // SLA, so on failure/timeout this stays null and the UI must show "unavailable", never an
+  // estimated number.
+  const [osmDensity, setOsmDensity] = useState(null)
+  const [osmStatus, setOsmStatus] = useState('idle') // idle | loading | error
+  useEffect(() => {
+    const lat = liveWeather?.lat
+    const lon = liveWeather?.lon
+    if (typeof lat !== 'number' || typeof lon !== 'number') return
+    let cancelled = false
+    setOsmStatus('loading')
+    setOsmDensity(null)
+    getBuildingDensity(lat, lon)
+      .then(result => { if (!cancelled) { setOsmDensity(result); setOsmStatus('idle') } })
+      .catch(() => { if (!cancelled) setOsmStatus('error') })
+    return () => { cancelled = true }
+  }, [liveWeather?.lat, liveWeather?.lon])
 
   const getLiveCity = (city, state) => liveCityCache[`${city}|${state}`] || null
 
@@ -1950,12 +2124,6 @@ function App({ user }) {
   const [polarVortex, setPolarVortex] = useState("STRONG")
   const [marineHeatwave, setMarineHeatwave] = useState(true)
   const [showGlossary, setShowGlossary] = useState(false)
-
-  // Clock update
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
 
   // Check for remembered login on app load
   useEffect(() => {
@@ -2113,7 +2281,6 @@ function App({ user }) {
   // Close custom dropdowns on outside click
   useEffect(() => {
     const handler = (e) => {
-      if(!e.target.closest("#compare-drop-wrap")) setCompareDropOpen(false)
       if(!e.target.closest("#question-drop-wrap")) setQuestionDropOpen(false)
     }
     document.addEventListener("mousedown", handler)
@@ -2140,43 +2307,6 @@ function App({ user }) {
 
     setAlerts(newAlerts)
   }, [selectedState, selectedCity, marineHeatwave, polarVortex, liveWeather, t])
-
-  const city1Data = selectedCity && selectedState ? getCityData(selectedCity, selectedState) : null
-  const city2Data = compareCity ? getDataForCity(compareCity) : null
-  const radarData = city1Data && city2Data ? [
-    {
-      metric: "LST",
-      [selectedCity]: normalize(city1Data.lst, 22, 52),
-      [compareCity]: normalize(city2Data.lst, 22, 52)
-    },
-    {
-      metric: "NDVI",
-      [selectedCity]: normalize(city1Data.ndvi, -0.1, 0.7),
-      [compareCity]: normalize(city2Data.ndvi, -0.1, 0.7)
-    },
-    {
-      metric: "NDBI",
-      [selectedCity]: normalize(city1Data.ndbi, -0.2, 0.6),
-      [compareCity]: normalize(city2Data.ndbi, -0.2, 0.6)
-    },
-    {
-      metric: "AQI",
-      [selectedCity]: normalize(liveWeather?.aqi?.usAQI ?? 0, 30, 400),
-      [compareCity]: normalize(compareLiveWeather?.aqi?.usAQI ?? 0, 30, 400)
-    },
-    {
-      metric: "Wind",
-      [selectedCity]: normalize(liveWeather?.current?.windSpeed ?? 0, 5, 35),
-      [compareCity]: normalize(compareLiveWeather?.current?.windSpeed ?? 0, 5, 35)
-    },
-    {
-      metric: "NDWI",
-      [selectedCity]: normalize(city1Data.ndwi, -0.4, 0.3),
-      [compareCity]: normalize(city2Data.ndwi, -0.4, 0.3)
-    }
-  ] : []
-  const comparisonWinner = city1Data && city2Data ? (city1Data.lst < city2Data.lst ? selectedCity : compareCity) : null
-  const comparisonDiff = city1Data && city2Data ? Math.abs(city1Data.lst - city2Data.lst).toFixed(1) : null
 
   // Sign-in screen
   if(screen === "signin") {
@@ -2415,19 +2545,19 @@ function App({ user }) {
 
   // Map screen
   if(screen === "map") {
-    const { time, period } = formatClock(currentTime)
     const hottest = liveLeaderBase[0]
 
     return (
       <div className="map-container">
-        {/* Floating AI Assistant — quick access from the map screen, reuses the
-            same AIAnalystPanel/state as the AI+Export tab */}
+        {/* Floating AI Assistant restored on the map screen so it's always
+            reachable without switching screens. It shows a hint when no city
+            is selected. */}
         <FloatingAIAssistant
           cityName={selectedCity}
           ensoPhase={ensoPhase}
-          lst={city1Data?.lst}
-          ndvi={city1Data?.ndvi}
-          ndbi={city1Data?.ndbi}
+          lst={liveWeather?.current?.temp}
+          ndvi={null}
+          ndbi={null}
           aqi={liveWeather?.aqi?.usAQI}
           chatHistory={chatHistory}
           setChatHistory={setChatHistory}
@@ -2438,11 +2568,14 @@ function App({ user }) {
           questionDropOpen={questionDropOpen}
           setQuestionDropOpen={setQuestionDropOpen}
         />
+        {/* Floating AI Assistant removed from the map screen — before a city is
+            selected there's no data for it to analyze, so it read as an
+            orphaned/unexplained icon. It's still available on every dashboard
+            tab (after a city is selected and there's real data behind it). */}
 
         {/* ✅ NEW COMPACT NAVBAR — replaces old hud-shell */}
         <CompactNavbar
           currentUser={{ name: userName, email: userEmail, role: 'user' }}
-          currentTime={currentTime}
           setScreen={setScreen}
           scrollToMap={scrollToMap}
           onLogout={() => { setUserName(''); setUserEmail('') }}
@@ -2596,20 +2729,7 @@ function App({ user }) {
                         <IndiaMap
                           INDIA_DATA={INDIA_DATA}
                           selectedState={selectedState}
-                          onStateClick={name => {
-                            const fixed = fixStateName(name)
-                            // Only update if state actually changed
-                            if (fixed !== selectedState) {
-                              setSelectedState(fixed)
-                              // ✅ FIX: Set default city for new state
-                              const defaultCity = (INDIA_DATA[fixed] && Array.isArray(INDIA_DATA[fixed].cities) && INDIA_DATA[fixed].cities.length>0)
-                                ? INDIA_DATA[fixed].cities[0]
-                                : null
-                              setSelectedCity(defaultCity)
-                              // clear any comparison selection
-                              setCompareCity(null)
-                            }
-                          }}
+                          onStateClick={handleStateClick}
                         />
                       </div>
                     </div>
@@ -2680,10 +2800,12 @@ function App({ user }) {
                   gap: 10
                 }}>
                   <span style={{
-                    width: 8,
-                    height: 8,
+                    width: 10,
+                    height: 10,
                     borderRadius: '50%',
                     background: '#00ff88',
+                    border: '1.5px solid #ffffff',
+                    boxShadow: '0 0 8px 2px rgba(0,255,136,0.8)',
                     animation: 'pulse 1.2s ease-in-out infinite'
                   }} />
                   [ INDIA HEAT MAP — CLICK TO EXPAND ]
@@ -2692,7 +2814,8 @@ function App({ user }) {
             </div>
           </div>
 
-          {/* Right: Info Panel */}
+          {/* Right: Info Panel — themed by the CLICKED state's heat category (never
+              hover, to avoid any continuous mouse-tracking re-renders). */}
           <div style={{
             flex: '0 0 42%',
             display: 'flex',
@@ -2701,7 +2824,8 @@ function App({ user }) {
             overflowY: 'auto',
             paddingRight: 4,
             scrollbarWidth: 'thin',
-            scrollbarColor: '#1a2a4a #0a0e1a'
+            scrollbarColor: '#1a2a4a #0a0e1a',
+            ...(selectedState ? getThemeVars(getAdjustedLST(selectedState)) : {})
           }}>
             {selectedState ? (
               <>
@@ -2806,8 +2930,23 @@ function App({ user }) {
                 </div>
               </>
             ) : (
-              <div className="state-prompt">
-                {t('tooltips.clickStateForDetails', 'Click a state on the map to view details.')}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 280,
+                gap: 16,
+                textAlign: 'center',
+                padding: 32
+              }}>
+                <div style={{ fontSize: 48 }}>🗺️</div>
+                <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+                  {t('tooltips.clickStateForDetails', 'Click any state on the map')}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', opacity: 0.7 }}>
+                  {t('tooltips.clickStateForDetailsSub', 'to explore cities and heat data')}
+                </div>
               </div>
             )}
           </div>
@@ -2825,26 +2964,30 @@ function App({ user }) {
     // Get real city data
     const cityData = getCityData(selectedCity, selectedState)
     const lst = cityData.lst
-    const { time, period } = formatClock(currentTime)
+    // Real values for anything cited as data (AI context, exports) — separate from the
+    // illustrative `lst`/`state` values still used for theming and the what-if simulator below.
+    const realSurfaceTemp = liveWeather?.current?.surfaceTemp
+    const realLulcEntry = lulcReal?.cities?.[selectedCity]
 
-    const TABS = ['Overview', 'Analysis', 'Interventions', 'AI + Export']
+    const TABS = ['Overview', 'Analysis', 'Compare', 'Interventions', 'AI + Export']
     const TAB_LABELS = {
       'Overview': t('tabs.overview', 'OVERVIEW'),
       'Analysis': t('tabs.analysis', 'ANALYSIS'),
+      'Compare': t('tabs.compare', 'COMPARE'),
       'Interventions': t('tabs.interventions', 'INTERVENTIONS'),
       'AI + Export': t('tabs.aiExport', 'AI + EXPORT')
     }
 
     return (
-      <div className="dashboard-container">
+      <div className="dashboard-container" style={getThemeVars(lst)}>
         {/* Floating AI Assistant — quick access from any dashboard tab without
             switching to AI+Export, reuses the same AIAnalystPanel/state */}
         <FloatingAIAssistant
           cityName={selectedCity}
           ensoPhase={ensoPhase}
-          lst={lst}
-          ndvi={state.ndvi}
-          ndbi={state.ndbi}
+          lst={realSurfaceTemp}
+          ndvi={realLulcEntry?.vegetation ?? null}
+          ndbi={realLulcEntry?.builtUp ?? null}
           aqi={liveWeather?.aqi?.usAQI}
           chatHistory={chatHistory}
           setChatHistory={setChatHistory}
@@ -2892,18 +3035,19 @@ function App({ user }) {
           {TABS.map(tab => (
             <button
               key={tab}
+              className="tab-btn"
               onClick={() => setActiveTab(tab)}
               style={{
                 padding: '12px 20px',
                 background: 'none',
                 border: 'none',
-                borderBottom: activeTab === tab ? '2px solid #00d4ff' : '2px solid transparent',
-                color: activeTab === tab ? '#00d4ff' : '#475569',
-                fontFamily: 'monospace',
+                borderBottom: activeTab === tab ? '2px solid var(--theme-accent)' : '2px solid transparent',
+                color: activeTab === tab ? 'var(--theme-accent)' : '#475569',
                 fontSize: 12,
                 fontWeight: 700,
-                letterSpacing: 1,
+                letterSpacing: 0.5,
                 cursor: 'pointer',
+                borderRadius: '4px 4px 0 0',
                 transition: 'all 0.2s'
               }}
             >
@@ -2968,58 +3112,88 @@ function App({ user }) {
               </div>
 
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
-                {/* PANEL B: Satellite Indices */}
+                {/* PANEL B: Satellite Indices — every card below shows either a real, live
+                    value or an explicit "not available" state. Nothing here is estimated/
+                    seeded; see the Random Forest panel disclosure for the same standard
+                    applied to the ML model. */}
                 <section className="panel">
                   <h3>🔥 {t('panels.satelliteIndices', 'SATELLITE INDICES')}</h3>
                   <div className="indices-grid">
                     <div className="index-card">
-                      <span>LST (Land Surface Temp)</span>
-                      <div className="progress-bar">
-                        <div className="progress" style={{width: (cityData.lst/55)*100 + '%', background:'linear-gradient(90deg, #0a6638, #896e00, #bb5200, #b81010)'}}/>
-                      </div>
-                      <span className="index-value">{cityData.lst.toFixed(1)}°C</span>
-                      <SourceBadge source={DATA_SOURCES.lst} />
-                      <div style={{fontSize: 9, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', marginTop: 2}}>
-                        🛰️ {t('satellitePass.lastPass', 'Last satellite pass:')} {getLastSatellitePass(16)} ({t('satellitePass.landsatNote', 'Landsat 8 revisits ~every 16 days')}, {t('satellitePass.notRealtime', 'not real-time')})
-                      </div>
+                      <span>Surface Temp (live)</span>
+                      {typeof liveWeather?.current?.surfaceTemp === 'number' ? (
+                        <>
+                          <div className="progress-bar">
+                            <div className="progress" style={{width: (liveWeather.current.surfaceTemp/55)*100 + '%', background:'linear-gradient(90deg, #0a6638, #896e00, #bb5200, #b81010)'}}/>
+                          </div>
+                          <span className="index-value">{liveWeather.current.surfaceTemp.toFixed(1)}°C</span>
+                          <SourceBadge source="Open-Meteo surface/skin temperature (live weather model)" />
+                          <div style={{fontSize: 9, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', marginTop: 2}}>
+                            ℹ️ {t('satellitePass.modeledNote', 'Modeled ground-surface temperature, not a satellite-measured Landsat reading — updates live, unlike a ~16-day satellite revisit.')}
+                          </div>
+                        </>
+                      ) : (liveWeatherError || liveWeatherTimedOut) ? (
+                        <span style={{fontSize: 11, color: '#ff6b6b'}}>⚠️ {t('satellitePass.unavailable', 'Live data unavailable')}</span>
+                      ) : (
+                        <span style={{fontSize: 11, color: 'rgba(255,255,255,0.4)'}}>{t('satellitePass.loading', 'Loading live surface data…')}</span>
+                      )}
                     </div>
-                    <div className="index-card">
-                      <span>NDVI (Vegetation)</span>
-                      <div className="progress-bar">
-                        <div className="progress" style={{width: (cityData.ndvi)*100 + '%', background:'#00ff88'}}/>
-                      </div>
-                      <span className="index-value">{cityData.ndvi.toFixed(2)}</span>
-                      <SourceBadge source={DATA_SOURCES.ndvi} />
-                      <div style={{fontSize: 9, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', marginTop: 2}}>
-                        🛰️ {t('satellitePass.lastPass', 'Last satellite pass:')} {getLastSatellitePass(5)} ({t('satellitePass.sentinelNote', 'Sentinel-2 revisits ~every 5 days')}, {t('satellitePass.notRealtime', 'not real-time')})
-                      </div>
-                    </div>
-                    <div className="index-card">
-                      <span>NDBI (Urban Built-up)</span>
-                      <div className="progress-bar">
-                        <div className="progress" style={{width: (cityData.ndbi)*100 + '%', background:'#ff6b35'}}/>
-                      </div>
-                      <span className="index-value">{cityData.ndbi.toFixed(2)}</span>
-                      <SourceBadge source={DATA_SOURCES.ndbi} />
-                      <div style={{fontSize: 9, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', marginTop: 2}}>
-                        🛰️ {t('satellitePass.lastPass', 'Last satellite pass:')} {getLastSatellitePass(5)} ({t('satellitePass.sentinelNote', 'Sentinel-2 revisits ~every 5 days')}, {t('satellitePass.notRealtime', 'not real-time')})
-                      </div>
-                    </div>
-                    <div className="index-card">
-                      <span>NDWI (Water)</span>
-                      <div className="progress-bar">
-                        <div className="progress" style={{width: Math.min(0.4, (cityData.ndwi + 0.5)*100) + '%', background:'#00a8ff'}}/>
-                      </div>
-                      <span className="index-value">{cityData.ndwi.toFixed(2)}</span>
-                      <SourceBadge source={DATA_SOURCES.ndwi} />
-                    </div>
+                    {(() => {
+                      const lulcEntry = lulcReal?.cities?.[selectedCity]
+                      if (!lulcEntry) {
+                        return (
+                          <div className="index-card">
+                            <span>NDVI / NDBI / NDWI</span>
+                            <div style={{fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 6, lineHeight: 1.5}}>
+                              {t('satellitePass.lulcNotAvailable', 'Not available for {{city}} — real classification only computed for one representative city per state so far.', { city: selectedCity })}
+                            </div>
+                          </div>
+                        )
+                      }
+                      return (
+                        <>
+                          <div className="index-card">
+                            <span>Vegetation Fraction</span>
+                            <div className="progress-bar">
+                              <div className="progress" style={{width: lulcEntry.vegetation + '%', background:'#00ff88'}}/>
+                            </div>
+                            <span className="index-value">{lulcEntry.vegetation}%</span>
+                            <SourceBadge source="ESA WorldCover 10m (2021) — real proxy for NDVI, not the spectral index itself" />
+                          </div>
+                          <div className="index-card">
+                            <span>Built-up Fraction</span>
+                            <div className="progress-bar">
+                              <div className="progress" style={{width: lulcEntry.builtUp + '%', background:'#ff6b35'}}/>
+                            </div>
+                            <span className="index-value">{lulcEntry.builtUp}%</span>
+                            <SourceBadge source="ESA WorldCover 10m (2021) — real proxy for NDBI, not the spectral index itself" />
+                          </div>
+                          <div className="index-card">
+                            <span>Water Fraction</span>
+                            <div className="progress-bar">
+                              <div className="progress" style={{width: Math.min(100, lulcEntry.water * 3) + '%', background:'#00a8ff'}}/>
+                            </div>
+                            <span className="index-value">{lulcEntry.water}%</span>
+                            <SourceBadge source="ESA WorldCover 10m (2021) — real proxy for NDWI, not the spectral index itself" />
+                          </div>
+                        </>
+                      )
+                    })()}
                     <div className="index-card">
                       <span>Elevation</span>
-                      <div className="progress-bar">
-                        <div className="progress" style={{width: Math.min(100, (cityData.elevation/3000)*100) + '%', background:'#888'}}/>
-                      </div>
-                      <span className="index-value">{cityData.elevation}m</span>
-                      <SourceBadge source={DATA_SOURCES.elevation} />
+                      {typeof liveWeather?.elevation === 'number' ? (
+                        <>
+                          <div className="progress-bar">
+                            <div className="progress" style={{width: Math.min(100, (liveWeather.elevation/3000)*100) + '%', background:'#888'}}/>
+                          </div>
+                          <span className="index-value">{Math.round(liveWeather.elevation)}m</span>
+                          <SourceBadge source="SRTM 30m DEM (via Open-Meteo Elevation API)" />
+                        </>
+                      ) : (liveWeatherError || liveWeatherTimedOut) ? (
+                        <span style={{fontSize: 11, color: '#ff6b6b'}}>⚠️ {t('satellitePass.unavailable', 'Live data unavailable')}</span>
+                      ) : (
+                        <span style={{fontSize: 11, color: 'rgba(255,255,255,0.4)'}}>{t('satellitePass.loading', 'Loading live surface data…')}</span>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -3202,6 +3376,35 @@ function App({ user }) {
                 {/* PANEL C: ML Model Panel */}
                 <MLModelPanel mlModel={mlModelReal} cityName={selectedCity} />
 
+                {/* PANEL L: Land Use / Land Cover */}
+                <LandCoverPanel lulcData={lulcReal} cityName={selectedCity} />
+
+                {/* PANEL M: Urban Morphology (OpenStreetMap, live, real) */}
+                <section className="panel">
+                  <h3>🏙️ {t('panels.urbanMorphology', 'URBAN MORPHOLOGY')}</h3>
+                  {osmStatus === 'loading' ? (
+                    <div style={{fontSize: 11, color: 'rgba(255,255,255,0.5)'}}>{t('osm.loading', 'Querying OpenStreetMap…')}</div>
+                  ) : osmStatus === 'error' || !osmDensity ? (
+                    <div style={{fontSize: 11, color: 'rgba(255,255,255,0.5)'}}>
+                      {t('osm.unavailable', 'Building density unavailable right now — OpenStreetMap\'s free Overpass API is a shared community resource with no uptime guarantee.')}
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{display: 'flex', gap: 16, marginBottom: 8}}>
+                        <div>
+                          <div style={{fontSize: 22, fontWeight: 700, color: '#ffa83c'}}>{osmDensity.buildingCount}</div>
+                          <div style={{fontSize: 10, color: 'rgba(255,255,255,0.5)'}}>{t('osm.buildings', 'buildings within {{radius}}m', {radius: osmDensity.radiusM})}</div>
+                        </div>
+                        <div>
+                          <div style={{fontSize: 22, fontWeight: 700, color: '#ffa83c'}}>{osmDensity.densityPerSqKm}</div>
+                          <div style={{fontSize: 10, color: 'rgba(255,255,255,0.5)'}}>{t('osm.perSqKm', 'buildings / km²')}</div>
+                        </div>
+                      </div>
+                      <SourceBadge source="OpenStreetMap (Overpass API, live)" />
+                    </>
+                  )}
+                </section>
+
                 {/* PANEL H: Historical Trend */}
                 <section className="panel">
                   <h3>📈 {t('panels.historicalTrend', '10-YEAR TREND (2015-2025)')}</h3>
@@ -3260,118 +3463,19 @@ function App({ user }) {
                   })()}
                 </section>
 
-                {/* PANEL M: City Comparison */}
-                <section className="panel">
-                  <h3>🌍 {t('panels.cityComparison', 'COMPARE CITIES')}</h3>
-                  <div id="compare-drop-wrap" style={{position:"relative", marginTop:8}}>
-                    <div
-                      onClick={() => setCompareDropOpen(!compareDropOpen)}
-                      style={{
-                        background: "#0a0e1a",
-                        border: "1px solid #1a2a4a",
-                        borderColor: compareDropOpen ? "#00ff88" : "#1a2a4a",
-                        borderRadius: 8,
-                        padding: "10px 14px",
-                        color: "#fff",
-                        fontSize: 13,
-                        cursor: "pointer",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        transition: "border-color 0.2s"
-                      }}
-                    >
-                      <span>{compareCity || t('compareCities.selectPlaceholder', 'Select city to compare...')}</span>
-                      <span style={{
-                        color:"#00ff88",
-                        fontSize:10,
-                        transform: compareDropOpen ? "rotate(180deg)" : "rotate(0deg)",
-                        transition:"transform 0.2s"
-                      }}>▼</span>
-                    </div>
-                    {compareDropOpen && (
-                      <div style={{
-                        position: "absolute",
-                        top: "calc(100% + 4px)",
-                        left: 0,
-                        right: 0,
-                        background: "#0f1729",
-                        border: "1px solid #00ff88",
-                        borderRadius: 8,
-                        zIndex: 1000,
-                        maxHeight: 240,
-                        overflowY: "auto",
-                        boxShadow: "0 8px 24px rgba(0,0,0,0.5)"
-                      }}>
-                        {ALL_CITIES.map(({city}) => (
-                          <div
-                            key={city}
-                            onClick={() => {
-                              setCompareCity(city)
-                              setCompareDropOpen(false)
-                            }}
-                            style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              color: city === compareCity ? "#00ff88" : "#fff",
-                              background: city === compareCity ? "rgba(0,255,136,0.1)" : "transparent",
-                              cursor: "pointer",
-                              borderBottom: "1px solid #1a2a4a",
-                              transition: "background 0.15s"
-                            }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.background = "rgba(0,255,136,0.08)"
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.background = city === compareCity ? "rgba(0,255,136,0.1)" : "transparent"
-                            }}
-                          >
-                            {city}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {selectedCity && selectedState && city1Data && city2Data && (
-                    <>
-                      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:16, marginBottom:12}}>
-                        <div style={{background:"rgba(0,255,136,0.05)", border:"1px solid #00ff88", borderRadius:8, padding:12}}>
-                          <div style={{color:"#00ff88", fontWeight:700, fontSize:12, marginBottom:6}}>{selectedCity}</div>
-                          <div style={{fontSize:11, color:"#ccc"}}>LST: <b style={{color:"#ff6b35"}}>{city1Data.lst}°C</b></div>
-                          <div style={{fontSize:11, color:"#ccc"}}>NDVI: <b style={{color:"#00ff88"}}>{city1Data.ndvi}</b></div>
-                          <div style={{fontSize:11, color:"#ccc"}}>AQI: <b style={{color:"#ffcc00"}}>{liveWeather?.aqi?.usAQI ?? '...'}</b></div>
-                        </div>
-                        <div style={{background:"rgba(255,107,53,0.05)", border:"1px solid #ff6b35", borderRadius:8, padding:12}}>
-                          <div style={{color:"#ff6b35", fontWeight:700, fontSize:12, marginBottom:6}}>{compareCity}</div>
-                          <div style={{fontSize:11, color:"#ccc"}}>LST: <b style={{color:"#ff6b35"}}>{city2Data.lst}°C</b></div>
-                          <div style={{fontSize:11, color:"#ccc"}}>NDVI: <b style={{color:"#00ff88"}}>{city2Data.ndvi}</b></div>
-                          <div style={{fontSize:11, color:"#ccc"}}>AQI: <b style={{color:"#ffcc00"}}>{compareLiveWeather?.aqi?.usAQI ?? '...'}</b></div>
-                        </div>
-                      </div>
-                      <div style={{background:"#0f1729", border:"1px solid #1a2a4a", borderRadius:12, padding:12}}>
-                        <ResponsiveContainer width="100%" height={280}>
-                          <RadarChart data={radarData}>
-                            <PolarGrid stroke="#1a2a4a" />
-                            <PolarAngleAxis dataKey="metric" tick={{fill:"#8899aa", fontSize:11}} />
-                            <PolarRadiusAxis angle={90} domain={[0,100]} tick={{fill:"#8899aa", fontSize:9}} />
-                            <Radar name={selectedCity} dataKey={selectedCity} stroke="#00ff88" fill="#00ff88" fillOpacity={0.2} strokeWidth={2} />
-                            <Radar name={compareCity} dataKey={compareCity} stroke="#ff6b35" fill="#ff6b35" fillOpacity={0.2} strokeWidth={2} />
-                            <Legend wrapperStyle={{fontSize:11, color:"#fff"}} />
-                            <Tooltip contentStyle={{background:"#0f1729", border:"1px solid #00ff88", borderRadius:8, color:"#fff", fontSize:11}} />
-                          </RadarChart>
-                        </ResponsiveContainer>
-                        {comparisonWinner && (
-                          <div style={{marginTop:12, background:"rgba(0,255,136,0.1)", border:"1px solid #00ff88", color:"#00ff88", padding:"10px 14px", borderRadius:8}}>
-                            🌿 {comparisonWinner} is cooler by {comparisonDiff}°C
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                  {selectedCity && selectedState && (!city1Data || !city2Data) && (
-                    <div style={{marginTop:12, color:'#94a3b8'}}>Choose a valid comparison city to view the radar chart.</div>
-                  )}
-                </section>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'Compare' && (
+            <div className="dashboard-content">
+              <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+                <CompareCitiesPanel
+                  selectedCity={selectedCity}
+                  selectedState={selectedState}
+                  liveWeather={liveWeather}
+                  allCities={ALL_CITIES_FLAT}
+                />
               </div>
             </div>
           )}
@@ -3466,9 +3570,9 @@ function App({ user }) {
                   <AIAnalystPanel
                     cityName={selectedCity}
                     ensoPhase={ensoPhase}
-                    lst={lst}
-                    ndvi={state.ndvi}
-                    ndbi={state.ndbi}
+                    lst={realSurfaceTemp}
+                    ndvi={realLulcEntry?.vegetation ?? null}
+                    ndbi={realLulcEntry?.builtUp ?? null}
                     aqi={liveWeather?.aqi?.usAQI}
                     chatHistory={chatHistory}
                     setChatHistory={setChatHistory}
@@ -3517,16 +3621,22 @@ function App({ user }) {
                   <h3>📤 {t('panels.exportShare', 'EXPORT & SHARE')}</h3>
                   <div className="export-buttons">
                     <button onClick={() => {
-                      const summary = `${selectedCity}, ${selectedState}: LST ${lst.toFixed(1)}°C | NDVI ${state.ndvi} | AQI ${liveWeather?.aqi?.usAQI ?? 'N/A'} (live) | Time: ${time} ${period}`
+                      const surfaceTemp = liveWeather?.current?.surfaceTemp
+                      const lulcEntry = lulcReal?.cities?.[selectedCity]
+                      const { time, period } = formatClock(new Date())
+                      const summary = `${selectedCity}, ${selectedState}: Surface Temp ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live, Open-Meteo)' : 'N/A'} | Vegetation ${lulcEntry ? lulcEntry.vegetation + '% (ESA WorldCover)' : 'N/A'} | AQI ${liveWeather?.aqi?.usAQI ?? 'N/A'} (live) | Time: ${time} ${period}`
                       navigator.clipboard.writeText(summary)
                       alert("Summary copied to clipboard!")
                     }}>📋 {t('buttons.copySummary', 'Copy Summary')}</button>
                     <button onClick={() => {
-                      const msg = `Check out ${selectedCity} heat analysis on HeatOps! LST: ${lst.toFixed(1)}°C | Risk: ${state.risk}`
+                      const surfaceTemp = liveWeather?.current?.surfaceTemp
+                      const msg = `Check out ${selectedCity} heat analysis on HeatOps! Surface Temp: ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live)' : 'N/A'} | Risk: ${state.risk}`
                       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`)
                     }}>📱 {t('buttons.whatsappShare', 'WhatsApp Share')}</button>
                     <button onClick={() => {
-                      const csv = `City,State,LST,NDVI,NDBI,AQI,Risk\n${selectedCity},${selectedState},${lst.toFixed(1)},${state.ndvi},${state.ndbi},${liveWeather?.aqi?.usAQI ?? 'N/A'},${state.risk}`
+                      const surfaceTemp = liveWeather?.current?.surfaceTemp
+                      const lulcEntry = lulcReal?.cities?.[selectedCity]
+                      const csv = `City,State,SurfaceTempC_live,VegetationPct_WorldCover,BuiltUpPct_WorldCover,AQI_live,Risk\n${selectedCity},${selectedState},${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) : 'N/A'},${lulcEntry ? lulcEntry.vegetation : 'N/A'},${lulcEntry ? lulcEntry.builtUp : 'N/A'},${liveWeather?.aqi?.usAQI ?? 'N/A'},${state.risk}`
                       const blob = new Blob([csv], {type:'text/csv'})
                       const url = window.URL.createObjectURL(blob)
                       const a = document.createElement('a')
@@ -3541,9 +3651,9 @@ function App({ user }) {
                 <section className="panel">
                   <h3>📋 {t('panels.progressTracker', 'HeatOps 2026 PROGRESS')}</h3>
                   <div className="progress-list">
-                    <div>{t('progressTracker.dataCollection', '✅ Data Collection (GEE + Landsat 8)')}</div>
-                    <div>{t('progressTracker.lstCalculation', '✅ LST Calculation')}</div>
-                    <div>{t('progressTracker.indexCalculation', '✅ Index Calculation (NDVI, NDBI)')}</div>
+                    <div>{t('progressTracker.dataCollection', '✅ Data Collection (Open-Meteo + ESA WorldCover)')}</div>
+                    <div>{t('progressTracker.lstCalculation', '✅ Live Surface Temperature')}</div>
+                    <div>{t('progressTracker.indexCalculation', '✅ Vegetation/Built-up Fractions (36 cities)')}</div>
                     <div>{t('progressTracker.correlationAnalysis', '✅ Correlation Analysis')}</div>
                     <div>{t('progressTracker.randomForestModel', '✅ Random Forest Model')}</div>
                     <div>{t('progressTracker.interventionSimulation', '✅ Intervention Simulation')}</div>
@@ -3562,7 +3672,7 @@ function App({ user }) {
                   <div className="about-card">
                     <h4>HeatOps 2026: Urban Heat Island Mitigation</h4>
                     <p><strong>College:</strong> [Removed]</p>
-                    <p><strong>Method:</strong> Google Earth Engine + Landsat 8 + Sentinel-2 + Random Forest ML</p>
+                    <p><strong>Method:</strong> Open-Meteo (live) + ESA WorldCover + Random Forest ML</p>
                     <p><strong>Focus:</strong> Delhi NCR & Indian Urban Heat Islands</p>
                     <p><strong>Team:</strong> Heatwave Mitigation Initiative</p>
                   </div>
@@ -3570,6 +3680,82 @@ function App({ user }) {
               </div>
             </div>
           )}
+        </div>
+      </div>
+    )
+  }
+
+  // Profile screen — "My Profile"/"My Badges" in the user menu used to set
+  // screen to 'profile' with no matching branch here, so they silently fell
+  // through to the catch-all "Loading..." with no way back. Built a minimal
+  // real screen using data that already exists (points, badges, login history)
+  // rather than fabricating stats, plus a working back button.
+  if(screen === "profile") {
+    const earnedBadges = [
+      points >= 10 && { icon: '🏅', label: 'First Analysis', desc: 'Asked the AI Analyst a question' }
+    ].filter(Boolean)
+
+    return (
+      <div className="dashboard-container">
+        <nav className="navbar">
+          <div className="nav-left">
+            <button onClick={() => setScreen("map")} className="nav-btn">← {t('nav.backToMap', 'Back to Map')}</button>
+            <h2>{t('profile.title', 'My Profile')}</h2>
+          </div>
+          <div className="nav-right">
+            <button onClick={() => {setScreen("signin"); setUserName("")}} className="nav-btn">{t('nav.signOut', 'Sign Out')}</button>
+          </div>
+        </nav>
+
+        <div style={{ padding: 24, maxWidth: 720, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <section className="panel">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div className="avatar" style={{ width: 48, height: 48, fontSize: 20 }}>
+                {userName[0]?.toUpperCase() || 'K'}
+              </div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{userName || 'User'}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{userEmail || 'No email on file'}</div>
+              </div>
+            </div>
+          </section>
+
+          <section className="panel">
+            <h3>⭐ {t('panels.gamification', 'POINTS & BADGES')}</h3>
+            <div className="points-display">⭐ {userName}: {points} pts</div>
+            <div className="badges-shelf" style={{ marginTop: 8 }}>
+              {earnedBadges.length === 0 ? (
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+                  No badges earned yet — ask the AI Analyst a question to get started.
+                </div>
+              ) : earnedBadges.map(b => (
+                <div key={b.label} className="badge" title={b.desc} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  {b.icon} {b.label}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel">
+            <h3>🕓 {t('panels.recentSignIns', 'Recent Sign-ins')}</h3>
+            {loginHistory.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                {loginHistory.map((entry, idx) => (
+                  <div key={idx} style={{
+                    display: 'flex', justifyContent: 'space-between', fontSize: 11,
+                    padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 6
+                  }}>
+                    <span style={{ color: '#cbd5e1' }}>{entry.name}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.4)' }}>{new Date(entry.timestamp).toLocaleString('en-IN')}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 8 }}>
+                {t('signIn.noRecentSignIns', 'No recent sign-ins yet. Your session will be logged after launch.')}
+              </div>
+            )}
+          </section>
         </div>
       </div>
     )

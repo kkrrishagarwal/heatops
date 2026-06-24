@@ -60,14 +60,38 @@
     "hideGlossary": "சொற்களஞ்சியத்தை மறை"
   },
   "glossary": {
-    "LST": { "term": "LST", "definition": "செயற்கைக்கோளில் இருந்து நிலப்பரப்பு வெப்பநிலை" },
-    "NDVI": { "term": "NDVI", "definition": "இயல்நிலை தாவர அடர்த்தி குறியீடு (பசுமை தாவரம்)" },
-    "NDBI": { "term": "NDBI", "definition": "இயல்நிலை கட்டிட வேறுபாட்டு குறியீடு (நகர்ப்புற/கான்க்ரீட்)" },
-    "NDWI": { "term": "NDWI", "definition": "இயல்நிலை நீர் குறியீடு (நீர்நிலைகள்)" },
-    "UHI": { "term": "UHI", "definition": "நகரங்களில் நகர்ப்புற வெப்பத் தீவு விளைவு" },
-    "ENSO": { "term": "ENSO", "definition": "எல் நினோ தென் அலைவு காலநிலை முறை" },
-    "IOD": { "term": "IOD", "definition": "இந்தியப் பெருங்கடல் இருமுனை பருவமழை இயக்கி" },
-    "MJO": { "term": "MJO", "definition": "மேடன்-ஜூலியன் அலைவு வளிமண்டல அலைகள்" }
+    "LST": {
+      "term": "LST",
+      "definition": "செயற்கைக்கோளில் இருந்து நிலப்பரப்பு வெப்பநிலை"
+    },
+    "NDVI": {
+      "term": "NDVI",
+      "definition": "இயல்நிலை தாவர அடர்த்தி குறியீடு (பசுமை தாவரம்)"
+    },
+    "NDBI": {
+      "term": "NDBI",
+      "definition": "இயல்நிலை கட்டிட வேறுபாட்டு குறியீடு (நகர்ப்புற/கான்க்ரீட்)"
+    },
+    "NDWI": {
+      "term": "NDWI",
+      "definition": "இயல்நிலை நீர் குறியீடு (நீர்நிலைகள்)"
+    },
+    "UHI": {
+      "term": "UHI",
+      "definition": "நகரங்களில் நகர்ப்புற வெப்பத் தீவு விளைவு"
+    },
+    "ENSO": {
+      "term": "ENSO",
+      "definition": "எல் நினோ தென் அலைவு காலநிலை முறை"
+    },
+    "IOD": {
+      "term": "IOD",
+      "definition": "இந்தியப் பெருங்கடல் இருமுனை பருவமழை இயக்கி"
+    },
+    "MJO": {
+      "term": "MJO",
+      "definition": "மேடன்-ஜூலியன் அலைவு வளிமண்டல அலைகள்"
+    }
   },
   "precautions": {
     "HOT": {
@@ -161,9 +185,9 @@
     "low": "குறைவு"
   },
   "progressTracker": {
-    "dataCollection": "✅ தரவு சேகரிப்பு (GEE + Landsat 8)",
+    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
     "lstCalculation": "✅ LST கணக்கீடு",
-    "indexCalculation": "✅ குறியீடு கணக்கீடு (NDVI, NDBI)",
+    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
     "correlationAnalysis": "✅ தொடர்பு பகுப்பாய்வு",
     "randomForestModel": "✅ ரேண்டம் ஃபாரஸ்ட் மாடல்",
     "interventionSimulation": "✅ தலையீடு உருவகப்படுத்துதல்",
@@ -243,7 +267,7 @@
     "scene": "காட்சி:"
   },
   "geePipeline": {
-    "panelTitle": "📡 தரவு குழாய்வழி — Google Earth Engine → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
   },
   "satellitePass": {
     "lastPass": "கடைசி செயற்கைக்கோள் கடப்பு:",

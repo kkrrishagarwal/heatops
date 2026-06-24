@@ -60,14 +60,38 @@
     "hideGlossary": "ಪದಕೋಶ ಮರೆಮಾಡಿ"
   },
   "glossary": {
-    "LST": { "term": "LST", "definition": "ಉಪಗ್ರಹದಿಂದ ಭೂ ಮೇಲ್ಮೈ ತಾಪಮಾನ" },
-    "NDVI": { "term": "NDVI", "definition": "ನಾರ್ಮಲೈಸ್ಡ್ ವೆಜಿಟೇಶನ್ ಇಂಡೆಕ್ಸ್ (ಹಸಿರು ಸಸ್ಯವರ್ಗ)" },
-    "NDBI": { "term": "NDBI", "definition": "ನಾರ್ಮಲೈಸ್ಡ್ ಡಿಫರೆನ್ಸ್ ಬಿಲ್ಟ್-ಅಪ್ ಇಂಡೆಕ್ಸ್ (ನಗರ/ಕಾಂಕ್ರೀಟ್)" },
-    "NDWI": { "term": "NDWI", "definition": "ನಾರ್ಮಲೈಸ್ಡ್ ವಾಟರ್ ಇಂಡೆಕ್ಸ್ (ಜಲಮೂಲಗಳು)" },
-    "UHI": { "term": "UHI", "definition": "ನಗರಗಳಲ್ಲಿ ಅರ್ಬನ್ ಹೀಟ್ ಐಲ್ಯಾಂಡ್ ಪರಿಣಾಮ" },
-    "ENSO": { "term": "ENSO", "definition": "ಎಲ್ ನಿನೋ ದಕ್ಷಿಣ ಆಂದೋಲನ ಹವಾಮಾನ ಮಾದರಿ" },
-    "IOD": { "term": "IOD", "definition": "ಹಿಂದೂ ಮಹಾಸಾಗರ ದ್ವಿಧ್ರುವ ಮಾನ್ಸೂನ್ ಚಾಲಕ" },
-    "MJO": { "term": "MJO", "definition": "ಮ್ಯಾಡೆನ್-ಜೂಲಿಯನ್ ಆಂದೋಲನ ವಾತಾವರಣ ಅಲೆಗಳು" }
+    "LST": {
+      "term": "LST",
+      "definition": "ಉಪಗ್ರಹದಿಂದ ಭೂ ಮೇಲ್ಮೈ ತಾಪಮಾನ"
+    },
+    "NDVI": {
+      "term": "NDVI",
+      "definition": "ನಾರ್ಮಲೈಸ್ಡ್ ವೆಜಿಟೇಶನ್ ಇಂಡೆಕ್ಸ್ (ಹಸಿರು ಸಸ್ಯವರ್ಗ)"
+    },
+    "NDBI": {
+      "term": "NDBI",
+      "definition": "ನಾರ್ಮಲೈಸ್ಡ್ ಡಿಫರೆನ್ಸ್ ಬಿಲ್ಟ್-ಅಪ್ ಇಂಡೆಕ್ಸ್ (ನಗರ/ಕಾಂಕ್ರೀಟ್)"
+    },
+    "NDWI": {
+      "term": "NDWI",
+      "definition": "ನಾರ್ಮಲೈಸ್ಡ್ ವಾಟರ್ ಇಂಡೆಕ್ಸ್ (ಜಲಮೂಲಗಳು)"
+    },
+    "UHI": {
+      "term": "UHI",
+      "definition": "ನಗರಗಳಲ್ಲಿ ಅರ್ಬನ್ ಹೀಟ್ ಐಲ್ಯಾಂಡ್ ಪರಿಣಾಮ"
+    },
+    "ENSO": {
+      "term": "ENSO",
+      "definition": "ಎಲ್ ನಿನೋ ದಕ್ಷಿಣ ಆಂದೋಲನ ಹವಾಮಾನ ಮಾದರಿ"
+    },
+    "IOD": {
+      "term": "IOD",
+      "definition": "ಹಿಂದೂ ಮಹಾಸಾಗರ ದ್ವಿಧ್ರುವ ಮಾನ್ಸೂನ್ ಚಾಲಕ"
+    },
+    "MJO": {
+      "term": "MJO",
+      "definition": "ಮ್ಯಾಡೆನ್-ಜೂಲಿಯನ್ ಆಂದೋಲನ ವಾತಾವರಣ ಅಲೆಗಳು"
+    }
   },
   "precautions": {
     "HOT": {
@@ -161,9 +185,9 @@
     "low": "ಕಡಿಮೆ"
   },
   "progressTracker": {
-    "dataCollection": "✅ ಡೇಟಾ ಸಂಗ್ರಹಣೆ (GEE + Landsat 8)",
+    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
     "lstCalculation": "✅ LST ಗಣನೆ",
-    "indexCalculation": "✅ ಸೂಚ್ಯಂಕ ಗಣನೆ (NDVI, NDBI)",
+    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
     "correlationAnalysis": "✅ ಸಂಬಂಧ ವಿಶ್ಲೇಷಣೆ",
     "randomForestModel": "✅ ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ಮಾಡೆಲ್",
     "interventionSimulation": "✅ ಮಧ್ಯಸ್ಥಿಕೆ ಸಿಮ್ಯುಲೇಶನ್",
@@ -243,7 +267,7 @@
     "scene": "ದೃಶ್ಯ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ಡೇಟಾ ಪೈಪ್‌ಲೈನ್ — Google Earth Engine → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
   },
   "satellitePass": {
     "lastPass": "ಕೊನೆಯ ಉಪಗ್ರಹ ಪಾಸ್:",

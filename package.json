@@ -17,6 +17,7 @@
     "i18next": "^26.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-globe.gl": "^2.38.0",
     "react-i18next": "^17.0.8",
     "react-simple-maps": "^3.0.0",
     "recharts": "^2.8.0",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "^10.5.0",
+    "playwright": "^1.43.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^3.4.4",
     "vite": "^4.4.0"
