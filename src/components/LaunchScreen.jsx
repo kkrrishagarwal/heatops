@@ -1,10 +1,16 @@
 import React, { useEffect, useRef, useState, Component } from 'react'
 import Globe from 'react-globe.gl'
+import { AmbientLight, DirectionalLight } from 'three'
 
 // Texture copied from three-globe's bundled examples into public/textures —
 // three-globe's package.json "exports" map blocks importing it directly via
 // JS import, so it's served as a plain static asset instead.
-const earthTexture = '/textures/earth-dark.jpg'
+//
+// earth-dark.jpg (the previous texture) is a near-black monochrome map meant
+// for a night-mode look — with no scene lights of its own to compensate, that
+// rendered as a barely-visible black globe. earth-blue-marble.jpg is NASA's
+// Blue Marble imagery — real-looking blue oceans and green/brown landmasses.
+const earthTexture = '/textures/earth-blue-marble.jpg'
 
 // Centroid of India — used to place the highlight ring/point on the globe.
 const INDIA_COORDS = { lat: 20.5937, lng: 78.9629 }
@@ -228,6 +234,19 @@ const LaunchScreen = ({ onSignIn }) => {
     controls.autoRotateSpeed = 0.6
     controls.enableZoom = false
     globe.pointOfView({ lat: 15, lng: 78, altitude: 2.2 })
+
+    // react-globe.gl/three-render-objects default to NO scene lights (lights: []),
+    // so with the earth-dark.jpg texture this rendered as an almost-unlit black
+    // sphere. A strong ambient light keeps the whole globe visible regardless of
+    // which side currently faces the (auto-rotating) camera, and a soft
+    // directional light adds gentle shading so it still reads as 3D rather than
+    // flat. Intensities use the Math.PI scaling three.js's physically-correct
+    // lighting expects (same convention globe.gl's own internal default uses).
+    globe.lights([
+      new AmbientLight(0xffffff, 2.2 * Math.PI),
+      new DirectionalLight(0xffffff, 0.6 * Math.PI)
+    ])
+
     return () => globe.pauseAnimation?.()
   }, [])
 
