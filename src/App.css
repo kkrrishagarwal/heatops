@@ -1646,16 +1646,6 @@ path.state:hover {
   background: rgba(0, 255, 136, 0.5);
 }
 
-/* Light mode */
-body.light-mode {
-  background: #f0f4ff;
-  color: #0a0e1a;
-}
-
-body.light-mode .card-bg {
-  background: #ffffff;
-}
-
 /* Responsive */
 @media (max-width: 1024px) {
   .map-content {

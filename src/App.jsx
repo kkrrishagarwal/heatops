@@ -1903,7 +1903,7 @@ const LiveClock = () => {
   )
 }
 
-const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, darkMode, setDarkMode }) => {
+const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla }) => {
   const { t, i18n } = useTranslation()
   const isAdmin = currentUser?.role === 'admin'
 
@@ -1960,20 +1960,6 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
 
           {/* Language toggle — manual only, no auto-detect by location/browser */}
           <LanguageDropdown />
-
-          {/* Dark/light theme toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            style={{
-              background: 'rgba(255,255,255,0.05)', color: '#cbd5e1',
-              border: '1px solid rgba(255,255,255,0.15)', borderRadius: 4,
-              fontSize: 13, padding: '4px 8px', cursor: 'pointer', outline: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}
-          >
-            {darkMode ? '☀️' : '🌙'}
-          </button>
 
           {/* Divider */}
           <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.1)' }} />
@@ -2065,25 +2051,6 @@ function App({ user }) {
     mapContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
   
-  // Theme & UI
-  // darkMode previously only flipped the button icon — nothing ever read the
-  // state, so the toggle looked broken. This now applies/removes a `light-mode`
-  // class on <body> (see index.css / App.css `body.light-mode` rules) and
-  // persists the choice so it survives refresh.
-  const [darkMode, setDarkMode] = useState(() => {
-    try {
-      const saved = window.localStorage.getItem('heatops_dark_mode')
-      return saved === null ? true : saved === 'true'
-    } catch {
-      return true
-    }
-  })
-
-  useEffect(() => {
-    document.body.classList.toggle('light-mode', !darkMode)
-    try { window.localStorage.setItem('heatops_dark_mode', String(darkMode)) } catch {}
-  }, [darkMode])
-
   // Map & Selection
   const [selectedState, setSelectedState] = useState(null)
   const [selectedCity, setSelectedCity] = useState(null)
@@ -2777,8 +2744,6 @@ function App({ user }) {
           liveStormWatch={liveRainiestCity}
           liveMumbai={getLiveCity('Mumbai', 'Maharashtra')?.temp}
           liveShimla={getLiveCity('Shimla', 'Himachal Pradesh')?.temp}
-          darkMode={darkMode}
-          setDarkMode={setDarkMode}
         />
 
         {/* Main content — updated height calculation */}
@@ -3311,7 +3276,6 @@ function App({ user }) {
           </div>
           <div className="nav-right">
             <LanguageDropdown />
-            <button onClick={() => setDarkMode(!darkMode)} className="nav-btn">{darkMode ? '☀️' : '🌙'}</button>
             <div className="avatar">{userName[0]?.toUpperCase() || 'K'}</div>
             <button onClick={() => {setScreen("signin"); setUserName("")}} className="nav-btn">{t('nav.signOut', 'Sign Out')}</button>
           </div>
@@ -4118,17 +4082,6 @@ function App({ user }) {
             🛡️ Admin Analytics Dashboard
           </h1>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={() => setDarkMode(!darkMode)} style={{
-              background: 'rgba(0,212,255,0.1)',
-              border: '1px solid #00d4ff',
-              color: '#00d4ff',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '12px'
-            }}>
-              {darkMode ? '☀️' : '🌙'}
-            </button>
             <button onClick={() => { setScreen("signin"); setUserName("") }} style={{
               background: 'rgba(255,107,53,0.1)',
               border: '1px solid #ff6b35',
