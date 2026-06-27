@@ -19,7 +19,8 @@
     "overview": "అవలోకనం",
     "analysis": "విశ్లేషణ",
     "interventions": "జోక్యాలు",
-    "aiExport": "AI + ఎగుమతి"
+    "aiExport": "AI + ఎగుమతి",
+    "compare": "పోల్చండి"
   },
   "panels": {
     "weatherConditions": "వాతావరణ పరిస్థితులు",
@@ -50,7 +51,9 @@
     "heatwaveTimeline": "చారిత్రక వేడిగాలుల కాలరేఖ",
     "recentSignIns": "ఇటీవలి సైన్-ఇన్‌లు",
     "heatLegend": "ఉష్ణ లెజెండ్",
-    "adminDashboard": "అడ్మిన్ అనలిటిక్స్ డాష్‌బోర్డ్"
+    "adminDashboard": "అడ్మిన్ అనలిటిక్స్ డాష్‌బోర్డ్",
+    "dataOutdated": "డేటా పాతదిగా ఉండవచ్చు",
+    "urbanMorphology": "పట్టణ స్వరూపశాస్త్రం"
   },
   "buttons": {
     "copySummary": "సారాంశాన్ని కాపీ చేయండి",
@@ -130,7 +133,8 @@
   "tooltips": {
     "clickToExplore": "నగరాలను అన్వేషించడానికి క్లిక్ చేయండి →",
     "clickStateForDetails": "వివరాలను చూడటానికి మ్యాప్‌లో ఒక రాష్ట్రాన్ని క్లిక్ చేయండి.",
-    "clickCityToAnalyze": "👆 విశ్లేషించడానికి పైన ఉన్న ఏదైనా నగరంపై క్లిక్ చేయండి"
+    "clickCityToAnalyze": "👆 విశ్లేషించడానికి పైన ఉన్న ఏదైనా నగరంపై క్లిక్ చేయండి",
+    "clickStateForDetailsSub": "నగరాలు మరియు హీట్ డేటాను అన్వేషించడానికి"
   },
   "dayNight": {
     "day": "పగలు (మధ్యాహ్నం 12)",
@@ -168,7 +172,13 @@
     "waterBodies": "💧 నీటి వనరులు (NDWI +0.1):"
   },
   "compareCities": {
-    "selectPlaceholder": "పోల్చడానికి నగరాన్ని ఎంచుకోండి..."
+    "selectPlaceholder": "పోల్చడానికి నగరాన్ని ఎంచుకోండి...",
+    "coolest": "ఎంచుకున్న నగరాలలో అత్యంత చల్లనిది",
+    "empty": "పోలిక చార్ట్ చూడటానికి పైన శోధించి కనీసం ఒక నగరాన్ని జోడించండి.",
+    "maxReached": "గరిష్టంగా {{max}} నగరాలు ఎంపికయ్యాయి",
+    "searchPlaceholder": "పోల్చడానికి నగరం లేదా రాష్ట్రాన్ని శోధించండి...",
+    "subtitle": "{{city}}తో పోలుస్తోంది — శోధించి మరో {{max}} నగరాలను జోడించండి.",
+    "theSelectedCity": "ఎంచుకున్న నగరం"
   },
   "windAtmosphere": {
     "direction": "దిశ",
@@ -186,14 +196,15 @@
     "low": "తక్కువ"
   },
   "progressTracker": {
-    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ LST గణన",
-    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
+    "dataCollection": "✅ డేటా సేకరణ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "✅ లైవ్ ఉపరితల ఉష్ణోగ్రత",
+    "indexCalculation": "✅ వృక్షసంపద/నిర్మిత ప్రాంత భాగాలు (36 నగరాలు)",
     "correlationAnalysis": "✅ సహసంబంధ విశ్లేషణ",
     "randomForestModel": "✅ రాండమ్ ఫారెస్ట్ మోడల్",
     "interventionSimulation": "✅ జోక్యం అనుకరణ",
     "dashboardCreation": "✅ డాష్‌బోర్డ్ సృష్టి",
-    "reportSubmission": "🔲 నివేదిక సమర్పణ"
+    "reportSubmission": "🔲 నివేదిక సమర్పణ",
+    "stepsComplete": "{{done}}/{{total}} దశలు పూర్తయ్యాయి"
   },
   "cityList": {
     "noResultsFor": "\"{{search}}\" కోసం నగరాలు కనుగొనబడలేదు",
@@ -265,16 +276,35 @@
     "model": "మోడల్:",
     "features": "ఫీచర్లు:",
     "target": "లక్ష్యం:",
-    "scene": "సన్నివేశం:"
+    "scene": "సన్నివేశం:",
+    "loading": "మోడల్ డేటా లోడ్ అవుతోంది…",
+    "generalizationCheck": "కనిపించని-నగర సాధారణీకరణ తనిఖీ:",
+    "generalizationDetail": "మొత్తం నగరాలను ({{cities}}) శిక్షణ నుండి పూర్తిగా మినహాయించినప్పుడు, కేవలం కొన్ని సంవత్సరాలు మాత్రమే కాదు, R² {{r2}} / MAE {{mae}}°C.",
+    "source": "మూలం:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
+    "panelTitle": "📡 డేటా పైప్‌లైన్ — నిజమైన మూలాలు → BhaskarOps",
+    "steps": {
+      "openMeteo": "లైవ్ ఉపరితల/చర్మ ఉష్ణోగ్రత, ఎత్తు (SRTM), AQI (CAMS) — ప్రామాణీకరణ లేదు, ఉచితం, రియల్-టైమ్",
+      "worldCover": "నిజమైన Sentinel-1/2 వర్గీకరణ, పబ్లిక్ AWS S3 — 36 ప్రాతినిధ్య నగరాలకు వృక్షసంపద/నిర్మిత ప్రాంతం/నీటి భాగాలు",
+      "srtmTitle": "SRTM ఎత్తు",
+      "srtm": "30మీ DEM, Open-Meteo Elevation API నుండి నేరుగా అందించబడింది",
+      "rfTitle": "రాండమ్ ఫారెస్ట్ ML",
+      "rf": "sklearn RandomForestRegressor n=100, 20 ప్రపంచ నగరాల నిజమైన MODIS-ఉత్పన్న డేటాపై శిక్షణ పొందింది (నిజమైనది, దిగువ రాండమ్ ఫారెస్ట్ ప్యానెల్ చూడండి — భారతదేశానికి మాత్రమే పరిమితం కాదు)",
+      "dashboardTitle": "BhaskarOps డాష్‌బోర్డ్",
+      "dashboard": "React + D3 + Recharts రియల్-టైమ్ విజువలైజేషన్"
+    }
   },
   "satellitePass": {
     "lastPass": "చివరి ఉపగ్రహ గమనం:",
     "landsatNote": "Landsat 8 ప్రతి ~16 రోజులకు తిరిగి వస్తుంది",
     "sentinelNote": "Sentinel-2 ప్రతి ~5 రోజులకు తిరిగి వస్తుంది",
-    "notRealtime": "రియల్-టైమ్ కాదు"
+    "notRealtime": "రియల్-టైమ్ కాదు",
+    "loading": "లైవ్ ఉపరితల డేటా లోడ్ అవుతోంది…",
+    "lulcFallback": "{{city}} కోసం నిజమైన వర్గీకరణ లేదు — దిగువ సమీప అందుబాటులో ఉన్న నిజమైన డేటా పాయింట్ ({{fallbackCity}}) అంచనాగా చూపబడింది.",
+    "lulcNotAvailable": "{{city}} కోసం అందుబాటులో లేదు — ఇప్పటివరకు ప్రతి రాష్ట్రానికి ఒక ప్రాతినిధ్య నగరానికి మాత్రమే నిజమైన వర్గీకరణ గణించబడింది.",
+    "modeledNote": "మోడల్ చేసిన భూతల ఉష్ణోగ్రత, ఉపగ్రహ-కొలిచిన Landsat రీడింగ్ కాదు — ఇది లైవ్‌గా అప్‌డేట్ అవుతుంది, ~16-రోజుల ఉపగ్రహ రీవిజిట్‌కు భిన్నంగా.",
+    "unavailable": "లైవ్ డేటా అందుబాటులో లేదు"
   },
   "yoyComparison": {
     "today": "ఈరోజు",
@@ -287,6 +317,93 @@
     "noEvents": "ఈ నగరానికి చారిత్రక కాలంలో ఎలాంటి ముఖ్యమైన వేడిగాలి సంఘటనలు నమోదు కాలేదు."
   },
   "aiAnalyst": {
-    "inputPlaceholder": "వేడి, వాతావరణం లేదా ఈ నగరం గురించి అడగండి..."
+    "inputPlaceholder": "వేడి, వాతావరణం లేదా ఈ నగరం గురించి అడగండి...",
+    "emptyHint": "{{city}} యొక్క హీట్ డేటా గురించి నన్ను ఏదైనా అడగండి, లేదా ప్రారంభించడానికి దిగువ సూచనను నొక్కండి.",
+    "thinking": "AI ఆలోచిస్తోంది...",
+    "suggestions": {
+      "whyHot": "{{city}} ఇప్పుడు ఎందుకు ఇంత వేడిగా ఉంది?",
+      "ensoImpact": "{{ensoPhase}} {{city}} వాతావరణంపై ఎలాంటి ప్రభావం చూపుతుంది?",
+      "coolingInterventions": "{{city}} కోసం ఉత్తమమైన 3 కూలింగ్ చర్యలు ఏమిటి?",
+      "reportConclusion": "{{city}} కోసం BhaskarOps 2026 నివేదిక ముగింపును రాయండి"
+    }
+  },
+  "landCover": {
+    "bareOther": "ఖాళీ నేల / ఇతరం",
+    "builtUp": "నిర్మిత ప్రాంతం",
+    "panelTitle": "🌍 భూ వినియోగం / భూ ఆవరణం — {{cityName}}",
+    "vegetation": "వృక్షసంపద",
+    "water": "నీరు",
+    "loading": "భూ ఆవరణ డేటా లోడ్ అవుతోంది…"
+  },
+  "nationalSummary": {
+    "avgTemp": "సగటు జాతీయ ఉష్ణోగ్రత",
+    "extremeStates": "తీవ్ర/అధిక ప్రమాద వర్గంలోని రాష్ట్రాలు",
+    "hottestNow": "ఇప్పుడు అత్యంత వేడి నగరం",
+    "live": "లైవ్",
+    "quickPicks": "త్వరిత ఎంపికలు",
+    "title": "నేటి జాతీయ హీట్ సారాంశం",
+    "updated": "నవీకరించబడింది"
+  },
+  "osm": {
+    "buildings": "{{radius}}మీ లోపల భవనాలు",
+    "loading": "OpenStreetMap నుండి సమాచారం తీసుకుంటోంది…",
+    "perSqKm": "భవనాలు / కిమీ²",
+    "unavailable": "భవన సాంద్రత ఇప్పుడు అందుబాటులో లేదు — OpenStreetMap యొక్క ఉచిత Overpass API ఒక సంఘం వనరు, దీనికి అప్‌టైమ్ హామీ లేదు."
+  },
+  "profile": {
+    "title": "నా ప్రొఫైల్"
+  },
+  "satelliteIndices": {
+    "surfaceTempLive": "ఉపరితల ఉష్ణోగ్రత (లైవ్)",
+    "ndviNdbiNdwi": "NDVI / NDBI / NDWI",
+    "vegetationFraction": "వృక్షసంపద భాగం",
+    "builtUpFraction": "నిర్మిత ప్రాంత భాగం",
+    "waterFraction": "నీటి భాగం",
+    "elevation": "ఎత్తు",
+    "loadingLiveTemp": "లైవ్ ఉష్ణోగ్రత లోడ్ అవుతోంది..."
+  },
+  "weatherStatus": {
+    "cachedMinAgo": "కాష్ చేయబడింది — {{mins}} నిమిషాల క్రితం",
+    "forceRefresh": "రీఫ్రెష్ చేయండి",
+    "weatherUnavailable": "వాతావరణం అందుబాటులో లేదు"
+  },
+  "weatherCard": {
+    "justNow": "ఇప్పుడే",
+    "minAgo": "{{mins}} నిమిషాల క్రితం",
+    "hAgo": "{{hrs}} గంటల క్రితం",
+    "dAgo": "{{days}} రోజుల క్రితం",
+    "weatherUnavailable": "వాతావరణం అందుబాటులో లేదు",
+    "timedOut": "{{city}} కోసం వాతావరణ డేటా లోడ్ అవ్వడానికి చాలా సమయం పడుతోంది (ఇంకా కాష్ చేయబడిన డేటా అందుబాటులో లేదు).",
+    "fetchFailed": "వాతావరణ డేటాను పొందడంలో విఫలమైంది",
+    "forceRefresh": "రీఫ్రెష్ చేయండి",
+    "fetchingWeather": "వాతావరణాన్ని పొందుతోంది...",
+    "loadingRealtimeFor": "{{city}} కోసం రియల్-టైమ్ వాతావరణం లోడ్ అవుతోంది...",
+    "fallbackLocation": "{{city}} కోసం ప్రత్యేకంగా లైవ్ వాతావరణం అందుబాటులో లేదు — {{state}}లో సమీప అందుబాటులో ఉన్న నిజమైన డేటా పాయింట్ {{fallbackCity}} అంచనాగా చూపబడింది.",
+    "cachedAgo": "కాష్ చేయబడింది — {{age}}",
+    "feelsLike": "{{temp}}°C వలె అనిపిస్తుంది",
+    "humidity": "తేమ",
+    "wind": "గాలి",
+    "pressure": "పీడనం",
+    "visibility": "దృశ్యమానత",
+    "uvIndex": "UV ఇండెక్స్",
+    "cloudCover": "మేఘావరణం",
+    "sunrise": "సూర్యోదయం",
+    "sunset": "సూర్యాస్తమయం",
+    "aqiTitle": "గాలి నాణ్యత సూచిక (AQI)",
+    "score": "స్కోర్:",
+    "sevenDayForecast": "7-రోజుల సూచన",
+    "next12Hours": "తదుపరి 12 గంటలు",
+    "dataSource": "డేటా: Open-Meteo.com (WMO • ERA5 రీఅనాలిసిస్)",
+    "cachedFooter": "కాష్ చేయబడింది {{age}}",
+    "updatedFooter": "నవీకరించబడింది: {{time}} IST"
+  },
+  "dataBadges": {
+    "source": "మూలం:"
+  },
+  "aboutTeam": {
+    "college": "కళాశాల:",
+    "method": "పద్ధతి:",
+    "focus": "దృష్టి:",
+    "team": "బృందం:"
   }
 }

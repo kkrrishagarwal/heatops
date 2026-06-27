@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useWeather } from '../hooks/useWeather'
 import { getISTDateTime } from '../utils/istClock'
 
@@ -11,16 +12,17 @@ import { getISTDateTime } from '../utils/istClock'
  * everywhere else in the app, so selecting a city only triggers ONE network request even
  * though multiple panels (this card, Health & Safety, AI Analyst, Export) all need it.
  */
-function formatCacheAge(timestamp) {
+function formatCacheAge(timestamp, t) {
   if (!timestamp) return ''
   const mins = Math.max(0, Math.round((Date.now() - timestamp) / 60000))
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins} min ago`
+  if (mins < 1) return t('weatherCard.justNow', 'just now')
+  if (mins < 60) return t('weatherCard.minAgo', '{{mins}} min ago', { mins })
   const hrs = Math.round(mins / 60)
-  return hrs < 24 ? `${hrs}h ago` : `${Math.round(hrs / 24)}d ago`
+  return hrs < 24 ? t('weatherCard.hAgo', '{{hrs}}h ago', { hrs }) : t('weatherCard.dAgo', '{{days}}d ago', { days: Math.round(hrs / 24) })
 }
 
 export function WeatherCard({ city, state, onClose }) {
+  const { t } = useTranslation()
   const { data: weather, loading, error, isStale, cachedAt, timedOut, forceRefresh } = useWeather(city, state, 'WeatherCard')
   const [istTime, setIstTime] = useState(getISTDateTime())
 
@@ -41,15 +43,15 @@ export function WeatherCard({ city, state, onClose }) {
     return (
       <div style={styles.card}>
         <div style={styles.header}>
-          <h3 style={styles.title}>⚠️ Weather Unavailable</h3>
+          <h3 style={styles.title}>⚠️ {t('weatherCard.weatherUnavailable', 'Weather Unavailable')}</h3>
           <button onClick={onClose} style={styles.closeBtn}>✕</button>
         </div>
         <div style={{ ...styles.section, color: '#ff6b6b' }}>
           {timedOut
-            ? <>Weather data for <strong>{city}</strong> is taking too long to load (no cached data available yet).</>
-            : (error?.message || 'Failed to fetch weather data')}
+            ? t('weatherCard.timedOut', 'Weather data for {{city}} is taking too long to load (no cached data available yet).', { city })
+            : (error?.message || t('weatherCard.fetchFailed', 'Failed to fetch weather data'))}
         </div>
-        <button onClick={forceRefresh} style={styles.retryBtn}>↻ Force Refresh</button>
+        <button onClick={forceRefresh} style={styles.retryBtn}>↻ {t('weatherCard.forceRefresh', 'Force Refresh')}</button>
       </div>
     )
   }
@@ -58,11 +60,11 @@ export function WeatherCard({ city, state, onClose }) {
     return (
       <div style={styles.card}>
         <div style={styles.header}>
-          <h3 style={styles.title}>⟳ Fetching Weather...</h3>
+          <h3 style={styles.title}>⟳ {t('weatherCard.fetchingWeather', 'Fetching Weather...')}</h3>
           <button onClick={onClose} style={styles.closeBtn}>✕</button>
         </div>
         <div style={{ ...styles.section, textAlign: 'center', color: '#888' }}>
-          Loading real-time weather for <strong>{city}</strong>...
+          {t('weatherCard.loadingRealtimeFor', 'Loading real-time weather for {{city}}...', { city })}
         </div>
       </div>
     )
@@ -83,13 +85,13 @@ export function WeatherCard({ city, state, onClose }) {
           </div>
           {weather.isFallbackLocation && (
             <div style={styles.fallbackBadge}>
-              📍 Live weather not available for {city} specifically — showing {weather.fallbackCityUsed}, {weather.state}'s nearest available real data point, as an estimate.
+              📍 {t('weatherCard.fallbackLocation', 'Live weather not available for {{city}} specifically — showing {{fallbackCity}}, {{state}}\'s nearest available real data point, as an estimate.', { city, fallbackCity: weather.fallbackCityUsed, state: weather.state })}
             </div>
           )}
           {isStale && (
             <div style={styles.staleBadge}>
-              ⏱ Cached — {formatCacheAge(cachedAt)}
-              <button onClick={forceRefresh} style={styles.staleRefreshBtn}>↻ Force Refresh</button>
+              ⏱ {t('weatherCard.cachedAgo', 'Cached — {{age}}', { age: formatCacheAge(cachedAt, t) })}
+              <button onClick={forceRefresh} style={styles.staleRefreshBtn}>↻ {t('weatherCard.forceRefresh', 'Force Refresh')}</button>
             </div>
           )}
         </div>
@@ -118,7 +120,7 @@ export function WeatherCard({ city, state, onClose }) {
           {weather.current.condition.label}
         </div>
         <div style={styles.feelsLike}>
-          Feels like {weather.current.feelsLike}°C
+          {t('weatherCard.feelsLike', 'Feels like {{temp}}°C', { temp: weather.current.feelsLike })}
         </div>
         <div style={styles.todayRange}>
           ▲ {weather.today.maxTemp}°C / ▼ {weather.today.minTemp}°C
@@ -127,27 +129,27 @@ export function WeatherCard({ city, state, onClose }) {
 
       {/* Stats Grid */}
       <div style={styles.statsGrid}>
-        <StatBox icon="💧" label="Humidity" value={`${weather.current.humidity}%`} />
-        <StatBox icon="💨" label="Wind" value={`${weather.current.windSpeed} km/h ${weather.current.windDirection}`} />
-        <StatBox icon="🌡️" label="Pressure" value={`${weather.current.pressure} hPa`} />
-        <StatBox icon="👁️" label="Visibility" value={`${weather.current.visibility} km`} />
-        <StatBox icon="☀️" label="UV Index" value={weather.current.uvIndex} />
-        <StatBox icon="☁️" label="Cloud Cover" value={`${weather.current.cloudCover}%`} />
-        <StatBox icon="🌅" label="Sunrise" value={weather.today.sunrise} />
-        <StatBox icon="🌇" label="Sunset" value={weather.today.sunset} />
+        <StatBox icon="💧" label={t('weatherCard.humidity', 'Humidity')} value={`${weather.current.humidity}%`} />
+        <StatBox icon="💨" label={t('weatherCard.wind', 'Wind')} value={`${weather.current.windSpeed} km/h ${weather.current.windDirection}`} />
+        <StatBox icon="🌡️" label={t('weatherCard.pressure', 'Pressure')} value={`${weather.current.pressure} hPa`} />
+        <StatBox icon="👁️" label={t('weatherCard.visibility', 'Visibility')} value={`${weather.current.visibility} km`} />
+        <StatBox icon="☀️" label={t('weatherCard.uvIndex', 'UV Index')} value={weather.current.uvIndex} />
+        <StatBox icon="☁️" label={t('weatherCard.cloudCover', 'Cloud Cover')} value={`${weather.current.cloudCover}%`} />
+        <StatBox icon="🌅" label={t('weatherCard.sunrise', 'Sunrise')} value={weather.today.sunrise} />
+        <StatBox icon="🌇" label={t('weatherCard.sunset', 'Sunset')} value={weather.today.sunset} />
       </div>
 
       {/* AQI Section */}
       <div style={styles.section}>
         <div style={styles.sectionTitle}>
-          🌍 Air Quality Index (AQI)
+          🌍 {t('weatherCard.aqiTitle', 'Air Quality Index (AQI)')}
         </div>
         <div style={styles.aqiContainer}>
           <div style={{ ...styles.aqiValue, color: weather.aqi.category.color }}>
             {weather.aqi.category.label}
           </div>
           <div style={styles.aqiScore}>
-            Score: <strong>{weather.aqi.usAQI}</strong>
+            {t('weatherCard.score', 'Score:')} <strong>{weather.aqi.usAQI}</strong>
           </div>
         </div>
         <div style={styles.aqiDetails}>
@@ -160,7 +162,7 @@ export function WeatherCard({ city, state, onClose }) {
 
       {/* 7-Day Forecast */}
       <div style={styles.section}>
-        <div style={styles.sectionTitle}>📊 7-Day Forecast</div>
+        <div style={styles.sectionTitle}>📊 {t('weatherCard.sevenDayForecast', '7-Day Forecast')}</div>
         <div style={styles.forecastContainer}>
           {weather.forecast.slice(0, 7).map((day, i) => (
             <div key={i} style={styles.forecastDay}>
@@ -178,7 +180,7 @@ export function WeatherCard({ city, state, onClose }) {
 
       {/* Hourly Forecast (next 12 hours) */}
       <div style={styles.section}>
-        <div style={styles.sectionTitle}>⏰ Next 12 Hours</div>
+        <div style={styles.sectionTitle}>⏰ {t('weatherCard.next12Hours', 'Next 12 Hours')}</div>
         <div style={styles.hourlyContainer}>
           {weather.hourly.slice(0, 12).map((hr, i) => (
             <div key={i} style={styles.hourlySlot}>
@@ -193,9 +195,9 @@ export function WeatherCard({ city, state, onClose }) {
 
       {/* Footer */}
       <div style={styles.footer}>
-        📡 Data: Open-Meteo.com (WMO • ERA5 reanalysis) • {isStale
-          ? `Cached ${formatCacheAge(cachedAt)}`
-          : `Updated: ${new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })} IST`}
+        📡 {t('weatherCard.dataSource', 'Data: Open-Meteo.com (WMO • ERA5 reanalysis)')} • {isStale
+          ? t('weatherCard.cachedFooter', 'Cached {{age}}', { age: formatCacheAge(cachedAt, t) })
+          : t('weatherCard.updatedFooter', 'Updated: {{time}} IST', { time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }) })}
       </div>
     </div>
   )

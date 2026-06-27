@@ -19,7 +19,8 @@
     "overview": "جائزہ",
     "analysis": "تجزیہ",
     "interventions": "مداخلتیں",
-    "aiExport": "AI + ایکسپورٹ"
+    "aiExport": "AI + ایکسپورٹ",
+    "compare": "موازنہ کریں"
   },
   "panels": {
     "weatherConditions": "موسمی حالات",
@@ -50,7 +51,9 @@
     "heatwaveTimeline": "تاریخی ہیٹ ویو ٹائم لائن",
     "recentSignIns": "حالیہ سائن ان",
     "heatLegend": "حرارت کی علامت",
-    "adminDashboard": "ایڈمن تجزیاتی ڈیش بورڈ"
+    "adminDashboard": "ایڈمن تجزیاتی ڈیش بورڈ",
+    "dataOutdated": "ڈیٹا پرانا ہو سکتا ہے",
+    "urbanMorphology": "شہری ہئیت"
   },
   "buttons": {
     "copySummary": "خلاصہ کاپی کریں",
@@ -130,7 +133,8 @@
   "tooltips": {
     "clickToExplore": "شہروں کو دیکھنے کے لیے کلک کریں →",
     "clickStateForDetails": "تفصیلات دیکھنے کے لیے نقشے پر کسی ریاست پر کلک کریں۔",
-    "clickCityToAnalyze": "👆 تجزیہ کے لیے اوپر کسی بھی شہر پر کلک کریں"
+    "clickCityToAnalyze": "👆 تجزیہ کے لیے اوپر کسی بھی شہر پر کلک کریں",
+    "clickStateForDetailsSub": "شہروں اور حدت کے ڈیٹا کو دیکھنے کے لیے"
   },
   "dayNight": {
     "day": "دن (دوپہر 12 بجے)",
@@ -168,7 +172,13 @@
     "waterBodies": "💧 آبی ذخائر (NDWI +0.1):"
   },
   "compareCities": {
-    "selectPlaceholder": "موازنہ کے لیے شہر منتخب کریں..."
+    "selectPlaceholder": "موازنہ کے لیے شہر منتخب کریں...",
+    "coolest": "منتخب شہروں میں سب سے ٹھنڈا شہر ہے",
+    "empty": "موازنہ چارٹ دیکھنے کے لیے اوپر تلاش کریں اور کم از کم ایک شہر شامل کریں۔",
+    "maxReached": "زیادہ سے زیادہ {{max}} شہر منتخب ہو چکے ہیں",
+    "searchPlaceholder": "موازنہ کے لیے شہر یا ریاست تلاش کریں...",
+    "subtitle": "{{city}} کے ساتھ موازنہ — تلاش کریں اور مزید {{max}} شہر شامل کریں۔",
+    "theSelectedCity": "منتخب شہر"
   },
   "windAtmosphere": {
     "direction": "سمت",
@@ -186,14 +196,15 @@
     "low": "کم"
   },
   "progressTracker": {
-    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ LST کا حساب",
-    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
+    "dataCollection": "✅ ڈیٹا اکٹھا کرنا (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "✅ لائیو سطحی درجہ حرارت",
+    "indexCalculation": "✅ نباتات/تعمیر شدہ علاقہ کے حصے (36 شہر)",
     "correlationAnalysis": "✅ ارتباط کا تجزیہ",
     "randomForestModel": "✅ رینڈم فاریسٹ ماڈل",
     "interventionSimulation": "✅ مداخلت کی نقالی",
     "dashboardCreation": "✅ ڈیش بورڈ کی تخلیق",
-    "reportSubmission": "🔲 رپورٹ جمع کروانا"
+    "reportSubmission": "🔲 رپورٹ جمع کروانا",
+    "stepsComplete": "{{done}}/{{total}} مراحل مکمل"
   },
   "cityList": {
     "noResultsFor": "\"{{search}}\" کے لیے کوئی شہر نہیں ملا",
@@ -265,16 +276,35 @@
     "model": "ماڈل:",
     "features": "فیچرز:",
     "target": "ہدف:",
-    "scene": "منظر:"
+    "scene": "منظر:",
+    "loading": "ماڈل کا ڈیٹا لوڈ ہو رہا ہے…",
+    "generalizationCheck": "غیر دیکھے گئے شہر کی عمومیت کی جانچ:",
+    "generalizationDetail": "جب مکمل شہروں ({{cities}}) کو تربیت سے مکمل طور پر باہر رکھا جاتا ہے، نہ کہ صرف چند سالوں کو، تو R² {{r2}} / MAE {{mae}}°C۔",
+    "source": "ماخذ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
+    "panelTitle": "📡 ڈیٹا پائپ لائن — حقیقی ذرائع → BhaskarOps",
+    "steps": {
+      "openMeteo": "لائیو سطحی/جلدی درجہ حرارت، بلندی (SRTM)، AQI (CAMS) — کوئی توثیق نہیں، مفت، ریئل ٹائم",
+      "worldCover": "حقیقی Sentinel-1/2 درجہ بندی، عوامی AWS S3 — 36 نمائندہ شہروں کے لیے نباتات/تعمیر شدہ علاقہ/پانی کے حصے",
+      "srtmTitle": "SRTM بلندی",
+      "srtm": "30میٹر DEM، Open-Meteo Elevation API سے براہ راست حاصل کردہ",
+      "rfTitle": "رینڈم فاریسٹ ML",
+      "rf": "sklearn RandomForestRegressor n=100، 20 عالمی شہروں کے حقیقی MODIS سے حاصل شدہ ڈیٹا پر تربیت یافتہ (حقیقی، نیچے رینڈم فاریسٹ پینل دیکھیں — صرف بھارت کے لیے مخصوص نہیں)",
+      "dashboardTitle": "BhaskarOps ڈیش بورڈ",
+      "dashboard": "React + D3 + Recharts ریئل ٹائم بصری نمائش"
+    }
   },
   "satellitePass": {
     "lastPass": "آخری سیٹلائٹ گزر:",
     "landsatNote": "Landsat 8 ہر تقریباً 16 دن بعد دوبارہ گزرتا ہے",
     "sentinelNote": "Sentinel-2 ہر تقریباً 5 دن بعد دوبارہ گزرتا ہے",
-    "notRealtime": "ریئل ٹائم نہیں"
+    "notRealtime": "ریئل ٹائم نہیں",
+    "loading": "لائیو سطحی ڈیٹا لوڈ ہو رہا ہے…",
+    "lulcFallback": "{{city}} کے لیے خود کوئی حقیقی درجہ بندی نہیں ہے — نیچے قریب ترین دستیاب حقیقی ڈیٹا پوائنٹ ({{fallbackCity}}) ایک تخمینے کے طور پر دکھایا گیا ہے۔",
+    "lulcNotAvailable": "{{city}} کے لیے دستیاب نہیں — اب تک ہر ریاست کے صرف ایک نمائندہ شہر کے لیے حقیقی درجہ بندی کا حساب لگایا گیا ہے۔",
+    "modeledNote": "ماڈل کردہ زمینی سطح کا درجہ حرارت، سیٹلائٹ سے ماپا گیا Landsat ریڈنگ نہیں ہے — یہ لائیو اپڈیٹ ہوتا ہے، ~16 دن کے سیٹلائٹ دوبارہ دورے کے برعکس۔",
+    "unavailable": "لائیو ڈیٹا دستیاب نہیں ہے"
   },
   "yoyComparison": {
     "today": "آج",
@@ -287,6 +317,93 @@
     "noEvents": "اس شہر کے لیے تاریخی مدت میں کوئی قابل ذکر ہیٹ ویو واقعہ ریکارڈ نہیں ہوا۔"
   },
   "aiAnalyst": {
-    "inputPlaceholder": "گرمی، موسم، یا اس شہر کے بارے میں پوچھیں..."
+    "inputPlaceholder": "گرمی، موسم، یا اس شہر کے بارے میں پوچھیں...",
+    "emptyHint": "{{city}} کے حدت کے ڈیٹا کے بارے میں مجھ سے کچھ بھی پوچھیں، یا شروع کرنے کے لیے نیچے دی گئی تجویز پر ٹیپ کریں۔",
+    "thinking": "AI سوچ رہا ہے...",
+    "suggestions": {
+      "whyHot": "{{city}} ابھی اتنا گرم کیوں ہے؟",
+      "ensoImpact": "{{ensoPhase}} کا {{city}} کے موسم پر کیا اثر ہے؟",
+      "coolingInterventions": "{{city}} کے لیے بہترین 3 ٹھنڈک کے اقدامات کیا ہیں؟",
+      "reportConclusion": "{{city}} کے لیے BhaskarOps 2026 رپورٹ کا نتیجہ لکھیں"
+    }
+  },
+  "landCover": {
+    "bareOther": "خالی مٹی / دیگر",
+    "builtUp": "تعمیر شدہ علاقہ",
+    "panelTitle": "🌍 زمین کا استعمال / زمینی پوشش — {{cityName}}",
+    "vegetation": "نباتات",
+    "water": "پانی",
+    "loading": "زمینی پوشش کا ڈیٹا لوڈ ہو رہا ہے…"
+  },
+  "nationalSummary": {
+    "avgTemp": "اوسط قومی درجہ حرارت",
+    "extremeStates": "انتہائی/زیادہ خطرے کی قسم کی ریاستیں",
+    "hottestNow": "ابھی سب سے گرم شہر",
+    "live": "لائیو",
+    "quickPicks": "فوری انتخاب",
+    "title": "آج کا قومی حدت خلاصہ",
+    "updated": "تجدید شدہ"
+  },
+  "osm": {
+    "buildings": "{{radius}}میٹر کے اندر عمارتیں",
+    "loading": "OpenStreetMap سے معلومات لی جا رہی ہیں…",
+    "perSqKm": "عمارتیں / کلومیٹر²",
+    "unavailable": "عمارت کی کثافت ابھی دستیاب نہیں ہے — OpenStreetMap کا مفت Overpass API ایک اجتماعی وسیلہ ہے جس کی اپ ٹائم کی کوئی ضمانت نہیں۔"
+  },
+  "profile": {
+    "title": "میری پروفائل"
+  },
+  "satelliteIndices": {
+    "surfaceTempLive": "سطحی درجہ حرارت (لائیو)",
+    "ndviNdbiNdwi": "NDVI / NDBI / NDWI",
+    "vegetationFraction": "نباتات کا حصہ",
+    "builtUpFraction": "تعمیر شدہ علاقے کا حصہ",
+    "waterFraction": "پانی کا حصہ",
+    "elevation": "بلندی",
+    "loadingLiveTemp": "لائیو درجہ حرارت لوڈ ہو رہا ہے..."
+  },
+  "weatherStatus": {
+    "cachedMinAgo": "کیشڈ — {{mins}} منٹ پہلے",
+    "forceRefresh": "ریفریش کریں",
+    "weatherUnavailable": "موسم دستیاب نہیں ہے"
+  },
+  "weatherCard": {
+    "justNow": "ابھی ابھی",
+    "minAgo": "{{mins}} منٹ پہلے",
+    "hAgo": "{{hrs}} گھنٹے پہلے",
+    "dAgo": "{{days}} دن پہلے",
+    "weatherUnavailable": "موسم دستیاب نہیں ہے",
+    "timedOut": "{{city}} کے لیے موسم کا ڈیٹا لوڈ ہونے میں بہت وقت لگ رہا ہے (ابھی تک کوئی کیشڈ ڈیٹا دستیاب نہیں)۔",
+    "fetchFailed": "موسم کا ڈیٹا حاصل کرنے میں ناکام",
+    "forceRefresh": "ریفریش کریں",
+    "fetchingWeather": "موسم حاصل کیا جا رہا ہے...",
+    "loadingRealtimeFor": "{{city}} کے لیے ریئل ٹائم موسم لوڈ ہو رہا ہے...",
+    "fallbackLocation": "{{city}} کے لیے خاص طور پر لائیو موسم دستیاب نہیں ہے — {{state}} میں قریب ترین دستیاب حقیقی ڈیٹا پوائنٹ {{fallbackCity}} ایک تخمینے کے طور پر دکھایا جا رہا ہے۔",
+    "cachedAgo": "کیشڈ — {{age}}",
+    "feelsLike": "{{temp}}°C جیسا محسوس ہوتا ہے",
+    "humidity": "نمی",
+    "wind": "ہوا",
+    "pressure": "دباؤ",
+    "visibility": "مرئیت",
+    "uvIndex": "UV انڈیکس",
+    "cloudCover": "بادل کی پوشش",
+    "sunrise": "طلوع آفتاب",
+    "sunset": "غروب آفتاب",
+    "aqiTitle": "ہوا کے معیار کا اشاریہ (AQI)",
+    "score": "اسکور:",
+    "sevenDayForecast": "7 دن کی پیشن گوئی",
+    "next12Hours": "اگلے 12 گھنٹے",
+    "dataSource": "ڈیٹا: Open-Meteo.com (WMO • ERA5 ری اینالیسس)",
+    "cachedFooter": "کیشڈ {{age}}",
+    "updatedFooter": "تجدید شدہ: {{time}} IST"
+  },
+  "dataBadges": {
+    "source": "ماخذ:"
+  },
+  "aboutTeam": {
+    "college": "کالج:",
+    "method": "طریقہ:",
+    "focus": "فوکس:",
+    "team": "ٹیم:"
   }
 }

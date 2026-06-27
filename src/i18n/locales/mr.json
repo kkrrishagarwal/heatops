@@ -19,7 +19,8 @@
     "overview": "आढावा",
     "analysis": "विश्लेषण",
     "interventions": "हस्तक्षेप",
-    "aiExport": "एआय + एक्सपोर्ट"
+    "aiExport": "एआय + एक्सपोर्ट",
+    "compare": "तुलना करा"
   },
   "panels": {
     "weatherConditions": "हवामान स्थिती",
@@ -50,7 +51,9 @@
     "heatwaveTimeline": "ऐतिहासिक उष्णतेच्या लाटेची टाइमलाइन",
     "recentSignIns": "अलीकडील साइन-इन",
     "heatLegend": "उष्णता लेजेंड",
-    "adminDashboard": "अॅडमिन अॅनालिटिक्स डॅशबोर्ड"
+    "adminDashboard": "अॅडमिन अॅनालिटिक्स डॅशबोर्ड",
+    "dataOutdated": "डेटा जुना असू शकतो",
+    "urbanMorphology": "शहरी आकारविज्ञान"
   },
   "buttons": {
     "copySummary": "सारांश कॉपी करा",
@@ -130,7 +133,8 @@
   "tooltips": {
     "clickToExplore": "शहरे एक्सप्लोर करण्यासाठी क्लिक करा →",
     "clickStateForDetails": "तपशील पाहण्यासाठी मॅपवर एका राज्यावर क्लिक करा.",
-    "clickCityToAnalyze": "👆 विश्लेषणासाठी वरील कोणत्याही शहरावर क्लिक करा"
+    "clickCityToAnalyze": "👆 विश्लेषणासाठी वरील कोणत्याही शहरावर क्लिक करा",
+    "clickStateForDetailsSub": "शहरे आणि उष्णता डेटा एक्सप्लोर करण्यासाठी"
   },
   "dayNight": {
     "day": "दिवस (दुपारी १२)",
@@ -168,7 +172,13 @@
     "waterBodies": "💧 जलसाठे (एनडीडब्ल्यूआय +0.1):"
   },
   "compareCities": {
-    "selectPlaceholder": "तुलनेसाठी शहर निवडा..."
+    "selectPlaceholder": "तुलनेसाठी शहर निवडा...",
+    "coolest": "हे निवडलेल्या शहरांमधील सर्वात थंड शहर आहे",
+    "empty": "तुलना तक्ता पाहण्यासाठी वर शोधा आणि कमीतकमी एक शहर जोडा.",
+    "maxReached": "जास्तीत जास्त {{max}} शहरे निवडली आहेत",
+    "searchPlaceholder": "तुलनेसाठी शहर किंवा राज्य शोधा...",
+    "subtitle": "{{city}}शी तुलना — शोधा आणि आणखी {{max}} शहरे जोडा.",
+    "theSelectedCity": "निवडलेले शहर"
   },
   "windAtmosphere": {
     "direction": "दिशा",
@@ -186,14 +196,15 @@
     "low": "कमी"
   },
   "progressTracker": {
-    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ एलएसटी गणना",
-    "indexCalculation": "✅ निर्देशांक गणना (एनडीव्हीआय, एनडीबीआय)",
+    "dataCollection": "✅ डेटा संकलन (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "✅ लाइव्ह पृष्ठभाग तापमान",
+    "indexCalculation": "✅ वनस्पती/बांधलेले क्षेत्र अंश (36 शहरे)",
     "correlationAnalysis": "✅ सहसंबंध विश्लेषण",
     "randomForestModel": "✅ रँडम फॉरेस्ट मॉडेल",
     "interventionSimulation": "✅ हस्तक्षेप सिम्युलेशन",
     "dashboardCreation": "✅ डॅशबोर्ड निर्मिती",
-    "reportSubmission": "🔲 अहवाल सादरीकरण"
+    "reportSubmission": "🔲 अहवाल सादरीकरण",
+    "stepsComplete": "{{done}}/{{total}} पायऱ्या पूर्ण"
   },
   "cityList": {
     "noResultsFor": "\"{{search}}\" साठी कोणतीही शहरे आढळली नाहीत",
@@ -265,16 +276,35 @@
     "model": "मॉडेल:",
     "features": "फीचर्स:",
     "target": "लक्ष्य:",
-    "scene": "सीन:"
+    "scene": "सीन:",
+    "loading": "मॉडेल डेटा लोड होत आहे…",
+    "generalizationCheck": "अनोळखी-शहर सामान्यीकरण तपासणी:",
+    "generalizationDetail": "R² {{r2}} / MAE {{mae}}°C जेव्हा संपूर्ण शहरे ({{cities}}) प्रशिक्षणातून पूर्णपणे वेगळी ठेवली जातात, फक्त काही वर्षे नाही.",
+    "source": "स्रोत:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
+    "panelTitle": "📡 डेटा पाइपलाइन — वास्तविक स्रोत → BhaskarOps",
+    "steps": {
+      "openMeteo": "लाइव्ह पृष्ठभाग/त्वचा तापमान, उंची (SRTM), AQI (CAMS) — प्रमाणीकरण नाही, मुक्त, रिअल-टाइम",
+      "worldCover": "वास्तविक Sentinel-1/2 वर्गीकरण, सार्वजनिक AWS S3 — 36 प्रतिनिधी शहरांसाठी वनस्पती/बांधलेले क्षेत्र/पाणी अंश",
+      "srtmTitle": "SRTM उंची",
+      "srtm": "30मी DEM, Open-Meteo Elevation API वरून थेट प्राप्त",
+      "rfTitle": "रँडम फॉरेस्ट ML",
+      "rf": "sklearn RandomForestRegressor n=100, 20 जागतिक शहरांच्या वास्तविक MODIS-व्युत्पन्न डेटावर प्रशिक्षित (वास्तविक, खाली रँडम फॉरेस्ट पॅनेल पहा — भारत-विशिष्ट नाही)",
+      "dashboardTitle": "BhaskarOps डॅशबोर्ड",
+      "dashboard": "React + D3 + Recharts रिअल-टाइम व्हिज्युअलायझेशन"
+    }
   },
   "satellitePass": {
     "lastPass": "शेवटचा उपग्रह पास:",
     "landsatNote": "Landsat 8 साधारण दर १६ दिवसांनी पुन्हा येतो",
     "sentinelNote": "Sentinel-2 साधारण दर ५ दिवसांनी पुन्हा येतो",
-    "notRealtime": "रिअल-टाइम नाही"
+    "notRealtime": "रिअल-टाइम नाही",
+    "loading": "लाइव्ह पृष्ठभाग डेटा लोड होत आहे…",
+    "lulcFallback": "{{city}}साठी प्रत्यक्ष वर्गीकरण नाही — खाली जवळचा उपलब्ध वास्तविक डेटा पॉइंट ({{fallbackCity}}) अंदाज म्हणून दर्शविला आहे.",
+    "lulcNotAvailable": "{{city}}साठी उपलब्ध नाही — आतापर्यंत प्रत्येक राज्याच्या एका प्रतिनिधी शहरासाठीच वास्तविक वर्गीकरण मोजले आहे.",
+    "modeledNote": "मॉडेल केलेले भू-पृष्ठ तापमान, उपग्रह-मापित Landsat रीडिंग नाही — हे लाइव्ह अपडेट होते, ~16-दिवसांच्या उपग्रह पुनरावलोकनाच्या विपरीत.",
+    "unavailable": "लाइव्ह डेटा उपलब्ध नाही"
   },
   "yoyComparison": {
     "today": "आज",
@@ -287,6 +317,93 @@
     "noEvents": "या शहरासाठी ऐतिहासिक कालावधीत कोणतीही लक्षणीय उष्णतेची लाट नोंदवली गेली नाही."
   },
   "aiAnalyst": {
-    "inputPlaceholder": "उष्णता, हवामान किंवा या शहराबद्दल विचारा..."
+    "inputPlaceholder": "उष्णता, हवामान किंवा या शहराबद्दल विचारा...",
+    "emptyHint": "{{city}}च्या उष्णता डेटाबद्दल मला काहीही विचारा, किंवा सुरू करण्यासाठी खालील सुचनेवर टॅप करा.",
+    "thinking": "AI विचार करत आहे...",
+    "suggestions": {
+      "whyHot": "{{city}} आता इतके उष्ण का आहे?",
+      "ensoImpact": "{{ensoPhase}} चा {{city}}च्या हवामानावर काय परिणाम होतो?",
+      "coolingInterventions": "{{city}}साठी सर्वोत्तम 3 कूलिंग उपाय कोणते आहेत?",
+      "reportConclusion": "{{city}}साठी BhaskarOps 2026 अहवालाचा निष्कर्ष लिहा"
+    }
+  },
+  "landCover": {
+    "bareOther": "उघडी माती / इतर",
+    "builtUp": "बांधलेले क्षेत्र",
+    "panelTitle": "🌍 जमीन वापर / भूआच्छादन — {{cityName}}",
+    "vegetation": "वनस्पती",
+    "water": "पाणी",
+    "loading": "भूआच्छादन डेटा लोड होत आहे…"
+  },
+  "nationalSummary": {
+    "avgTemp": "सरासरी राष्ट्रीय तापमान",
+    "extremeStates": "अति/उच्च जोखीम श्रेणीतील राज्ये",
+    "hottestNow": "सध्या सर्वात उष्ण शहर",
+    "live": "लाइव्ह",
+    "quickPicks": "त्वरित निवड",
+    "title": "आजचा राष्ट्रीय उष्णता सारांश",
+    "updated": "अपडेट केले"
+  },
+  "osm": {
+    "buildings": "{{radius}}मी आत इमारती",
+    "loading": "OpenStreetMap वरून माहिती घेतली जात आहे…",
+    "perSqKm": "इमारती / किमी²",
+    "unavailable": "इमारत घनता सध्या उपलब्ध नाही — OpenStreetMap चे मुक्त Overpass API हे एक सामुदायिक संसाधन आहे ज्याची अपटाइमची हमी नाही."
+  },
+  "profile": {
+    "title": "माझे प्रोफाइल"
+  },
+  "satelliteIndices": {
+    "surfaceTempLive": "पृष्ठभाग तापमान (लाइव्ह)",
+    "ndviNdbiNdwi": "NDVI / NDBI / NDWI",
+    "vegetationFraction": "वनस्पती अंश",
+    "builtUpFraction": "बांधलेले क्षेत्र अंश",
+    "waterFraction": "पाणी अंश",
+    "elevation": "उंची",
+    "loadingLiveTemp": "लाइव्ह तापमान लोड होत आहे..."
+  },
+  "weatherStatus": {
+    "cachedMinAgo": "कॅश्ड — {{mins}} मिनिटांपूर्वी",
+    "forceRefresh": "रीफ्रेश करा",
+    "weatherUnavailable": "हवामान उपलब्ध नाही"
+  },
+  "weatherCard": {
+    "justNow": "आत्ताच",
+    "minAgo": "{{mins}} मिनिटांपूर्वी",
+    "hAgo": "{{hrs}} तासांपूर्वी",
+    "dAgo": "{{days}} दिवसांपूर्वी",
+    "weatherUnavailable": "हवामान उपलब्ध नाही",
+    "timedOut": "{{city}}साठी हवामान डेटा लोड होण्यास खूप वेळ लागत आहे (अद्याप कोणताही कॅश्ड डेटा उपलब्ध नाही).",
+    "fetchFailed": "हवामान डेटा मिळवण्यात अयशस्वी",
+    "forceRefresh": "रीफ्रेश करा",
+    "fetchingWeather": "हवामान मिळवत आहे...",
+    "loadingRealtimeFor": "{{city}}साठी रिअल-टाइम हवामान लोड होत आहे...",
+    "fallbackLocation": "{{city}}साठी विशेषतः लाइव्ह हवामान उपलब्ध नाही — {{state}} मधील जवळचा उपलब्ध वास्तविक डेटा पॉइंट {{fallbackCity}} अंदाज म्हणून दर्शविला आहे.",
+    "cachedAgo": "कॅश्ड — {{age}}",
+    "feelsLike": "{{temp}}°C सारखे जाणवते",
+    "humidity": "आर्द्रता",
+    "wind": "वारा",
+    "pressure": "दाब",
+    "visibility": "दृश्यमानता",
+    "uvIndex": "UV इंडेक्स",
+    "cloudCover": "ढग आच्छादन",
+    "sunrise": "सूर्योदय",
+    "sunset": "सूर्यास्त",
+    "aqiTitle": "हवा गुणवत्ता निर्देशांक (AQI)",
+    "score": "स्कोअर:",
+    "sevenDayForecast": "7-दिवसांचा अंदाज",
+    "next12Hours": "पुढील 12 तास",
+    "dataSource": "डेटा: Open-Meteo.com (WMO • ERA5 रीअॅनालिसिस)",
+    "cachedFooter": "कॅश्ड {{age}}",
+    "updatedFooter": "अपडेट केले: {{time}} IST"
+  },
+  "dataBadges": {
+    "source": "स्रोत:"
+  },
+  "aboutTeam": {
+    "college": "कॉलेज:",
+    "method": "पद्धत:",
+    "focus": "फोकस:",
+    "team": "टीम:"
   }
 }

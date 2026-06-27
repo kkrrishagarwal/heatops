@@ -19,7 +19,8 @@
     "overview": "ಅವಲೋಕನ",
     "analysis": "ವಿಶ್ಲೇಷಣೆ",
     "interventions": "ಮಧ್ಯಸ್ಥಿಕೆಗಳು",
-    "aiExport": "AI + ಎಕ್ಸ್‌ಪೋರ್ಟ್"
+    "aiExport": "AI + ಎಕ್ಸ್‌ಪೋರ್ಟ್",
+    "compare": "ಹೋಲಿಸಿ"
   },
   "panels": {
     "weatherConditions": "ಹವಾಮಾನ ಪರಿಸ್ಥಿತಿಗಳು",
@@ -50,7 +51,9 @@
     "heatwaveTimeline": "ಐತಿಹಾಸಿಕ ಶಾಖ ಅಲೆಯ ಟೈಮ್‌ಲೈನ್",
     "recentSignIns": "ಇತ್ತೀಚಿನ ಸೈನ್-ಇನ್‌ಗಳು",
     "heatLegend": "ಶಾಖ ಲೆಜೆಂಡ್",
-    "adminDashboard": "ಅಡ್ಮಿನ್ ಅನಾಲಿಟಿಕ್ಸ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್"
+    "adminDashboard": "ಅಡ್ಮಿನ್ ಅನಾಲಿಟಿಕ್ಸ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+    "dataOutdated": "ಡೇಟಾ ಹಳೆಯದಾಗಿರಬಹುದು",
+    "urbanMorphology": "ನಗರ ರೂಪಶಾಸ್ತ್ರ"
   },
   "buttons": {
     "copySummary": "ಸಾರಾಂಶವನ್ನು ನಕಲಿಸಿ",
@@ -130,7 +133,8 @@
   "tooltips": {
     "clickToExplore": "ನಗರಗಳನ್ನು ಅನ್ವೇಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ →",
     "clickStateForDetails": "ವಿವರಗಳನ್ನು ನೋಡಲು ಮ್ಯಾಪ್‌ನಲ್ಲಿ ಒಂದು ರಾಜ್ಯವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.",
-    "clickCityToAnalyze": "👆 ವಿಶ್ಲೇಷಿಸಲು ಮೇಲಿನ ಯಾವುದೇ ನಗರವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ"
+    "clickCityToAnalyze": "👆 ವಿಶ್ಲೇಷಿಸಲು ಮೇಲಿನ ಯಾವುದೇ ನಗರವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ",
+    "clickStateForDetailsSub": "ನಗರಗಳು ಮತ್ತು ಶಾಖ ಡೇಟಾವನ್ನು ಅನ್ವೇಷಿಸಲು"
   },
   "dayNight": {
     "day": "ಹಗಲು (ಮಧ್ಯಾಹ್ನ 12)",
@@ -168,7 +172,13 @@
     "waterBodies": "💧 ಜಲಮೂಲಗಳು (NDWI +0.1):"
   },
   "compareCities": {
-    "selectPlaceholder": "ಹೋಲಿಸಲು ನಗರವನ್ನು ಆಯ್ಕೆಮಾಡಿ..."
+    "selectPlaceholder": "ಹೋಲಿಸಲು ನಗರವನ್ನು ಆಯ್ಕೆಮಾಡಿ...",
+    "coolest": "ಆಯ್ಕೆಮಾಡಿದ ನಗರಗಳಲ್ಲಿ ಅತ್ಯಂತ ತಂಪಾದ ನಗರ",
+    "empty": "ಹೋಲಿಕೆ ಚಾರ್ಟ್ ನೋಡಲು ಮೇಲೆ ಹುಡುಕಿ ಮತ್ತು ಕನಿಷ್ಠ ಒಂದು ನಗರವನ್ನು ಸೇರಿಸಿ.",
+    "maxReached": "ಗರಿಷ್ಠ {{max}} ನಗರಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ",
+    "searchPlaceholder": "ಹೋಲಿಸಲು ನಗರ ಅಥವಾ ರಾಜ್ಯವನ್ನು ಹುಡುಕಿ...",
+    "subtitle": "{{city}} ಜೊತೆ ಹೋಲಿಸುತ್ತಿದೆ — ಹುಡುಕಿ ಮತ್ತು ಇನ್ನೂ {{max}} ನಗರಗಳನ್ನು ಸೇರಿಸಿ.",
+    "theSelectedCity": "ಆಯ್ಕೆಮಾಡಿದ ನಗರ"
   },
   "windAtmosphere": {
     "direction": "ದಿಕ್ಕು",
@@ -186,14 +196,15 @@
     "low": "ಕಡಿಮೆ"
   },
   "progressTracker": {
-    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ LST ಗಣನೆ",
-    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
+    "dataCollection": "✅ ಡೇಟಾ ಸಂಗ್ರಹಣೆ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "✅ ಲೈವ್ ಮೇಲ್ಮೈ ತಾಪಮಾನ",
+    "indexCalculation": "✅ ಸಸ್ಯಸಂಪತ್ತು/ನಿರ್ಮಿತ ಪ್ರದೇಶ ಭಾಗಗಳು (36 ನಗರಗಳು)",
     "correlationAnalysis": "✅ ಸಂಬಂಧ ವಿಶ್ಲೇಷಣೆ",
     "randomForestModel": "✅ ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ಮಾಡೆಲ್",
     "interventionSimulation": "✅ ಮಧ್ಯಸ್ಥಿಕೆ ಸಿಮ್ಯುಲೇಶನ್",
     "dashboardCreation": "✅ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ರಚನೆ",
-    "reportSubmission": "🔲 ವರದಿ ಸಲ್ಲಿಕೆ"
+    "reportSubmission": "🔲 ವರದಿ ಸಲ್ಲಿಕೆ",
+    "stepsComplete": "{{done}}/{{total}} ಹಂತಗಳು ಪೂರ್ಣಗೊಂಡಿವೆ"
   },
   "cityList": {
     "noResultsFor": "\"{{search}}\" ಗಾಗಿ ಯಾವುದೇ ನಗರಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
@@ -265,16 +276,35 @@
     "model": "ಮಾಡೆಲ್:",
     "features": "ಫೀಚರ್‌ಗಳು:",
     "target": "ಗುರಿ:",
-    "scene": "ದೃಶ್ಯ:"
+    "scene": "ದೃಶ್ಯ:",
+    "loading": "ಮಾಡೆಲ್ ಡೇಟಾ ಲೋಡ್ ಆಗುತ್ತಿದೆ…",
+    "generalizationCheck": "ಅಪರಿಚಿತ-ನಗರ ಸಾಮಾನ್ಯೀಕರಣ ಪರಿಶೀಲನೆ:",
+    "generalizationDetail": "ಸಂಪೂರ್ಣ ನಗರಗಳನ್ನು ({{cities}}) ಕೆಲವು ವರ್ಷಗಳು ಮಾತ್ರವಲ್ಲದೆ, ತರಬೇತಿಯಿಂದ ಸಂಪೂರ್ಣವಾಗಿ ಹೊರಗಿಡಿದಾಗ R² {{r2}} / MAE {{mae}}°C.",
+    "source": "ಮೂಲ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
+    "panelTitle": "📡 ಡೇಟಾ ಪೈಪ್‌ಲೈನ್ — ನಿಜವಾದ ಮೂಲಗಳು → BhaskarOps",
+    "steps": {
+      "openMeteo": "ಲೈವ್ ಮೇಲ್ಮೈ/ಚರ್ಮ ತಾಪಮಾನ, ಎತ್ತರ (SRTM), AQI (CAMS) — ಯಾವುದೇ ದೃಢೀಕರಣ ಇಲ್ಲ, ಉಚಿತ, ರಿಯಲ್-ಟೈಮ್",
+      "worldCover": "ನಿಜವಾದ Sentinel-1/2 ವರ್ಗೀಕರಣ, ಸಾರ್ವಜನಿಕ AWS S3 — 36 ಪ್ರತಿನಿಧಿ ನಗರಗಳಿಗೆ ಸಸ್ಯಸಂಪತ್ತು/ನಿರ್ಮಿತ ಪ್ರದೇಶ/ನೀರಿನ ಭಾಗಗಳು",
+      "srtmTitle": "SRTM ಎತ್ತರ",
+      "srtm": "30ಮೀ DEM, Open-Meteo Elevation API ನಿಂದ ನೇರವಾಗಿ ಪಡೆಯಲಾಗಿದೆ",
+      "rfTitle": "ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ML",
+      "rf": "sklearn RandomForestRegressor n=100, 20 ಜಾಗತಿಕ ನಗರಗಳ ನಿಜವಾದ MODIS-ಪಡೆದ ಡೇಟಾದ ಮೇಲೆ ತರಬೇತಿ ಪಡೆದಿದೆ (ನಿಜವಾದ, ಕೆಳಗೆ ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ಪ್ಯಾನೆಲ್ ನೋಡಿ — ಭಾರತ-ನಿರ್ದಿಷ್ಟವಲ್ಲ)",
+      "dashboardTitle": "BhaskarOps ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+      "dashboard": "React + D3 + Recharts ರಿಯಲ್-ಟೈಮ್ ದೃಶ್ಯೀಕರಣ"
+    }
   },
   "satellitePass": {
     "lastPass": "ಕೊನೆಯ ಉಪಗ್ರಹ ಪಾಸ್:",
     "landsatNote": "Landsat 8 ಪ್ರತಿ ~16 ದಿನಗಳಿಗೆ ಮರಳಿ ಬರುತ್ತದೆ",
     "sentinelNote": "Sentinel-2 ಪ್ರತಿ ~5 ದಿನಗಳಿಗೆ ಮರಳಿ ಬರುತ್ತದೆ",
-    "notRealtime": "ರಿಯಲ್-ಟೈಮ್ ಅಲ್ಲ"
+    "notRealtime": "ರಿಯಲ್-ಟೈಮ್ ಅಲ್ಲ",
+    "loading": "ಲೈವ್ ಮೇಲ್ಮೈ ಡೇಟಾ ಲೋಡ್ ಆಗುತ್ತಿದೆ…",
+    "lulcFallback": "{{city}}ಗೆ ಸ್ವತಃ ಯಾವುದೇ ನಿಜವಾದ ವರ್ಗೀಕರಣವಿಲ್ಲ — ಕೆಳಗೆ ಹತ್ತಿರದ ಲಭ್ಯವಿರುವ ನಿಜವಾದ ಡೇಟಾ ಪಾಯಿಂಟ್ ({{fallbackCity}}) ಅನ್ನು ಅಂದಾಜು ಎಂದು ತೋರಿಸಲಾಗಿದೆ.",
+    "lulcNotAvailable": "{{city}}ಗೆ ಲಭ್ಯವಿಲ್ಲ — ಇಲ್ಲಿಯವರೆಗೆ ಪ್ರತಿ ರಾಜ್ಯದ ಒಂದು ಪ್ರತಿನಿಧಿ ನಗರಕ್ಕೆ ಮಾತ್ರ ನಿಜವಾದ ವರ್ಗೀಕರಣವನ್ನು ಗಣಿಸಲಾಗಿದೆ.",
+    "modeledNote": "ಮಾಡೆಲ್ ಮಾಡಲಾದ ನೆಲದ ಮೇಲ್ಮೈ ತಾಪಮಾನ, ಉಪಗ್ರಹ-ಅಳತೆ ಮಾಡಿದ Landsat ರೀಡಿಂಗ್ ಅಲ್ಲ — ಇದು ಲೈವ್ ಆಗಿ ನವೀಕರಿಸುತ್ತದೆ, ~16-ದಿನದ ಉಪಗ್ರಹ ಪುನರ್ಭೇಟಿಗೆ ವಿರುದ್ಧವಾಗಿ.",
+    "unavailable": "ಲೈವ್ ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ"
   },
   "yoyComparison": {
     "today": "ಇಂದು",
@@ -287,6 +317,93 @@
     "noEvents": "ಈ ನಗರಕ್ಕೆ ಐತಿಹಾಸಿಕ ಅವಧಿಯಲ್ಲಿ ಯಾವುದೇ ಗಮನಾರ್ಹ ಶಾಖ ಅಲೆ ಘಟನೆಗಳು ದಾಖಲಾಗಿಲ್ಲ."
   },
   "aiAnalyst": {
-    "inputPlaceholder": "ಶಾಖ, ಹವಾಮಾನ ಅಥವಾ ಈ ನಗರದ ಬಗ್ಗೆ ಕೇಳಿ..."
+    "inputPlaceholder": "ಶಾಖ, ಹವಾಮಾನ ಅಥವಾ ಈ ನಗರದ ಬಗ್ಗೆ ಕೇಳಿ...",
+    "emptyHint": "{{city}}ನ ಶಾಖ ಡೇಟಾ ಬಗ್ಗೆ ನನ್ನನ್ನು ಏನು ಬೇಕಾದರೂ ಕೇಳಿ, ಅಥವಾ ಪ್ರಾರಂಭಿಸಲು ಕೆಳಗಿನ ಸಲಹೆಯನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.",
+    "thinking": "AI ಯೋಚಿಸುತ್ತಿದೆ...",
+    "suggestions": {
+      "whyHot": "{{city}} ಈಗ ಏಕೆ ಇಷ್ಟು ಬಿಸಿಯಾಗಿದೆ?",
+      "ensoImpact": "{{ensoPhase}} {{city}}ನ ಹವಾಮಾನದ ಮೇಲೆ ಯಾವ ಪರಿಣಾಮ ಬೀರುತ್ತದೆ?",
+      "coolingInterventions": "{{city}}ಗೆ ಉತ್ತಮ 3 ಕೂಲಿಂಗ್ ಕ್ರಮಗಳು ಯಾವುವು?",
+      "reportConclusion": "{{city}}ಗಾಗಿ BhaskarOps 2026 ವರದಿಯ ಸಾರಾಂಶವನ್ನು ಬರೆಯಿರಿ"
+    }
+  },
+  "landCover": {
+    "bareOther": "ಬರಿ ಮಣ್ಣು / ಇತರೆ",
+    "builtUp": "ನಿರ್ಮಿತ ಪ್ರದೇಶ",
+    "panelTitle": "🌍 ಭೂ ಬಳಕೆ / ಭೂ ಹೊದಿಕೆ — {{cityName}}",
+    "vegetation": "ಸಸ್ಯಸಂಪತ್ತು",
+    "water": "ನೀರು",
+    "loading": "ಭೂ ಹೊದಿಕೆ ಡೇಟಾ ಲೋಡ್ ಆಗುತ್ತಿದೆ…"
+  },
+  "nationalSummary": {
+    "avgTemp": "ಸರಾಸರಿ ರಾಷ್ಟ್ರೀಯ ತಾಪಮಾನ",
+    "extremeStates": "ತೀವ್ರ/ಹೆಚ್ಚಿನ ಅಪಾಯದ ವರ್ಗದ ರಾಜ್ಯಗಳು",
+    "hottestNow": "ಈಗ ಅತ್ಯಂತ ಬಿಸಿಯಾದ ನಗರ",
+    "live": "ಲೈವ್",
+    "quickPicks": "ತ್ವರಿತ ಆಯ್ಕೆಗಳು",
+    "title": "ಇಂದಿನ ರಾಷ್ಟ್ರೀಯ ಶಾಖ ಸಾರಾಂಶ",
+    "updated": "ನವೀಕರಿಸಲಾಗಿದೆ"
+  },
+  "osm": {
+    "buildings": "{{radius}}ಮೀ ಒಳಗೆ ಕಟ್ಟಡಗಳು",
+    "loading": "OpenStreetMap ನಿಂದ ಮಾಹಿತಿ ಪಡೆಯಲಾಗುತ್ತಿದೆ…",
+    "perSqKm": "ಕಟ್ಟಡಗಳು / ಕಿಮೀ²",
+    "unavailable": "ಕಟ್ಟಡ ಸಾಂದ್ರತೆ ಈಗ ಲಭ್ಯವಿಲ್ಲ — OpenStreetMap ನ ಉಚಿತ Overpass API ಒಂದು ಸಮುದಾಯ ಸಂಪನ್ಮೂಲವಾಗಿದ್ದು, ಇದಕ್ಕೆ ಅಪ್‌ಟೈಮ್ ಖಾತ್ರಿ ಇಲ್ಲ."
+  },
+  "profile": {
+    "title": "ನನ್ನ ಪ್ರೊಫೈಲ್"
+  },
+  "satelliteIndices": {
+    "surfaceTempLive": "ಮೇಲ್ಮೈ ತಾಪಮಾನ (ಲೈವ್)",
+    "ndviNdbiNdwi": "NDVI / NDBI / NDWI",
+    "vegetationFraction": "ಸಸ್ಯಸಂಪತ್ತು ಭಾಗ",
+    "builtUpFraction": "ನಿರ್ಮಿತ ಪ್ರದೇಶ ಭಾಗ",
+    "waterFraction": "ನೀರಿನ ಭಾಗ",
+    "elevation": "ಎತ್ತರ",
+    "loadingLiveTemp": "ಲೈವ್ ತಾಪಮಾನ ಲೋಡ್ ಆಗುತ್ತಿದೆ..."
+  },
+  "weatherStatus": {
+    "cachedMinAgo": "ಕ್ಯಾಶ್ ಮಾಡಲಾಗಿದೆ — {{mins}} ನಿಮಿಷಗಳ ಹಿಂದೆ",
+    "forceRefresh": "ರಿಫ್ರೆಶ್ ಮಾಡಿ",
+    "weatherUnavailable": "ಹವಾಮಾನ ಲಭ್ಯವಿಲ್ಲ"
+  },
+  "weatherCard": {
+    "justNow": "ಇದೀಗ",
+    "minAgo": "{{mins}} ನಿಮಿಷಗಳ ಹಿಂದೆ",
+    "hAgo": "{{hrs}} ಗಂಟೆಗಳ ಹಿಂದೆ",
+    "dAgo": "{{days}} ದಿನಗಳ ಹಿಂದೆ",
+    "weatherUnavailable": "ಹವಾಮಾನ ಲಭ್ಯವಿಲ್ಲ",
+    "timedOut": "{{city}}ಗಾಗಿ ಹವಾಮಾನ ಡೇಟಾ ಲೋಡ್ ಆಗಲು ಹೆಚ್ಚು ಸಮಯ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದೆ (ಇನ್ನೂ ಯಾವುದೇ ಕ್ಯಾಶ್ ಮಾಡಿದ ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ).",
+    "fetchFailed": "ಹವಾಮಾನ ಡೇಟಾ ಪಡೆಯಲು ವಿಫಲವಾಗಿದೆ",
+    "forceRefresh": "ರಿಫ್ರೆಶ್ ಮಾಡಿ",
+    "fetchingWeather": "ಹವಾಮಾನ ಪಡೆಯಲಾಗುತ್ತಿದೆ...",
+    "loadingRealtimeFor": "{{city}}ಗಾಗಿ ರಿಯಲ್-ಟೈಮ್ ಹವಾಮಾನ ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
+    "fallbackLocation": "{{city}}ಗಾಗಿ ನಿರ್ದಿಷ್ಟವಾಗಿ ಲೈವ್ ಹವಾಮಾನ ಲಭ್ಯವಿಲ್ಲ — {{state}}ನಲ್ಲಿ ಹತ್ತಿರದ ಲಭ್ಯವಿರುವ ನಿಜವಾದ ಡೇಟಾ ಪಾಯಿಂಟ್ {{fallbackCity}} ಅನ್ನು ಅಂದಾಜು ಎಂದು ತೋರಿಸಲಾಗಿದೆ.",
+    "cachedAgo": "ಕ್ಯಾಶ್ ಮಾಡಲಾಗಿದೆ — {{age}}",
+    "feelsLike": "{{temp}}°C ನಂತೆ ಅನುಭವವಾಗುತ್ತದೆ",
+    "humidity": "ತೇವಾಂಶ",
+    "wind": "ಗಾಳಿ",
+    "pressure": "ಒತ್ತಡ",
+    "visibility": "ದೃಶ್ಯತೆ",
+    "uvIndex": "UV ಸೂಚ್ಯಂಕ",
+    "cloudCover": "ಮೋಡ ಕವರೇಜ್",
+    "sunrise": "ಸೂರ್ಯೋದಯ",
+    "sunset": "ಸೂರ್ಯಾಸ್ತ",
+    "aqiTitle": "ಗಾಳಿಯ ಗುಣಮಟ್ಟ ಸೂಚ್ಯಂಕ (AQI)",
+    "score": "ಸ್ಕೋರ್:",
+    "sevenDayForecast": "7-ದಿನಗಳ ಮುನ್ಸೂಚನೆ",
+    "next12Hours": "ಮುಂದಿನ 12 ಗಂಟೆಗಳು",
+    "dataSource": "ಡೇಟಾ: Open-Meteo.com (WMO • ERA5 ಮರುವಿಶ್ಲೇಷಣೆ)",
+    "cachedFooter": "ಕ್ಯಾಶ್ ಮಾಡಲಾಗಿದೆ {{age}}",
+    "updatedFooter": "ನವೀಕರಿಸಲಾಗಿದೆ: {{time}} IST"
+  },
+  "dataBadges": {
+    "source": "ಮೂಲ:"
+  },
+  "aboutTeam": {
+    "college": "ಕಾಲೇಜು:",
+    "method": "ವಿಧಾನ:",
+    "focus": "ಗಮನ:",
+    "team": "ತಂಡ:"
   }
 }

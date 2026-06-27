@@ -3413,7 +3413,7 @@ function App({ user }) {
                   <h3>🔥 {t('panels.satelliteIndices', 'SATELLITE INDICES')}</h3>
                   <div className="indices-grid">
                     <div className="index-card">
-                      <span>Surface Temp (live)</span>
+                      <span>{t('satelliteIndices.surfaceTempLive', 'Surface Temp (live)')}</span>
                       {typeof liveWeather?.current?.surfaceTemp === 'number' ? (
                         <>
                           <div className="progress-bar">
@@ -3436,7 +3436,7 @@ function App({ user }) {
                       if (!lulcEntry) {
                         return (
                           <div className="index-card">
-                            <span>NDVI / NDBI / NDWI</span>
+                            <span>{t('satelliteIndices.ndviNdbiNdwi', 'NDVI / NDBI / NDWI')}</span>
                             <div style={{fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 6, lineHeight: 1.5}}>
                               {t('satellitePass.lulcNotAvailable', 'Not available for {{city}} — real classification only computed for one representative city per state so far.', { city: selectedCity })}
                             </div>
@@ -3456,7 +3456,7 @@ function App({ user }) {
                             </div>
                           )}
                           <div className="index-card">
-                            <span>Vegetation Fraction</span>
+                            <span>{t('satelliteIndices.vegetationFraction', 'Vegetation Fraction')}</span>
                             <div className="progress-bar">
                               <div className="progress" style={{width: lulcEntry.vegetation + '%', background:'#00ff88'}}/>
                             </div>
@@ -3464,7 +3464,7 @@ function App({ user }) {
                             <SourceBadge source={`ESA WorldCover 10m (2021) — real proxy for NDVI, not the spectral index itself${fallbackSuffix}`} />
                           </div>
                           <div className="index-card">
-                            <span>Built-up Fraction</span>
+                            <span>{t('satelliteIndices.builtUpFraction', 'Built-up Fraction')}</span>
                             <div className="progress-bar">
                               <div className="progress" style={{width: lulcEntry.builtUp + '%', background:'#ff6b35'}}/>
                             </div>
@@ -3472,7 +3472,7 @@ function App({ user }) {
                             <SourceBadge source={`ESA WorldCover 10m (2021) — real proxy for NDBI, not the spectral index itself${fallbackSuffix}`} />
                           </div>
                           <div className="index-card">
-                            <span>Water Fraction</span>
+                            <span>{t('satelliteIndices.waterFraction', 'Water Fraction')}</span>
                             <div className="progress-bar">
                               <div className="progress" style={{width: Math.min(100, lulcEntry.water * 3) + '%', background:'#00a8ff'}}/>
                             </div>
@@ -3483,7 +3483,7 @@ function App({ user }) {
                       )
                     })()}
                     <div className="index-card">
-                      <span>Elevation</span>
+                      <span>{t('satelliteIndices.elevation', 'Elevation')}</span>
                       {typeof liveWeather?.elevation === 'number' ? (
                         <>
                           <div className="progress-bar">
@@ -3564,7 +3564,7 @@ function App({ user }) {
                             {info.category} · {precautionTemp}°C
                             {liveWeatherStale && (
                               <span style={{ marginLeft: 10, fontSize: 10, fontWeight: 400, fontStyle: 'italic', color: 'rgba(255,200,100,0.8)' }}>
-                                ⏱ Cached — {Math.round((Date.now() - (liveWeatherCachedAt || Date.now())) / 60000)} min ago
+                                ⏱ {t('weatherStatus.cachedMinAgo', 'Cached — {{mins}} min ago', { mins: Math.round((Date.now() - (liveWeatherCachedAt || Date.now())) / 60000) })}
                                 <button
                                   onClick={forceRefreshLiveWeather}
                                   style={{
@@ -3572,7 +3572,7 @@ function App({ user }) {
                                     background: 'rgba(255,200,100,0.1)', border: '1px solid rgba(255,200,100,0.3)',
                                     color: 'rgba(255,200,100,0.9)', cursor: 'pointer', fontWeight: 600, fontStyle: 'normal'
                                   }}
-                                >↻ Force Refresh</button>
+                                >↻ {t('weatherStatus.forceRefresh', 'Force Refresh')}</button>
                               </span>
                             )}
                           </div>
@@ -3600,7 +3600,7 @@ function App({ user }) {
                         </>
                       ) : (liveWeatherError || liveWeatherTimedOut) ? (
                         <div style={{ fontSize: 12, color: '#ff6b6b' }}>
-                          ⚠️ Weather unavailable
+                          ⚠️ {t('weatherStatus.weatherUnavailable', 'Weather unavailable')}
                           <button
                             onClick={forceRefreshLiveWeather}
                             style={{
@@ -3608,10 +3608,10 @@ function App({ user }) {
                               background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.3)',
                               color: '#22c55e', cursor: 'pointer', fontWeight: 600
                             }}
-                          >↻ Force Refresh</button>
+                          >↻ {t('weatherStatus.forceRefresh', 'Force Refresh')}</button>
                         </div>
                       ) : (
-                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>Loading live temperature...</div>
+                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{t('satelliteIndices.loadingLiveTemp', 'Loading live temperature...')}</div>
                       )}
                     </section>
                   )
@@ -3985,7 +3985,7 @@ function App({ user }) {
                   <div className="progress-bar-main">
                     <div className="progress" style={{width: '87.5%'}}/>
                   </div>
-                  <p className="progress-text">7/8 Steps Complete</p>
+                  <p className="progress-text">{t('progressTracker.stepsComplete', '{{done}}/{{total}} Steps Complete', { done: 7, total: 8 })}</p>
                 </section>
 
                 {/* PANEL R: About & Team */}
@@ -3993,10 +3993,10 @@ function App({ user }) {
                   <h3>👥 {t('panels.aboutTeam', 'TEAM & METHODOLOGY')}</h3>
                   <div className="about-card">
                     <h4>BhaskarOps 2026: Urban Heat Island Mitigation</h4>
-                    <p><strong>College:</strong> [Removed]</p>
-                    <p><strong>Method:</strong> Open-Meteo (live) + ESA WorldCover + Random Forest ML</p>
-                    <p><strong>Focus:</strong> Delhi NCR & Indian Urban Heat Islands</p>
-                    <p><strong>Team:</strong> Heatwave Mitigation Initiative</p>
+                    <p><strong>{t('aboutTeam.college', 'College:')}</strong> [Removed]</p>
+                    <p><strong>{t('aboutTeam.method', 'Method:')}</strong> Open-Meteo (live) + ESA WorldCover + Random Forest ML</p>
+                    <p><strong>{t('aboutTeam.focus', 'Focus:')}</strong> Delhi NCR & Indian Urban Heat Islands</p>
+                    <p><strong>{t('aboutTeam.team', 'Team:')}</strong> Heatwave Mitigation Initiative</p>
                   </div>
                 </section>
               </div>

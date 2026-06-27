@@ -23,7 +23,7 @@ export function MLModelPanel({ mlModel, cityName }) {
         color: "rgba(255,255,255,0.5)",
         fontSize: 12
       }}>
-        Loading model data…
+        {t('mlModel.loading', 'Loading model data…')}
       </div>
     )
   }
@@ -151,8 +151,8 @@ export function MLModelPanel({ mlModel, cityName }) {
         lineHeight: 1.6,
         color: "rgba(255,255,255,0.65)"
       }}>
-        <b style={{ color: "#ff6b35" }}>Unseen-city generalization check:</b>{' '}
-        R² {holdout.r2_score} / MAE {holdout.mae}°C when entire cities ({(holdout.held_out_cities || []).join(', ')}) are held out of training entirely, not just held-out years.
+        <b style={{ color: "#ff6b35" }}>{t('mlModel.generalizationCheck', 'Unseen-city generalization check:')}</b>{' '}
+        {t('mlModel.generalizationDetail', 'R² {{r2}} / MAE {{mae}}°C when entire cities ({{cities}}) are held out of training entirely, not just held-out years.', { r2: holdout.r2_score, mae: holdout.mae, cities: (holdout.held_out_cities || []).join(', ') })}
         {' '}{holdout.note}
       </div>
 
@@ -265,7 +265,7 @@ export function MLModelPanel({ mlModel, cityName }) {
           <b style={{color:"#00ff88"}}>
             {t('mlModel.target', 'Target:')}</b> {mlModel.target}<br/>
           <b style={{color:"#00ff88"}}>
-            Source:</b> {mlModel.source?.title} — {mlModel.source?.publisher}, DOI: {mlModel.source?.doi}
+            {t('mlModel.source', 'Source:')}</b> {mlModel.source?.title} — {mlModel.source?.publisher}, DOI: {mlModel.source?.doi}
         </div>
       </div>
 

@@ -19,7 +19,8 @@
     "overview": "ઓવરવ્યૂ",
     "analysis": "વિશ્લેષણ",
     "interventions": "હસ્તક્ષેપ",
-    "aiExport": "AI + એક્સપોર્ટ"
+    "aiExport": "AI + એક્સપોર્ટ",
+    "compare": "સરખામણી કરો"
   },
   "panels": {
     "weatherConditions": "હવામાન સ્થિતિ",
@@ -50,7 +51,9 @@
     "heatwaveTimeline": "ઐતિહાસિક હીટવેવ ટાઇમલાઇન",
     "recentSignIns": "તાજેતરના સાઇન-ઇન",
     "heatLegend": "હીટ લેજેન્ડ",
-    "adminDashboard": "એડમિન એનાલિટિક્સ ડેશબોર્ડ"
+    "adminDashboard": "એડમિન એનાલિટિક્સ ડેશબોર્ડ",
+    "dataOutdated": "ડેટા જૂનો હોઈ શકે છે",
+    "urbanMorphology": "શહેરી આકારશાસ્ત્ર"
   },
   "buttons": {
     "copySummary": "સારાંશ કોપી કરો",
@@ -130,7 +133,8 @@
   "tooltips": {
     "clickToExplore": "શહેરો જોવા માટે ક્લિક કરો →",
     "clickStateForDetails": "વિગતો જોવા માટે મેપ પર એક રાજ્ય પર ક્લિક કરો.",
-    "clickCityToAnalyze": "👆 વિશ્લેષણ માટે ઉપર કોઈપણ શહેર પર ક્લિક કરો"
+    "clickCityToAnalyze": "👆 વિશ્લેષણ માટે ઉપર કોઈપણ શહેર પર ક્લિક કરો",
+    "clickStateForDetailsSub": "શહેરો અને હીટ ડેટા શોધવા માટે"
   },
   "dayNight": {
     "day": "દિવસ (બપોરે 12)",
@@ -168,7 +172,13 @@
     "waterBodies": "💧 જળાશયો (NDWI +0.1):"
   },
   "compareCities": {
-    "selectPlaceholder": "તુલના માટે શહેર પસંદ કરો..."
+    "selectPlaceholder": "તુલના માટે શહેર પસંદ કરો...",
+    "coolest": "પસંદ કરેલા શહેરોમાં સૌથી ઠંડું શહેર છે",
+    "empty": "સરખામણી ચાર્ટ જોવા માટે ઉપર શોધો અને ઓછામાં ઓછું એક શહેર ઉમેરો.",
+    "maxReached": "મહત્તમ {{max}} શહેરો પસંદ થયા છે",
+    "searchPlaceholder": "સરખામણી માટે શહેર અથવા રાજ્ય શોધો...",
+    "subtitle": "{{city}} સાથે સરખામણી — શોધો અને વધુ {{max}} શહેરો ઉમેરો.",
+    "theSelectedCity": "પસંદ કરેલું શહેર"
   },
   "windAtmosphere": {
     "direction": "દિશા",
@@ -186,14 +196,15 @@
     "low": "નીચું"
   },
   "progressTracker": {
-    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ LST ગણતરી",
-    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
+    "dataCollection": "✅ ડેટા સંગ્રહ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "✅ લાઇવ સપાટી તાપમાન",
+    "indexCalculation": "✅ વનસ્પતિ/બાંધેલ વિસ્તાર અંશ (36 શહેરો)",
     "correlationAnalysis": "✅ સહસંબંધ વિશ્લેષણ",
     "randomForestModel": "✅ રેન્ડમ ફોરેસ્ટ મોડેલ",
     "interventionSimulation": "✅ હસ્તક્ષેપ સિમ્યુલેશન",
     "dashboardCreation": "✅ ડેશબોર્ડ નિર્માણ",
-    "reportSubmission": "🔲 રિપોર્ટ સબમિશન"
+    "reportSubmission": "🔲 રિપોર્ટ સબમિશન",
+    "stepsComplete": "{{done}}/{{total}} પગલાં પૂર્ણ"
   },
   "cityList": {
     "noResultsFor": "\"{{search}}\" માટે કોઈ શહેરો મળ્યા નથી",
@@ -265,16 +276,35 @@
     "model": "મોડેલ:",
     "features": "ફીચર્સ:",
     "target": "લક્ષ્ય:",
-    "scene": "સીન:"
+    "scene": "સીન:",
+    "loading": "મોડેલ ડેટા લોડ થઈ રહ્યો છે…",
+    "generalizationCheck": "ન જોયેલા-શહેર સામાન્યીકરણ ચકાસણી:",
+    "generalizationDetail": "જ્યારે સંપૂર્ણ શહેરો ({{cities}}) તાલીમમાંથી સંપૂર્ણપણે બાકાત રાખવામાં આવે છે, ફક્ત થોડા વર્ષો જ નહીં, ત્યારે R² {{r2}} / MAE {{mae}}°C.",
+    "source": "સ્ત્રોત:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
+    "panelTitle": "📡 ડેટા પાઇપલાઇન — વાસ્તવિક સ્ત્રોતો → BhaskarOps",
+    "steps": {
+      "openMeteo": "લાઇવ સપાટી/ત્વચા તાપમાન, ઊંચાઈ (SRTM), AQI (CAMS) — કોઈ પ્રમાણીકરણ નથી, મફત, રીઅલ-ટાઇમ",
+      "worldCover": "વાસ્તવિક Sentinel-1/2 વર્ગીકરણ, જાહેર AWS S3 — 36 પ્રતિનિધિ શહેરો માટે વનસ્પતિ/બાંધેલ વિસ્તાર/પાણી અંશ",
+      "srtmTitle": "SRTM ઊંચાઈ",
+      "srtm": "30મી DEM, Open-Meteo Elevation API માંથી સીધું મેળવેલ",
+      "rfTitle": "રેન્ડમ ફોરેસ્ટ ML",
+      "rf": "sklearn RandomForestRegressor n=100, 20 વૈશ્વિક શહેરોના વાસ્તવિક MODIS-ઉદ્ભવિત ડેટા પર તાલીમ પામેલ (વાસ્તવિક, નીચે રેન્ડમ ફોરેસ્ટ પેનલ જુઓ — ભારત-વિશિષ્ટ નથી)",
+      "dashboardTitle": "BhaskarOps ડેશબોર્ડ",
+      "dashboard": "React + D3 + Recharts રીઅલ-ટાઇમ વિઝ્યુલાઇઝેશન"
+    }
   },
   "satellitePass": {
     "lastPass": "છેલ્લો ઉપગ્રહ પાસ:",
     "landsatNote": "Landsat 8 દર ~16 દિવસે ફરી પસાર થાય છે",
     "sentinelNote": "Sentinel-2 દર ~5 દિવસે ફરી પસાર થાય છે",
-    "notRealtime": "રીઅલ-ટાઇમ નથી"
+    "notRealtime": "રીઅલ-ટાઇમ નથી",
+    "loading": "લાઇવ સપાટી ડેટા લોડ થઈ રહ્યો છે…",
+    "lulcFallback": "{{city}} માટે ખુદ કોઈ વાસ્તવિક વર્ગીકરણ નથી — નીચે નજીકનો ઉપલબ્ધ વાસ્તવિક ડેટા પોઇન્ટ ({{fallbackCity}}) અંદાજ તરીકે દર્શાવેલ છે.",
+    "lulcNotAvailable": "{{city}} માટે ઉપલબ્ધ નથી — અત્યાર સુધી દરેક રાજ્યના એક પ્રતિનિધિ શહેર માટે જ વાસ્તવિક વર્ગીકરણ ગણવામાં આવ્યું છે.",
+    "modeledNote": "મોડેલ કરેલ ભૂ-સપાટી તાપમાન, સેટેલાઇટ-માપેલ Landsat રીડિંગ નથી — તે લાઇવ અપડેટ થાય છે, ~16-દિવસના સેટેલાઇટ રિવિઝિટથી વિપરીત.",
+    "unavailable": "લાઇવ ડેટા ઉપલબ્ધ નથી"
   },
   "yoyComparison": {
     "today": "આજે",
@@ -287,6 +317,93 @@
     "noEvents": "આ શહેર માટે ઐતિહાસિક સમયગાળામાં કોઈ નોંધપાત્ર હીટવેવ ઘટનાઓ નોંધાઈ નથી."
   },
   "aiAnalyst": {
-    "inputPlaceholder": "ગરમી, હવામાન અથવા આ શહેર વિશે પૂછો..."
+    "inputPlaceholder": "ગરમી, હવામાન અથવા આ શહેર વિશે પૂછો...",
+    "emptyHint": "{{city}}ના હીટ ડેટા વિશે મને કંઈપણ પૂછો, અથવા શરૂ કરવા માટે નીચે આપેલ સૂચન પર ટેપ કરો.",
+    "thinking": "AI વિચારી રહ્યું છે...",
+    "suggestions": {
+      "whyHot": "{{city}} અત્યારે આટલું ગરમ ​​કેમ છે?",
+      "ensoImpact": "{{ensoPhase}} નો {{city}}ના વાતાવરણ પર શું પ્રભાવ છે?",
+      "coolingInterventions": "{{city}} માટે શ્રેષ્ઠ 3 કૂલિંગ ઉપાયો કયા છે?",
+      "reportConclusion": "{{city}} માટે BhaskarOps 2026 રિપોર્ટનું તારણ લખો"
+    }
+  },
+  "landCover": {
+    "bareOther": "ખુલ્લી માટી / અન્ય",
+    "builtUp": "બાંધેલ વિસ્તાર",
+    "panelTitle": "🌍 જમીન ઉપયોગ / જમીન આવરણ — {{cityName}}",
+    "vegetation": "વનસ્પતિ",
+    "water": "પાણી",
+    "loading": "જમીન આવરણ ડેટા લોડ થઈ રહ્યો છે…"
+  },
+  "nationalSummary": {
+    "avgTemp": "સરેરાશ રાષ્ટ્રીય તાપમાન",
+    "extremeStates": "અતિ/ઉચ્ચ જોખમ શ્રેણીના રાજ્યો",
+    "hottestNow": "અત્યારે સૌથી ગરમ શહેર",
+    "live": "લાઇવ",
+    "quickPicks": "ઝડપી પસંદગીઓ",
+    "title": "આજનો રાષ્ટ્રીય હીટ સારાંશ",
+    "updated": "અપડેટ થયું"
+  },
+  "osm": {
+    "buildings": "{{radius}}મી અંદર ઇમારતો",
+    "loading": "OpenStreetMap પરથી માહિતી લેવાઈ રહી છે…",
+    "perSqKm": "ઇમારતો / કિમી²",
+    "unavailable": "ઇમારત ઘનતા અત્યારે ઉપલબ્ધ નથી — OpenStreetMap નું મફત Overpass API એ સામુદાયિક સ્ત્રોત છે જેની અપટાઇમની કોઈ ગેરંટી નથી."
+  },
+  "profile": {
+    "title": "મારી પ્રોફાઇલ"
+  },
+  "satelliteIndices": {
+    "surfaceTempLive": "સપાટી તાપમાન (લાઇવ)",
+    "ndviNdbiNdwi": "NDVI / NDBI / NDWI",
+    "vegetationFraction": "વનસ્પતિ અંશ",
+    "builtUpFraction": "બાંધેલ વિસ્તાર અંશ",
+    "waterFraction": "પાણી અંશ",
+    "elevation": "ઊંચાઈ",
+    "loadingLiveTemp": "લાઇવ તાપમાન લોડ થઈ રહ્યું છે..."
+  },
+  "weatherStatus": {
+    "cachedMinAgo": "કેશ્ડ — {{mins}} મિનિટ પહેલા",
+    "forceRefresh": "રિફ્રેશ કરો",
+    "weatherUnavailable": "વાતાવરણ ઉપલબ્ધ નથી"
+  },
+  "weatherCard": {
+    "justNow": "હમણાં જ",
+    "minAgo": "{{mins}} મિનિટ પહેલા",
+    "hAgo": "{{hrs}} કલાક પહેલા",
+    "dAgo": "{{days}} દિવસ પહેલા",
+    "weatherUnavailable": "વાતાવરણ ઉપલબ્ધ નથી",
+    "timedOut": "{{city}} માટે વાતાવરણ ડેટા લોડ થવામાં ઘણો સમય લાગી રહ્યો છે (હજુ સુધી કોઈ કેશ્ડ ડેટા ઉપલબ્ધ નથી).",
+    "fetchFailed": "વાતાવરણ ડેટા મેળવવામાં નિષ્ફળ",
+    "forceRefresh": "રિફ્રેશ કરો",
+    "fetchingWeather": "વાતાવરણ મેળવી રહ્યું છે...",
+    "loadingRealtimeFor": "{{city}} માટે રીઅલ-ટાઇમ વાતાવરણ લોડ થઈ રહ્યું છે...",
+    "fallbackLocation": "{{city}} માટે ખાસ કરીને લાઇવ વાતાવરણ ઉપલબ્ધ નથી — {{state}} માં નજીકનો ઉપલબ્ધ વાસ્તવિક ડેટા પોઇન્ટ {{fallbackCity}} અંદાજ તરીકે દર્શાવેલ છે.",
+    "cachedAgo": "કેશ્ડ — {{age}}",
+    "feelsLike": "{{temp}}°C જેવું અનુભવાય છે",
+    "humidity": "ભેજ",
+    "wind": "પવન",
+    "pressure": "દબાણ",
+    "visibility": "દૃશ્યતા",
+    "uvIndex": "UV ઇન્ડેક્સ",
+    "cloudCover": "વાદળ આવરણ",
+    "sunrise": "સૂર્યોદય",
+    "sunset": "સૂર્યાસ્ત",
+    "aqiTitle": "હવા ગુણવત્તા સૂચકાંક (AQI)",
+    "score": "સ્કોર:",
+    "sevenDayForecast": "7-દિવસનું પૂર્વાનુમાન",
+    "next12Hours": "આગામી 12 કલાક",
+    "dataSource": "ડેટા: Open-Meteo.com (WMO • ERA5 રીએનાલિસિસ)",
+    "cachedFooter": "કેશ્ડ {{age}}",
+    "updatedFooter": "અપડેટ થયું: {{time}} IST"
+  },
+  "dataBadges": {
+    "source": "સ્ત્રોત:"
+  },
+  "aboutTeam": {
+    "college": "કૉલેજ:",
+    "method": "પદ્ધતિ:",
+    "focus": "ફોકસ:",
+    "team": "ટીમ:"
   }
 }

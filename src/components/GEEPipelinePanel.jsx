@@ -26,31 +26,31 @@ export function GEEPipelinePanel() {
     {
       step: "1",
       title: "Open-Meteo (live)",
-      detail: "Live surface/skin temperature, elevation (SRTM), AQI (CAMS) — no auth, free, real-time",
+      detail: t('geePipeline.steps.openMeteo', 'Live surface/skin temperature, elevation (SRTM), AQI (CAMS) — no auth, free, real-time'),
       color: "#00d4ff"
     },
     {
       step: "2",
       title: "ESA WorldCover 10m (2021)",
-      detail: "Real Sentinel-1/2 classification, public AWS S3 — vegetation/built-up/water fractions for 36 representative cities",
+      detail: t('geePipeline.steps.worldCover', 'Real Sentinel-1/2 classification, public AWS S3 — vegetation/built-up/water fractions for 36 representative cities'),
       color: "#00ff88"
     },
     {
       step: "3",
-      title: "SRTM Elevation",
-      detail: "30m DEM, returned directly by the Open-Meteo Elevation API",
+      title: t('geePipeline.steps.srtmTitle', 'SRTM Elevation'),
+      detail: t('geePipeline.steps.srtm', '30m DEM, returned directly by the Open-Meteo Elevation API'),
       color: "#ffcc00"
     },
     {
       step: "4",
-      title: "Random Forest ML",
-      detail: "sklearn RandomForestRegressor n=100, trained on real MODIS-derived data from 20 global cities (real, see Random Forest panel below — not India-specific)",
+      title: t('geePipeline.steps.rfTitle', 'Random Forest ML'),
+      detail: t('geePipeline.steps.rf', 'sklearn RandomForestRegressor n=100, trained on real MODIS-derived data from 20 global cities (real, see Random Forest panel below — not India-specific)'),
       color: "#ff2222"
     },
     {
       step: "5",
-      title: "BhaskarOps Dashboard",
-      detail: "React + D3 + Recharts real-time visualization",
+      title: t('geePipeline.steps.dashboardTitle', 'BhaskarOps Dashboard'),
+      detail: t('geePipeline.steps.dashboard', 'React + D3 + Recharts real-time visualization'),
       color: "#ffd700"
     }
   ]

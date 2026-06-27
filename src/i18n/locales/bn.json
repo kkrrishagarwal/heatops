@@ -19,7 +19,8 @@
     "overview": "ওভারভিউ",
     "analysis": "বিশ্লেষণ",
     "interventions": "হস্তক্ষেপ",
-    "aiExport": "এআই + এক্সপোর্ট"
+    "aiExport": "এআই + এক্সপোর্ট",
+    "compare": "তুলনা করুন"
   },
   "panels": {
     "weatherConditions": "আবহাওয়ার পরিস্থিতি",
@@ -50,7 +51,9 @@
     "heatwaveTimeline": "ঐতিহাসিক তাপপ্রবাহ সময়রেখা",
     "recentSignIns": "সাম্প্রতিক সাইন-ইন",
     "heatLegend": "তাপ চাবিকাঠি",
-    "adminDashboard": "অ্যাডমিন অ্যানালিটিক্স ড্যাশবোর্ড"
+    "adminDashboard": "অ্যাডমিন অ্যানালিটিক্স ড্যাশবোর্ড",
+    "dataOutdated": "ডেটা পুরনো হতে পারে",
+    "urbanMorphology": "শহুরে রূপবিদ্যা"
   },
   "buttons": {
     "copySummary": "সারাংশ কপি করুন",
@@ -130,7 +133,8 @@
   "tooltips": {
     "clickToExplore": "শহরগুলি দেখতে ক্লিক করুন →",
     "clickStateForDetails": "বিস্তারিত দেখতে মানচিত্রে একটি রাজ্যে ক্লিক করুন।",
-    "clickCityToAnalyze": "👆 বিশ্লেষণের জন্য উপরের যেকোনো শহরে ক্লিক করুন"
+    "clickCityToAnalyze": "👆 বিশ্লেষণের জন্য উপরের যেকোনো শহরে ক্লিক করুন",
+    "clickStateForDetailsSub": "শহর এবং তাপ ডেটা অন্বেষণ করতে"
   },
   "dayNight": {
     "day": "দিন (দুপুর ১২টা)",
@@ -168,7 +172,13 @@
     "waterBodies": "💧 জলাশয় (এনডিডব্লিউআই +০.১):"
   },
   "compareCities": {
-    "selectPlaceholder": "তুলনা করার জন্য শহর নির্বাচন করুন..."
+    "selectPlaceholder": "তুলনা করার জন্য শহর নির্বাচন করুন...",
+    "coolest": "নির্বাচিত শহরগুলির মধ্যে সবচেয়ে ঠান্ডা",
+    "empty": "তুলনা চার্ট দেখতে উপরে খুঁজুন এবং অন্তত একটি শহর যুক্ত করুন।",
+    "maxReached": "সর্বোচ্চ {{max}}টি শহর নির্বাচিত হয়েছে",
+    "searchPlaceholder": "তুলনার জন্য শহর বা রাজ্য খুঁজুন...",
+    "subtitle": "{{city}}-র সাথে তুলনা — খুঁজুন এবং আরও {{max}}টি শহর যুক্ত করুন।",
+    "theSelectedCity": "নির্বাচিত শহর"
   },
   "windAtmosphere": {
     "direction": "দিক",
@@ -186,14 +196,15 @@
     "low": "নিম্ন"
   },
   "progressTracker": {
-    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ এলএসটি গণনা",
-    "indexCalculation": "✅ সূচক গণনা (এনডিভিআই, এনডিবিআই)",
+    "dataCollection": "✅ ডেটা সংগ্রহ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "✅ লাইভ সারফেস তাপমাত্রা",
+    "indexCalculation": "✅ উদ্ভিদ/নির্মিত এলাকা অংশ (৩৬টি শহর)",
     "correlationAnalysis": "✅ সম্পর্ক বিশ্লেষণ",
     "randomForestModel": "✅ র‍্যান্ডম ফরেস্ট মডেল",
     "interventionSimulation": "✅ হস্তক্ষেপ সিমুলেশন",
     "dashboardCreation": "✅ ড্যাশবোর্ড নির্মাণ",
-    "reportSubmission": "🔲 রিপোর্ট জমা"
+    "reportSubmission": "🔲 রিপোর্ট জমা",
+    "stepsComplete": "{{done}}/{{total}} পদক্ষেপ সম্পন্ন"
   },
   "cityList": {
     "noResultsFor": "\"{{search}}\" এর জন্য কোনো শহর পাওয়া যায়নি",
@@ -265,16 +276,35 @@
     "model": "মডেল:",
     "features": "ফিচার:",
     "target": "লক্ষ্য:",
-    "scene": "দৃশ্য:"
+    "scene": "দৃশ্য:",
+    "loading": "মডেল ডেটা লোড হচ্ছে…",
+    "generalizationCheck": "অদেখা-শহর সাধারণীকরণ পরীক্ষা:",
+    "generalizationDetail": "R² {{r2}} / MAE {{mae}}°C যখন সম্পূর্ণ শহরগুলি ({{cities}}) প্রশিক্ষণ থেকে সম্পূর্ণভাবে বাইরে রাখা হয়, শুধু কয়েক বছর নয়।",
+    "source": "উৎস:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
+    "panelTitle": "📡 ডেটা পাইপলাইন — বাস্তব উৎস → BhaskarOps",
+    "steps": {
+      "openMeteo": "লাইভ সারফেস/স্কিন তাপমাত্রা, উচ্চতা (SRTM), AQI (CAMS) — কোনো প্রমাণীকরণ নেই, ফ্রি, রিয়েল-টাইম",
+      "worldCover": "বাস্তব Sentinel-1/2 শ্রেণীবিভাগ, পাবলিক AWS S3 — ৩৬টি প্রতিনিধি শহরের জন্য উদ্ভিদ/নির্মিত এলাকা/জল অংশ",
+      "srtmTitle": "SRTM উচ্চতা",
+      "srtm": "৩০মি DEM, Open-Meteo Elevation API থেকে সরাসরি প্রাপ্ত",
+      "rfTitle": "র‍্যান্ডম ফরেস্ট ML",
+      "rf": "sklearn RandomForestRegressor n=100, ২০টি বিশ্ব শহরের বাস্তব MODIS-উদ্ভূত ডেটার উপর প্রশিক্ষিত (বাস্তব, নিচে র‍্যান্ডম ফরেস্ট প্যানেল দেখুন — ভারত-নির্দিষ্ট নয়)",
+      "dashboardTitle": "BhaskarOps ড্যাশবোর্ড",
+      "dashboard": "React + D3 + Recharts রিয়েল-টাইম ভিজ্যুয়ালাইজেশন"
+    }
   },
   "satellitePass": {
     "lastPass": "শেষ উপগ্রহ পাস:",
     "landsatNote": "Landsat 8 প্রতি ~১৬ দিনে পুনরায় যায়",
     "sentinelNote": "Sentinel-2 প্রতি ~৫ দিনে পুনরায় যায়",
-    "notRealtime": "রিয়েল-টাইম নয়"
+    "notRealtime": "রিয়েল-টাইম নয়",
+    "loading": "লাইভ সারফেস ডেটা লোড হচ্ছে…",
+    "lulcFallback": "{{city}}-র জন্য কোনো বাস্তব শ্রেণীবিভাগ নেই — নিচে নিকটতম উপলব্ধ বাস্তব ডেটা পয়েন্ট ({{fallbackCity}}) আনুমানিক হিসেবে দেখানো হচ্ছে।",
+    "lulcNotAvailable": "{{city}}-র জন্য উপলব্ধ নয় — এখনও পর্যন্ত প্রতিটি রাজ্যের একটি প্রতিনিধি শহরের জন্যই বাস্তব শ্রেণীবিভাগ গণনা করা হয়েছে।",
+    "modeledNote": "মডেলকৃত ভূ-পৃষ্ঠ তাপমাত্রা, স্যাটেলাইট-পরিমাপিত Landsat রিডিং নয় — এটি লাইভ আপডেট হয়, ~১৬ দিনের স্যাটেলাইট রিভিজিটের বিপরীতে।",
+    "unavailable": "লাইভ ডেটা উপলব্ধ নয়"
   },
   "yoyComparison": {
     "today": "আজ",
@@ -287,6 +317,93 @@
     "noEvents": "এই শহরের জন্য ঐতিহাসিক সময়কালে কোনো উল্লেখযোগ্য তাপপ্রবাহ ঘটনা রেকর্ড করা হয়নি।"
   },
   "aiAnalyst": {
-    "inputPlaceholder": "তাপ, আবহাওয়া বা এই শহর সম্পর্কে জিজ্ঞাসা করুন..."
+    "inputPlaceholder": "তাপ, আবহাওয়া বা এই শহর সম্পর্কে জিজ্ঞাসা করুন...",
+    "emptyHint": "{{city}}-র তাপ ডেটা সম্পর্কে আমাকে যা ইচ্ছা জিজ্ঞাসা করুন, বা শুরু করতে নিচের একটি পরামর্শ ট্যাপ করুন।",
+    "thinking": "AI ভাবছে...",
+    "suggestions": {
+      "whyHot": "{{city}} এখন এত গরম কেন?",
+      "ensoImpact": "{{ensoPhase}} {{city}}-র আবহাওয়ার উপর কী প্রভাব ফেলে?",
+      "coolingInterventions": "{{city}}-র জন্য সেরা ৩টি কুলিং ব্যবস্থা কী?",
+      "reportConclusion": "{{city}}-র জন্য BhaskarOps 2026 রিপোর্টের উপসংহার লিখুন"
+    }
+  },
+  "landCover": {
+    "bareOther": "খালি মাটি / অন্যান্য",
+    "builtUp": "নির্মিত এলাকা",
+    "panelTitle": "🌍 ভূমি ব্যবহার / ভূমি আচ্ছাদন — {{cityName}}",
+    "vegetation": "উদ্ভিদ",
+    "water": "জল",
+    "loading": "ভূমি আচ্ছাদন ডেটা লোড হচ্ছে…"
+  },
+  "nationalSummary": {
+    "avgTemp": "গড় জাতীয় তাপমাত্রা",
+    "extremeStates": "চরম/উচ্চ ঝুঁকি বিভাগের রাজ্য",
+    "hottestNow": "এই মুহূর্তে সবচেয়ে উষ্ণ শহর",
+    "live": "লাইভ",
+    "quickPicks": "কুইক পিক্স",
+    "title": "আজকের জাতীয় তাপ সারসংক্ষেপ",
+    "updated": "আপডেট হয়েছে"
+  },
+  "osm": {
+    "buildings": "{{radius}}মি-এর মধ্যে ভবন",
+    "loading": "OpenStreetMap থেকে তথ্য নেওয়া হচ্ছে…",
+    "perSqKm": "ভবন / কিমি²",
+    "unavailable": "ভবন ঘনত্ব এখন উপলব্ধ নয় — OpenStreetMap-এর ফ্রি Overpass API একটি কমিউনিটি রিসোর্স, যার আপটাইমের কোনো গ্যারান্টি নেই।"
+  },
+  "profile": {
+    "title": "আমার প্রোফাইল"
+  },
+  "satelliteIndices": {
+    "surfaceTempLive": "সারফেস তাপমাত্রা (লাইভ)",
+    "ndviNdbiNdwi": "NDVI / NDBI / NDWI",
+    "vegetationFraction": "উদ্ভিদ অংশ",
+    "builtUpFraction": "নির্মিত এলাকা অংশ",
+    "waterFraction": "জল অংশ",
+    "elevation": "উচ্চতা",
+    "loadingLiveTemp": "লাইভ তাপমাত্রা লোড হচ্ছে..."
+  },
+  "weatherStatus": {
+    "cachedMinAgo": "ক্যাশেড — {{mins}} মিনিট আগে",
+    "forceRefresh": "রিফ্রেশ করুন",
+    "weatherUnavailable": "আবহাওয়া উপলব্ধ নয়"
+  },
+  "weatherCard": {
+    "justNow": "এইমাত্র",
+    "minAgo": "{{mins}} মিনিট আগে",
+    "hAgo": "{{hrs}} ঘণ্টা আগে",
+    "dAgo": "{{days}} দিন আগে",
+    "weatherUnavailable": "আবহাওয়া উপলব্ধ নয়",
+    "timedOut": "{{city}}-র জন্য আবহাওয়া ডেটা লোড হতে খুব বেশি সময় লাগছে (এখনও কোনো ক্যাশেড ডেটা উপলব্ধ নেই)।",
+    "fetchFailed": "আবহাওয়া ডেটা আনতে ব্যর্থ",
+    "forceRefresh": "রিফ্রেশ করুন",
+    "fetchingWeather": "আবহাওয়া আনা হচ্ছে...",
+    "loadingRealtimeFor": "{{city}}-র জন্য রিয়েল-টাইম আবহাওয়া লোড হচ্ছে...",
+    "fallbackLocation": "{{city}}-র জন্য নির্দিষ্টভাবে লাইভ আবহাওয়া উপলব্ধ নয় — {{state}}-র নিকটতম উপলব্ধ বাস্তব ডেটা পয়েন্ট {{fallbackCity}} আনুমানিক হিসেবে দেখানো হচ্ছে।",
+    "cachedAgo": "ক্যাশেড — {{age}}",
+    "feelsLike": "অনুভূত হচ্ছে {{temp}}°C",
+    "humidity": "আর্দ্রতা",
+    "wind": "বায়ু",
+    "pressure": "চাপ",
+    "visibility": "দৃশ্যমানতা",
+    "uvIndex": "UV ইনডেক্স",
+    "cloudCover": "মেঘ আচ্ছাদন",
+    "sunrise": "সূর্যোদয়",
+    "sunset": "সূর্যাস্ত",
+    "aqiTitle": "বায়ু মান সূচক (AQI)",
+    "score": "স্কোর:",
+    "sevenDayForecast": "৭-দিনের পূর্বাভাস",
+    "next12Hours": "পরবর্তী ১২ ঘণ্টা",
+    "dataSource": "ডেটা: Open-Meteo.com (WMO • ERA5 রিঅ্যানালাইসিস)",
+    "cachedFooter": "ক্যাশেড {{age}}",
+    "updatedFooter": "আপডেট হয়েছে: {{time}} IST"
+  },
+  "dataBadges": {
+    "source": "উৎস:"
+  },
+  "aboutTeam": {
+    "college": "কলেজ:",
+    "method": "পদ্ধতি:",
+    "focus": "ফোকাস:",
+    "team": "দল:"
   }
 }

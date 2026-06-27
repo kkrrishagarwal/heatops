@@ -19,7 +19,8 @@
     "overview": "மேலோட்டம்",
     "analysis": "பகுப்பாய்வு",
     "interventions": "தலையீடுகள்",
-    "aiExport": "AI + ஏக்ஸ்போர்ட்"
+    "aiExport": "AI + ஏக்ஸ்போர்ட்",
+    "compare": "ஒப்பிடு"
   },
   "panels": {
     "weatherConditions": "வானிலை நிலைமைகள்",
@@ -50,7 +51,9 @@
     "heatwaveTimeline": "வரலாற்று வெப்ப அலை காலவரிசை",
     "recentSignIns": "சமீபத்திய உள்நுழைவுகள்",
     "heatLegend": "வெப்ப விளக்கப்படம்",
-    "adminDashboard": "நிர்வாக பகுப்பாய்வு டாஷ்போர்டு"
+    "adminDashboard": "நிர்வாக பகுப்பாய்வு டாஷ்போர்டு",
+    "dataOutdated": "தரவு காலாவதியானதாக இருக்கலாம்",
+    "urbanMorphology": "நகர்ப்புற வடிவவியல்"
   },
   "buttons": {
     "copySummary": "சுருக்கத்தை நகலெடு",
@@ -130,7 +133,8 @@
   "tooltips": {
     "clickToExplore": "நகரங்களை ஆராய கிளிக் செய்யவும் →",
     "clickStateForDetails": "விவரங்களைப் பார்க்க வரைபடத்தில் ஒரு மாநிலத்தைக் கிளிக் செய்யவும்.",
-    "clickCityToAnalyze": "👆 பகுப்பாய்வு செய்ய மேலே உள்ள எந்த நகரத்தையும் கிளிக் செய்யவும்"
+    "clickCityToAnalyze": "👆 பகுப்பாய்வு செய்ய மேலே உள்ள எந்த நகரத்தையும் கிளிக் செய்யவும்",
+    "clickStateForDetailsSub": "நகரங்கள் மற்றும் வெப்ப தரவை ஆராய"
   },
   "dayNight": {
     "day": "பகல் (மதியம் 12)",
@@ -168,7 +172,13 @@
     "waterBodies": "💧 நீர்நிலைகள் (NDWI +0.1):"
   },
   "compareCities": {
-    "selectPlaceholder": "ஒப்பிட நகரத்தைத் தேர்ந்தெடுக்கவும்..."
+    "selectPlaceholder": "ஒப்பிட நகரத்தைத் தேர்ந்தெடுக்கவும்...",
+    "coolest": "தேர்ந்தெடுக்கப்பட்ட நகரங்களில் மிகவும் குளிர்ந்தது",
+    "empty": "ஒப்பீட்டு விளக்கப்படத்தைக் காண மேலே தேடி குறைந்தது ஒரு நகரத்தைச் சேர்க்கவும்.",
+    "maxReached": "அதிகபட்சம் {{max}} நகரங்கள் தேர்ந்தெடுக்கப்பட்டுள்ளன",
+    "searchPlaceholder": "ஒப்பிட நகரம் அல்லது மாநிலத்தைத் தேடுங்கள்...",
+    "subtitle": "{{city}}-உடன் ஒப்பிடுகிறது — தேடி இன்னும் {{max}} நகரங்களைச் சேர்க்கவும்.",
+    "theSelectedCity": "தேர்ந்தெடுக்கப்பட்ட நகரம்"
   },
   "windAtmosphere": {
     "direction": "திசை",
@@ -186,14 +196,15 @@
     "low": "குறைவு"
   },
   "progressTracker": {
-    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ LST கணக்கீடு",
-    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
+    "dataCollection": "✅ தரவு சேகரிப்பு (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "✅ லைவ் மேற்பரப்பு வெப்பநிலை",
+    "indexCalculation": "✅ தாவரம்/கட்டப்பட்ட பகுதி அளவுகள் (36 நகரங்கள்)",
     "correlationAnalysis": "✅ தொடர்பு பகுப்பாய்வு",
     "randomForestModel": "✅ ரேண்டம் ஃபாரஸ்ட் மாடல்",
     "interventionSimulation": "✅ தலையீடு உருவகப்படுத்துதல்",
     "dashboardCreation": "✅ டாஷ்போர்டு உருவாக்கம்",
-    "reportSubmission": "🔲 அறிக்கை சமர்ப்பித்தல்"
+    "reportSubmission": "🔲 அறிக்கை சமர்ப்பித்தல்",
+    "stepsComplete": "{{done}}/{{total}} படிகள் முடிந்தன"
   },
   "cityList": {
     "noResultsFor": "\"{{search}}\" க்கு நகரங்கள் இல்லை",
@@ -265,16 +276,35 @@
     "model": "மாடல்:",
     "features": "அம்சங்கள்:",
     "target": "இலக்கு:",
-    "scene": "காட்சி:"
+    "scene": "காட்சி:",
+    "loading": "மாடல் தரவு ஏற்றப்படுகிறது…",
+    "generalizationCheck": "காணப்படாத-நகர பொதுமைப்படுத்தல் சோதனை:",
+    "generalizationDetail": "முழு நகரங்களும் ({{cities}}) பயிற்சியிலிருந்து முற்றிலும் தவிர்க்கப்படும்போது, ​​வெறும் சில ஆண்டுகள் மட்டும் அல்ல, R² {{r2}} / MAE {{mae}}°C.",
+    "source": "மூலம்:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
+    "panelTitle": "📡 தரவு பைப்லைன் — உண்மையான மூலங்கள் → BhaskarOps",
+    "steps": {
+      "openMeteo": "லைவ் மேற்பரப்பு/தோல் வெப்பநிலை, உயரம் (SRTM), AQI (CAMS) — அங்கீகாரம் தேவையில்லை, இலவசம், நிகழ்நேரம்",
+      "worldCover": "உண்மையான Sentinel-1/2 வகைப்பாடு, பொது AWS S3 — 36 பிரதிநிதி நகரங்களுக்கான தாவரம்/கட்டப்பட்ட பகுதி/நீர் பகுதிகள்",
+      "srtmTitle": "SRTM உயரம்",
+      "srtm": "30மீ DEM, Open-Meteo Elevation API-இலிருந்து நேரடியாகப் பெறப்பட்டது",
+      "rfTitle": "ரேண்டம் ஃபாரஸ்ட் ML",
+      "rf": "sklearn RandomForestRegressor n=100, 20 உலகளாவிய நகரங்களின் உண்மையான MODIS-வழிப்பெறப்பட்ட தரவில் பயிற்சி பெற்றது (உண்மையானது, கீழே ரேண்டம் ஃபாரஸ்ட் பேனலைப் பார்க்கவும் — இந்தியாவுக்கு மட்டும் குறிப்பிட்டது அல்ல)",
+      "dashboardTitle": "BhaskarOps டாஷ்போர்டு",
+      "dashboard": "React + D3 + Recharts நிகழ்நேர காட்சிப்படுத்தல்"
+    }
   },
   "satellitePass": {
     "lastPass": "கடைசி செயற்கைக்கோள் கடப்பு:",
     "landsatNote": "Landsat 8 ஒவ்வொரு 16 நாட்களுக்கும் மீண்டும் வரும்",
     "sentinelNote": "Sentinel-2 ஒவ்வொரு 5 நாட்களுக்கும் மீண்டும் வரும்",
-    "notRealtime": "நேரடி நேரம் அல்ல"
+    "notRealtime": "நேரடி நேரம் அல்ல",
+    "loading": "லைவ் மேற்பரப்பு தரவு ஏற்றப்படுகிறது…",
+    "lulcFallback": "{{city}}-க்கு உண்மையான வகைப்பாடு இல்லை — கீழே அருகிலுள்ள கிடைக்கும் உண்மையான தரவுப் புள்ளி ({{fallbackCity}}) ஒரு மதிப்பீடாகக் காட்டப்பட்டுள்ளது.",
+    "lulcNotAvailable": "{{city}}-க்குக் கிடைக்கவில்லை — இதுவரை ஒவ்வொரு மாநிலத்திற்கும் ஒரு பிரதிநிதி நகரத்திற்கு மட்டுமே உண்மையான வகைப்பாடு கணக்கிடப்பட்டுள்ளது.",
+    "modeledNote": "மாதிரியாக்கப்பட்ட நிலமேற்பரப்பு வெப்பநிலை, செயற்கைக்கோள்-அளவிடப்பட்ட Landsat வாசிப்பு அல்ல — இது லைவ் ஆக புதுப்பிக்கப்படுகிறது, ~16-நாள் செயற்கைக்கோள் மீள்வருகைக்கு மாறாக.",
+    "unavailable": "லைவ் தரவு கிடைக்கவில்லை"
   },
   "yoyComparison": {
     "today": "இன்று",
@@ -287,6 +317,93 @@
     "noEvents": "இந்த நகரத்திற்கு வரலாற்று காலகட்டத்தில் குறிப்பிடத்தக்க வெப்ப அலை நிகழ்வுகள் பதிவு செய்யப்படவில்லை."
   },
   "aiAnalyst": {
-    "inputPlaceholder": "வெப்பம், வானிலை அல்லது இந்த நகரத்தைப் பற்றி கேளுங்கள்..."
+    "inputPlaceholder": "வெப்பம், வானிலை அல்லது இந்த நகரத்தைப் பற்றி கேளுங்கள்...",
+    "emptyHint": "{{city}}-இன் வெப்ப தரவு பற்றி என்னிடம் எதையும் கேளுங்கள், அல்லது தொடங்க கீழே உள்ள பரிந்துரையைத் தட்டவும்.",
+    "thinking": "AI யோசிக்கிறது...",
+    "suggestions": {
+      "whyHot": "{{city}} இப்போது ஏன் இவ்வளவு வெப்பமாக உள்ளது?",
+      "ensoImpact": "{{ensoPhase}} {{city}} வானிலையில் என்ன தாக்கத்தை ஏற்படுத்துகிறது?",
+      "coolingInterventions": "{{city}}-க்கு சிறந்த 3 குளிரூட்டும் வழிமுறைகள் என்ன?",
+      "reportConclusion": "{{city}}-க்கான BhaskarOps 2026 அறிக்கை முடிவை எழுதுங்கள்"
+    }
+  },
+  "landCover": {
+    "bareOther": "வெற்று மண் / பிற",
+    "builtUp": "கட்டப்பட்ட பகுதி",
+    "panelTitle": "🌍 நில பயன்பாடு / நில உறை — {{cityName}}",
+    "vegetation": "தாவரம்",
+    "water": "நீர்",
+    "loading": "நில உறை தரவு ஏற்றப்படுகிறது…"
+  },
+  "nationalSummary": {
+    "avgTemp": "சராசரி தேசிய வெப்பநிலை",
+    "extremeStates": "தீவிர/அதிக ஆபத்து வகையிலான மாநிலங்கள்",
+    "hottestNow": "இப்போது மிகவும் வெப்பமான நகரம்",
+    "live": "லைவ்",
+    "quickPicks": "விரைவு தேர்வுகள்",
+    "title": "இன்றைய தேசிய வெப்ப சுருக்கம்",
+    "updated": "புதுப்பிக்கப்பட்டது"
+  },
+  "osm": {
+    "buildings": "{{radius}}மீ-க்குள் கட்டிடங்கள்",
+    "loading": "OpenStreetMap-இலிருந்து தகவல் பெறப்படுகிறது…",
+    "perSqKm": "கட்டிடங்கள் / கிமீ²",
+    "unavailable": "கட்டிட அடர்த்தி இப்போது கிடைக்கவில்லை — OpenStreetMap-இன் இலவச Overpass API ஒரு பகிரப்பட்ட சமூக வளமாகும், இதற்கு செயல்பாட்டு உத்தரவாதம் இல்லை."
+  },
+  "profile": {
+    "title": "எனது சுயவிவரம்"
+  },
+  "satelliteIndices": {
+    "surfaceTempLive": "மேற்பரப்பு வெப்பநிலை (லைவ்)",
+    "ndviNdbiNdwi": "NDVI / NDBI / NDWI",
+    "vegetationFraction": "தாவர பகுதி",
+    "builtUpFraction": "கட்டப்பட்ட பகுதி அளவு",
+    "waterFraction": "நீர் பகுதி",
+    "elevation": "உயரம்",
+    "loadingLiveTemp": "லைவ் வெப்பநிலை ஏற்றப்படுகிறது..."
+  },
+  "weatherStatus": {
+    "cachedMinAgo": "கேச் செய்யப்பட்டது — {{mins}} நிமிடங்களுக்கு முன்",
+    "forceRefresh": "புதுப்பிக்கவும்",
+    "weatherUnavailable": "வானிலை கிடைக்கவில்லை"
+  },
+  "weatherCard": {
+    "justNow": "இப்போதுதான்",
+    "minAgo": "{{mins}} நிமிடங்களுக்கு முன்",
+    "hAgo": "{{hrs}} மணிநேரத்திற்கு முன்",
+    "dAgo": "{{days}} நாட்களுக்கு முன்",
+    "weatherUnavailable": "வானிலை கிடைக்கவில்லை",
+    "timedOut": "{{city}}-க்கான வானிலை தரவு ஏற்ற அதிக நேரம் எடுக்கிறது (இன்னும் கேச் செய்யப்பட்ட தரவு கிடைக்கவில்லை).",
+    "fetchFailed": "வானிலை தரவைப் பெறத் தவறிவிட்டது",
+    "forceRefresh": "புதுப்பிக்கவும்",
+    "fetchingWeather": "வானிலை பெறப்படுகிறது...",
+    "loadingRealtimeFor": "{{city}}-க்கான நிகழ்நேர வானிலை ஏற்றப்படுகிறது...",
+    "fallbackLocation": "{{city}}-க்கு குறிப்பாக லைவ் வானிலை கிடைக்கவில்லை — {{state}}-இல் அருகிலுள்ள கிடைக்கும் உண்மையான தரவுப் புள்ளியான {{fallbackCity}} ஒரு மதிப்பீடாகக் காட்டப்பட்டுள்ளது.",
+    "cachedAgo": "கேச் செய்யப்பட்டது — {{age}}",
+    "feelsLike": "{{temp}}°C போல உணரப்படுகிறது",
+    "humidity": "ஈரப்பதம்",
+    "wind": "காற்று",
+    "pressure": "அழுத்தம்",
+    "visibility": "தெரிவுநிலை",
+    "uvIndex": "UV குறியீடு",
+    "cloudCover": "மேக மூட்டம்",
+    "sunrise": "சூரிய உதயம்",
+    "sunset": "சூரிய அஸ்தமனம்",
+    "aqiTitle": "காற்று தர குறியீடு (AQI)",
+    "score": "மதிப்பெண்:",
+    "sevenDayForecast": "7-நாள் முன்னறிவிப்பு",
+    "next12Hours": "அடுத்த 12 மணிநேரம்",
+    "dataSource": "தரவு: Open-Meteo.com (WMO • ERA5 மறுபகுப்பாய்வு)",
+    "cachedFooter": "கேச் செய்யப்பட்டது {{age}}",
+    "updatedFooter": "புதுப்பிக்கப்பட்டது: {{time}} IST"
+  },
+  "dataBadges": {
+    "source": "மூலம்:"
+  },
+  "aboutTeam": {
+    "college": "கல்லூரி:",
+    "method": "முறை:",
+    "focus": "கவனம்:",
+    "team": "குழு:"
   }
 }

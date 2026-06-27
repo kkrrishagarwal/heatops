@@ -19,7 +19,8 @@
     "overview": "OVERVIEW",
     "analysis": "ANALYSIS",
     "interventions": "INTERVENTIONS",
-    "aiExport": "AI + EXPORT"
+    "aiExport": "AI + EXPORT",
+    "compare": "COMPARE"
   },
   "panels": {
     "weatherConditions": "WEATHER CONDITIONS",
@@ -50,7 +51,9 @@
     "heatwaveTimeline": "HISTORICAL HEATWAVE TIMELINE",
     "recentSignIns": "Recent Sign-ins",
     "heatLegend": "Heat Legend",
-    "adminDashboard": "Admin Analytics Dashboard"
+    "adminDashboard": "Admin Analytics Dashboard",
+    "dataOutdated": "Data may be outdated",
+    "urbanMorphology": "URBAN MORPHOLOGY"
   },
   "buttons": {
     "copySummary": "Copy Summary",
@@ -130,7 +133,8 @@
   "tooltips": {
     "clickToExplore": "Click to explore cities →",
     "clickStateForDetails": "Click a state on the map to view details.",
-    "clickCityToAnalyze": "👆 Click any city above to analyze"
+    "clickCityToAnalyze": "👆 Click any city above to analyze",
+    "clickStateForDetailsSub": "to explore cities and heat data"
   },
   "dayNight": {
     "day": "Day (12 PM)",
@@ -168,7 +172,13 @@
     "waterBodies": "💧 Water Bodies (NDWI +0.1):"
   },
   "compareCities": {
-    "selectPlaceholder": "Select city to compare..."
+    "selectPlaceholder": "Select city to compare...",
+    "coolest": "is the coolest selected city",
+    "empty": "Search above and add at least one city to see the comparison chart.",
+    "maxReached": "Max {{max}} cities selected",
+    "searchPlaceholder": "Search city or state to compare...",
+    "subtitle": "Comparing against {{city}} — search and add up to {{max}} more cities.",
+    "theSelectedCity": "the selected city"
   },
   "windAtmosphere": {
     "direction": "Direction",
@@ -193,7 +203,8 @@
     "randomForestModel": "✅ Random Forest Model",
     "interventionSimulation": "✅ Intervention Simulation",
     "dashboardCreation": "✅ Dashboard Creation",
-    "reportSubmission": "🔲 Report Submission"
+    "reportSubmission": "🔲 Report Submission",
+    "stepsComplete": "{{done}}/{{total}} Steps Complete"
   },
   "cityList": {
     "noResultsFor": "No cities found for \"{{search}}\"",
@@ -265,16 +276,35 @@
     "model": "Model:",
     "features": "Features:",
     "target": "Target:",
-    "scene": "Scene:"
+    "scene": "Scene:",
+    "loading": "Loading model data…",
+    "generalizationCheck": "Unseen-city generalization check:",
+    "generalizationDetail": "R² {{r2}} / MAE {{mae}}°C when entire cities ({{cities}}) are held out of training entirely, not just held-out years.",
+    "source": "Source:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps",
+    "steps": {
+      "openMeteo": "Live surface/skin temperature, elevation (SRTM), AQI (CAMS) — no auth, free, real-time",
+      "worldCover": "Real Sentinel-1/2 classification, public AWS S3 — vegetation/built-up/water fractions for 36 representative cities",
+      "srtmTitle": "SRTM Elevation",
+      "srtm": "30m DEM, returned directly by the Open-Meteo Elevation API",
+      "rfTitle": "Random Forest ML",
+      "rf": "sklearn RandomForestRegressor n=100, trained on real MODIS-derived data from 20 global cities (real, see Random Forest panel below — not India-specific)",
+      "dashboardTitle": "BhaskarOps Dashboard",
+      "dashboard": "React + D3 + Recharts real-time visualization"
+    }
   },
   "satellitePass": {
     "lastPass": "Last satellite pass:",
     "landsatNote": "Landsat 8 revisits ~every 16 days",
     "sentinelNote": "Sentinel-2 revisits ~every 5 days",
-    "notRealtime": "not real-time"
+    "notRealtime": "not real-time",
+    "loading": "Loading live surface data…",
+    "lulcFallback": "No real classification for {{city}} itself — showing nearest available real data point ({{fallbackCity}}) below, as an estimate.",
+    "lulcNotAvailable": "Not available for {{city}} — real classification only computed for one representative city per state so far.",
+    "modeledNote": "Modeled ground-surface temperature, not a satellite-measured Landsat reading — updates live, unlike a ~16-day satellite revisit.",
+    "unavailable": "Live data unavailable"
   },
   "yoyComparison": {
     "today": "Today",
@@ -287,6 +317,93 @@
     "noEvents": "No significant heatwave events recorded for this city in the historical window."
   },
   "aiAnalyst": {
-    "inputPlaceholder": "Ask about heat, weather, or this city..."
+    "inputPlaceholder": "Ask about heat, weather, or this city...",
+    "emptyHint": "Ask me anything about {{city}}'s heat data, or tap a suggestion below to start.",
+    "thinking": "AI is thinking...",
+    "suggestions": {
+      "whyHot": "Why is {{city}} so hot right now?",
+      "ensoImpact": "How does {{ensoPhase}} impact {{city}} weather?",
+      "coolingInterventions": "What are best 3 cooling interventions for {{city}}?",
+      "reportConclusion": "Write BhaskarOps 2026 report conclusion for {{city}}"
+    }
+  },
+  "landCover": {
+    "bareOther": "Bare Soil / Other",
+    "builtUp": "Built-up",
+    "panelTitle": "🌍 Land Use / Land Cover — {{cityName}}",
+    "vegetation": "Vegetation",
+    "water": "Water",
+    "loading": "Loading land cover data…"
+  },
+  "nationalSummary": {
+    "avgTemp": "Average national temperature",
+    "extremeStates": "States in Extreme/High risk category",
+    "hottestNow": "Hottest city right now",
+    "live": "Live",
+    "quickPicks": "Quick Picks",
+    "title": "Today's National Heat Summary",
+    "updated": "updated"
+  },
+  "osm": {
+    "buildings": "buildings within {{radius}}m",
+    "loading": "Querying OpenStreetMap…",
+    "perSqKm": "buildings / km²",
+    "unavailable": "Building density unavailable right now — OpenStreetMap's free Overpass API is a shared community resource with no uptime guarantee."
+  },
+  "profile": {
+    "title": "My Profile"
+  },
+  "satelliteIndices": {
+    "surfaceTempLive": "Surface Temp (live)",
+    "ndviNdbiNdwi": "NDVI / NDBI / NDWI",
+    "vegetationFraction": "Vegetation Fraction",
+    "builtUpFraction": "Built-up Fraction",
+    "waterFraction": "Water Fraction",
+    "elevation": "Elevation",
+    "loadingLiveTemp": "Loading live temperature..."
+  },
+  "weatherStatus": {
+    "cachedMinAgo": "Cached — {{mins}} min ago",
+    "forceRefresh": "Force Refresh",
+    "weatherUnavailable": "Weather unavailable"
+  },
+  "weatherCard": {
+    "justNow": "just now",
+    "minAgo": "{{mins}} min ago",
+    "hAgo": "{{hrs}}h ago",
+    "dAgo": "{{days}}d ago",
+    "weatherUnavailable": "Weather Unavailable",
+    "timedOut": "Weather data for {{city}} is taking too long to load (no cached data available yet).",
+    "fetchFailed": "Failed to fetch weather data",
+    "forceRefresh": "Force Refresh",
+    "fetchingWeather": "Fetching Weather...",
+    "loadingRealtimeFor": "Loading real-time weather for {{city}}...",
+    "fallbackLocation": "Live weather not available for {{city}} specifically — showing {{fallbackCity}}, {{state}}'s nearest available real data point, as an estimate.",
+    "cachedAgo": "Cached — {{age}}",
+    "feelsLike": "Feels like {{temp}}°C",
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "pressure": "Pressure",
+    "visibility": "Visibility",
+    "uvIndex": "UV Index",
+    "cloudCover": "Cloud Cover",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset",
+    "aqiTitle": "Air Quality Index (AQI)",
+    "score": "Score:",
+    "sevenDayForecast": "7-Day Forecast",
+    "next12Hours": "Next 12 Hours",
+    "dataSource": "Data: Open-Meteo.com (WMO • ERA5 reanalysis)",
+    "cachedFooter": "Cached {{age}}",
+    "updatedFooter": "Updated: {{time}} IST"
+  },
+  "dataBadges": {
+    "source": "Source:"
+  },
+  "aboutTeam": {
+    "college": "College:",
+    "method": "Method:",
+    "focus": "Focus:",
+    "team": "Team:"
   }
 }

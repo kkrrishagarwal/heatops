@@ -28,7 +28,7 @@ export function LandCoverPanel({ lulcData, cityName, stateName, coordsData }) {
         color: "rgba(255,255,255,0.5)",
         fontSize: 12
       }}>
-        Loading land cover data…
+        {t('landCover.loading', 'Loading land cover data…')}
       </div>
     )
   }

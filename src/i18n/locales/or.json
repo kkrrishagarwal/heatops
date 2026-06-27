@@ -19,7 +19,8 @@
     "overview": "ସମୀକ୍ଷା",
     "analysis": "ବିଶ୍ଳେଷଣ",
     "interventions": "ହସ୍ତକ୍ଷେପ",
-    "aiExport": "AI + ରପ୍ତାନି"
+    "aiExport": "AI + ରପ୍ତାନି",
+    "compare": "ତୁଳନା କରନ୍ତୁ"
   },
   "panels": {
     "weatherConditions": "ପାଣିପାଗ ସ୍ଥିତି",
@@ -50,7 +51,9 @@
     "heatwaveTimeline": "ଐତିହାସିକ ଉତ୍ତାପ ଲହରୀ ସମୟରେଖା",
     "recentSignIns": "ସାମ୍ପ୍ରତିକ ସାଇନ୍-ଇନ୍",
     "heatLegend": "ଉତ୍ତାପ ଚିହ୍ନ",
-    "adminDashboard": "ଆଡମିନ୍ ଆନାଲିଟିକ୍ସ ଡାସବୋର୍ଡ"
+    "adminDashboard": "ଆଡମିନ୍ ଆନାଲିଟିକ୍ସ ଡାସବୋର୍ଡ",
+    "dataOutdated": "ତଥ୍ୟ ପୁରୁଣା ହୋଇଥାଇପାରେ",
+    "urbanMorphology": "ସହରାଞ୍ଚଳ ଆକୃତିବିଜ୍ଞାନ"
   },
   "buttons": {
     "copySummary": "ସାରାଂଶ କପି କରନ୍ତୁ",
@@ -130,7 +133,8 @@
   "tooltips": {
     "clickToExplore": "ସହରଗୁଡିକ ଦେଖିବାକୁ କ୍ଲିକ୍ କରନ୍ତୁ →",
     "clickStateForDetails": "ବିବରଣୀ ଦେଖିବାକୁ ମାନଚିତ୍ରରେ ଏକ ରାଜ୍ୟରେ କ୍ଲିକ୍ କରନ୍ତୁ।",
-    "clickCityToAnalyze": "👆 ବିଶ୍ଳେଷଣ ପାଇଁ ଉପରେ କୌଣସି ସହରରେ କ୍ଲିକ୍ କରନ୍ତୁ"
+    "clickCityToAnalyze": "👆 ବିଶ୍ଳେଷଣ ପାଇଁ ଉପରେ କୌଣସି ସହରରେ କ୍ଲିକ୍ କରନ୍ତୁ",
+    "clickStateForDetailsSub": "ସହର ଏବଂ ତାପ ତଥ୍ୟ ଅନୁସନ୍ଧାନ କରିବାକୁ"
   },
   "dayNight": {
     "day": "ଦିନ (ଦିନ 12)",
@@ -168,7 +172,13 @@
     "waterBodies": "💧 ଜଳଭଣ୍ଡାର (NDWI +0.1):"
   },
   "compareCities": {
-    "selectPlaceholder": "ତୁଳନା ପାଇଁ ସହର ବାଛନ୍ତୁ..."
+    "selectPlaceholder": "ତୁଳନା ପାଇଁ ସହର ବାଛନ୍ତୁ...",
+    "coolest": "ଚୟନିତ ସହରଗୁଡ଼ିକ ମଧ୍ୟରେ ସବୁଠାରୁ ଥଣ୍ଡା ସହର",
+    "empty": "ତୁଳନା ଚାର୍ଟ ଦେଖିବାକୁ ଉପରେ ଖୋଜନ୍ତୁ ଏବଂ ଅତି କମରେ ଗୋଟିଏ ସହର ଯୋଡ଼ନ୍ତୁ।",
+    "maxReached": "ସର୍ବାଧିକ {{max}} ସହର ଚୟନ ହୋଇଛି",
+    "searchPlaceholder": "ତୁଳନା ପାଇଁ ସହର ବା ରାଜ୍ୟ ଖୋଜନ୍ତୁ...",
+    "subtitle": "{{city}} ସହିତ ତୁଳନା — ଖୋଜନ୍ତୁ ଏବଂ ଆଉ {{max}} ସହର ଯୋଡ଼ନ୍ତୁ।",
+    "theSelectedCity": "ଚୟନିତ ସହର"
   },
   "windAtmosphere": {
     "direction": "ଦିଗ",
@@ -186,14 +196,15 @@
     "low": "କମ"
   },
   "progressTracker": {
-    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ LST ଗଣନା",
-    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
+    "dataCollection": "✅ ତଥ୍ୟ ସଂଗ୍ରହ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "✅ ଲାଇଭ୍ ପୃଷ୍ଠ ତାପମାତ୍ରା",
+    "indexCalculation": "✅ ଉଦ୍ଭିଦ/ନିର୍ମିତ ଅଞ୍ଚଳ ଅଂଶ (36 ସହର)",
     "correlationAnalysis": "✅ ସମ୍ପର୍କ ବିଶ୍ଳେଷଣ",
     "randomForestModel": "✅ ରାଣ୍ଡମ ଫରେଷ୍ଟ ମଡେଲ୍",
     "interventionSimulation": "✅ ହସ୍ତକ୍ଷେପ ସିମୁଲେସନ୍",
     "dashboardCreation": "✅ ଡାସବୋର୍ଡ ନିର୍ମାଣ",
-    "reportSubmission": "🔲 ରିପୋର୍ଟ ଦାଖଲ"
+    "reportSubmission": "🔲 ରିପୋର୍ଟ ଦାଖଲ",
+    "stepsComplete": "{{done}}/{{total}} ପଦକ୍ଷେପ ସମ୍ପୂର୍ଣ୍ଣ"
   },
   "cityList": {
     "noResultsFor": "\"{{search}}\" ପାଇଁ କୌଣସି ସହର ମିଳିଲା ନାହିଁ",
@@ -265,16 +276,35 @@
     "model": "ମଡେଲ୍:",
     "features": "ଫିଚରଗୁଡିକ:",
     "target": "ଲକ୍ଷ୍ୟ:",
-    "scene": "ଦୃଶ୍ୟ:"
+    "scene": "ଦୃଶ୍ୟ:",
+    "loading": "ମଡେଲ୍ ତଥ୍ୟ ଲୋଡ୍ ହେଉଛି…",
+    "generalizationCheck": "ଅଦେଖା-ସହର ସାଧାରଣୀକରଣ ଯାଞ୍ଚ:",
+    "generalizationDetail": "ସମ୍ପୂର୍ଣ୍ଣ ସହରଗୁଡ଼ିକୁ ({{cities}}) ତାଲିମରୁ ସମ୍ପୂର୍ଣ୍ଣ ବାହାରେ ରଖାଯିବା ବେଳେ, ଯେତେବେଳେ କେବଳ କିଛି ବର୍ଷ ନୁହେଁ, R² {{r2}} / MAE {{mae}}°C।",
+    "source": "ସ୍ରୋତ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
+    "panelTitle": "📡 ଡାଟା ପାଇପଲାଇନ୍ — ବାସ୍ତବ ଉତ୍ସ → BhaskarOps",
+    "steps": {
+      "openMeteo": "ଲାଇଭ୍ ପୃଷ୍ଠ/ଚର୍ମ ତାପମାତ୍ରା, ଉଚ୍ଚତା (SRTM), AQI (CAMS) — କୌଣସି ପ୍ରମାଣୀକରଣ ନାହିଁ, ମୁକ୍ତ, ରିଅଲ୍-ଟାଇମ୍",
+      "worldCover": "ବାସ୍ତବ Sentinel-1/2 ବର୍ଗୀକରଣ, ସର୍ବସାଧାରଣ AWS S3 — 36 ପ୍ରତିନିଧି ସହର ପାଇଁ ଉଦ୍ଭିଦ/ନିର୍ମିତ ଅଞ୍ଚଳ/ପାଣି ଅଂଶ",
+      "srtmTitle": "SRTM ଉଚ୍ଚତା",
+      "srtm": "30ମି DEM, Open-Meteo Elevation API ରୁ ସିଧାସଳଖ ପ୍ରାପ୍ତ",
+      "rfTitle": "ରାଣ୍ଡମ୍ ଫରେଷ୍ଟ ML",
+      "rf": "sklearn RandomForestRegressor n=100, 20 ବିଶ୍ୱ ସହରର ବାସ୍ତବ MODIS-ଜନିତ ତଥ୍ୟ ଉପରେ ତାଲିମ ପ୍ରାପ୍ତ (ବାସ୍ତବ, ତଳେ ରାଣ୍ଡମ୍ ଫରେଷ୍ଟ ପ୍ୟାନେଲ୍ ଦେଖନ୍ତୁ — ଭାରତ-ନିର୍ଦ୍ଦିଷ୍ଟ ନୁହେଁ)",
+      "dashboardTitle": "BhaskarOps ଡ୍ୟାସବୋର୍ଡ",
+      "dashboard": "React + D3 + Recharts ରିଅଲ୍-ଟାଇମ୍ ଭିଜୁଆଲାଇଜେସନ୍"
+    }
   },
   "satellitePass": {
     "lastPass": "ଅନ୍ତିମ ଉପଗ୍ରହ ଗତି:",
     "landsatNote": "Landsat 8 ପ୍ରତି ~16 ଦିନରେ ପୁନର୍ବାର ଆସେ",
     "sentinelNote": "Sentinel-2 ପ୍ରତି ~5 ଦିନରେ ପୁନର୍ବାର ଆସେ",
-    "notRealtime": "ରିଅଲ-ଟାଇମ ନୁହେଁ"
+    "notRealtime": "ରିଅଲ-ଟାଇମ ନୁହେଁ",
+    "loading": "ଲାଇଭ୍ ପୃଷ୍ଠ ତଥ୍ୟ ଲୋଡ୍ ହେଉଛି…",
+    "lulcFallback": "{{city}} ପାଇଁ ସ୍ୱୟଂ କୌଣସି ବାସ୍ତବ ବର୍ଗୀକରଣ ନାହିଁ — ତଳେ ନିକଟତମ ଉପଲବ୍ଧ ବାସ୍ତବ ତଥ୍ୟ ବିନ୍ଦୁ ({{fallbackCity}}) ଅନୁମାନ ଭାବରେ ଦର୍ଶାଯାଇଛି।",
+    "lulcNotAvailable": "{{city}} ପାଇଁ ଉପଲବ୍ଧ ନାହିଁ — ବର୍ତ୍ତମାନ ସୁଧା ପ୍ରତ୍ୟେକ ରାଜ୍ୟର ଗୋଟିଏ ପ୍ରତିନିଧି ସହର ପାଇଁ ହିଁ ବାସ୍ତବ ବର୍ଗୀକରଣ ଗଣନା କରାଯାଇଛି।",
+    "modeledNote": "ମଡେଲ୍ ହୋଇଥିବା ଭୂ-ପୃଷ୍ଠ ତାପମାତ୍ରା, ଉପଗ୍ରହ-ମାପିତ Landsat ରିଡିଂ ନୁହେଁ — ଏହା ଲାଇଭ୍ ଅପଡେଟ୍ ହୁଏ, ~16-ଦିନର ଉପଗ୍ରହ ପୁନର୍ବାର ପରିଦର୍ଶନ ବିପରୀତରେ।",
+    "unavailable": "ଲାଇଭ୍ ତଥ୍ୟ ଉପଲବ୍ଧ ନାହିଁ"
   },
   "yoyComparison": {
     "today": "ଆଜି",
@@ -287,6 +317,93 @@
     "noEvents": "ଏହି ସହର ପାଇଁ ଐତିହାସିକ ଅବଧିରେ କୌଣସି ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ଉତ୍ତାପ ଲହରୀ ଘଟଣା ଲିପିବଦ୍ଧ ହୋଇନାହିଁ।"
   },
   "aiAnalyst": {
-    "inputPlaceholder": "ଉତ୍ତାପ, ପାଣିପାଗ, କିମ୍ବା ଏହି ସହର ବିଷୟରେ ପଚାରନ୍ତୁ..."
+    "inputPlaceholder": "ଉତ୍ତାପ, ପାଣିପାଗ, କିମ୍ବା ଏହି ସହର ବିଷୟରେ ପଚାରନ୍ତୁ...",
+    "emptyHint": "{{city}}ର ତାପ ତଥ୍ୟ ବିଷୟରେ ମୋତେ କିଛି ବି ପଚାରନ୍ତୁ, ବା ଆରମ୍ଭ କରିବାକୁ ତଳେ ଥିବା ସୁଝାବକୁ ଟାପ୍ କରନ୍ତୁ।",
+    "thinking": "AI ବିଚାର କରୁଛି...",
+    "suggestions": {
+      "whyHot": "{{city}} ଏବେ କାହିଁକି ଏତେ ଗରମ?",
+      "ensoImpact": "{{ensoPhase}} {{city}}ର ପାଣିପାଗ ଉପରେ କେଉଁ ପ୍ରଭାବ ପକାଏ?",
+      "coolingInterventions": "{{city}} ପାଇଁ ସର୍ବୋତ୍ତମ 3 କୁଲିଂ ପଦ୍ଧତି କଣ?",
+      "reportConclusion": "{{city}} ପାଇଁ BhaskarOps 2026 ରିପୋର୍ଟ ସମାପ୍ତି ଲେଖନ୍ତୁ"
+    }
+  },
+  "landCover": {
+    "bareOther": "ଖାଲି ମାଟି / ଅନ୍ୟାନ୍ୟ",
+    "builtUp": "ନିର୍ମିତ ଅଞ୍ଚଳ",
+    "panelTitle": "🌍 ଜମି ବ୍ୟବହାର / ଜମି ଆଚ୍ଛାଦନ — {{cityName}}",
+    "vegetation": "ଉଦ୍ଭିଦ",
+    "water": "ପାଣି",
+    "loading": "ଜମି ଆଚ୍ଛାଦନ ତଥ୍ୟ ଲୋଡ୍ ହେଉଛି…"
+  },
+  "nationalSummary": {
+    "avgTemp": "ହାରାହାରି ଜାତୀୟ ତାପମାତ୍ରା",
+    "extremeStates": "ଅତ୍ୟଧିକ/ଉଚ୍ଚ ବିପଦ ବର୍ଗର ରାଜ୍ୟ",
+    "hottestNow": "ବର୍ତ୍ତମାନ ସବୁଠାରୁ ଗରମ ସହର",
+    "live": "ଲାଇଭ୍",
+    "quickPicks": "ତ୍ୱରିତ ବାଛ",
+    "title": "ଆଜିର ଜାତୀୟ ତାପ ସାରାଂଶ",
+    "updated": "ଅପଡେଟ୍ ହୋଇଛି"
+  },
+  "osm": {
+    "buildings": "{{radius}}ମି ମଧ୍ୟରେ ଅଟ୍ଟାଳିକା",
+    "loading": "OpenStreetMap ରୁ ସୂଚନା ନିଆଯାଉଛି…",
+    "perSqKm": "ଅଟ୍ଟାଳିକା / କିମି²",
+    "unavailable": "ଅଟ୍ଟାଳିକା ଘନତା ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ନାହିଁ — OpenStreetMap ର ମୁକ୍ତ Overpass API ଏକ ସାମୁଦାୟିକ ଉତ୍ସ, ଯାହାର ଅପଟାଇମ୍ ଗ୍ୟାରେଣ୍ଟି ନାହିଁ।"
+  },
+  "profile": {
+    "title": "ମୋର ପ୍ରୋଫାଇଲ୍"
+  },
+  "satelliteIndices": {
+    "surfaceTempLive": "ପୃଷ୍ଠ ତାପମାତ୍ରା (ଲାଇଭ୍)",
+    "ndviNdbiNdwi": "NDVI / NDBI / NDWI",
+    "vegetationFraction": "ଉଦ୍ଭିଦ ଅଂଶ",
+    "builtUpFraction": "ନିର୍ମିତ ଅଞ୍ଚଳ ଅଂଶ",
+    "waterFraction": "ପାଣି ଅଂଶ",
+    "elevation": "ଉଚ୍ଚତା",
+    "loadingLiveTemp": "ଲାଇଭ୍ ତାପମାତ୍ରା ଲୋଡ୍ ହେଉଛି..."
+  },
+  "weatherStatus": {
+    "cachedMinAgo": "କ୍ୟାଶ୍ ହୋଇଛି — {{mins}} ମିନିଟ୍ ପୂର୍ବେ",
+    "forceRefresh": "ରିଫ୍ରେଶ୍ କରନ୍ତୁ",
+    "weatherUnavailable": "ପାଣିପାଗ ଉପଲବ୍ଧ ନାହିଁ"
+  },
+  "weatherCard": {
+    "justNow": "ବର୍ତ୍ତମାନ",
+    "minAgo": "{{mins}} ମିନିଟ୍ ପୂର୍ବେ",
+    "hAgo": "{{hrs}} ଘଣ୍ଟା ପୂର୍ବେ",
+    "dAgo": "{{days}} ଦିନ ପୂର୍ବେ",
+    "weatherUnavailable": "ପାଣିପାଗ ଉପଲବ୍ଧ ନାହିଁ",
+    "timedOut": "{{city}} ପାଇଁ ପାଣିପାଗ ତଥ୍ୟ ଲୋଡ୍ ହେବାକୁ ବହୁତ ସମୟ ଲାଗୁଛି (ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି କ୍ୟାଶ୍ ତଥ୍ୟ ଉପଲବ୍ଧ ନାହିଁ)।",
+    "fetchFailed": "ପାଣିପାଗ ତଥ୍ୟ ଆଣିବାରେ ବିଫଳ",
+    "forceRefresh": "ରିଫ୍ରେଶ୍ କରନ୍ତୁ",
+    "fetchingWeather": "ପାଣିପାଗ ଆଣୁଛି...",
+    "loadingRealtimeFor": "{{city}} ପାଇଁ ରିଅଲ୍-ଟାଇମ୍ ପାଣିପାଗ ଲୋଡ୍ ହେଉଛି...",
+    "fallbackLocation": "{{city}} ପାଇଁ ନିର୍ଦ୍ଦିଷ୍ଟ ଭାବରେ ଲାଇଭ୍ ପାଣିପାଗ ଉପଲବ୍ଧ ନାହିଁ — {{state}}ରେ ନିକଟତମ ଉପଲବ୍ଧ ବାସ୍ତବ ତଥ୍ୟ ବିନ୍ଦୁ {{fallbackCity}} ଅନୁମାନ ଭାବରେ ଦର୍ଶାଯାଇଛି।",
+    "cachedAgo": "କ୍ୟାଶ୍ ହୋଇଛି — {{age}}",
+    "feelsLike": "{{temp}}°C ପରି ଅନୁଭବ ହେଉଛି",
+    "humidity": "ଆର୍ଦ୍ରତା",
+    "wind": "ପବନ",
+    "pressure": "ଚାପ",
+    "visibility": "ଦୃଶ୍ୟମାନତା",
+    "uvIndex": "UV ସୂଚକାଙ୍କ",
+    "cloudCover": "ମେଘ ଆଚ୍ଛାଦନ",
+    "sunrise": "ସୂର୍ଯ୍ୟୋଦୟ",
+    "sunset": "ସୂର୍ଯ୍ୟାସ୍ତ",
+    "aqiTitle": "ବାୟୁ ଗୁଣବତ୍ତା ସୂଚକାଙ୍କ (AQI)",
+    "score": "ସ୍କୋର:",
+    "sevenDayForecast": "7-ଦିନିଆ ପୂର୍ବାନୁମାନ",
+    "next12Hours": "ପରବର୍ତ୍ତୀ 12 ଘଣ୍ଟା",
+    "dataSource": "ତଥ୍ୟ: Open-Meteo.com (WMO • ERA5 ପୁନର୍ବିଶ୍ଳେଷଣ)",
+    "cachedFooter": "କ୍ୟାଶ୍ ହୋଇଛି {{age}}",
+    "updatedFooter": "ଅପଡେଟ୍ ହୋଇଛି: {{time}} IST"
+  },
+  "dataBadges": {
+    "source": "ସ୍ରୋତ:"
+  },
+  "aboutTeam": {
+    "college": "କଲେଜ:",
+    "method": "ପଦ୍ଧତି:",
+    "focus": "ଫୋକସ:",
+    "team": "ଦଳ:"
   }
 }

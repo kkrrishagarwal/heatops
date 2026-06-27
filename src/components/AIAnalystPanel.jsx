@@ -57,11 +57,26 @@ export function AIAnalystPanel({
     }
   }, [chatHistory, aiLoading])
 
+  // The label shown on each chip is translated; the question actually sent to askQuestion()
+  // stays in English regardless of UI language, so AGNI's backend behavior is unaffected by
+  // the language toggle — only the visible chip text changes.
   const suggestions = [
-    `Why is ${city} so hot right now?`,
-    `How does ${ensoPhase} impact ${city} weather?`,
-    `What are best 3 cooling interventions for ${city}?`,
-    `Write BhaskarOps 2026 report conclusion for ${city}`
+    {
+      question: `Why is ${city} so hot right now?`,
+      label: t('aiAnalyst.suggestions.whyHot', `Why is ${city} so hot right now?`, { city })
+    },
+    {
+      question: `How does ${ensoPhase} impact ${city} weather?`,
+      label: t('aiAnalyst.suggestions.ensoImpact', `How does ${ensoPhase} impact ${city} weather?`, { ensoPhase, city })
+    },
+    {
+      question: `What are best 3 cooling interventions for ${city}?`,
+      label: t('aiAnalyst.suggestions.coolingInterventions', `What are best 3 cooling interventions for ${city}?`, { city })
+    },
+    {
+      question: `Write BhaskarOps 2026 report conclusion for ${city}`,
+      label: t('aiAnalyst.suggestions.reportConclusion', `Write BhaskarOps 2026 report conclusion for ${city}`, { city })
+    }
   ]
 
   const ASK_AI_TIMEOUT_MS = 15000
@@ -190,7 +205,7 @@ export function AIAnalystPanel({
       <div className="chat-thread" ref={threadRef}>
         {chatHistory.length === 0 && !aiLoading && (
           <div className="chat-empty-hint">
-            {t('aiAnalyst.emptyHint', `Ask me anything about ${city}'s heat data, or tap a suggestion below to start.`)}
+            {t('aiAnalyst.emptyHint', `Ask me anything about ${city}'s heat data, or tap a suggestion below to start.`, { city })}
           </div>
         )}
         {chatHistory.map((msg, i) => (
@@ -229,7 +244,7 @@ export function AIAnalystPanel({
               key={index}
               type="button"
               onClick={() => {
-                setQuestionText(option)
+                setQuestionText(option.question)
                 setSelectedQuestion(index)
               }}
               style={{
@@ -243,7 +258,7 @@ export function AIAnalystPanel({
                 transition: 'background 0.15s, border-color 0.15s'
               }}
             >
-              {option}
+              {option.label}
             </button>
           ))}
         </div>
