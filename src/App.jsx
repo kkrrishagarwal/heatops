@@ -1095,6 +1095,17 @@ const EXTREME_HEAT_HOTSPOTS = [
   { name: 'Bihar', coords: [85.3, 25.5] }
 ]
 
+// city/state pairs use STATE_DATA's actual city-list spelling (Delhi's own entry lists
+// "New Delhi", not "Delhi", as its first city) so these map straight onto real keys.
+const QUICK_PICK_CITIES = [
+  { label: 'Delhi', city: 'New Delhi', state: 'Delhi' },
+  { label: 'Mumbai', city: 'Mumbai', state: 'Maharashtra' },
+  { label: 'Bengaluru', city: 'Bengaluru', state: 'Karnataka' },
+  { label: 'Jaipur', city: 'Jaipur', state: 'Rajasthan' },
+  { label: 'Chennai', city: 'Chennai', state: 'Tamil Nadu' },
+  { label: 'Kolkata', city: 'Kolkata', state: 'West Bengal' }
+]
+
 // LAYER 1 extracted + memoized: this never reads hoveredState/tooltip, but living inline
 // inside IndiaMap meant every hover-triggered re-render re-ran react-simple-maps' full
 // Mercator projection (mercatorRaw/polygonContains/streamLine, etc.) for every district in
@@ -1642,10 +1653,69 @@ function LegendRow({ color, label }) {
 // Wraps the async geojson fetch pattern used by react-simple-maps' <Geographies>.
 // Uses the shared useGeoData cache (instead of passing `url` straight to
 // <Geographies>) so repeated layers sharing a URL don't refetch/reparse it.
+//
+// Renders in fixed-size chunks, one new chunk per animation frame, instead of handing the
+// whole dataset to a single <Geographies> at once. A CDP CPU profile (sign-in -> map screen
+// -> 15s of cursor movement) showed react-simple-maps' own path-projection math
+// (useGeographies -> prepareFeatures -> path/mercatorRaw/polygonContains, all internal to
+// the library, not any app code) consuming ~45 of ~75 profiled seconds in one continuous
+// block right after the map appears — the districts layer alone has 594 features in a
+// 34.5MB file, and the states layer's 35 features average ~650KB of coordinate data each.
+// That's a single synchronous main-thread block long enough to make the cursor feel
+// completely unresponsive for a real stretch of time, which survived every previous fix
+// (timer isolation, theming, etc.) because none of those touched this — it isn't caused by
+// re-renders or unstable props, it's the inherent one-time cost of projecting this much
+// detailed geometry, paid all at once.
+//
+// Each chunk gets its OWN <Geographies> instance with a geography object created exactly
+// once and cached in a ref — so a later chunk being added never causes an earlier chunk to
+// recompute its already-projected paths (which a naive "grow one big slice" approach would
+// do, multiplying total work rather than just spreading it out).
+// Chunk size is per-URL, not a flat constant: the districts file has many cheap features
+// (594 features / 34.5MB), but the states file has very few, individually huge ones (35
+// features / 23MB, ~650KB of coordinates each) — a chunk size tuned for districts would
+// still make each states chunk freeze for a long stretch. Smaller chunks were tried as a
+// flat default (3) and made total time-to-fully-rendered WORSE, not better, since each
+// chunk forces a full React re-render/commit and that fixed per-chunk overhead dominates at
+// small sizes far more than the geometry math does — so districts gets a larger chunk to
+// amortize that overhead, while states/J&K get a much smaller one to keep each individual
+// chunk's heavier per-feature cost from blocking input for too long at once.
+const GEO_CHUNK_SIZE_BY_URL = { [STATES_URL]: 2, [JK_URL]: 2, [DISTRICTS_URL]: 40 }
+const GEO_CHUNK_SIZE_DEFAULT = 20
 function GeographiesLayer({ url, render }) {
   const data = useGeoData(url)
+  const chunkSize = GEO_CHUNK_SIZE_BY_URL[url] ?? GEO_CHUNK_SIZE_DEFAULT
+  const totalFeatures = data?.features?.length ?? 0
+  const [chunksRendered, setChunksRendered] = useState(1)
+  const chunkCacheRef = useRef([])
+
+  useEffect(() => {
+    if (!data) return
+    const totalChunks = Math.max(1, Math.ceil(totalFeatures / chunkSize))
+    if (chunksRendered >= totalChunks) return
+    const id = requestAnimationFrame(() => setChunksRendered(c => Math.min(totalChunks, c + 1)))
+    return () => cancelAnimationFrame(id)
+  }, [data, chunksRendered, totalFeatures, chunkSize])
+
   if (!data) return null
-  return <Geographies geography={data}>{({ geographies }) => render(geographies)}</Geographies>
+
+  while (chunkCacheRef.current.length < chunksRendered) {
+    const i = chunkCacheRef.current.length
+    const start = i * chunkSize
+    const slice = data.features.slice(start, start + chunkSize)
+    if (slice.length === 0) break
+    chunkCacheRef.current.push({ ...data, features: slice })
+  }
+
+  return (
+    <>
+      {chunkCacheRef.current.map((chunkData, i) => (
+        <Geographies key={i} geography={chunkData}>
+          {({ geographies }) => render(geographies)}
+        </Geographies>
+      ))}
+    </>
+  )
 }
 
 // ════════ COMPACT NAVBAR COMPONENTS ════════
@@ -3140,6 +3210,45 @@ function App({ user }) {
                         {nationalAvgTemp.toFixed(1)}°C
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 8, paddingLeft: 2 }}>
+                    ⚡ {t('nationalSummary.quickPicks', 'Quick Picks')}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {QUICK_PICK_CITIES.map(qp => (
+                      <button
+                        key={qp.city}
+                        onClick={() => {
+                          setSelectedState(qp.state)
+                          setSelectedCity(qp.city)
+                          setScreen('dashboard')
+                        }}
+                        style={{
+                          background: 'rgba(0,212,255,0.08)',
+                          border: '1px solid rgba(0,212,255,0.3)',
+                          borderRadius: 999,
+                          color: '#00d4ff',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          padding: '6px 14px',
+                          cursor: 'pointer',
+                          transition: 'background 0.2s ease, border-color 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(0,212,255,0.22)'
+                          e.currentTarget.style.borderColor = 'rgba(0,212,255,0.6)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(0,212,255,0.08)'
+                          e.currentTarget.style.borderColor = 'rgba(0,212,255,0.3)'
+                        }}
+                      >
+                        {qp.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
