@@ -3868,7 +3868,7 @@ function App({ user }) {
                     the floating quick-access assistant) and calls the secure /api/ask-ai
                     backend proxy, so the Gemini API key never reaches the browser. */}
                 <section className="panel">
-                  <h3>🤖 {t('panels.aiAnalyst', 'AI ANALYST')}</h3>
+                  <h3>🤖 {t('panels.aiAnalyst', 'AGNI')}</h3>
                   <AIAnalystPanel
                     cityName={selectedCity}
                     ensoPhase={ensoPhase}

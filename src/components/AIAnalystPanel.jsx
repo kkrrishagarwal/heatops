@@ -183,7 +183,7 @@ export function AIAnalystPanel({
 
   return (
     <div className="ai-terminal">
-      <div className="terminal-header">🔴🟡🟢 AI Analyst v2.0</div>
+      <div className="terminal-header">🔴🟡🟢 AGNI v2.0</div>
 
       {/* Scrollable conversation thread — full history, not just the last couple of turns,
           so users can scroll back through everything discussed this session. */}

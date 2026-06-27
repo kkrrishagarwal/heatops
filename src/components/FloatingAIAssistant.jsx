@@ -30,7 +30,7 @@ export function FloatingAIAssistant({
     <>
       <button
         onClick={() => setIsOpen(true)}
-        aria-label="Open AI Analyst"
+        aria-label="Open AGNI"
         style={{
           position: 'fixed',
           left: 16,
@@ -82,11 +82,11 @@ export function FloatingAIAssistant({
           marginBottom: 14
         }}>
           <h3 style={{ margin: 0, color: '#fff', fontSize: 15 }}>
-            🤖 {t('panels.aiAnalyst', 'AI ANALYST')}
+            🤖 {t('panels.aiAnalyst', 'AGNI')}
           </h3>
           <button
             onClick={() => setIsOpen(false)}
-            aria-label="Close AI Analyst"
+            aria-label="Close AGNI"
             style={{
               background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.15)',
