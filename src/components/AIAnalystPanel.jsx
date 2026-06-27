@@ -46,7 +46,16 @@ export function AIAnalystPanel({
   const [cooldownSeconds, setCooldownSeconds] = useState(0)
   const autoRetryRef = useRef(null)
   const autoRetryAttemptsRef = useRef(0)
+  const threadRef = useRef(null)
   const MAX_AUTO_RETRIES = 1 // only auto-retry once — if still rate-limited after that, stop and let the user retry manually instead of silently looping forever
+
+  // Auto-scroll to the latest message whenever the thread grows or the typing
+  // indicator appears/disappears, so the user never has to scroll down manually.
+  useEffect(() => {
+    if (threadRef.current) {
+      threadRef.current.scrollTop = threadRef.current.scrollHeight
+    }
+  }, [chatHistory, aiLoading])
 
   const suggestions = [
     `Why is ${city} so hot right now?`,
@@ -76,13 +85,12 @@ export function AIAnalystPanel({
 
   // Shared by every "give up and tell the user" path (exhausted 429 retries, 503/busy
   // errors, network errors) — always attaches a retry affordance (rendered as a button in
-  // the chat display below) and, for the single most likely demo question, an immediate
-  // offline fallback answer so the AI tab never reads as fully broken mid-demo.
+  // the chat thread below) and, for the single most likely demo question, an immediate
+  // offline fallback answer so the AI tab never reads as fully broken mid-demo. The user's
+  // own message is already in chatHistory by the time this runs (added immediately on
+  // submit, chat-app style), so this only appends the AI side of the turn.
   const appendBusyResponse = (question, displayMessage) => {
-    const newMessages = [
-      { user: question },
-      { ai: displayMessage, isError: true, retryQuestion: question }
-    ]
+    const newMessages = [{ ai: displayMessage, isError: true, retryQuestion: question }]
     if (isLikelyHeatQuestion(question)) {
       newMessages.push({ ai: buildFallbackAnswer({ city, lst, ndvi, ndbi, aqi }), isFallback: true })
     }
@@ -94,6 +102,10 @@ export function AIAnalystPanel({
     if (!question || aiLoading) return
     if (Date.now() < cooldownUntil) return // still cooling down — button should already be disabled
 
+    // Show the user's message immediately, like any real chat app, instead of waiting for
+    // the AI's reply to arrive before either bubble appears.
+    setChatHistory(prev => [...prev, { user: question }])
+    setQuestionText('')
     setAiLoading(true)
 
     const context = `City: ${city}, Surface Temp: ${typeof lst === 'number' ? lst.toFixed(1) + '°C (live)' : 'not available'}, Vegetation Fraction: ${typeof ndvi === 'number' ? ndvi + '% (ESA WorldCover)' : 'not available for this city'}, Built-up Fraction: ${typeof ndbi === 'number' ? ndbi + '% (ESA WorldCover)' : 'not available for this city'}, AQI: ${aqi ?? 'N/A'} (live).`
@@ -126,7 +138,7 @@ export function AIAnalystPanel({
         if (autoRetryAttemptsRef.current < MAX_AUTO_RETRIES) {
           autoRetryAttemptsRef.current += 1
           autoRetryRef.current = question
-          setChatHistory([...chatHistory, { user: question }, {
+          setChatHistory(prev => [...prev, {
             ai: `⏱ AI is handling a lot of requests right now — retrying automatically in ${retrySec}s...`
           }])
         } else {
@@ -143,7 +155,7 @@ export function AIAnalystPanel({
         throw new Error(data?.error || `Request failed with status ${response.status}`)
       }
       autoRetryAttemptsRef.current = 0
-      setChatHistory([...chatHistory, { user: question }, { ai: data.answer }])
+      setChatHistory(prev => [...prev, { ai: data.answer }])
     } catch (e) {
       const isTimeout = e.name === 'AbortError'
       const message = isTimeout
@@ -173,101 +185,102 @@ export function AIAnalystPanel({
     <div className="ai-terminal">
       <div className="terminal-header">🔴🟡🟢 AI Analyst v2.0</div>
 
-      <input
-        type="text"
-        value={questionText}
-        onChange={e => setQuestionText(e.target.value)}
-        onKeyDown={e => { if (e.key === 'Enter') askQuestion() }}
-        placeholder={t('aiAnalyst.inputPlaceholder', 'Ask about heat, weather, or this city...')}
-        style={{
-          width: '100%',
-          marginTop: 8,
-          background: '#0a0e1a',
-          border: '1px solid #1a2a4a',
-          borderRadius: 8,
-          padding: '10px 14px',
-          color: '#fff',
-          fontSize: 13,
-          outline: 'none',
-          boxSizing: 'border-box',
-          transition: 'border-color 0.2s'
-        }}
-        onFocus={e => { e.currentTarget.style.borderColor = '#00ff88' }}
-        onBlur={e => { e.currentTarget.style.borderColor = '#1a2a4a' }}
-      />
-
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 6,
-        marginTop: 8
-      }}>
-        {suggestions.map((option, index) => (
-          <button
-            key={index}
-            type="button"
-            onClick={() => {
-              setQuestionText(option)
-              setSelectedQuestion(index)
-            }}
-            style={{
-              background: index === selectedQuestion ? 'rgba(0,255,136,0.12)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${index === selectedQuestion ? '#00ff88' : '#1a2a4a'}`,
-              borderRadius: 14,
-              padding: '5px 10px',
-              color: index === selectedQuestion ? '#00ff88' : 'rgba(255,255,255,0.7)',
-              fontSize: 11,
-              cursor: 'pointer',
-              transition: 'background 0.15s, border-color 0.15s'
-            }}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-
-      <button
-        onClick={() => askQuestion()}
-        className="ai-button"
-        disabled={askDisabled}
-      >
-        {aiLoading
-          ? '⏳ Analyzing...'
-          : cooldownSeconds > 0
-            ? `⏱ Wait ${cooldownSeconds}s`
-            : `${t('buttons.askAI', 'Ask AI')} 🛰️`}
-      </button>
-      <div className="chat-display">
-        {/* slice(-3) rather than (-2) — a failed turn now pushes up to 3 entries
-            (user question, busy/error message, offline fallback answer), and all
-            three need to stay visible together rather than cutting off the question. */}
-        {chatHistory.slice(-3).map((msg, i) => (
-          <div key={i}>
-            <div className={`chat-bubble ${msg.user ? 'user' : 'ai'}`}>
+      {/* Scrollable conversation thread — full history, not just the last couple of turns,
+          so users can scroll back through everything discussed this session. */}
+      <div className="chat-thread" ref={threadRef}>
+        {chatHistory.length === 0 && !aiLoading && (
+          <div className="chat-empty-hint">
+            {t('aiAnalyst.emptyHint', `Ask me anything about ${city}'s heat data, or tap a suggestion below to start.`)}
+          </div>
+        )}
+        {chatHistory.map((msg, i) => (
+          <div key={i} className={`chat-row ${msg.user ? 'user' : 'ai'}`}>
+            <div className={`chat-bubble ${msg.user ? 'user' : 'ai'} ${msg.isError ? 'error' : ''} ${msg.isFallback ? 'fallback' : ''}`}>
               {msg.user || msg.ai}
             </div>
             {msg.isError && msg.retryQuestion && (
               <button
                 type="button"
+                className="chat-retry-btn"
                 onClick={() => askQuestion(msg.retryQuestion)}
                 disabled={aiLoading || cooldownSeconds > 0}
-                style={{
-                  marginTop: 4,
-                  background: 'rgba(0,212,255,0.08)',
-                  border: '1px solid #00d4ff',
-                  borderRadius: 6,
-                  color: '#00d4ff',
-                  fontSize: 11,
-                  padding: '4px 10px',
-                  cursor: aiLoading || cooldownSeconds > 0 ? 'not-allowed' : 'pointer',
-                  opacity: aiLoading || cooldownSeconds > 0 ? 0.5 : 1
-                }}
               >
                 🔄 Retry
               </button>
             )}
           </div>
         ))}
+        {aiLoading && (
+          <div className="chat-row ai">
+            <div className="chat-bubble ai typing">
+              <span className="typing-dots"><span></span><span></span><span></span></span>
+              {t('aiAnalyst.thinking', 'AI is thinking...')}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Pinned bottom bar — last item in this fixed-height flex column, so the input is
+          always visible without scrolling the thread to find it. */}
+      <div className="chat-input-bar">
+        <div className="chat-suggestions">
+          {suggestions.map((option, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => {
+                setQuestionText(option)
+                setSelectedQuestion(index)
+              }}
+              style={{
+                background: index === selectedQuestion ? 'rgba(0,255,136,0.12)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${index === selectedQuestion ? '#00ff88' : '#1a2a4a'}`,
+                borderRadius: 14,
+                padding: '5px 10px',
+                color: index === selectedQuestion ? '#00ff88' : 'rgba(255,255,255,0.7)',
+                fontSize: 11,
+                cursor: 'pointer',
+                transition: 'background 0.15s, border-color 0.15s'
+              }}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+
+        <div className="chat-input-row">
+          <input
+            type="text"
+            value={questionText}
+            onChange={e => setQuestionText(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') askQuestion() }}
+            placeholder={t('aiAnalyst.inputPlaceholder', 'Ask about heat, weather, or this city...')}
+            style={{
+              background: '#0a0e1a',
+              border: '1px solid #1a2a4a',
+              borderRadius: 8,
+              padding: '10px 14px',
+              color: '#fff',
+              fontSize: 13,
+              outline: 'none',
+              boxSizing: 'border-box',
+              transition: 'border-color 0.2s'
+            }}
+            onFocus={e => { e.currentTarget.style.borderColor = '#00ff88' }}
+            onBlur={e => { e.currentTarget.style.borderColor = '#1a2a4a' }}
+          />
+          <button
+            onClick={() => askQuestion()}
+            className="ai-button chat-send-btn"
+            disabled={askDisabled}
+          >
+            {aiLoading
+              ? '⏳'
+              : cooldownSeconds > 0
+                ? `⏱ ${cooldownSeconds}s`
+                : `${t('buttons.askAI', 'Ask AI')} 🛰️`}
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -526,7 +526,7 @@ function LanguageDropdown() {
   )
 }
 
-function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze, liveCache, liveSelectedTemp, cacheLastUpdated, formatAgo }) {
+function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze, liveCache, liveSelectedTemp, cacheLastUpdated, formatAgo, isCacheStale }) {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   
@@ -562,9 +562,15 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
       </div>
 
       {cacheLastUpdated && (
-        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginBottom: 8 }}>
-          📡 Live temps · updated {formatAgo(cacheLastUpdated)} · "~" = no live data for that city yet
-        </div>
+        isCacheStale(cacheLastUpdated) ? (
+          <div style={{ fontSize: 9, color: "#ffb020", marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
+            🟠 {t('panels.dataOutdated', 'Data may be outdated')} · last refresh {formatAgo(cacheLastUpdated)}
+          </div>
+        ) : (
+          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginBottom: 8 }}>
+            📡 Live temps · updated {formatAgo(cacheLastUpdated)} · "~" = no live data for that city yet
+          </div>
+        )
       )}
 
       <div style={{
@@ -2162,6 +2168,22 @@ function App({ user }) {
       .map((c, i) => ({ city: c.city, state: c.state, temp: c.temp, flag: i < 4 ? '🔴' : '🟠' }))
   }, [liveCityCache])
 
+  // Powers the "Today's National Heat Summary" shown in the right panel before any state is
+  // selected — reuses the same live bulk-cache data as liveLeaderBase/liveStateAqi, just
+  // aggregated nationally instead of per-state, so it costs no extra fetch.
+  const nationalAvgTemp = useMemo(() => {
+    const liveTemps = Object.values(liveCityCache).filter(c => typeof c.temp === 'number').map(c => c.temp)
+    if (liveTemps.length > 0) return liveTemps.reduce((a, b) => a + b, 0) / liveTemps.length
+    // Live cache hasn't loaded yet — fall back to the state-level baseline average
+    const baselineTemps = Object.values(STATE_DATA).map(s => s.avgLST)
+    return baselineTemps.reduce((a, b) => a + b, 0) / baselineTemps.length
+  }, [liveCityCache])
+
+  const extremeOrHighRiskStateCount = useMemo(
+    () => Object.values(STATE_DATA).filter(s => s.risk === 'EXTREME' || s.risk === 'HIGH').length,
+    []
+  )
+
   const liveWorstAqiCity = useMemo(() => {
     const all = Object.values(liveCityCache).filter(c => typeof c.aqi === 'number')
     return all.length ? all.reduce((max, c) => (c.aqi > max.aqi ? c : max), all[0]) : null
@@ -2189,6 +2211,12 @@ function App({ user }) {
     if (mins < 60) return `${mins}m ago`
     return `${Math.round(mins / 60)}h ago`
   }
+
+  // The bulk weather cache (live-weather-cache.json) is meant to refresh at least every few
+  // hours — if the refresh job behind it ever stalls (cron misconfigured, daemon not running,
+  // a fresh pull never committed), this catches it and tells the user honestly instead of
+  // quietly showing a days-old number as if it were current.
+  const isCacheStale = (iso) => !!iso && (Date.now() - new Date(iso).getTime()) > 24 * 60 * 60 * 1000
 
   // Sliders (Interventions)
   const [treeSlider, setTreeSlider] = useState(0)
@@ -2978,6 +3006,7 @@ function App({ user }) {
                   liveSelectedTemp={liveWeather?.current?.temp}
                   cacheLastUpdated={cacheLastUpdated}
                   formatAgo={formatAgo}
+                  isCacheStale={isCacheStale}
                   onCitySelect={(city) => {
                     // ✅ FIX: Use parameters instead of state closure
                     setSelectedCity(city)
@@ -2992,9 +3021,15 @@ function App({ user }) {
                 <div className="hottest-section">
                   <h4>🔥 {t('panels.hottestCities', 'Hottest Cities')}</h4>
                   {cacheLastUpdated && (
-                    <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>
-                      📡 Live · updated {formatAgo(cacheLastUpdated)}
-                    </div>
+                    isCacheStale(cacheLastUpdated) ? (
+                      <div style={{ fontSize: 9, color: "#ffb020", marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        🟠 {t('panels.dataOutdated', 'Data may be outdated')} · last refresh {formatAgo(cacheLastUpdated)}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>
+                        📡 Live · updated {formatAgo(cacheLastUpdated)}
+                      </div>
+                    )
                   )}
                   <ul>
                     {liveLeaderBase.map((item, i) => (
@@ -3038,22 +3073,74 @@ function App({ user }) {
                 </div>
               </>
             ) : (
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: 280,
-                gap: 16,
-                textAlign: 'center',
-                padding: 32
-              }}>
-                <div style={{ fontSize: 48 }}>🗺️</div>
-                <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-                  {t('tooltips.clickStateForDetails', 'Click any state on the map')}
+              // No state selected yet — fill what used to be dead space with a live national
+              // summary instead of just a "click a state" hint, using data already computed
+              // elsewhere on this screen (liveLeaderBase, the live bulk weather cache,
+              // STATE_DATA) rather than any new fetch.
+              <div style={{ padding: '4px 4px 0 4px' }}>
+                <div style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  textAlign: 'center', padding: '20px 12px', gap: 6
+                }}>
+                  <div style={{ fontSize: 36 }}>🗺️</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                    {t('tooltips.clickStateForDetails', 'Click any state on the map')}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', opacity: 0.7 }}>
+                    {t('tooltips.clickStateForDetailsSub', 'to explore cities and heat data')}
+                  </div>
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', opacity: 0.7 }}>
-                  {t('tooltips.clickStateForDetailsSub', 'to explore cities and heat data')}
+
+                <div style={{
+                  background: 'rgba(10, 14, 26, 0.6)',
+                  border: '1px solid rgba(0,212,255,0.2)',
+                  borderRadius: 12,
+                  padding: 16
+                }}>
+                  <h4 style={{ color: '#00d4ff', borderLeft: '2px solid #00d4ff', paddingLeft: 8, marginBottom: 10, marginTop: 0 }}>
+                    📊 {t('nationalSummary.title', "Today's National Heat Summary")}
+                  </h4>
+                  {cacheLastUpdated && (
+                    isCacheStale(cacheLastUpdated) ? (
+                      <div style={{ fontSize: 9, color: '#ffb020', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        🟠 {t('panels.dataOutdated', 'Data may be outdated')} · last refresh {formatAgo(cacheLastUpdated)}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>
+                        📡 {t('nationalSummary.live', 'Live')} · {t('nationalSummary.updated', 'updated')} {formatAgo(cacheLastUpdated)}
+                      </div>
+                    )
+                  )}
+
+                  <div style={{ display: 'grid', gap: 10 }}>
+                    <div style={{ background: 'rgba(184,16,16,0.1)', border: '1px solid rgba(184,16,16,0.3)', borderRadius: 8, padding: 12 }}>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
+                        🔥 {t('nationalSummary.hottestNow', 'Hottest city right now')}
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: '#ff6b6b' }}>
+                        {liveLeaderBase[0]?.city}, {liveLeaderBase[0]?.state}
+                      </div>
+                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{liveLeaderBase[0]?.temp}°C</div>
+                    </div>
+
+                    <div style={{ background: 'rgba(187,82,0,0.1)', border: '1px solid rgba(187,82,0,0.3)', borderRadius: 8, padding: 12 }}>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
+                        🌡️ {t('nationalSummary.extremeStates', 'States in Extreme/High risk category')}
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: '#ffaa66' }}>
+                        {extremeOrHighRiskStateCount} / {Object.keys(STATE_DATA).length}
+                      </div>
+                    </div>
+
+                    <div style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.3)', borderRadius: 8, padding: 12 }}>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
+                        🇮🇳 {t('nationalSummary.avgTemp', 'Average national temperature')}
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: '#00d4ff' }}>
+                        {nationalAvgTemp.toFixed(1)}°C
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

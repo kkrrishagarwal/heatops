@@ -1,5 +1,17 @@
 {
   "outputDirectory": "dist",
+  "functions": {
+    "api/refresh-weather-cache.js": {
+      "maxDuration": 60,
+      "includeFiles": "src/data/cityCoordinates.json"
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/refresh-weather-cache",
+      "schedule": "0 0 * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
