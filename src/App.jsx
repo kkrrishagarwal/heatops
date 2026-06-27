@@ -3869,6 +3869,9 @@ function App({ user }) {
                     backend proxy, so the Gemini API key never reaches the browser. */}
                 <section className="panel">
                   <h3>🤖 {t('panels.aiAnalyst', 'AGNI')}</h3>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: -8, marginBottom: 12 }}>
+                    {t('panels.aiAnalystFullName', 'Analytical Ground-level heat iNtelligence Interface')}
+                  </div>
                   <AIAnalystPanel
                     cityName={selectedCity}
                     ensoPhase={ensoPhase}
