@@ -35,6 +35,8 @@ import { normalizeStateName, getCellTemp, getHistoricalData, getDayNightData, ge
 import { WeatherCard } from './components/WeatherCard'
 import { getAQICategory } from './utils/weatherAPI'
 import { useWeather } from './hooks/useWeather'
+import { loadCityCoordinates } from './utils/cityCoordinateResolver'
+import { getLulcWithFallback } from './utils/lulcFallback'
 import { useTranslation } from 'react-i18next'
 import { SUPPORTED_LANGUAGES, changeLanguage } from './i18n'
 import { AIAnalystPanel } from './components/AIAnalystPanel'
@@ -456,6 +458,72 @@ function getAQIColor(aqi) {
 
 function getRiskText(risk) {
   return risk === 'MODERATE' ? '#222' : '#fff'
+}
+
+const INDIC_FONT_STACK = "'Inter', 'Noto Sans Devanagari', 'Noto Sans Bengali', 'Noto Sans Tamil', 'Noto Sans Telugu', 'Noto Sans Gujarati', 'Noto Sans Kannada', 'Noto Sans Oriya', 'Noto Sans Gurmukhi', 'Noto Nastaliq Urdu', sans-serif"
+
+// Custom-rendered dropdown, NOT a native <select>/<option> — native option popups use the
+// browser/OS's own background+text colors for the open list (ignoring this app's dark theme
+// entirely on most platforms), which is why language names were unreadable (light gray text
+// on the OS's near-white popup background) even after the font-rendering fix. A plain div-based
+// list gives full control over both font AND contrast for every script, independent of any
+// browser/OS native-widget quirks.
+function LanguageDropdown() {
+  const { i18n } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const current = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language) || SUPPORTED_LANGUAGES[0]
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          background: 'rgba(255,255,255,0.05)', color: '#cbd5e1',
+          border: '1px solid rgba(255,255,255,0.15)', borderRadius: 4,
+          fontSize: 10, fontWeight: 700, padding: '5px 8px', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 5, fontFamily: INDIC_FONT_STACK,
+          whiteSpace: 'nowrap'
+        }}
+      >
+        {current.label} <span style={{ fontSize: 8, opacity: 0.7 }}>▾</span>
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', right: 0, marginTop: 4,
+          background: '#0f1729', border: '1px solid #1a2a4a', borderRadius: 8,
+          minWidth: 190, maxHeight: 320, overflowY: 'auto', zIndex: 2000,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
+        }}>
+          {SUPPORTED_LANGUAGES.map(lang => (
+            <div
+              key={lang.code}
+              onClick={() => { changeLanguage(lang.code); setOpen(false) }}
+              style={{
+                padding: '9px 14px', cursor: 'pointer', fontSize: 13, fontFamily: INDIC_FONT_STACK,
+                color: lang.code === current.code ? '#00ff88' : '#e2e8f0',
+                background: lang.code === current.code ? 'rgba(0,255,136,0.08)' : 'transparent',
+                borderBottom: '1px solid rgba(255,255,255,0.06)'
+              }}
+              onMouseEnter={e => { if (lang.code !== current.code) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
+              onMouseLeave={e => { if (lang.code !== current.code) e.currentTarget.style.background = 'transparent' }}
+            >
+              {lang.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze, liveCache, liveSelectedTemp, cacheLastUpdated, formatAgo }) {
@@ -1289,7 +1357,10 @@ const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorder
   )
 })
 
-const IndiaMap = ({ INDIA_DATA: propINDIA_DATA, onStateClick }) => {
+// forwardRef exposes the internal zoom/pan transform div so the parent can mutate its
+// style.transform directly via ref during a drag gesture (bypassing React state entirely
+// for that high-frequency path) — see the onMouseMove handler at the call site for why.
+const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false }, transformRef) => {
   const [hoveredState, setHoveredState] = useState(null)
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, name: '' })
   const DATA = propINDIA_DATA || INDIA_DATA
@@ -1366,26 +1437,40 @@ const IndiaMap = ({ INDIA_DATA: propINDIA_DATA, onStateClick }) => {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      {mapDataLoading && (
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 30,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: 10, background: 'rgba(10,14,26,0.85)'
-        }}>
+      {/* Zoom/pan transform wraps ONLY the actual map layers below (district/state/border
+          GeoJSON + markers) — NOT this outer wrapper — so the tooltip card and heat index
+          legend (rendered as unscaled siblings further down) stay fixed-size screen overlays
+          regardless of zoom level, instead of scaling along with the map like they used to
+          when the parent applied this transform to the whole IndiaMap instance. */}
+      <div
+        ref={transformRef}
+        style={{
+          position: 'absolute', inset: 0,
+          transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
+          transformOrigin: 'center center',
+          transition: isDragging ? 'none' : 'transform 0.1s ease'
+        }}
+      >
+        {mapDataLoading && (
           <div style={{
-            width: 32, height: 32, borderRadius: '50%',
-            border: '3px solid rgba(0,212,255,0.25)', borderTopColor: '#00d4ff',
-            animation: 'spin 0.9s linear infinite'
-          }} />
-          <div style={{ color: '#94a3b8', fontSize: 12 }}>
-            Loading map data…
+            position: 'absolute', inset: 0, zIndex: 30,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            gap: 10, background: 'rgba(10,14,26,0.85)'
+          }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: '50%',
+              border: '3px solid rgba(0,212,255,0.25)', borderTopColor: '#00d4ff',
+              animation: 'spin 0.9s linear infinite'
+            }} />
+            <div style={{ color: '#94a3b8', fontSize: 12 }}>
+              Loading map data…
+            </div>
           </div>
-        </div>
-      )}
-      {/* LAYER 1: District texture colored by parent-state heat — extracted + memoized
-          above (DistrictsLayer) so hover-state changes elsewhere on the map don't force
-          this large GeoJSON layer to recompute its projection on every hover. */}
-      <DistrictsLayer DATA={DATA} />
+        )}
+        {/* LAYER 1: District texture colored by parent-state heat — extracted + memoized
+            above (DistrictsLayer) so hover-state changes elsewhere on the map don't force
+            this large GeoJSON layer to recompute its projection on every hover. */}
+        <DistrictsLayer DATA={DATA} />
 
       {/* LAYER 2 + 2.5: extracted + memoized above (StatesInteractiveLayer/JKInteractiveLayer)
           — click/hover detection no longer forces a recompute of these GeoJSON layers on
@@ -1464,8 +1549,11 @@ const IndiaMap = ({ INDIA_DATA: propINDIA_DATA, onStateClick }) => {
           </g>
         </Marker>
       </ComposableMap>
+      </div>
 
-      {/* TOOLTIP CARD — top-right glass panel */}
+      {/* TOOLTIP CARD — top-right glass panel — deliberately OUTSIDE the zoom/pan
+          transform div above, so it stays a fixed-size screen overlay regardless of
+          map zoom level (see comment at the top of this component's render). */}
       {tooltip.visible && activeData && (
         <div
           style={{
@@ -1526,7 +1614,7 @@ const IndiaMap = ({ INDIA_DATA: propINDIA_DATA, onStateClick }) => {
       </div>
     </div>
   )
-}
+})
 
 function LegendRow({ color, label }) {
   return (
@@ -1795,19 +1883,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
           <LiveClock />
 
           {/* Language toggle — manual only, no auto-detect by location/browser */}
-          <select
-            value={i18n.language}
-            onChange={e => changeLanguage(e.target.value)}
-            style={{
-              background: 'rgba(255,255,255,0.05)', color: '#cbd5e1',
-              border: '1px solid rgba(255,255,255,0.15)', borderRadius: 4,
-              fontSize: 10, fontWeight: 700, padding: '5px 6px', cursor: 'pointer', outline: 'none'
-            }}
-          >
-            {SUPPORTED_LANGUAGES.map(lang => (
-              <option key={lang.code} value={lang.code}>{lang.label}</option>
-            ))}
-          </select>
+          <LanguageDropdown />
 
           {/* Dark/light theme toggle */}
           <button
@@ -1898,6 +1974,13 @@ function App({ user }) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const mapContainerRef = useRef(null)
+  // Drag position is mutated directly on this DOM ref during the gesture (bypassing React
+  // state) and only committed back to mapPos once on mouseup/touchend — measured before this
+  // fix: 40 mousemove events during one drag triggered 90 full App re-renders (every pixel of
+  // drag re-rendered the entire map screen tree), which was the actual cause of reported
+  // cursor lag while panning the map. Same proven pattern as CustomCursor.jsx.
+  const mapTransformRef = useRef(null)
+  const liveMapPosRef = useRef({ x: 0, y: 0 })
   const [wideScreen, setWideScreen] = useState(typeof window !== 'undefined' ? window.innerWidth > 768 : false)
   const canvasRef = useRef(null)
   const [loginHistory, setLoginHistory] = useState([])
@@ -1979,7 +2062,7 @@ function App({ user }) {
   const {
     data: liveWeather, error: liveWeatherError, timedOut: liveWeatherTimedOut,
     isStale: liveWeatherStale, cachedAt: liveWeatherCachedAt, forceRefresh: forceRefreshLiveWeather
-  } = useWeather(selectedCity, 'App.selectedCity')
+  } = useWeather(selectedCity, selectedState, 'App.selectedCity')
 
   // Live weather cache for the MAP screen — same live-data pipeline as above, but pre-fetched
   // in bulk for all ~1,700 geocoded cities (via scripts/refreshWeatherCache.mjs, refreshed every
@@ -2023,7 +2106,8 @@ function App({ user }) {
 
   // Real ESA WorldCover land-cover classification — only computed for one
   // representative city per state (see scripts/build_lulc_data.py). Cities not
-  // in this file have no real data and must NOT show an estimated number.
+  // in this file fall back to the nearest real entry (getLulcWithFallback) rather
+  // than showing nothing — see src/utils/lulcFallback.js.
   const [lulcReal, setLulcReal] = useState(null)
   useEffect(() => {
     // Defer fetch to avoid blocking UI on sign-in. Delay 1.5s to let the
@@ -2033,6 +2117,17 @@ function App({ user }) {
         .then(r => r.json())
         .then(setLulcReal)
         .catch(() => {})
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Precise per-city coordinates (1,689/1,956 cities) — used both by the live weather
+  // resolver (weatherAPI.js) and to find the nearest real LULC data point for a city that
+  // doesn't have its own classification (getLulcWithFallback).
+  const [cityCoordsData, setCityCoordsData] = useState(null)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadCityCoordinates().then(setCityCoordsData).catch(() => {})
     }, 1500)
     return () => clearTimeout(timer)
   }, [])
@@ -2691,10 +2786,20 @@ function App({ user }) {
                       }}
                       onMouseMove={(e) => {
                         if (!isDragging) return
-                        setMapPos({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y })
+                        const next = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }
+                        liveMapPosRef.current = next
+                        if (mapTransformRef.current) {
+                          mapTransformRef.current.style.transform = `translate(${next.x}px, ${next.y}px) scale(${mapScale})`
+                        }
                       }}
-                      onMouseUp={() => setIsDragging(false)}
-                      onMouseLeave={() => setIsDragging(false)}
+                      onMouseUp={() => {
+                        if (isDragging) setMapPos(liveMapPosRef.current)
+                        setIsDragging(false)
+                      }}
+                      onMouseLeave={() => {
+                        if (isDragging) setMapPos(liveMapPosRef.current)
+                        setIsDragging(false)
+                      }}
                       onTouchStart={(e) => {
                         const t = e.touches[0]
                         setIsDragging(true)
@@ -2703,9 +2808,16 @@ function App({ user }) {
                       onTouchMove={(e) => {
                         if (!isDragging) return
                         const t = e.touches[0]
-                        setMapPos({ x: t.clientX - dragStart.x, y: t.clientY - dragStart.y })
+                        const next = { x: t.clientX - dragStart.x, y: t.clientY - dragStart.y }
+                        liveMapPosRef.current = next
+                        if (mapTransformRef.current) {
+                          mapTransformRef.current.style.transform = `translate(${next.x}px, ${next.y}px) scale(${mapScale})`
+                        }
                       }}
-                      onTouchEnd={() => setIsDragging(false)}
+                      onTouchEnd={() => {
+                        if (isDragging) setMapPos(liveMapPosRef.current)
+                        setIsDragging(false)
+                      }}
                       style={{
                         width: '100%',
                         height: '100%',
@@ -2714,24 +2826,20 @@ function App({ user }) {
                         position: 'relative'
                       }}
                     >
-                      <div
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          transform: `translate(${mapPos.x}px, ${mapPos.y}px) scale(${mapScale})`,
-                          transformOrigin: 'center center',
-                          transition: isDragging ? 'none' : 'transform 0.1s ease',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0
-                        }}
-                      >
-                        <IndiaMap
-                          INDIA_DATA={INDIA_DATA}
-                          selectedState={selectedState}
-                          onStateClick={handleStateClick}
-                        />
-                      </div>
+                      {/* IndiaMap now applies the zoom/pan transform internally, only to its
+                          own map-layers sub-tree — its tooltip card and heat index legend
+                          stay fixed-size regardless of scale. See the comment inside
+                          IndiaMap's render for why this moved from wrapping the whole
+                          component here to being handled inside it instead. */}
+                      <IndiaMap
+                        ref={mapTransformRef}
+                        INDIA_DATA={INDIA_DATA}
+                        selectedState={selectedState}
+                        onStateClick={handleStateClick}
+                        scale={mapScale}
+                        pos={mapPos}
+                        isDragging={isDragging}
+                      />
                     </div>
 
                     <div style={{
@@ -3006,19 +3114,7 @@ function App({ user }) {
             <h2>{selectedCity}, {selectedState}</h2>
           </div>
           <div className="nav-right">
-            <select
-              value={i18n.language}
-              onChange={e => changeLanguage(e.target.value)}
-              style={{
-                background: 'rgba(255,255,255,0.05)', color: '#cbd5e1',
-                border: '1px solid rgba(255,255,255,0.15)', borderRadius: 4,
-                fontSize: 10, fontWeight: 700, padding: '5px 6px', cursor: 'pointer', outline: 'none'
-              }}
-            >
-              {SUPPORTED_LANGUAGES.map(lang => (
-                <option key={lang.code} value={lang.code}>{lang.label}</option>
-              ))}
-            </select>
+            <LanguageDropdown />
             <button onClick={() => setDarkMode(!darkMode)} className="nav-btn">{darkMode ? '☀️' : '🌙'}</button>
             <div className="avatar">{userName[0]?.toUpperCase() || 'K'}</div>
             <button onClick={() => {setScreen("signin"); setUserName("")}} className="nav-btn">{t('nav.signOut', 'Sign Out')}</button>
@@ -3065,7 +3161,7 @@ function App({ user }) {
                     placeholder values) have been removed entirely per data-accuracy fix. */}
                 <section className="panel">
                   <h3>🌡️ {t('panels.weatherConditions', 'WEATHER CONDITIONS')}</h3>
-                  <WeatherCard city={selectedCity} onClose={() => {}} />
+                  <WeatherCard city={selectedCity} state={selectedState} onClose={() => {}} />
                   {/* Year-over-year comparison — additive stat, derived from existing 10-year trend data */}
                   {(() => {
                     const currentTemp = liveWeather?.current?.temp
@@ -3139,7 +3235,7 @@ function App({ user }) {
                       )}
                     </div>
                     {(() => {
-                      const lulcEntry = lulcReal?.cities?.[selectedCity]
+                      const lulcEntry = getLulcWithFallback(selectedCity, selectedState, lulcReal, cityCoordsData)
                       if (!lulcEntry) {
                         return (
                           <div className="index-card">
@@ -3150,15 +3246,25 @@ function App({ user }) {
                           </div>
                         )
                       }
+                      const fallbackSuffix = lulcEntry.isFallback
+                        ? ` · est. from ${lulcEntry.fallbackCity}${lulcEntry.distanceKm != null ? ` (~${lulcEntry.distanceKm}km)` : ''}`
+                        : ''
                       return (
                         <>
+                          {lulcEntry.isFallback && (
+                            <div className="index-card" style={{gridColumn: '1 / -1'}}>
+                              <div style={{fontSize: 10, color: 'rgba(255,204,0,0.85)', lineHeight: 1.5}}>
+                                📍 {t('satellitePass.lulcFallback', 'No real classification for {{city}} itself — showing nearest available real data point ({{fallbackCity}}) below, as an estimate.', { city: selectedCity, fallbackCity: lulcEntry.fallbackCity })}
+                              </div>
+                            </div>
+                          )}
                           <div className="index-card">
                             <span>Vegetation Fraction</span>
                             <div className="progress-bar">
                               <div className="progress" style={{width: lulcEntry.vegetation + '%', background:'#00ff88'}}/>
                             </div>
                             <span className="index-value">{lulcEntry.vegetation}%</span>
-                            <SourceBadge source="ESA WorldCover 10m (2021) — real proxy for NDVI, not the spectral index itself" />
+                            <SourceBadge source={`ESA WorldCover 10m (2021) — real proxy for NDVI, not the spectral index itself${fallbackSuffix}`} />
                           </div>
                           <div className="index-card">
                             <span>Built-up Fraction</span>
@@ -3166,7 +3272,7 @@ function App({ user }) {
                               <div className="progress" style={{width: lulcEntry.builtUp + '%', background:'#ff6b35'}}/>
                             </div>
                             <span className="index-value">{lulcEntry.builtUp}%</span>
-                            <SourceBadge source="ESA WorldCover 10m (2021) — real proxy for NDBI, not the spectral index itself" />
+                            <SourceBadge source={`ESA WorldCover 10m (2021) — real proxy for NDBI, not the spectral index itself${fallbackSuffix}`} />
                           </div>
                           <div className="index-card">
                             <span>Water Fraction</span>
@@ -3174,7 +3280,7 @@ function App({ user }) {
                               <div className="progress" style={{width: Math.min(100, lulcEntry.water * 3) + '%', background:'#00a8ff'}}/>
                             </div>
                             <span className="index-value">{lulcEntry.water}%</span>
-                            <SourceBadge source="ESA WorldCover 10m (2021) — real proxy for NDWI, not the spectral index itself" />
+                            <SourceBadge source={`ESA WorldCover 10m (2021) — real proxy for NDWI, not the spectral index itself${fallbackSuffix}`} />
                           </div>
                         </>
                       )
@@ -3377,7 +3483,7 @@ function App({ user }) {
                 <MLModelPanel mlModel={mlModelReal} cityName={selectedCity} />
 
                 {/* PANEL L: Land Use / Land Cover */}
-                <LandCoverPanel lulcData={lulcReal} cityName={selectedCity} />
+                <LandCoverPanel lulcData={lulcReal} cityName={selectedCity} stateName={selectedState} coordsData={cityCoordsData} />
 
                 {/* PANEL M: Urban Morphology (OpenStreetMap, live, real) */}
                 <section className="panel">
@@ -3622,9 +3728,12 @@ function App({ user }) {
                   <div className="export-buttons">
                     <button onClick={() => {
                       const surfaceTemp = liveWeather?.current?.surfaceTemp
-                      const lulcEntry = lulcReal?.cities?.[selectedCity]
+                      const lulcEntry = getLulcWithFallback(selectedCity, selectedState, lulcReal, cityCoordsData)
+                      const vegText = lulcEntry
+                        ? `${lulcEntry.vegetation}% (ESA WorldCover${lulcEntry.isFallback ? `, est. from ${lulcEntry.fallbackCity}` : ''})`
+                        : 'N/A'
                       const { time, period } = formatClock(new Date())
-                      const summary = `${selectedCity}, ${selectedState}: Surface Temp ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live, Open-Meteo)' : 'N/A'} | Vegetation ${lulcEntry ? lulcEntry.vegetation + '% (ESA WorldCover)' : 'N/A'} | AQI ${liveWeather?.aqi?.usAQI ?? 'N/A'} (live) | Time: ${time} ${period}`
+                      const summary = `${selectedCity}, ${selectedState}: Surface Temp ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live, Open-Meteo)' : 'N/A'} | Vegetation ${vegText} | AQI ${liveWeather?.aqi?.usAQI ?? 'N/A'} (live) | Time: ${time} ${period}`
                       navigator.clipboard.writeText(summary)
                       alert("Summary copied to clipboard!")
                     }}>📋 {t('buttons.copySummary', 'Copy Summary')}</button>
@@ -3635,8 +3744,10 @@ function App({ user }) {
                     }}>📱 {t('buttons.whatsappShare', 'WhatsApp Share')}</button>
                     <button onClick={() => {
                       const surfaceTemp = liveWeather?.current?.surfaceTemp
-                      const lulcEntry = lulcReal?.cities?.[selectedCity]
-                      const csv = `City,State,SurfaceTempC_live,VegetationPct_WorldCover,BuiltUpPct_WorldCover,AQI_live,Risk\n${selectedCity},${selectedState},${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) : 'N/A'},${lulcEntry ? lulcEntry.vegetation : 'N/A'},${lulcEntry ? lulcEntry.builtUp : 'N/A'},${liveWeather?.aqi?.usAQI ?? 'N/A'},${state.risk}`
+                      const lulcEntry = getLulcWithFallback(selectedCity, selectedState, lulcReal, cityCoordsData)
+                      const vegCell = lulcEntry ? `${lulcEntry.vegetation}${lulcEntry.isFallback ? ` (est. from ${lulcEntry.fallbackCity})` : ''}` : 'N/A'
+                      const builtCell = lulcEntry ? `${lulcEntry.builtUp}${lulcEntry.isFallback ? ` (est. from ${lulcEntry.fallbackCity})` : ''}` : 'N/A'
+                      const csv = `City,State,SurfaceTempC_live,VegetationPct_WorldCover,BuiltUpPct_WorldCover,AQI_live,Risk\n${selectedCity},${selectedState},${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) : 'N/A'},${vegCell},${builtCell},${liveWeather?.aqi?.usAQI ?? 'N/A'},${state.risk}`
                       const blob = new Blob([csv], {type:'text/csv'})
                       const url = window.URL.createObjectURL(blob)
                       const a = document.createElement('a')

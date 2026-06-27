@@ -17,6 +17,24 @@ import { useTranslation } from 'react-i18next'
 let cooldownUntil = 0
 const MIN_GAP_MS = 4000 // minimum gap enforced between any two Ask AI calls
 
+// Judging-day insurance: if the live Gemini call fails for ANY reason (rate limit, Google's
+// "model overloaded" 503, network error, timeout), the AI tab must never look fully dead.
+// This builds ONE templated answer for the single most likely demo question ("why is this
+// city hot") from the SAME real live data the rest of the app already shows — not a fake
+// number, just a canned sentence structure around real values — and is always rendered with
+// an explicit "offline fallback" label so it's never mistaken for a live Gemini answer.
+function isLikelyHeatQuestion(question) {
+  return /\bhot\b|\bheat\b/i.test(question)
+}
+
+function buildFallbackAnswer({ city, lst, ndvi, ndbi, aqi }) {
+  const tempPart = typeof lst === 'number' ? `${lst.toFixed(1)}°C surface temperature` : 'elevated surface temperatures'
+  const vegPart = typeof ndvi === 'number' ? `only ${ndvi}% vegetation cover` : 'limited vegetation cover'
+  const builtPart = typeof ndbi === 'number' ? `${ndbi}% built-up density` : 'a high built-up density'
+  const aqiPart = typeof aqi === 'number' ? ` Air quality is also a factor here, with an AQI of ${aqi}.` : ''
+  return `🔌 [Offline fallback answer — live AI is temporarily unavailable] ${city} is currently showing ${tempPart}, with ${vegPart} and ${builtPart} — dense built-up areas absorb and retain more heat than vegetated or water-covered land, especially with limited tree cover to provide shade and cooling through evapotranspiration.${aqiPart} This is a templated answer built from the same live data shown elsewhere on this dashboard, not a generated AI response.`
+}
+
 export function AIAnalystPanel({
   cityName, ensoPhase, lst, ndvi, ndbi, aqi,
   chatHistory, setChatHistory, aiLoading, setAiLoading,
@@ -55,6 +73,21 @@ export function AIAnalystPanel({
     return () => clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Shared by every "give up and tell the user" path (exhausted 429 retries, 503/busy
+  // errors, network errors) — always attaches a retry affordance (rendered as a button in
+  // the chat display below) and, for the single most likely demo question, an immediate
+  // offline fallback answer so the AI tab never reads as fully broken mid-demo.
+  const appendBusyResponse = (question, displayMessage) => {
+    const newMessages = [
+      { user: question },
+      { ai: displayMessage, isError: true, retryQuestion: question }
+    ]
+    if (isLikelyHeatQuestion(question)) {
+      newMessages.push({ ai: buildFallbackAnswer({ city, lst, ndvi, ndbi, aqi }), isFallback: true })
+    }
+    setChatHistory(prev => [...prev, ...newMessages])
+  }
 
   const askQuestion = async (overrideQuestion) => {
     const question = (overrideQuestion ?? questionText).trim()
@@ -99,10 +132,9 @@ export function AIAnalystPanel({
         } else {
           // Already auto-retried and hit the limit again — this may be a
           // longer-lived quota, not a brief burst. Stop auto-retrying so we
-          // don't hammer the API in a loop; let the user retry manually.
-          setChatHistory([...chatHistory, { user: question }, {
-            ai: `⏱ AI is still handling a lot of requests. Please wait a bit and press "Ask AI" again.`
-          }])
+          // don't hammer the API in a loop — show a clear busy message with a
+          // manual retry button, and never leave the tab looking dead.
+          appendBusyResponse(question, '⏱ AI is still handling a lot of requests right now. Please wait a moment and try again.')
         }
         return
       }
@@ -118,7 +150,13 @@ export function AIAnalystPanel({
         ? `Timed out after ${ASK_AI_TIMEOUT_MS / 1000}s — the AI backend took too long to respond.`
         : e.message
       console.error('[AIAnalystPanel] request failed:', message, e)
-      setChatHistory([...chatHistory, { user: question }, { ai: `⚠️ ${message}` }])
+      // Google's "model overloaded" 503 and similar busy/unavailable errors get the same
+      // friendly busy-message + retry-button + offline-fallback treatment as exhausted 429
+      // retries — judges/users should never see a raw API error string or a dead-looking tab.
+      const isBusyError = /overloaded|unavailable|high demand|503/i.test(message)
+      appendBusyResponse(question, isBusyError
+        ? '⏱ AI is temporarily busy, please try again in a moment.'
+        : `⚠️ ${message}`)
     } finally {
       clearTimeout(timeout)
       setAiLoading(false)
@@ -200,9 +238,34 @@ export function AIAnalystPanel({
             : `${t('buttons.askAI', 'Ask AI')} 🛰️`}
       </button>
       <div className="chat-display">
-        {chatHistory.slice(-2).map((msg, i) => (
-          <div key={i} className={`chat-bubble ${msg.user ? 'user' : 'ai'}`}>
-            {msg.user || msg.ai}
+        {/* slice(-3) rather than (-2) — a failed turn now pushes up to 3 entries
+            (user question, busy/error message, offline fallback answer), and all
+            three need to stay visible together rather than cutting off the question. */}
+        {chatHistory.slice(-3).map((msg, i) => (
+          <div key={i}>
+            <div className={`chat-bubble ${msg.user ? 'user' : 'ai'}`}>
+              {msg.user || msg.ai}
+            </div>
+            {msg.isError && msg.retryQuestion && (
+              <button
+                type="button"
+                onClick={() => askQuestion(msg.retryQuestion)}
+                disabled={aiLoading || cooldownSeconds > 0}
+                style={{
+                  marginTop: 4,
+                  background: 'rgba(0,212,255,0.08)',
+                  border: '1px solid #00d4ff',
+                  borderRadius: 6,
+                  color: '#00d4ff',
+                  fontSize: 11,
+                  padding: '4px 10px',
+                  cursor: aiLoading || cooldownSeconds > 0 ? 'not-allowed' : 'pointer',
+                  opacity: aiLoading || cooldownSeconds > 0 ? 0.5 : 1
+                }}
+              >
+                🔄 Retry
+              </button>
+            )}
           </div>
         ))}
       </div>

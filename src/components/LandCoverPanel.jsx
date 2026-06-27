@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { SourceBadge } from './DataBadges'
+import { getLulcWithFallback } from '../utils/lulcFallback'
 
 // SECTION 13 - LAND USE / LAND COVER PANEL
 //
@@ -8,9 +9,12 @@ import { SourceBadge } from './DataBadges'
 // scripts/build_lulc_data.py — real ESA WorldCover 10m classification, read
 // directly from the public no-auth S3 bucket, for one representative city
 // per state (state capital / largest city). It is NOT available for every
-// city in the app. When the selected city isn't in the dataset, this panel
-// says so explicitly instead of estimating a number.
-export function LandCoverPanel({ lulcData, cityName }) {
+// city in the app. When the selected city isn't in the dataset, getLulcWithFallback
+// resolves the nearest real entry instead (by coordinate distance, or — if this town has
+// no resolvable coordinate at all — its state's representative city), clearly labeled as
+// an estimate rather than a direct measurement. Only if neither resolves does this panel
+// say data isn't available, and it never shows a fabricated number either way.
+export function LandCoverPanel({ lulcData, cityName, stateName, coordsData }) {
   const { t } = useTranslation()
 
   if (!lulcData) {
@@ -47,7 +51,7 @@ export function LandCoverPanel({ lulcData, cityName }) {
     gap: "8px"
   }
 
-  const entry = lulcData.cities?.[cityName]
+  const entry = getLulcWithFallback(cityName, stateName, lulcData, coordsData)
 
   if (!entry) {
     return (
@@ -66,7 +70,7 @@ export function LandCoverPanel({ lulcData, cityName }) {
         }}>
           {t(
             'landCover.notAvailable',
-            'No real classification computed for {{cityName}} yet — this panel only covers one representative city per state so far (see the state\'s capital/largest city). Showing an estimated number here would misrepresent it as real data, so it is intentionally left blank for this city.',
+            'No real classification computed for {{cityName}} yet, and no nearby real data point could be resolved either. Showing an estimated number here would misrepresent it as real data, so it is intentionally left blank for this city.',
             { cityName }
           )}
         </div>
@@ -87,22 +91,46 @@ export function LandCoverPanel({ lulcData, cityName }) {
         {t('landCover.panelTitle', '🌍 Land Use / Land Cover — {{cityName}}', { cityName })}
       </div>
 
-      <div style={{
-        marginBottom: 14,
-        padding: "8px 12px",
-        background: "rgba(0,168,255,0.06)",
-        border: "1px solid rgba(0,168,255,0.25)",
-        borderRadius: 8,
-        fontSize: 10,
-        lineHeight: 1.5,
-        color: "rgba(255,255,255,0.75)"
-      }}>
-        {t(
-          'landCover.scopeNote',
-          'Classified from a real ~{{radius}}km sample area around {{cityName}}\'s center — not a full administrative-boundary breakdown.',
-          { radius: lulcData.source?.sampleAreaRadiusKm, cityName }
-        )}
-      </div>
+      {entry.isFallback ? (
+        <div style={{
+          marginBottom: 14,
+          padding: "8px 12px",
+          background: "rgba(255,204,0,0.06)",
+          border: "1px solid rgba(255,204,0,0.3)",
+          borderRadius: 8,
+          fontSize: 10,
+          lineHeight: 1.6,
+          color: "rgba(255,255,255,0.8)"
+        }}>
+          {t(
+            'landCover.fallbackNote',
+            '📍 No real classification computed for {{cityName}} itself yet. Showing the nearest available real data point — {{fallbackCity}}, {{fallbackState}}{{distance}} — as an estimate, not a direct measurement of {{cityName}}.',
+            {
+              cityName,
+              fallbackCity: entry.fallbackCity,
+              fallbackState: entry.fallbackState,
+              distance: entry.distanceKm != null ? ` (~${entry.distanceKm} km away)` : ' (state representative city)'
+            }
+          )}
+        </div>
+      ) : (
+        <div style={{
+          marginBottom: 14,
+          padding: "8px 12px",
+          background: "rgba(0,168,255,0.06)",
+          border: "1px solid rgba(0,168,255,0.25)",
+          borderRadius: 8,
+          fontSize: 10,
+          lineHeight: 1.5,
+          color: "rgba(255,255,255,0.75)"
+        }}>
+          {t(
+            'landCover.scopeNote',
+            'Classified from a real ~{{radius}}km sample area around {{cityName}}\'s center — not a full administrative-boundary breakdown.',
+            { radius: lulcData.source?.sampleAreaRadiusKm, cityName }
+          )}
+        </div>
+      )}
 
       {/* Stacked bar */}
       <div style={{
@@ -140,7 +168,7 @@ export function LandCoverPanel({ lulcData, cityName }) {
       </div>
 
       <SourceBadge
-        source={`${lulcData.source?.title} (${lulcData.source?.resolution}) — ${lulcData.source?.publisher}`}
+        source={`${lulcData.source?.title} (${lulcData.source?.resolution}) — ${lulcData.source?.publisher}${entry.isFallback ? ` · estimated from ${entry.fallbackCity}` : ''}`}
       />
     </div>
   )

@@ -20,8 +20,8 @@ function formatCacheAge(timestamp) {
   return hrs < 24 ? `${hrs}h ago` : `${Math.round(hrs / 24)}d ago`
 }
 
-export function WeatherCard({ city, onClose }) {
-  const { data: weather, loading, error, isStale, cachedAt, timedOut, forceRefresh } = useWeather(city, 'WeatherCard')
+export function WeatherCard({ city, state, onClose }) {
+  const { data: weather, loading, error, isStale, cachedAt, timedOut, forceRefresh } = useWeather(city, state, 'WeatherCard')
   const [istTime, setIstTime] = useState(getISTDateTime())
 
   // Live IST clock
@@ -81,6 +81,11 @@ export function WeatherCard({ city, onClose }) {
           <div style={styles.coords}>
             📍 {weather.lat.toFixed(2)}°N {Math.abs(weather.lon).toFixed(2)}°E
           </div>
+          {weather.isFallbackLocation && (
+            <div style={styles.fallbackBadge}>
+              📍 Live weather not available for {city} specifically — showing {weather.fallbackCityUsed}, {weather.state}'s nearest available real data point, as an estimate.
+            </div>
+          )}
           {isStale && (
             <div style={styles.staleBadge}>
               ⏱ Cached — {formatCacheAge(cachedAt)}
@@ -287,6 +292,17 @@ const styles = {
     color: 'rgba(255, 200, 100, 0.8)',
     marginTop: '6px',
     fontStyle: 'italic'
+  },
+
+  fallbackBadge: {
+    fontSize: '10px',
+    color: 'rgba(0, 212, 255, 0.85)',
+    background: 'rgba(0, 212, 255, 0.08)',
+    border: '1px solid rgba(0, 212, 255, 0.25)',
+    borderRadius: '6px',
+    padding: '5px 8px',
+    marginTop: '6px',
+    lineHeight: 1.4
   },
 
   staleRefreshBtn: {

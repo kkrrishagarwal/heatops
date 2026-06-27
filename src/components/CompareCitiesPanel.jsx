@@ -136,11 +136,13 @@ export function CompareCitiesPanel({ selectedCity, selectedState, liveWeather, a
     }
   }, [dropOpen, suggestions, activeIndex, handleSelectCity])
 
-  // Fixed slots, not a loop — required so the hook call order never changes across renders
-  const w0 = useWeather(compareCities[0] || null, 'CompareCitiesPanel')
-  const w1 = useWeather(compareCities[1] || null, 'CompareCitiesPanel')
-  const w2 = useWeather(compareCities[2] || null, 'CompareCitiesPanel')
-  const w3 = useWeather(compareCities[3] || null, 'CompareCitiesPanel')
+  // Fixed slots, not a loop — required so the hook call order never changes across renders.
+  // State is resolved via cityToState (built from allCities) so same-named cities in
+  // different states don't collide in the shared weather cache — see useWeather.js.
+  const w0 = useWeather(compareCities[0] || null, cityToState[compareCities[0]] || null, 'CompareCitiesPanel')
+  const w1 = useWeather(compareCities[1] || null, cityToState[compareCities[1]] || null, 'CompareCitiesPanel')
+  const w2 = useWeather(compareCities[2] || null, cityToState[compareCities[2]] || null, 'CompareCitiesPanel')
+  const w3 = useWeather(compareCities[3] || null, cityToState[compareCities[3]] || null, 'CompareCitiesPanel')
   const compareWeathers = [w0, w1, w2, w3]
 
   const baseData = useMemo(

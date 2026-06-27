@@ -2,6 +2,7 @@
  * Weather Data System — Open-Meteo Free API (no key needed)
  * Provides real-time weather, AQI, forecasts for any Indian city with accurate IST time
  */
+import { loadCityCoordinates, getExactCoordinates, STATE_REPRESENTATIVE_CITY } from './cityCoordinateResolver'
 
 // WMO Weather Code to readable conditions mapping
 const WMO_CODES = {
@@ -59,28 +60,65 @@ export function getWindDirection(degrees) {
   return dirs[index % 16]
 }
 
-// Step 1: Get city coordinates from Open-Meteo Geocoding API
-export async function getCityCoordinates(cityName) {
+// Step 1: Resolve a city to lat/lon — tiered, in order of precision:
+//   1. Exact (city, state) match in the bundled cityCoordinates.json (1,689/1,956 cities) —
+//      precise, deterministic, zero ambiguity, no network round-trip.
+//   2. Live Open-Meteo geocoding by name, preferring whichever India result's admin1 (state)
+//      actually matches the requested state — Open-Meteo returns several same-named towns
+//      across different states (e.g. 3 separate "Bilaspur"s) and previously this picked
+//      whichever came first, which could silently return the WRONG state's real weather under
+//      the right city's name. Same disambiguation approach already used by
+//      scripts/geocodeCities.mjs when building cityCoordinates.json offline.
+//   3. State-representative-city fallback — for towns Open-Meteo's geocoder has no listing
+//      for at all (verified: ~267 small towns return zero results, not a query-strictness
+//      issue), fall back to that state's designated real-data city (same one already used for
+//      LULC — see cityCoordinateResolver.js) and mark the result as a fallback location so the
+//      UI can label it honestly rather than silently passing off another city's weather as the
+//      requested one's.
+export async function getCityCoordinates(cityName, stateName) {
   try {
-    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=5&language=en&format=json`
+    const coordsData = await loadCityCoordinates()
+
+    const exact = getExactCoordinates(coordsData, cityName, stateName)
+    if (exact) {
+      return {
+        lat: exact.lat, lon: exact.lon,
+        name: cityName, state: stateName, country: 'India', timezone: 'Asia/Kolkata',
+        source: 'exact', requestedCity: cityName, requestedState: stateName
+      }
+    }
+
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=10&language=en&format=json`
     const res = await fetch(url)
     const data = await res.json()
 
-    if (!data.results || data.results.length === 0) {
-      throw new Error(`City "${cityName}" not found`)
+    if (data.results && data.results.length > 0) {
+      const indiaResults = data.results.filter(r => r.country_code === 'IN')
+      const stateMatch = stateName && indiaResults.find(r =>
+        (r.admin1 || '').toLowerCase().includes(stateName.toLowerCase()) ||
+        stateName.toLowerCase().includes((r.admin1 || '').toLowerCase())
+      )
+      const best = stateMatch || indiaResults[0] || data.results[0]
+      return {
+        lat: best.latitude, lon: best.longitude,
+        name: cityName, state: stateName || best.admin1 || '', country: best.country, timezone: best.timezone || 'Asia/Kolkata',
+        source: 'geocoded', requestedCity: cityName, requestedState: stateName
+      }
     }
 
-    // Prefer India results
-    const indiaResult = data.results.find(r => r.country_code === 'IN') || data.results[0]
-
-    return {
-      lat: indiaResult.latitude,
-      lon: indiaResult.longitude,
-      name: indiaResult.name,
-      state: indiaResult.admin1 || '',
-      country: indiaResult.country,
-      timezone: indiaResult.timezone || 'Asia/Kolkata'
+    // Tier 3: no live listing at all — fall back to this state's real-data representative city.
+    const repCity = stateName && STATE_REPRESENTATIVE_CITY[stateName]
+    const repCoords = repCity && getExactCoordinates(coordsData, repCity, stateName)
+    if (repCoords) {
+      return {
+        lat: repCoords.lat, lon: repCoords.lon,
+        name: cityName, state: stateName, country: 'India', timezone: 'Asia/Kolkata',
+        source: 'state-fallback', requestedCity: cityName, requestedState: stateName,
+        fallbackCity: repCity
+      }
     }
+
+    throw new Error(`City "${cityName}" not found`)
   } catch (err) {
     console.error('Geocoding error:', err)
     throw err
@@ -184,10 +222,10 @@ export async function getAirQuality(lat, lon) {
 }
 
 // Main function: Fetch complete weather data
-export async function fetchCompleteWeather(cityName) {
+export async function fetchCompleteWeather(cityName, stateName) {
   try {
     // Get coordinates
-    const coords = await getCityCoordinates(cityName)
+    const coords = await getCityCoordinates(cityName, stateName)
 
     // Fetch weather, forecast, and AQI in parallel
     const [weather, aqiData] = await Promise.all([
@@ -204,6 +242,14 @@ export async function fetchCompleteWeather(cityName) {
       lat: coords.lat,
       lon: coords.lon,
       timezone: coords.timezone,
+
+      // True when this exact town has no resolvable coordinate of its own (Open-Meteo's
+      // geocoder genuinely has no listing for it) and the live weather/AQI shown here is
+      // actually for the state's real-data representative city instead — see
+      // cityCoordinateResolver.js. The UI must label this honestly, never present it as a
+      // direct measurement of the requested city.
+      isFallbackLocation: coords.source === 'state-fallback',
+      fallbackCityUsed: coords.fallbackCity || null,
 
       // Real SRTM-derived elevation — returned by Open-Meteo for every
       // lat/lon, no separate API/auth needed (verified: Delhi 214m,

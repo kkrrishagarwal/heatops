@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Heat Analyzer</title>
+    <!-- 'Inter' was referenced in CSS but never actually loaded anywhere, and none of the
+         11 supported languages' scripts (Devanagari, Bengali, Tamil, Telugu, Gujarati,
+         Kannada, Odia, Gurmukhi, Urdu) had ANY web font at all — they silently fell back to
+         whatever (if anything) the user's OS happened to have installed, which is why the
+         language picker could render as tofu boxes/broken glyphs on systems without those
+         fonts. Loading Noto Sans for every script here guarantees correct rendering
+         everywhere regardless of the visitor's OS. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Oriya:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
