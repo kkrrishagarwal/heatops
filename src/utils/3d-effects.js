@@ -200,7 +200,7 @@ export const createLoadingScreen = (onComplete) => {
     'CONNECTING TO SATELLITES...',
     'LOADING URBAN HEAT DATA...',
     'CALIBRATING CLIMATE MODELS...',
-    'LAUNCHING BHASKAROPS...'
+    'LAUNCHING BHASKAR OPS...'
   ]
 
   let messageIndex = 0

@@ -994,6 +994,43 @@ function getRiskLabel(heatIndex) {
   return HEAT_INDEX_BUCKETS.find(b => heatIndex >= b.min).label
 }
 
+// Heat Risk Gauge geometry — was previously 4 hand-picked arc paths whose angular spans
+// already summed to the full 180°, permanently hiding a 5th "base" green arc drawn
+// underneath them, with a "needle" that was just a dot fixed at the pivot and never actually
+// rotated. Rebuilt to derive both the arc segments AND the needle angle from
+// HEAT_INDEX_BUCKETS — the same single source of truth as the map legend — so colors can't
+// drift out of sync and segment widths reflect the real 5°C-wide buckets rather than being
+// eyeballed. GAUGE_MIN/MAX give the two open-ended buckets (LOW <25, EXTREME 45+) a finite
+// width to render; comfortably below the coolest (~18°C) and above the hottest (~48°C)
+// avgLST values in STATE_DATA.
+const GAUGE_MIN = 15
+const GAUGE_MAX = 50
+const GAUGE_CENTER = { x: 100, y: 100 }
+const GAUGE_RADIUS = 80
+
+function gaugeAngleDeg(value) {
+  const clamped = Math.max(GAUGE_MIN, Math.min(GAUGE_MAX, value))
+  return 180 - ((clamped - GAUGE_MIN) / (GAUGE_MAX - GAUGE_MIN)) * 180
+}
+
+function gaugePoint(angleDeg, radius = GAUGE_RADIUS) {
+  const rad = (angleDeg * Math.PI) / 180
+  return {
+    x: GAUGE_CENTER.x + radius * Math.cos(rad),
+    y: GAUGE_CENTER.y - radius * Math.sin(rad)
+  }
+}
+
+// Six segments, one per HEAT_INDEX_BUCKETS entry, each spanning from its own min threshold
+// to the next bucket's min (or GAUGE_MIN/MAX at the open ends) — so e.g. MODERATE 30-35
+// genuinely occupies the angular fraction (35-30)/(GAUGE_MAX-GAUGE_MIN) of the arc, not a
+// guessed pixel span.
+const GAUGE_SEGMENTS = (() => {
+  const ascending = [...HEAT_INDEX_BUCKETS].sort((a, b) => a.min - b.min)
+  const boundaries = [GAUGE_MIN, ...ascending.slice(1).map(b => b.min), GAUGE_MAX]
+  return ascending.map((bucket, i) => ({ color: bucket.color, from: boundaries[i], to: boundaries[i + 1] }))
+})()
+
 // UI "thermal" accent theme — 3 broad interface categories that drive card borders,
 // glows, headings and button accents via CSS custom properties. Completely separate
 // from HEAT_INDEX_BUCKETS above: the map's 6-bucket legend/fill colors are fixed
@@ -1920,7 +1957,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ fontSize: 20 }}>🛰️</div>
           <div>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#00ff88' }}>BHASKAROPS</div>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#00ff88' }}>BHASKAR OPS</div>
             <div style={{ fontSize: 8, letterSpacing: '0.12em', color: '#64748b' }}>THERMAL</div>
           </div>
         </div>
@@ -3469,11 +3506,22 @@ function App({ user }) {
                   <h3>⚠️ {t('panels.heatRiskGauge', 'HEAT RISK GAUGE')}</h3>
                   <div className="gauge-container">
                     <svg width="200" height="120" viewBox="0 0 200 120">
-                      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#0a6638" strokeWidth="8"/>
-                      <path d="M 20 100 A 80 80 0 0 1 70 35" fill="none" stroke="#ffcc00" strokeWidth="8"/>
-                      <path d="M 70 35 A 80 80 0 0 1 130 25" fill="none" stroke="#ff6b35" strokeWidth="8"/>
-                      <path d="M 130 25 A 80 80 0 0 1 180 100" fill="none" stroke="#b81010" strokeWidth="8"/>
-                      <circle cx="100" cy="100" r="4" fill="#fff"/>
+                      {GAUGE_SEGMENTS.map((seg) => {
+                        const from = gaugePoint(gaugeAngleDeg(seg.from))
+                        const to = gaugePoint(gaugeAngleDeg(seg.to))
+                        return (
+                          <path
+                            key={seg.color}
+                            d={`M ${from.x} ${from.y} A ${GAUGE_RADIUS} ${GAUGE_RADIUS} 0 0 1 ${to.x} ${to.y}`}
+                            fill="none" stroke={seg.color} strokeWidth="8"
+                          />
+                        )
+                      })}
+                      {(() => {
+                        const tip = gaugePoint(gaugeAngleDeg(lst), 65)
+                        return <line x1={GAUGE_CENTER.x} y1={GAUGE_CENTER.y} x2={tip.x} y2={tip.y} stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
+                      })()}
+                      <circle cx={GAUGE_CENTER.x} cy={GAUGE_CENTER.y} r="5" fill="#fff"/>
                     </svg>
                     <div className="risk-label">
                       {state.risk === 'EXTREME' && '🔴 EXTREME'}

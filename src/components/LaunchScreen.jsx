@@ -384,8 +384,14 @@ const LaunchScreen = ({ onSignIn }) => {
           boxSizing: 'border-box'
         }}>
           <div style={{ textAlign: 'center', marginBottom: 8 }}>
-            <div style={{ fontSize: 28, fontWeight: 'bold', color: '#00d4ff' }}>BhaskarOps</div>
-            <div style={{ fontSize: 10, color: '#00d4ff', fontFamily: 'monospace', letterSpacing: 2 }}>
+            <div style={{ fontSize: 28, fontWeight: 'bold', color: '#00d4ff', letterSpacing: 1 }}>BHASKAR OPS</div>
+            <div style={{ fontSize: 10, color: 'rgba(0,212,255,0.65)', marginTop: 4, lineHeight: 1.5 }}>
+              BHASKAR — Bharat Heat Analysis, Surveillance, Knowledge & Assessment Resource
+            </div>
+            <div style={{ fontSize: 10, color: 'rgba(0,212,255,0.65)', marginTop: 18, lineHeight: 1.5 }}>
+              OPS — Optimization &amp; Planning System
+            </div>
+            <div style={{ fontSize: 10, color: '#00d4ff', fontFamily: 'monospace', letterSpacing: 2, marginTop: 6 }}>
               URBAN HEAT ISLAND MONITORING SYSTEM
             </div>
           </div>
