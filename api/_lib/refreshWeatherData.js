@@ -5,20 +5,18 @@
 // day; this runs once per day inside a Vercel serverless function with a hard ~60s
 // wall-clock budget on the Hobby plan, so it has to finish fast.
 //
-// Testing locally surfaced that Open-Meteo's real burst tolerance is much tighter than its
-// documented 600/min average suggests — firing several concurrent 100-location requests in a
-// row got most of them 429'd, even with retries, likely because this dev machine's IP had
-// already hit Open-Meteo repeatedly earlier today. Vercel's production IP starts clean, so
-// concurrency 2 + retry-with-backoff on 429 is a deliberately conservative starting point —
-// see REFRESH_BEFORE_JUDGING.md or the first real cron run's logs to confirm actual behavior
-// in production before assuming this is tuned correctly.
+// BATCH_SIZE=300 is the largest that doesn't trip Open-Meteo's own URL-length limit (a 414
+// at ~500 cities/~9000 chars; 300 cities/~5500 chars is confirmed working) — keeping batches
+// this large means only 6 round trips instead of 17, which matters far more for finishing
+// inside the time budget than concurrency does. A first production run still timed out at
+// BATCH_SIZE=100/concurrency=2 (17 batches), so this is the fix, not a tuning guess.
 import fs from 'fs'
 import path from 'path'
 
-const BATCH_SIZE = 100
-const CONCURRENCY = 2
-const MAX_ATTEMPTS = 4
-const BACKOFF_BASE_MS = 3000 // 3s, 6s, 9s between retries
+const BATCH_SIZE = 300
+const CONCURRENCY = 3
+const MAX_ATTEMPTS = 3
+const BACKOFF_BASE_MS = 3000 // 3s, 6s between retries
 
 function chunk(arr, size) {
   const out = []
