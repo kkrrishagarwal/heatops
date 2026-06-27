@@ -384,7 +384,7 @@ const LaunchScreen = ({ onSignIn }) => {
           boxSizing: 'border-box'
         }}>
           <div style={{ textAlign: 'center', marginBottom: 8 }}>
-            <div style={{ fontSize: 28, fontWeight: 'bold', color: '#00d4ff' }}>HeatOps</div>
+            <div style={{ fontSize: 28, fontWeight: 'bold', color: '#00d4ff' }}>BhaskarOps</div>
             <div style={{ fontSize: 10, color: '#00d4ff', fontFamily: 'monospace', letterSpacing: 2 }}>
               URBAN HEAT ISLAND MONITORING SYSTEM
             </div>

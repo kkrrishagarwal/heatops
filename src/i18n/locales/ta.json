@@ -40,7 +40,7 @@
     "gamification": "புள்ளிகள் & பேட்ஜ்கள்",
     "glossary": "சொற்களஞ்சியம்",
     "exportShare": "ஏக்ஸ்போர்ட் & பகிர்வு",
-    "progressTracker": "HeatOps 2026 முன்னேற்றம்",
+    "progressTracker": "BhaskarOps 2026 முன்னேற்றம்",
     "aboutTeam": "குழு & முறையியல்",
     "hottestCities": "மிகவும் வெப்பமான நகரங்கள்",
     "selectCity": "நகரத்தைத் தேர்ந்தெடு",
@@ -268,7 +268,7 @@
     "scene": "காட்சி:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
   },
   "satellitePass": {
     "lastPass": "கடைசி செயற்கைக்கோள் கடப்பு:",

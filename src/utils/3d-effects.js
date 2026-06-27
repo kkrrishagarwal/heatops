@@ -1,4 +1,4 @@
-// 3D Effects and utilities for HeatOps
+// 3D Effects and utilities for BhaskarOps
 
 export const create3DCardTilt = (element, options = {}) => {
   const {
@@ -200,7 +200,7 @@ export const createLoadingScreen = (onComplete) => {
     'CONNECTING TO SATELLITES...',
     'LOADING URBAN HEAT DATA...',
     'CALIBRATING CLIMATE MODELS...',
-    'LAUNCHING HEATOPS...'
+    'LAUNCHING BHASKAROPS...'
   ]
 
   let messageIndex = 0

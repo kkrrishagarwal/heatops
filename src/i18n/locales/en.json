@@ -40,7 +40,7 @@
     "gamification": "POINTS & BADGES",
     "glossary": "GLOSSARY",
     "exportShare": "EXPORT & SHARE",
-    "progressTracker": "HeatOps 2026 PROGRESS",
+    "progressTracker": "BhaskarOps 2026 PROGRESS",
     "aboutTeam": "TEAM & METHODOLOGY",
     "hottestCities": "Hottest Cities",
     "selectCity": "SELECT CITY",
@@ -268,7 +268,7 @@
     "scene": "Scene:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
   },
   "satellitePass": {
     "lastPass": "Last satellite pass:",

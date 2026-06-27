@@ -61,7 +61,7 @@ export function AIAnalystPanel({
     `Why is ${city} so hot right now?`,
     `How does ${ensoPhase} impact ${city} weather?`,
     `What are best 3 cooling interventions for ${city}?`,
-    `Write HeatOps 2026 report conclusion for ${city}`
+    `Write BhaskarOps 2026 report conclusion for ${city}`
   ]
 
   const ASK_AI_TIMEOUT_MS = 15000

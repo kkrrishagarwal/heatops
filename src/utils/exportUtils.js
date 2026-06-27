@@ -41,7 +41,7 @@ export function downloadCSV(cityName, stateName, realData = {}) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
   a.href = url
-  a.download = `${cityName.replace(/ /g,"_")}_heatops_data.csv`
+  a.download = `${cityName.replace(/ /g,"_")}_bhaskarops_data.csv`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
@@ -51,7 +51,7 @@ export function downloadCSV(cityName, stateName, realData = {}) {
 // WhatsApp share — real values only, "N/A" where not available for this city
 export function shareWhatsApp(cityName, stateName, realData = {}) {
   const msg =
-    `🛰️ *HeatOps — ${cityName} Report*\n\n` +
+    `🛰️ *BhaskarOps — ${cityName} Report*\n\n` +
     `📍 City: ${cityName}, ${stateName}\n` +
     `🌡️ Surface Temp: ${fmt(realData.surfaceTemp, '°C', 1)} (Open-Meteo, live)\n` +
     `🌿 Vegetation: ${fmt(realData.vegetationPct, '%')} (ESA WorldCover)\n` +
@@ -83,7 +83,7 @@ export async function generatePDF(cityName, stateName, realData = {}) {
 <!DOCTYPE html>
 <html>
 <head>
-  <title>HeatOps — ${cityName} Report</title>
+  <title>BhaskarOps — ${cityName} Report</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -120,7 +120,7 @@ export async function generatePDF(cityName, stateName, realData = {}) {
   </style>
 </head>
 <body>
-  <h1>🛰️ HeatOps Urban Heat Island Report</h1>
+  <h1>🛰️ BhaskarOps Urban Heat Island Report</h1>
   <p><b>City:</b> ${cityName}, ${stateName} |
      <b>Generated:</b> ${new Date().toLocaleDateString('en-IN')} |
      <b>BAH 2026</b></p>

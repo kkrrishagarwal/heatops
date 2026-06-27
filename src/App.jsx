@@ -1920,7 +1920,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ fontSize: 20 }}>🛰️</div>
           <div>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#00ff88' }}>HEATOPS</div>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#00ff88' }}>BHASKAROPS</div>
             <div style={{ fontSize: 8, letterSpacing: '0.12em', color: '#64748b' }}>THERMAL</div>
           </div>
         </div>
@@ -2544,7 +2544,7 @@ function App({ user }) {
             boxSizing: 'border-box'
           }}>
             <div style={{ textAlign: 'center', marginBottom: 8 }}>
-              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#00d4ff' }}>HeatOps</div>
+              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#00d4ff' }}>BhaskarOps</div>
               <div style={{ fontSize: 10, color: '#00d4ff', fontFamily: 'monospace', letterSpacing: 2 }}>
                 URBAN HEAT ISLAND MONITORING SYSTEM
               </div>
@@ -2728,7 +2728,7 @@ function App({ user }) {
             </button>
 
             <div style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', marginTop: 8 }}>
-              HeatOps 2026
+              BhaskarOps 2026
             </div>
           </div>
         </div>
@@ -3938,7 +3938,7 @@ function App({ user }) {
                     }}>📋 {t('buttons.copySummary', 'Copy Summary')}</button>
                     <button onClick={() => {
                       const surfaceTemp = liveWeather?.current?.surfaceTemp
-                      const msg = `Check out ${selectedCity} heat analysis on HeatOps! Surface Temp: ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live)' : 'N/A'} | Risk: ${state.risk}`
+                      const msg = `Check out ${selectedCity} heat analysis on BhaskarOps! Surface Temp: ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live)' : 'N/A'} | Risk: ${state.risk}`
                       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`)
                     }}>📱 {t('buttons.whatsappShare', 'WhatsApp Share')}</button>
                     <button onClick={() => {
@@ -3959,7 +3959,7 @@ function App({ user }) {
 
                 {/* PANEL O: Progress Tracker */}
                 <section className="panel">
-                  <h3>📋 {t('panels.progressTracker', 'HeatOps 2026 PROGRESS')}</h3>
+                  <h3>📋 {t('panels.progressTracker', 'BhaskarOps 2026 PROGRESS')}</h3>
                   <div className="progress-list">
                     <div>{t('progressTracker.dataCollection', '✅ Data Collection (Open-Meteo + ESA WorldCover)')}</div>
                     <div>{t('progressTracker.lstCalculation', '✅ Live Surface Temperature')}</div>
@@ -3980,7 +3980,7 @@ function App({ user }) {
                 <section className="panel">
                   <h3>👥 {t('panels.aboutTeam', 'TEAM & METHODOLOGY')}</h3>
                   <div className="about-card">
-                    <h4>HeatOps 2026: Urban Heat Island Mitigation</h4>
+                    <h4>BhaskarOps 2026: Urban Heat Island Mitigation</h4>
                     <p><strong>College:</strong> [Removed]</p>
                     <p><strong>Method:</strong> Open-Meteo (live) + ESA WorldCover + Random Forest ML</p>
                     <p><strong>Focus:</strong> Delhi NCR & Indian Urban Heat Islands</p>

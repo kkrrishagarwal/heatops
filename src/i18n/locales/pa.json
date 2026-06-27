@@ -40,7 +40,7 @@
     "gamification": "ਪੁਆਇੰਟ ਅਤੇ ਬੈਜ",
     "glossary": "ਸ਼ਬਦਕੋਸ਼",
     "exportShare": "ਐਕਸਪੋਰਟ ਅਤੇ ਸਾਂਝਾ ਕਰੋ",
-    "progressTracker": "HeatOps 2026 ਪ੍ਰਗਤੀ",
+    "progressTracker": "BhaskarOps 2026 ਪ੍ਰਗਤੀ",
     "aboutTeam": "ਟੀਮ ਅਤੇ ਵਿਧੀ",
     "hottestCities": "ਸਭ ਤੋਂ ਗਰਮ ਸ਼ਹਿਰ",
     "selectCity": "ਸ਼ਹਿਰ ਚੁਣੋ",
@@ -268,7 +268,7 @@
     "scene": "ਸੀਨ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → HeatOps"
+    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps"
   },
   "satellitePass": {
     "lastPass": "ਆਖਰੀ ਸੈਟੇਲਾਈਟ ਪਾਸ:",

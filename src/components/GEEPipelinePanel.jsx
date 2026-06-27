@@ -49,7 +49,7 @@ export function GEEPipelinePanel() {
     },
     {
       step: "5",
-      title: "HeatOps Dashboard",
+      title: "BhaskarOps Dashboard",
       detail: "React + D3 + Recharts real-time visualization",
       color: "#ffd700"
     }
@@ -58,7 +58,7 @@ export function GEEPipelinePanel() {
   return (
     <div style={cardStyle}>
       <div style={titleStyle}>
-        {t('geePipeline.panelTitle', '📡 Data Pipeline — Real Sources → HeatOps')}
+        {t('geePipeline.panelTitle', '📡 Data Pipeline — Real Sources → BhaskarOps')}
       </div>
       <div style={{
         display:"flex",

@@ -1,4 +1,4 @@
-# HeatOps - Phase 1 Complete ✅
+# BhaskarOps - Phase 1 Complete ✅
 ## 3D Mission Control Center UI - Status Report
 
 **Date:** 2026-06-16 | **Project:** BAH 2026 Heat Monitoring System
@@ -47,7 +47,7 @@
 
 ### Mission Control Navbar
 - **Satellite Logo:** Spinning 🛰️ emoji (16px) with gradient
-- **Title:** "HeatOps" with neon green glow effect
+- **Title:** "BhaskarOps" with neon green glow effect
 - **Status Indicators:** 3 colored pills (Threat, Monsoon, Satellites)
 - **Live Clock:** 24-hour format updating every second
 - **User Section:** Avatar, name, online status, logout button
@@ -118,7 +118,7 @@
 ## 📁 Project Structure
 
 ```
-/heatops/
+/bhaskarops/
 ├── src/
 │   ├── 3d-styles.css              # Global 3D CSS framework (500+ lines)
 │   ├── utils/3d-effects.js        # Reusable 3D functions (8 functions)
