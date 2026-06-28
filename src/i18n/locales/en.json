@@ -217,7 +217,8 @@
     "extreme": "Extreme",
     "high": "High",
     "moderate": "Moderate",
-    "cool": "Cool"
+    "cool": "Cool",
+    "activeHeatwave": "Active heatwave (major states)"
   },
   "admin": {
     "totalUsers": "Total Users",

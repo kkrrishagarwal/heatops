@@ -217,7 +217,8 @@
     "extreme": "अत्यधिक",
     "high": "उच्च",
     "moderate": "मध्यम",
-    "cool": "ठंडा"
+    "cool": "ठंडा",
+    "activeHeatwave": "सक्रिय हीटवेव (प्रमुख राज्य)"
   },
   "admin": {
     "totalUsers": "कुल उपयोगकर्ता",

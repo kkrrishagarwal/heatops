@@ -217,7 +217,8 @@
     "extreme": "અતિશય",
     "high": "ઉચ્ચ",
     "moderate": "મધ્યમ",
-    "cool": "ઠંડુ"
+    "cool": "ઠંડુ",
+    "activeHeatwave": "સક્રિય હીટવેવ (મુખ્ય રાજ્યો)"
   },
   "admin": {
     "totalUsers": "કુલ વપરાશકર્તાઓ",

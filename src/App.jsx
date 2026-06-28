@@ -1415,6 +1415,7 @@ const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorder
 // style.transform directly via ref during a drag gesture (bypassing React state entirely
 // for that high-frequency path) — see the onMouseMove handler at the call site for why.
 const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false }, transformRef) => {
+  const { t } = useTranslation()
   const [hoveredState, setHoveredState] = useState(null)
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, name: '' })
   const DATA = propINDIA_DATA || INDIA_DATA
@@ -1660,6 +1661,13 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
         {HEAT_INDEX_BUCKETS.map(b => (
           <LegendRow key={b.label} color={b.color} label={b.legend} />
         ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, paddingTop: 4, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <span style={{
+            width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
+            background: '#ffffff', border: '1.5px solid #0a0e1a', display: 'inline-block'
+          }} />
+          <span>{t('heatLegend.activeHeatwave', 'Active heatwave (major states)')}</span>
+        </div>
         {dataAgeLabel && (
           <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: 10, color: '#64748b' }}>
             {dataAgeLabel}

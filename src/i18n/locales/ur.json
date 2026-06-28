@@ -217,7 +217,8 @@
     "extreme": "شدید",
     "high": "زیادہ",
     "moderate": "درمیانہ",
-    "cool": "ٹھنڈا"
+    "cool": "ٹھنڈا",
+    "activeHeatwave": "فعال ہیٹ ویو (بڑی ریاستیں)"
   },
   "admin": {
     "totalUsers": "کل صارفین",
