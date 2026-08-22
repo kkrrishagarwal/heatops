@@ -2165,16 +2165,28 @@ function App({ user }) {
   // Stable reference (useCallback) so IndiaMap's memoized interactive layers don't see a
   // "new" onStateClick prop — and re-render their full GeoJSON — every time App re-renders
   // for an unrelated reason (e.g. live weather polling) while the map screen is showing.
+  //
+  // The dependency array used to be [selectedState], which defeated the whole point: it gave
+  // handleStateClick a NEW reference on every single click (since selectedState itself changes
+  // right after), which is exactly the moment this needs to stay stable. A CPU profile of
+  // clicking a city showed react-simple-maps re-running its full path/mercatorRaw/
+  // polygonContains projection math for ~4.4s of blocked main-thread time per click — this was
+  // why: StatesInteractiveLayer/DistrictsLayer/StateBordersLayer all take onStateClick as a
+  // prop, so React.memo saw a "changed" prop and recomputed their entire GeoJSON on every
+  // click. A ref sidesteps the closure without needing selectedState in the deps at all, so
+  // this callback's identity never changes across the component's lifetime.
+  const selectedStateRef = useRef(selectedState)
+  useEffect(() => { selectedStateRef.current = selectedState }, [selectedState])
   const handleStateClick = useCallback((name) => {
     const fixed = fixStateName(name)
-    if (fixed !== selectedState) {
+    if (fixed !== selectedStateRef.current) {
       setSelectedState(fixed)
       const defaultCity = (INDIA_DATA[fixed] && Array.isArray(INDIA_DATA[fixed].cities) && INDIA_DATA[fixed].cities.length > 0)
         ? INDIA_DATA[fixed].cities[0]
         : null
       setSelectedCity(defaultCity)
     }
-  }, [selectedState])
+  }, [])
   const [activeTab, setActiveTab] = useState('Overview')
   // Dashboard tab bar overflow-fade hints (mobile: OVERVIEW/ANALYSIS/COMPARE/
   // INTERVENTIONS/AI+EXPORT don't all fit under ~500px). Measured via ref rather
