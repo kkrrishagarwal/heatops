@@ -2113,6 +2113,26 @@ function App({ user }) {
     }
   }, [selectedState])
   const [activeTab, setActiveTab] = useState('Overview')
+  // Dashboard tab bar overflow-fade hints (mobile: OVERVIEW/ANALYSIS/COMPARE/
+  // INTERVENTIONS/AI+EXPORT don't all fit under ~500px). Measured via ref rather
+  // than a fixed breakpoint since i18n label lengths vary a lot across the app's
+  // 11 languages — a language with longer words could overflow even where English
+  // fits, and should still get the hint.
+  const tabBarScrollRef = useRef(null)
+  const [tabBarOverflow, setTabBarOverflow] = useState({ left: false, right: false })
+  const updateTabBarOverflow = useCallback(() => {
+    const el = tabBarScrollRef.current
+    if (!el) return
+    setTabBarOverflow({
+      left: el.scrollLeft > 4,
+      right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4
+    })
+  }, [])
+  useEffect(() => {
+    updateTabBarOverflow()
+    window.addEventListener('resize', updateTabBarOverflow)
+    return () => window.removeEventListener('resize', updateTabBarOverflow)
+  }, [updateTabBarOverflow, selectedCity])
   const [questionDropOpen, setQuestionDropOpen] = useState(false)
   const [globalSearch, setGlobalSearch] = useState("")
   const [globalResults, setGlobalResults] = useState([])
@@ -3326,35 +3346,62 @@ function App({ user }) {
           </div>
         </nav>
 
-        {/* Dashboard tab bar */}
-        <div style={{
-          display: 'flex',
-          background: '#0a0f1e',
-          borderBottom: '1px solid #1a2a4a',
-          padding: '0 16px'
-        }}>
-          {TABS.map(tab => (
-            <button
-              key={tab}
-              className="tab-btn"
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: '12px 20px',
-                background: 'none',
-                border: 'none',
-                borderBottom: activeTab === tab ? '2px solid var(--theme-accent)' : '2px solid transparent',
-                color: activeTab === tab ? 'var(--theme-accent)' : '#475569',
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: 0.5,
-                cursor: 'pointer',
-                borderRadius: '4px 4px 0 0',
-                transition: 'all 0.2s'
-              }}
-            >
-              {TAB_LABELS[tab]}
-            </button>
-          ))}
+        {/* Dashboard tab bar — horizontally scrollable with fade hints on
+            whichever edge(s) still have hidden tabs, so a narrow screen doesn't
+            just silently clip INTERVENTIONS/AI+EXPORT with no sign they exist. */}
+        <div style={{ position: 'relative', background: '#0a0f1e', borderBottom: '1px solid #1a2a4a' }}>
+          <div
+            ref={tabBarScrollRef}
+            onScroll={updateTabBarOverflow}
+            className="tab-bar-scroll"
+            style={{
+              display: 'flex',
+              overflowX: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              padding: '0 16px'
+            }}
+          >
+            {TABS.map(tab => (
+              <button
+                key={tab}
+                className="tab-btn"
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: '12px 20px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: activeTab === tab ? '2px solid var(--theme-accent)' : '2px solid transparent',
+                  color: activeTab === tab ? 'var(--theme-accent)' : '#475569',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: 0.5,
+                  cursor: 'pointer',
+                  borderRadius: '4px 4px 0 0',
+                  transition: 'all 0.2s',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
+                }}
+              >
+                {TAB_LABELS[tab]}
+              </button>
+            ))}
+          </div>
+          {tabBarOverflow.left && (
+            <div style={{
+              position: 'absolute', left: 0, top: 0, bottom: 0, width: 28,
+              background: 'linear-gradient(90deg, #0a0f1e, transparent)',
+              pointerEvents: 'none'
+            }} />
+          )}
+          {tabBarOverflow.right && (
+            <div style={{
+              position: 'absolute', right: 0, top: 0, bottom: 0, width: 28,
+              background: 'linear-gradient(270deg, #0a0f1e, transparent)',
+              pointerEvents: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+              color: '#475569', fontSize: 14, paddingRight: 2
+            }}>›</div>
+          )}
         </div>
 
         <div className="dashboard-scroll">

@@ -637,6 +637,16 @@ body {
   background: var(--theme-glow) !important;
 }
 
+/* Hide the scrollbar on the horizontally-scrollable dashboard tab bar — the
+   fade + chevron hints (see App.jsx) are the visible affordance instead. */
+.tab-bar-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.tab-bar-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* Fade-in when switching dashboard tabs, instead of content just popping in */
 @keyframes tabFadeIn {
   from { opacity: 0; transform: translateY(4px); }
