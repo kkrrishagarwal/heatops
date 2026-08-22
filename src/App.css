@@ -647,6 +647,27 @@ body {
   display: none;
 }
 
+/* Map search bar vs. the absolutely-positioned MINIMIZE/MAXIMIZE button that
+   sits on top of it (top:10/right:10 on their shared container) — reserve
+   just enough right-padding to keep placeholder/typed text from running
+   under the button, matching how wide the button is at each size. Below
+   480px the button drops its text label down to icon-only, so the input
+   needs (and gets) much less reserved space back. */
+.map-minimize-label {
+  display: none;
+}
+.map-search-input {
+  padding-right: 50px !important;
+}
+@media (min-width: 480px) {
+  .map-minimize-label {
+    display: inline;
+  }
+  .map-search-input {
+    padding-right: 130px !important;
+  }
+}
+
 /* Fade-in when switching dashboard tabs, instead of content just popping in */
 @keyframes tabFadeIn {
   from { opacity: 0; transform: translateY(4px); }

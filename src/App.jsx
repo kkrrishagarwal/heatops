@@ -2854,7 +2854,7 @@ function App({ user }) {
                   gap: 6
                 }}
               >
-                {mapExpanded ? '⛶ MINIMIZE' : '⛶ MAXIMIZE'}
+                ⛶<span className="map-minimize-label">{mapExpanded ? ' MINIMIZE' : ' MAXIMIZE'}</span>
               </button>
 
               {mapExpanded ? (
@@ -2864,12 +2864,19 @@ function App({ user }) {
                       placeholder={`🔍 ${t('nav.searchPlaceholder', 'Search any city in India...')}`}
                       value={globalSearch}
                       onChange={e => setGlobalSearch(e.target.value)}
+                      className="map-search-input"
                       style={{
                         width: '100%',
+                        boxSizing: 'border-box',
                         background: '#0a0e1a',
                         border: '1px solid #1a2a4a',
                         borderRadius: 8,
                         color: '#fff',
+                        // Right padding (see .map-search-input in App.css) reserves space
+                        // for the absolutely-positioned MINIMIZE button (top:10/right:10 on
+                        // the shared map container) so placeholder/typed text never runs
+                        // under it — the exact amount needed differs since the button drops
+                        // its text label (see .map-minimize-label) below 480px.
                         padding: '9px 14px',
                         fontSize: 13
                       }}
@@ -2982,7 +2989,7 @@ function App({ user }) {
                       <button
                         onClick={() => setMapScale(prev => Math.min(prev + 0.3, 5))}
                         style={{
-                          width: 36, height: 36,
+                          width: 44, height: 44,
                           background: 'rgba(0,0,0,0.7)',
                           border: '1px solid #00d4ff',
                           borderRadius: 8,
@@ -2995,7 +3002,7 @@ function App({ user }) {
                       <button
                         onClick={() => setMapScale(prev => Math.max(prev - 0.3, 0.5))}
                         style={{
-                          width: 36, height: 36,
+                          width: 44, height: 44,
                           background: 'rgba(0,0,0,0.7)',
                           border: '1px solid #00d4ff',
                           borderRadius: 8,
@@ -3008,7 +3015,7 @@ function App({ user }) {
                       <button
                         onClick={() => { setMapScale(1); setMapPos({ x: 0, y: 0 }) }}
                         style={{
-                          width: 36, height: 36,
+                          width: 44, height: 44,
                           background: 'rgba(0,0,0,0.7)',
                           border: '1px solid #00d4ff',
                           borderRadius: 8,
