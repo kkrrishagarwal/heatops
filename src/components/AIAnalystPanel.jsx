@@ -255,7 +255,13 @@ export function AIAnalystPanel({
                 color: index === selectedQuestion ? '#00ff88' : 'rgba(255,255,255,0.7)',
                 fontSize: 11,
                 cursor: 'pointer',
-                transition: 'background 0.15s, border-color 0.15s'
+                transition: 'background 0.15s, border-color 0.15s',
+                // A long chip label has somewhere to wrap onto its own second
+                // line within .chat-suggestions' flex-wrap row, rather than
+                // being sized purely by content.
+                maxWidth: '100%',
+                whiteSpace: 'normal',
+                textAlign: 'left'
               }}
             >
               {option.label}

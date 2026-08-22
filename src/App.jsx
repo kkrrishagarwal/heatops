@@ -3385,23 +3385,31 @@ function App({ user }) {
     return (
       <div className="dashboard-container" style={getThemeVars(lst)}>
         {/* Floating AI Assistant — quick access from any dashboard tab without
-            switching to AI+Export, reuses the same AIAnalystPanel/state */}
-        <FloatingAIAssistant
-          cityName={selectedCity}
-          ensoPhase={ensoPhase}
-          lst={realSurfaceTemp}
-          ndvi={realLulcEntry?.vegetation ?? null}
-          ndbi={realLulcEntry?.builtUp ?? null}
-          aqi={liveWeather?.aqi?.usAQI}
-          chatHistory={chatHistory}
-          setChatHistory={setChatHistory}
-          aiLoading={aiLoading}
-          setAiLoading={setAiLoading}
-          selectedQuestion={selectedQuestion}
-          setSelectedQuestion={setSelectedQuestion}
-          questionDropOpen={questionDropOpen}
-          setQuestionDropOpen={setQuestionDropOpen}
-        />
+            switching to AI+Export, reuses the same AIAnalystPanel/state.
+            Suppressed on the AI+Export tab itself: that tab already renders
+            the full AGNI panel inline, so the floating shortcut is a
+            redundant, fixed-position duplicate there — confirmed it visually
+            covered the suggestion chips/input of the tab's own AGNI panel at
+            375px (its bottom:16/right:16 position coincides with where that
+            panel's pinned input bar naturally sits). */}
+        {activeTab !== 'AI + Export' && (
+          <FloatingAIAssistant
+            cityName={selectedCity}
+            ensoPhase={ensoPhase}
+            lst={realSurfaceTemp}
+            ndvi={realLulcEntry?.vegetation ?? null}
+            ndbi={realLulcEntry?.builtUp ?? null}
+            aqi={liveWeather?.aqi?.usAQI}
+            chatHistory={chatHistory}
+            setChatHistory={setChatHistory}
+            aiLoading={aiLoading}
+            setAiLoading={setAiLoading}
+            selectedQuestion={selectedQuestion}
+            setSelectedQuestion={setSelectedQuestion}
+            questionDropOpen={questionDropOpen}
+            setQuestionDropOpen={setQuestionDropOpen}
+          />
+        )}
 
         {/* Dashboard navbar */}
         <nav className="navbar">
