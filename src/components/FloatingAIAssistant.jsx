@@ -32,10 +32,16 @@ export function FloatingAIAssistant({
         onClick={() => setIsOpen(true)}
         aria-label="Open AGNI"
         style={{
+          // Bottom-right corner rather than vertically-centered-left: centering
+          // guaranteed overlap with whatever card/panel/tab content occupies the
+          // viewport's middle on every screen (map legend, sliders, chat text,
+          // weather card — confirmed at 375/428/768px), since real content also
+          // starts from the left edge. Bottom-right stayed clear at every
+          // breakpoint audited. env(safe-area-inset-*) keeps it clear of notches/
+          // home-indicators on phones that have them.
           position: 'fixed',
-          left: 16,
-          top: '50%',
-          transform: 'translateY(-50%)',
+          right: 'calc(16px + env(safe-area-inset-right, 0px))',
+          bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
           zIndex: 2000,
           width: 52,
           height: 52,
@@ -57,15 +63,18 @@ export function FloatingAIAssistant({
 
       <div
         style={{
+          // Slides in from the right to stay anchored to its trigger button's
+          // new bottom-right position (was a left drawer matching the old
+          // left-edge button).
           position: 'fixed',
           top: 0,
-          left: 0,
+          right: 0,
           height: '100vh',
           width: 'min(380px, 92vw)',
           background: 'rgba(10,14,26,0.98)',
-          borderRight: '1px solid #1a2a4a',
+          borderLeft: '1px solid #1a2a4a',
           boxShadow: isOpen ? '0 0 40px rgba(0,212,255,0.2)' : 'none',
-          transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
           transition: 'transform 0.25s ease',
           zIndex: 2001,
           display: 'flex',
