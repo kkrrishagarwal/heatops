@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, Component } from 'react'
 import Globe from 'react-globe.gl'
 import { AmbientLight, DirectionalLight } from 'three'
+import IntroGlobe from './IntroGlobe'
 
 // Texture copied from three-globe's bundled examples into public/textures —
 // three-globe's package.json "exports" map blocks importing it directly via
@@ -87,6 +88,8 @@ const LaunchScreen = ({ onSignIn }) => {
   const [authSuccess, setAuthSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [wideScreen, setWideScreen] = useState(false)
+  const [introTriggered, setIntroTriggered] = useState(false)
+  const [skipIntro, setSkipIntro] = useState(false)
 
   useEffect(() => {
     const updateScreen = () => setWideScreen(window.innerWidth > 768)
@@ -326,40 +329,54 @@ const LaunchScreen = ({ onSignIn }) => {
       }}/>
 
       {webglOk && (
-        <div style={{
-          position: 'absolute',
-          top: '52%',
-          left: '62%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 1,
-          opacity: wideScreen ? 1 : 0.4,
-          pointerEvents: 'none'
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '52%',
+            left: '62%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1,
+            opacity: wideScreen ? 1 : 0.4,
+            pointerEvents: 'auto'
+          }}
+          onClick={() => setSkipIntro(true)}
+        >
           <GlobeErrorBoundary fallback={null}>
-            <Globe
-              ref={globeRef}
+            <IntroGlobe
+              active={!isLoading}
+              introTriggered={introTriggered}
+              skipIntro={skipIntro}
               width={globeSize}
               height={globeSize}
-              globeImageUrl={earthTexture}
-              backgroundColor="rgba(0,0,0,0)"
-              atmosphereColor="#00d4ff"
-              atmosphereAltitude={0.18}
-              rendererConfig={{ antialias: false, powerPreference: 'low-power' }}
-              pointsData={[INDIA_COORDS]}
-              pointLat="lat"
-              pointLng="lng"
-              pointColor={() => '#00ff88'}
-              pointAltitude={0.01}
-              pointRadius={0.5}
-              ringsData={[INDIA_COORDS]}
-              ringLat="lat"
-              ringLng="lng"
-              ringColor={() => (t) => `rgba(0,255,136,${1 - t})`}
-              ringMaxRadius={6}
-              ringPropagationSpeed={2}
-              ringRepeatPeriod={1400}
+              style={{ filter: 'drop-shadow(0 0 32px rgba(0,212,255,0.25))' }}
+              onZoomComplete={() => {
+                if (skipIntro) return
+              }}
             />
           </GlobeErrorBoundary>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              setSkipIntro(true)
+            }}
+            style={{
+              position: 'absolute',
+              right: '-12px',
+              top: '-12px',
+              background: 'rgba(15,23,42,0.9)',
+              border: '1px solid rgba(0,212,255,0.5)',
+              borderRadius: '999px',
+              color: '#dbeafe',
+              padding: '6px 10px',
+              fontSize: '10px',
+              letterSpacing: '1.2px',
+              cursor: 'pointer',
+              textTransform: 'uppercase'
+            }}
+          >
+            Skip
+          </button>
         </div>
       )}
 
