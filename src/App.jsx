@@ -1952,17 +1952,56 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
   const { t, i18n } = useTranslation()
   const isAdmin = currentUser?.role === 'admin'
 
+  // Right-edge fade hint for the scrollable nav row below — same reasoning
+  // and mechanism as the dashboard tab bar's overflow hint (ref-measured
+  // against scrollWidth/clientWidth, not a fixed breakpoint, since translated
+  // pill/label text length varies across the app's 11 languages).
+  const navRowRef = useRef(null)
+  const [navRowOverflow, setNavRowOverflow] = useState({ left: false, right: false })
+  const updateNavRowOverflow = useCallback(() => {
+    const el = navRowRef.current
+    if (!el) return
+    setNavRowOverflow({
+      left: el.scrollLeft > 4,
+      right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4
+    })
+  }, [])
+  useEffect(() => {
+    updateNavRowOverflow()
+    window.addEventListener('resize', updateNavRowOverflow)
+    return () => window.removeEventListener('resize', updateNavRowOverflow)
+  }, [updateNavRowOverflow])
+
   return (
     <>
-      {/* Main navbar row — 52px */}
-      <div style={{
-        display: 'flex', alignItems: 'center', height: 52,
-        background: 'linear-gradient(90deg, rgba(4,11,26,0.98), rgba(9,18,40,0.95))',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        padding: '0 16px', gap: 14, boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-      }}>
+      {/* Main navbar row — 52px. Logo+pills alone already approach ~400px of
+          intrinsic content (each pill/logo/divider has its own min-width:auto
+          content floor, same flexbox default that made the earlier
+          right-section-only fix ineffective — shrinking one flex item does
+          nothing if the ones before it in the row aren't shrinking either),
+          so under ~700-800px wide the whole row overflows before clock/
+          language/agent-badge/avatar/LOGOUT are even reached. Rather than
+          wrap (measured as visually overlapping the ticker bar below — a
+          flex-wrap container's reported height didn't account for its second
+          line's actual height) this scrolls the whole row as one contained
+          unit, same proven pattern as the dashboard tab bar, so every
+          control — especially LOGOUT — stays reachable via a swipe with zero
+          overlap risk. flexShrink:0 on every child keeps things from
+          squishing instead of scrolling. */}
+      <div style={{ position: 'relative' }}>
+      <div
+        ref={navRowRef}
+        onScroll={updateNavRowOverflow}
+        className="tab-bar-scroll"
+        style={{
+          display: 'flex', alignItems: 'center', height: 52,
+          overflowX: 'auto', WebkitOverflowScrolling: 'touch',
+          background: 'linear-gradient(90deg, rgba(4,11,26,0.98), rgba(9,18,40,0.95))',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          padding: '0 16px', gap: 14, boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }}>
         {/* Logo & title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <div style={{ fontSize: 20 }}>🛰️</div>
           <div>
             <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#00ff88' }}>BHASKAR OPS</div>
@@ -1971,10 +2010,10 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
         </div>
 
         {/* Divider */}
-        <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.1)' }} />
+        <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
 
         {/* Status pills — all inline */}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
           {[
             { icon: '🔴', label: 'HEAT', value: 'HIGH', color: '#ff4444' },
             { icon: '🟡', label: 'CLIMATE', value: 'EL NIÑO', color: '#fbbf24' },
@@ -1999,8 +2038,9 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
         {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-        {/* Right section */}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        {/* Right section — the whole navbar row scrolls now (see comment
+            above), so this just needs to not get individually squished. */}
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
           <LiveClock />
 
           {/* Language toggle — manual only, no auto-detect by location/browser */}
@@ -2052,6 +2092,23 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
             {t('nav.signOut', 'LOGOUT')}
           </button>
         </div>
+      </div>
+      {navRowOverflow.left && (
+        <div style={{
+          position: 'absolute', left: 0, top: 0, bottom: 0, width: 24,
+          background: 'linear-gradient(90deg, rgba(4,11,26,0.98), transparent)',
+          pointerEvents: 'none'
+        }} />
+      )}
+      {navRowOverflow.right && (
+        <div style={{
+          position: 'absolute', right: 0, top: 0, bottom: 0, width: 24,
+          background: 'linear-gradient(270deg, rgba(9,18,40,0.95), transparent)',
+          pointerEvents: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+          color: 'rgba(255,255,255,0.5)', fontSize: 13, paddingRight: 2
+        }}>›</div>
+      )}
       </div>
 
       {/* Ticker bar — 28px */}
