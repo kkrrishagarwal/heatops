@@ -2844,10 +2844,24 @@ function App({ user }) {
   }
 
   // Map screen
-  if(screen === "map") {
+  // Map and Dashboard screens are merged into a single conditional branch
+  // (rather than each being its own separate early return) so IndiaMap stays
+  // mounted continuously across map <-> dashboard navigation instead of
+  // unmounting and remounting from scratch every time. Profiled: react-simple-maps
+  // has to redo its full district/state geometry projection on every fresh mount,
+  // which is genuinely expensive (many seconds of blocked main-thread time) — this
+  // was happening every single time a user went "back to map" after checking a
+  // city, since the two screens used to be entirely separate return branches.
+  // Visibility is toggled with CSS display instead, so the work only ever happens
+  // once per session.
+  if (screen === "map" || screen === "dashboard") {
     const hottest = liveLeaderBase[0]
 
+    const state = STATE_DATA[selectedState]
+
     return (
+      <>
+        <div style={{ display: screen === 'map' ? 'contents' : 'none' }}>
       <div className="map-container">
         {/* Floating AI Assistant restored on the map screen so it's always
             reachable without switching screens. It shows a hint when no city
@@ -3369,14 +3383,9 @@ function App({ user }) {
         </div>
 
       </div>
-    )
-  }
+        </div>
 
-  // Dashboard screen (18 panels)
-  if(screen === "dashboard") {
-    const state = STATE_DATA[selectedState]
-    if(!state) return null
-
+        {state && (() => {
     // Get real city data
     const cityData = getCityData(selectedCity, selectedState)
     const lst = cityData.lst
@@ -3394,7 +3403,8 @@ function App({ user }) {
       'AI + Export': t('tabs.aiExport', 'AI + EXPORT')
     }
 
-    return (
+          return (
+            <div style={{ display: screen === 'dashboard' ? 'contents' : 'none' }}>
       <div className="dashboard-container" style={getThemeVars(lst)}>
         {/* Floating AI Assistant — quick access from any dashboard tab without
             switching to AI+Export, reuses the same AIAnalystPanel/state.
@@ -4149,6 +4159,10 @@ function App({ user }) {
           )}
         </div>
       </div>
+            </div>
+          )
+        })()}
+      </>
     )
   }
 
