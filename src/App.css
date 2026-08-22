@@ -1100,6 +1100,24 @@ path.state:hover {
   transform: scale(1.1);
 }
 
+/* At narrow widths the 10-column grid (336px: 10*30px cells + 9*4px gaps)
+   fits its container at an exact zero-margin pixel width, so the last column
+   visually clips against the panel's rounded corner even though
+   .heatmap-section's overflow-x:auto is correctly set up as a fallback —
+   there's just no slack for it to ever need to engage. Shrinking cells
+   slightly here gives real breathing room instead of relying on a razor-thin
+   exact fit. */
+@media (max-width: 400px) {
+  .grid-heatmap {
+    gap: 3px;
+  }
+  .heatmap-cell {
+    width: 26px;
+    height: 26px;
+    font-size: 9px;
+  }
+}
+
 /* Comparison */
 .comparison-bar {
   display: flex;
