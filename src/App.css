@@ -668,6 +668,22 @@ body {
   }
 }
 
+/* Heat Index legend card (bottom-left overlay on the India map) — capped so
+   it can never cover more than about half of its own map container, which
+   itself is already narrow on phones (only ~58% of the screen width). Below
+   400px it also shrinks its own text/padding so the map keeps a usable
+   visible share instead of the legend eating nearly all of it. */
+.map-heat-legend {
+  max-width: 55%;
+}
+@media (max-width: 400px) {
+  .map-heat-legend {
+    max-width: 62%;
+    padding: 7px 9px !important;
+    font-size: 9.5px !important;
+  }
+}
+
 /* Fade-in when switching dashboard tabs, instead of content just popping in */
 @keyframes tabFadeIn {
   from { opacity: 0; transform: translateY(4px); }

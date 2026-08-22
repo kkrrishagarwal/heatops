@@ -1641,8 +1641,13 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
         </div>
       )}
 
-      {/* HEAT INDEX LEGEND — bottom-left */}
+      {/* HEAT INDEX LEGEND — bottom-left. maxWidth (see .map-heat-legend in
+          App.css) guarantees the map keeps a real visible share of its own
+          container on narrow screens — this card had no size cap at all
+          before, so on a phone-width map container (already only ~58% of a
+          375px screen) it could cover nearly the entire visible map. */}
       <div
+        className="map-heat-legend"
         style={{
           position: 'absolute',
           bottom: 16,
@@ -1654,7 +1659,8 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           color: '#e2e8f0',
           fontFamily: 'monospace',
           fontSize: 11,
-          zIndex: 20
+          zIndex: 20,
+          boxSizing: 'border-box'
         }}
       >
         <div style={{ fontWeight: 700, marginBottom: 6, letterSpacing: 0.5 }}>HEAT INDEX</div>
