@@ -149,7 +149,11 @@ export function WeatherCard({ city, state, onClose }) {
             {weather.aqi.category.label}
           </div>
           <div style={styles.aqiScore}>
-            {t('weatherCard.score', 'Score:')} <strong>{weather.aqi.usAQI}</strong>
+            {/* "500+" when the upstream EPA-methodology value exceeded the scale's official
+                500 ceiling and was clipped — a silent flat "500" reads as a calculation bug
+                next to lower instantaneous pollutant readings, when it's actually an
+                off-the-scale event (e.g. Thar desert dust storms). */}
+            {t('weatherCard.score', 'Score:')} <strong>{weather.aqi.usAQI}{weather.aqi.usAQIClamped ? '+' : ''}</strong>
           </div>
         </div>
         <div style={styles.aqiDetails}>
@@ -157,6 +161,9 @@ export function WeatherCard({ city, state, onClose }) {
           <AQIDetail icon="🔴" label="PM10" value={`${weather.aqi.pm10} µg/m³`} />
           <AQIDetail icon="🟣" label="NO₂" value={`${weather.aqi.no2} ppb`} />
           <AQIDetail icon="🟠" label="O₃" value={`${weather.aqi.o3} ppb`} />
+        </div>
+        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.4 }}>
+          {t('weatherCard.aqiMethodNote', 'AQI score follows US EPA methodology (24-h rolling average for PM, 8-h for O₃) — pollutant readings above are instantaneous, so the two can differ during fast-changing events.')}
         </div>
       </div>
 

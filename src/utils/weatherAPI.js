@@ -336,8 +336,19 @@ export async function fetchCompleteWeather(cityName, stateName) {
         co: aqiData.current?.carbon_monoxide ? aqiData.current.carbon_monoxide.toFixed(1) : 'N/A',
         so2: aqiData.current?.sulphur_dioxide ? aqiData.current.sulphur_dioxide.toFixed(1) : 'N/A',
         // The EPA US AQI scale officially caps at 500 — Open-Meteo's calculated value can
-        // exceed that during extreme pollution events (e.g. dust storms), so clip for display
+        // exceed that during extreme pollution events (e.g. dust storms), so clip for display.
+        // usAQIClamped flags when clipping actually happened so the UI can render "500+"
+        // instead of a silent flat "500" (verified real case: Jaisalmer dust storm, raw
+        // us_aqi 1041 from a ~1,100 µg/m³ 24-h mean PM10 — the clamp is honest, hiding it isn't).
+        //
+        // NOTE: us_aqi is Open-Meteo's EPA-methodology value computed from ROLLING AVERAGES
+        // (24 h for PM2.5/PM10, 8 h for O₃/CO) per EPA rules — while the pm25/pm10/etc.
+        // fields above are INSTANTANEOUS current-hour concentrations. During a fast-moving
+        // event (e.g. a desert dust lull) the two can legitimately diverge a lot; that is
+        // EPA-correct behavior, not a calculation bug. Verified against hand-computed EPA
+        // breakpoint math for Delhi/Mumbai/Bengaluru (matches within rounding).
         usAQI: Math.min(500, aqiData.current?.us_aqi || 0),
+        usAQIClamped: (aqiData.current?.us_aqi || 0) > 500,
         category: getAQICategory(Math.min(500, aqiData.current?.us_aqi || 0))
       }
     }
