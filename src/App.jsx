@@ -424,10 +424,15 @@ function getTimeOffset(hour) {
 
 function getRiskBadgeColor(risk){
   const map = {
+    // Legacy hardcoded STATE_DATA risk labels (pre-cache fallback)
     EXTREME: {bg:'#ff2222', text:'#fff'},
     HIGH: {bg:'#ff6b35', text:'#fff'},
     MODERATE: {bg:'#ffcc00', text:'#222'},
-    COOL: {bg:'#00cc66', text:'#fff'}
+    COOL: {bg:'#00cc66', text:'#fff'},
+    // Bucket labels from getRiskLabel(liveHeatIndex) — the live-derived path
+    'VERY HIGH': {bg:'#e63c00', text:'#fff'},
+    'LOW-MODERATE': {bg:'#99aa00', text:'#222'},
+    'LOW': {bg:'#00cc66', text:'#fff'}
   }
   return map[risk] || {bg:'#444', text:'#fff'}
 }
@@ -457,7 +462,7 @@ function getAQIColor(aqi) {
 }
 
 function getRiskText(risk) {
-  return risk === 'MODERATE' ? '#222' : '#fff'
+  return (risk === 'MODERATE' || risk === 'LOW-MODERATE') ? '#222' : '#fff'
 }
 
 const INDIC_FONT_STACK = "'Inter', 'Noto Sans Devanagari', 'Noto Sans Bengali', 'Noto Sans Tamil', 'Noto Sans Telugu', 'Noto Sans Gujarati', 'Noto Sans Kannada', 'Noto Sans Oriya', 'Noto Sans Gurmukhi', 'Noto Nastaliq Urdu', sans-serif"
@@ -1629,7 +1634,14 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           }}
         >
           <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{tooltip.name}</div>
-          <div style={{ marginBottom: 4 }}>🌡️ Heat Index: <strong>{activeData.heatIndex}°C</strong></div>
+          <div style={{ marginBottom: 4 }}>
+            🌡️ Heat Index: <strong>{activeData.heatIndex}°C</strong>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)' }}>
+              {activeData.heatIndexLive
+                ? `live avg of ${activeData.liveCityCount} cities' current temps`
+                : '(estimated — no live city data for this state yet)'}
+            </div>
+          </div>
           <div style={{ marginBottom: 4 }}>
             Risk:{' '}
             <span style={{ background: getHeatIndexColor(activeData.heatIndex), padding: '1px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700 }}>
@@ -2356,10 +2368,49 @@ function App({ user }) {
     return baselineTemps.reduce((a, b) => a + b, 0) / baselineTemps.length
   }, [liveCityCache])
 
-  const extremeOrHighRiskStateCount = useMemo(
-    () => Object.values(STATE_DATA).filter(s => s.risk === 'EXTREME' || s.risk === 'HIGH').length,
-    []
-  )
+  // Live per-state heat index — the mean of that state's cached live city temperatures
+  // (same bulk Open-Meteo cache that powers the ticker/leader lists; entries carry their
+  // own .state field, so this self-extends as the cache gains cities). Replaces
+  // STATE_DATA's hardcoded per-state avgLST as the map-coloring source.
+  const liveStateHeatIndex = useMemo(() => {
+    const sums = {}
+    for (const c of Object.values(liveCityCache)) {
+      if (typeof c.temp !== 'number' || !c.state) continue
+      const s = sums[c.state] || (sums[c.state] = { total: 0, n: 0 })
+      s.total += c.temp
+      s.n += 1
+    }
+    const out = {}
+    for (const [state, { total, n }] of Object.entries(sums)) {
+      out[state] = { heatIndex: Math.round((total / n) * 10) / 10, cityCount: n }
+    }
+    return out
+  }, [liveCityCache])
+
+  // INDIA_DATA with the live heat index merged in. heatIndexLive marks whether a state's
+  // value is genuinely live (mean of N live city temps) or still the hardcoded avgLST
+  // fallback — consumers must label the fallback "(estimated)", never present it silently
+  // as live data. Identity changes exactly once (when the bulk cache loads), so the map's
+  // memoized GeoJSON layers re-render once, not per-interaction.
+  const liveIndiaData = useMemo(() => {
+    return Object.fromEntries(Object.entries(INDIA_DATA).map(([state, data]) => {
+      const live = liveStateHeatIndex[state]
+      return [state, live
+        ? { ...data, heatIndex: live.heatIndex, heatIndexLive: true, liveCityCount: live.cityCount }
+        : { ...data, heatIndexLive: false }]
+    }))
+  }, [liveStateHeatIndex])
+
+  // Count of states currently in the HIGH/VERY HIGH/EXTREME buckets (>= 35, per
+  // HEAT_INDEX_BUCKETS) — from live values once the cache is in, else the hardcoded
+  // risk field as a pre-load fallback.
+  const extremeOrHighRiskStateCount = useMemo(() => {
+    const states = Object.values(liveIndiaData)
+    if (states.some(s => s.heatIndexLive)) {
+      return states.filter(s => s.heatIndex >= 35).length
+    }
+    return Object.values(STATE_DATA).filter(s => s.risk === 'EXTREME' || s.risk === 'HIGH').length
+  }, [liveIndiaData])
 
   const liveWorstAqiCity = useMemo(() => {
     const all = Object.values(liveCityCache).filter(c => typeof c.aqi === 'number')
@@ -2596,7 +2647,10 @@ function App({ user }) {
     if(!state) return
     
     const newAlerts = []
-    if(state.avgLST > 45) newAlerts.push({id:1,icon:'🔴',text:t('alerts.extremeHeat', 'EXTREME heat: LST > 45°C'),color:'#ff2222'})
+    // Live state heat index (mean of the state's live city temps) when the cache is in;
+    // hardcoded avgLST only as the pre-load fallback.
+    const stateHeat = liveIndiaData[selectedState]?.heatIndexLive ? liveIndiaData[selectedState].heatIndex : state.avgLST
+    if(stateHeat > 45) newAlerts.push({id:1,icon:'🔴',text:t('alerts.extremeHeat', 'EXTREME heat: LST > 45°C'),color:'#ff2222'})
     if(liveWeather?.aqi?.usAQI > 300) newAlerts.push({id:2,icon:'🟠',text:t('alerts.highAqi', 'HIGH AQI: > 300'),color:'#ff6b35'})
     if(state.ndbi > 0.5) newAlerts.push({id:3,icon:'🟡',text:t('alerts.moderateHeat', 'MODERATE urban heat'),color:'#ffcc00'})
     if(marineHeatwave && ['Gujarat','Maharashtra','Kerala','Tamil Nadu'].includes(selectedState)) {
@@ -2606,7 +2660,7 @@ function App({ user }) {
     if(newAlerts.length === 0) newAlerts.push({id:6,icon:'🟢',text:t('alerts.allNormal', 'All values normal'),color:'#00ff88'})
 
     setAlerts(newAlerts)
-  }, [selectedState, selectedCity, marineHeatwave, polarVortex, liveWeather, t])
+  }, [selectedState, selectedCity, marineHeatwave, polarVortex, liveWeather, liveIndiaData, t])
 
   // Sign-in screen
   if(screen === "signin") {
@@ -2985,10 +3039,22 @@ function App({ user }) {
                                 <div style={{ fontWeight: 700 }}>{res.city}</div>
                                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{res.state}</div>
                               </div>
-                              <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: getRiskText(res.risk) }}>{res.lst}°C</div>
-                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{res.risk}</div>
-                              </div>
+                              {/* Prefer the city's own live cached temp, then the state's live
+                                  average; the hardcoded state avgLST only as a labeled fallback. */}
+                              {(() => {
+                                const live = getLiveCity(res.city, res.state)
+                                const sd = liveIndiaData[res.state]
+                                const temp = typeof live?.temp === 'number' ? live.temp
+                                  : (sd?.heatIndexLive ? sd.heatIndex : res.lst)
+                                const isLive = typeof live?.temp === 'number' || sd?.heatIndexLive
+                                const label = getRiskLabel(temp)
+                                return (
+                                  <div style={{ textAlign: 'right' }}>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: getRiskText(label) }}>{temp}°C{isLive ? '' : ' (est.)'}</div>
+                                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{label}</div>
+                                  </div>
+                                )
+                              })()}
                             </div>
                           ))}
                         </div>
@@ -3057,7 +3123,7 @@ function App({ user }) {
                           component here to being handled inside it instead. */}
                       <IndiaMap
                         ref={mapTransformRef}
-                        INDIA_DATA={INDIA_DATA}
+                        INDIA_DATA={liveIndiaData}
                         selectedState={selectedState}
                         onStateClick={handleStateClick}
                         scale={mapScale}
@@ -3163,15 +3229,19 @@ function App({ user }) {
               <>
                 <div className="state-card">
                   <h3>{selectedState}</h3>
-                  <span
-                    className="risk-badge"
-                    style={{
-                      background: getRiskBadgeColor(STATE_DATA[selectedState]?.risk).bg,
-                      color: getRiskBadgeColor(STATE_DATA[selectedState]?.risk).text
-                    }}
-                  >
-                    {STATE_DATA[selectedState]?.risk || 'N/A'}
-                  </span>
+                  {/* Risk badge derived from the LIVE state heat index (same value that
+                      colors the map), not STATE_DATA's hardcoded risk string — with an
+                      explicit (est.) marker when only the hardcoded fallback exists. */}
+                  {(() => {
+                    const sd = liveIndiaData[selectedState]
+                    const label = typeof sd?.heatIndex === 'number' ? getRiskLabel(sd.heatIndex) : (STATE_DATA[selectedState]?.risk || 'N/A')
+                    const c = getRiskBadgeColor(label)
+                    return (
+                      <span className="risk-badge" style={{ background: c.bg, color: c.text }}>
+                        {label}{sd?.heatIndexLive ? '' : ' (est.)'}
+                      </span>
+                    )
+                  })()}
                 </div>
 
                 <div className="metrics-grid">
@@ -3672,18 +3742,38 @@ function App({ user }) {
                           />
                         )
                       })}
+                      {/* Needle + label both driven by ONE value so they can never
+                          disagree: the city's own live current temp, else the state's
+                          live avg (same source as the map colors), else the illustrative
+                          per-city lst — with the fallback tiers labeled honestly. */}
                       {(() => {
-                        const tip = gaugePoint(gaugeAngleDeg(lst), 65)
+                        const sd = liveIndiaData[selectedState]
+                        const gaugeVal = typeof liveWeather?.current?.temp === 'number' ? liveWeather.current.temp
+                          : (sd?.heatIndexLive ? sd.heatIndex : lst)
+                        const tip = gaugePoint(gaugeAngleDeg(gaugeVal), 65)
                         return <line x1={GAUGE_CENTER.x} y1={GAUGE_CENTER.y} x2={tip.x} y2={tip.y} stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
                       })()}
                       <circle cx={GAUGE_CENTER.x} cy={GAUGE_CENTER.y} r="5" fill="#fff"/>
                     </svg>
-                    <div className="risk-label">
-                      {state.risk === 'EXTREME' && '🔴 EXTREME'}
-                      {state.risk === 'HIGH' && '🟠 HIGH'}
-                      {state.risk === 'MODERATE' && '🟡 MODERATE'}
-                      {state.risk === 'COOL' && '🟢 COOL'}
-                    </div>
+                    {(() => {
+                      const sd = liveIndiaData[selectedState]
+                      const isCityLive = typeof liveWeather?.current?.temp === 'number'
+                      const gaugeVal = isCityLive ? liveWeather.current.temp
+                        : (sd?.heatIndexLive ? sd.heatIndex : lst)
+                      const isLive = isCityLive || sd?.heatIndexLive
+                      const label = getRiskLabel(gaugeVal)
+                      const icon = { 'EXTREME': '🔴', 'VERY HIGH': '🟠', 'HIGH': '🟠', 'MODERATE': '🟡', 'LOW-MODERATE': '🟢', 'LOW': '🟢' }[label] || '⚪'
+                      return (
+                        <div className="risk-label">
+                          {icon} {label} · {gaugeVal}°C
+                          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.45)', fontWeight: 400, marginTop: 2 }}>
+                            {isCityLive ? 'live current temp (Open-Meteo)'
+                              : isLive ? `live state avg of ${sd.liveCityCount} cities`
+                              : '(estimated)'}
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </div>
                 </section>
 
@@ -4105,7 +4195,8 @@ function App({ user }) {
                     }}>📋 {t('buttons.copySummary', 'Copy Summary')}</button>
                     <button onClick={() => {
                       const surfaceTemp = liveWeather?.current?.surfaceTemp
-                      const msg = `Check out ${selectedCity} heat analysis on BhaskarOps! Surface Temp: ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live)' : 'N/A'} | Risk: ${state.risk}`
+                      const liveRisk = liveIndiaData[selectedState]?.heatIndexLive ? getRiskLabel(liveIndiaData[selectedState].heatIndex) : `${state.risk} (estimated)`
+                      const msg = `Check out ${selectedCity} heat analysis on BhaskarOps! Surface Temp: ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live)' : 'N/A'} | Risk: ${liveRisk}`
                       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`)
                     }}>📱 {t('buttons.whatsappShare', 'WhatsApp Share')}</button>
                     <button onClick={() => {
@@ -4113,7 +4204,8 @@ function App({ user }) {
                       const lulcEntry = getLulcWithFallback(selectedCity, selectedState, lulcReal, cityCoordsData)
                       const vegCell = lulcEntry ? `${lulcEntry.vegetation}${lulcEntry.isFallback ? ` (est. from ${lulcEntry.fallbackCity})` : ''}` : 'N/A'
                       const builtCell = lulcEntry ? `${lulcEntry.builtUp}${lulcEntry.isFallback ? ` (est. from ${lulcEntry.fallbackCity})` : ''}` : 'N/A'
-                      const csv = `City,State,SurfaceTempC_live,VegetationPct_WorldCover,BuiltUpPct_WorldCover,AQI_live,Risk\n${selectedCity},${selectedState},${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) : 'N/A'},${vegCell},${builtCell},${liveWeather?.aqi?.usAQI ?? 'N/A'},${state.risk}`
+                      const liveRisk = liveIndiaData[selectedState]?.heatIndexLive ? getRiskLabel(liveIndiaData[selectedState].heatIndex) : `${state.risk} (estimated)`
+                      const csv = `City,State,SurfaceTempC_live,VegetationPct_WorldCover,BuiltUpPct_WorldCover,AQI_live,Risk\n${selectedCity},${selectedState},${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) : 'N/A'},${vegCell},${builtCell},${liveWeather?.aqi?.usAQI ?? 'N/A'},${liveRisk}`
                       const blob = new Blob([csv], {type:'text/csv'})
                       const url = window.URL.createObjectURL(blob)
                       const a = document.createElement('a')
