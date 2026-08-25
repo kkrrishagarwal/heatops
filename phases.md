@@ -1,4 +1,4 @@
-# HeatOps Phases
+# BhaskarOps Phases
 
 ## Phase 0: Problem Framing and Product Direction
 ### Goal
@@ -106,4 +106,4 @@ Extend the product beyond the first release while keeping the focus on heat-risk
 - Expand AI-driven summarization and planning support
 
 ### Outcome
-HeatOps evolves from a strong proof of concept into a core public-interest climate operations platform.
+BhaskarOps evolves from a strong proof of concept into a core public-interest climate operations platform.

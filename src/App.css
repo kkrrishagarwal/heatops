@@ -24,6 +24,15 @@
   --theme-glow: rgba(255, 170, 40, 0.3);
 }
 
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* Typography hierarchy — h1/h2 had no global styling before and fell back to
    raw browser defaults, part of why the UI read as flat/basic. h3 is left
    alone since most h3s already set their own color/weight per-panel. */
@@ -672,9 +681,18 @@ body {
    it can never cover more than about half of its own map container, which
    itself is already narrow on phones (only ~58% of the screen width). Below
    400px it also shrinks its own text/padding so the map keeps a usable
-   visible share instead of the legend eating nearly all of it. */
+   visible share instead of the legend eating nearly all of it.
+   max-height + overflow-y: the legend grew a weather-overlay section (rain/
+   dust/cloud rows) on top of the heat-index buckets; on a short mobile
+   viewport the taller card's TOP edge can push past the map container's own
+   `overflow: hidden` bound and get clipped (its "HEAT INDEX" title
+   disappearing first, since the card is bottom-anchored and grows upward).
+   Capping height to the container and scrolling internally keeps the whole
+   card reachable instead of silently losing its top rows. */
 .map-heat-legend {
   max-width: 55%;
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
 }
 @media (max-width: 400px) {
   .map-heat-legend {

@@ -1,7 +1,7 @@
-# HeatOps Memory
+# BhaskarOps Memory
 
 ## 1. Project Identity
-HeatOps is the India-focused urban heat intelligence platform built to monitor, compare, and mitigate heat risk across cities and states.
+BhaskarOps is the India-focused urban heat intelligence platform built to monitor, compare, and mitigate heat risk across cities and states.
 
 ## 2. Core Product Lens
 This project is not simply a weather dashboard. It is a planning and decision-support system that combines:
@@ -39,12 +39,12 @@ This project is not simply a weather dashboard. It is a planning and decision-su
 - GeoJSON and cached data files are core project assets.
 - The system architecture should be built to handle national coverage without sacrificing responsiveness.
 
-## 7. Future Direction Memory
-HeatOps should continue to evolve toward a stronger public-interest climate operations tool by improving:
-- intervention quality and modeling
-- municipal reporting flows
-- AI groundedness and explanation quality
-- data freshness and production resilience
+## 7. Strategic Direction
+BhaskarOps should continue to evolve toward a stronger public-interest climate operations tool by improving:
+- real-time data automation
+- high-resolution urban heat mapping
+- clear climate adaptation workflows
+- policy-relevant intervention simulations
 
-## 8. Persistent Working Principle
-HeatOps should remain a platform that helps people understand the why behind urban heat and turn that understanding into practical mitigation decisions.
+## 8. Final Product North Star
+BhaskarOps should remain a platform that helps people understand the why behind urban heat and turn that understanding into practical mitigation decisions.

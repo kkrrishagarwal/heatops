@@ -1,7 +1,7 @@
-# HeatOps Design
+# BhaskarOps Design
 
 ## 1. Design Goals
-HeatOps is designed to look authoritative, technical, and actionable without becoming unreadable. The interface should communicate urgency and precision while remaining approachable for non-specialists.
+BhaskarOps is designed to look authoritative, technical, and actionable without becoming unreadable. The interface should communicate urgency and precision while remaining approachable for non-specialists.
 
 ### Core design principles
 - Real data first

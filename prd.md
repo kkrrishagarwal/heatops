@@ -1,7 +1,7 @@
-# HeatOps PRD
+# BhaskarOps PRD
 
 ## 1. Product Summary
-HeatOps is an India-wide urban heat intelligence and intervention planning platform. It helps citizens, planners, and policy teams understand where heat risk is high, why it is happening, and what actions can reduce exposure and cooling demand.
+BhaskarOps is an India-wide urban heat intelligence and intervention planning platform. It helps citizens, planners, and policy teams understand where heat risk is high, why it is happening, and what actions can reduce exposure and cooling demand.
 
 The product combines live weather, AQI, satellite-derived land cover metrics, urban morphology data, and AI-based interpretation into a single decision-support dashboard. It is built for the Indian context, with state and district coverage, multi-language access, and actionable planning tools.
 
@@ -120,4 +120,4 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 This project is scoped as a decision-support dashboard and AI assistant for heat-risk analysis, not as a fully integrated climate operations command center.
 
 ## 12. Product Positioning
-HeatOps is positioned as an actionable, real-data, India-first heat intelligence platform that blends monitoring, comparison, planning, and plain-language AI explanation into one experience.
+BhaskarOps is positioned as an actionable, real-data, India-first heat intelligence platform that blends monitoring, comparison, planning, and plain-language AI explanation into one experience.

@@ -43,12 +43,16 @@ async function fetchWithRetry(url, label, attempts = 3) {
 async function fetchWeatherBatch(entries) {
   const lats = entries.map(e => e.lat).join(',')
   const lons = entries.map(e => e.lon).join(',')
+  // cloud_cover added alongside temperature_2m in the same `current` param — this is the
+  // same batched request Open-Meteo already charges for, not an extra call — to power the
+  // map's weather overlay (heavy-cloud tint) without a separate fetch.
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}` +
-    `&current=temperature_2m&hourly=precipitation_probability&timezone=Asia/Kolkata&forecast_days=1`
+    `&current=temperature_2m,cloud_cover&hourly=precipitation_probability&timezone=Asia/Kolkata&forecast_days=1`
   const data = await fetchWithRetry(url, 'weather batch')
   const arr = Array.isArray(data) ? data : [data]
   return arr.map(d => ({
     temp: d.current ? Math.round(d.current.temperature_2m) : null,
+    cloudCover: typeof d.current?.cloud_cover === 'number' ? Math.round(d.current.cloud_cover) : null,
     rainChance: d.hourly?.precipitation_probability?.[0] ?? null
   }))
 }
@@ -56,13 +60,18 @@ async function fetchWeatherBatch(entries) {
 async function fetchAqiBatch(entries) {
   const lats = entries.map(e => e.lat).join(',')
   const lons = entries.map(e => e.lon).join(',')
+  // pm10 added alongside us_aqi in the same `current` param, same reasoning as cloud_cover
+  // above — powers the map's dust-storm overlay off the same batched AQI call.
   const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lats}&longitude=${lons}` +
-    `&current=us_aqi&timezone=Asia/Kolkata`
+    `&current=us_aqi,pm10&timezone=Asia/Kolkata`
   const data = await fetchWithRetry(url, 'aqi batch')
   const arr = Array.isArray(data) ? data : [data]
   // EPA US AQI scale officially caps at 500 — Open-Meteo's calculated value can exceed
   // that during extreme pollution events (e.g. dust storms), so clip for display
-  return arr.map(d => ({ aqi: d.current ? Math.min(500, Math.round(d.current.us_aqi)) : null }))
+  return arr.map(d => ({
+    aqi: d.current ? Math.min(500, Math.round(d.current.us_aqi)) : null,
+    pm10: typeof d.current?.pm10 === 'number' ? Math.round(d.current.pm10) : null
+  }))
 }
 
 export async function refreshWeatherCache() {
@@ -95,7 +104,9 @@ export async function refreshWeatherCache() {
           state: entry.state,
           temp: weatherRes[i]?.temp ?? null,
           rainChance: weatherRes[i]?.rainChance ?? null,
-          aqi: aqiRes[i]?.aqi ?? null
+          aqi: aqiRes[i]?.aqi ?? null,
+          cloudCover: weatherRes[i]?.cloudCover ?? null,
+          pm10: aqiRes[i]?.pm10 ?? null
         }
       })
     } catch (err) {

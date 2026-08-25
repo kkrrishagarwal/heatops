@@ -1,7 +1,7 @@
-# HeatOps Architecture
+# BhaskarOps Architecture
 
 ## 1. Overview
-HeatOps is a multi-layer application designed to collect, process, visualize, and explain urban heat risk across India. The system combines a front-end dashboard, backend AI proxy, scheduled data refresh jobs, and externally sourced climate/satellite datasets.
+BhaskarOps is a multi-layer application designed to collect, process, visualize, and explain urban heat risk across India. The system combines a front-end dashboard, backend AI proxy, scheduled data refresh jobs, and externally sourced climate/satellite datasets.
 
 ## 2. High-Level Architecture
 
