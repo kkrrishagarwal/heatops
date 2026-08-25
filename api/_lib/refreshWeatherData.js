@@ -56,12 +56,16 @@ async function runWithConcurrency(items, worker, concurrency) {
 async function fetchWeatherBatch(entries) {
   const lats = entries.map(e => e.lat).join(',')
   const lons = entries.map(e => e.lon).join(',')
+  // cloud_cover added alongside temperature_2m in the same `current` param — same batched
+  // request, no extra round trip. Mirrors scripts/refreshWeatherCache.mjs (kept in sync so
+  // the production cron doesn't regress the map's weather-overlay fields on its next run).
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}` +
-    `&current=temperature_2m&hourly=precipitation_probability&timezone=Asia/Kolkata&forecast_days=1`
+    `&current=temperature_2m,cloud_cover&hourly=precipitation_probability&timezone=Asia/Kolkata&forecast_days=1`
   const data = await fetchJsonWithRetry(url, 'weather batch')
   const arr = Array.isArray(data) ? data : [data]
   return arr.map(d => ({
     temp: d.current ? Math.round(d.current.temperature_2m) : null,
+    cloudCover: typeof d.current?.cloud_cover === 'number' ? Math.round(d.current.cloud_cover) : null,
     rainChance: d.hourly?.precipitation_probability?.[0] ?? null
   }))
 }
@@ -69,11 +73,15 @@ async function fetchWeatherBatch(entries) {
 async function fetchAqiBatch(entries) {
   const lats = entries.map(e => e.lat).join(',')
   const lons = entries.map(e => e.lon).join(',')
+  // pm10 added alongside us_aqi, same reasoning as cloud_cover above.
   const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lats}&longitude=${lons}` +
-    `&current=us_aqi&timezone=Asia/Kolkata`
+    `&current=us_aqi,pm10&timezone=Asia/Kolkata`
   const data = await fetchJsonWithRetry(url, 'aqi batch')
   const arr = Array.isArray(data) ? data : [data]
-  return arr.map(d => ({ aqi: d.current ? Math.min(500, Math.round(d.current.us_aqi)) : null }))
+  return arr.map(d => ({
+    aqi: d.current ? Math.min(500, Math.round(d.current.us_aqi)) : null,
+    pm10: typeof d.current?.pm10 === 'number' ? Math.round(d.current.pm10) : null
+  }))
 }
 
 function loadCoordinates() {
@@ -108,7 +116,9 @@ export async function refreshWeatherData(existingCities = {}) {
         state: entry.state,
         temp: weatherRes[i]?.temp ?? null,
         rainChance: weatherRes[i]?.rainChance ?? null,
-        aqi: aqiRes[i]?.aqi ?? null
+        aqi: aqiRes[i]?.aqi ?? null,
+        cloudCover: weatherRes[i]?.cloudCover ?? null,
+        pm10: aqiRes[i]?.pm10 ?? null
       }
     })
   })
