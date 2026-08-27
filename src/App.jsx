@@ -1217,7 +1217,10 @@ const DistrictsLayer = React.memo(function DistrictsLayer({ DATA }) {
 const WEATHER_OVERLAY_TINTS = {
   dust: 'rgba(180,140,80,0.30)',   // hazy/dusty — high PM10
   rain: 'rgba(40,130,255,0.24)',   // active precipitation
-  cloud: 'rgba(190,196,210,0.18)', // heavy cloud cover — softens/desaturates the base color
+  // 0.18 read as just another shade of the heat-index olive/green rather than a distinct
+  // overlay layer — bumped to 0.32 (closer to rain/dust) so cloud reads as its own signal
+  // instead of blending into "this state happens to be a slightly different heat color."
+  cloud: 'rgba(190,196,210,0.32)', // heavy cloud cover — softens/desaturates the base color
   clear: null                      // no overlay — base heat color shows as-is
 }
 const WeatherOverlayLayer = React.memo(function WeatherOverlayLayer({ DATA }) {
@@ -1289,13 +1292,13 @@ const WeatherOverlayLayer = React.memo(function WeatherOverlayLayer({ DATA }) {
   )
 })
 
-// LAYER 1.6: weather-overlay icon markers — 🌧️/🌫️ pinned at each state's true geometric
-// centroid (computed in IndiaMap via d3-geo's geoCentroid, passed in as `centroids`).
-// Cloud gets no icon (it's the most common condition and the gray tint alone is already
-// unambiguous against the empty "clear" case) — rain and dust get one because their tints
-// (blue / tan) can otherwise read as similar shades once blended over green/olive heat
-// colors. Memoized on DATA + centroids only, same reasoning as the layers above.
-const WEATHER_OVERLAY_ICONS = { dust: '🌫️', rain: '🌧️', cloud: null, clear: null }
+// LAYER 1.6: weather-overlay icon markers — ☁️/🌧️/🌫️ pinned at each state's true geometric
+// centroid (computed in IndiaMap via d3-geo's geoCentroid, passed in as `centroids`). Even
+// at a bumped-up tint opacity, cloud's gray/blue-gray fill can still read as "just this
+// state's heat color" rather than a distinct overlay signal — the icon removes that
+// ambiguity the same way rain/dust's icons already do. Memoized on DATA + centroids only,
+// same reasoning as the layers above.
+const WEATHER_OVERLAY_ICONS = { dust: '🌫️', rain: '🌧️', cloud: '☁️', clear: null }
 const WeatherOverlayIcons = React.memo(function WeatherOverlayIcons({ DATA, centroids }) {
   return (
     <ComposableMap
@@ -1859,11 +1862,8 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
             <span>{t('heatLegend.dustStorm', 'Dust storm — high PM10 (tint)')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{
-              width: 10, height: 10, borderRadius: 2, flexShrink: 0,
-              background: 'rgba(190,196,210,0.6)', display: 'inline-block'
-            }} />
-            <span>{t('heatLegend.heavyCloud', 'Heavy cloud cover (muted tint)')}</span>
+            <span>☁️</span>
+            <span>{t('heatLegend.heavyCloud', 'Heavy cloud cover (tint)')}</span>
           </div>
         </div>
         {dataAgeLabel && (
