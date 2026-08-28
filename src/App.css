@@ -366,6 +366,10 @@ body {
   border-color: #b91c1c;
 }
 
+.status-hot .status-label {
+  color: #b91c1c;
+}
+
 .status-hot .status-value {
   color: #b91c1c;
 }
@@ -375,6 +379,10 @@ body {
   border-color: #ca8a04;
 }
 
+.status-climate .status-label {
+  color: #ca8a04;
+}
+
 .status-climate .status-value {
   color: #ca8a04;
 }
@@ -382,6 +390,10 @@ body {
 .status-online {
   background: transparent;
   border-color: #15803d;
+}
+
+.status-online .status-label {
+  color: #15803d;
 }
 
 .status-online .status-value {

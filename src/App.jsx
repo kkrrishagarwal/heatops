@@ -2231,7 +2231,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <div style={{ fontSize: 20 }}>🛰️</div>
           <div>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#00ff88' }}>BHASKAR OPS</div>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#d97706' }}>BHASKAR OPS</div>
             <div style={{ fontSize: 8, letterSpacing: '0.12em', color: '#64748b' }}>THERMAL</div>
           </div>
         </div>
@@ -2242,17 +2242,17 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
         {/* Status pills — all inline */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
           {[
-            { icon: '🔴', label: 'HEAT', value: 'HIGH', color: '#ff4444' },
-            { icon: '🟡', label: 'CLIMATE', value: 'EL NIÑO', color: '#fbbf24' },
-            { icon: '🟢', label: 'SYSTEM', value: 'OPS', color: '#00ff88' }
+            { icon: '🔴', label: 'HEAT', value: 'HIGH', color: '#dc2626', border: 'rgba(185,28,28,0.55)' },
+            { icon: '🟡', label: 'CLIMATE', value: 'EL NIÑO', color: '#eab308', border: 'rgba(202,138,4,0.55)' },
+            { icon: '🟢', label: 'SYSTEM', value: 'OPS', color: '#22c55e', border: 'rgba(21,128,61,0.55)' }
           ].map(pill => (
             <div
               key={pill.label}
               style={{
                 display: 'flex', flexDirection: 'column', gap: 1,
                 fontSize: 8, fontWeight: 700, color: pill.color,
-                background: `rgba(${pill.color === '#ff4444' ? '255,68,68' : pill.color === '#fbbf24' ? '251,191,36' : '0,255,136'},0.1)`,
-                border: `1px solid rgba(${pill.color === '#ff4444' ? '255,68,68' : pill.color === '#fbbf24' ? '251,191,36' : '0,255,136'},0.25)`,
+                background: 'transparent',
+                border: `1px solid ${pill.border}`,
                 borderRadius: 4, padding: '4px 8px', minWidth: 48, textAlign: 'center'
               }}
             >
@@ -2279,12 +2279,12 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
           {/* Agent badge */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6, fontSize: 9,
-            color: '#00ff88'
+            color: '#94a3b8'
           }}>
             <span>🤖</span>
             <div>
               <div style={{ fontWeight: 700, letterSpacing: '0.08em' }}>AGENT</div>
-              <div style={{ fontSize: 8, color: '#00ff88', letterSpacing: '0.08em' }}>ONLINE</div>
+              <div style={{ fontSize: 8, color: '#22c55e', letterSpacing: '0.08em' }}>ONLINE</div>
             </div>
           </div>
 
@@ -2300,19 +2300,19 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
           <button
             onClick={() => { setScreen('signin') }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(255,80,80,0.2)'
-              e.currentTarget.style.color = '#ff4444'
-              e.currentTarget.style.borderColor = 'rgba(255,80,80,0.6)'
+              e.currentTarget.style.background = 'rgba(185,28,28,0.12)'
+              e.currentTarget.style.color = '#ef4444'
+              e.currentTarget.style.borderColor = 'rgba(185,28,28,0.8)'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(255,80,80,0.08)'
-              e.currentTarget.style.color = '#ff6666'
-              e.currentTarget.style.borderColor = 'rgba(255,80,80,0.3)'
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = '#dc2626'
+              e.currentTarget.style.borderColor = 'rgba(185,28,28,0.5)'
             }}
             style={{
               padding: '6px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-              background: 'rgba(255,80,80,0.08)', color: '#ff6666',
-              border: '1px solid rgba(255,80,80,0.3)', borderRadius: 4,
+              background: 'transparent', color: '#dc2626',
+              border: '1px solid rgba(185,28,28,0.5)', borderRadius: 4,
               cursor: 'pointer', transition: 'all 0.2s'
             }}
           >
