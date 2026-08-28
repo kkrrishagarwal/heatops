@@ -1,6 +1,7 @@
 # PROJECT_EXPLAINED.md
 
 > This file is for you to read yourself — a beginner-friendly guide to the entire BhaskarOps codebase.
+> **Last updated: 28 August 2026** — Section 8 at the bottom covers everything that changed that day (visual redesign, mobile layout, resilience layer, view-mode toggle, weather fallback, AGNI upgrade, cross-tab sync).
 > Jargon has been avoided wherever possible. Every "real data" vs "estimated/static" claim below was confirmed by actually reading the code, not guessed.
 
 ---
@@ -36,12 +37,18 @@ heatops/
 │   ├── main.jsx                  — The actual React entry point (index.html loads this, and it renders App3D.jsx)
 │   ├── App.css / index.css / 3d-styles.css — Styling
 │   ├── components/                — Reusable UI pieces — each one a small, focused component (Section 5/6 has a file-by-file breakdown)
+│   ├── components/AppErrorBoundary.jsx — Safety net: if a section crashes, shows "Something went wrong — Try again" instead of a blank page (root + map-level)
+│   ├── components/ViewModeToggle.jsx   — The 📱 Mobile / 💻 Laptop layout switch in every navbar
 │   ├── hooks/
-│   │   └── useWeather.js          — The shared hook for fetching live weather data — caching + retry + offline-fallback all live here
+│   │   ├── useWeather.js          — The shared hook for fetching live weather data — caching + retry + fallback chain (live → cached → error) all live here
+│   │   └── useViewMode.js         — Remembers the user's Mobile/Laptop layout choice (localStorage) and stamps it on <html>
 │   ├── utils/                     — Pure logic/helper functions (no UI) — data fetching, math, formatting
-│   │   ├── weatherAPI.js          — Fetches REAL live weather+AQI from Open-Meteo (for one city, on demand)
+│   │   ├── weatherAPI.js          — Fetches REAL live weather+AQI from Open-Meteo (for one city, on demand) — every call has a 10s timeout
+│   │   ├── fetchJson.js           — The one shared "fetch JSON safely" helper (timeout, status check, clean errors) used by every data load
+│   │   ├── bulkWeatherCache.js    — Holds the daily bulk cache in memory so any part of the app can look a city up (used for fallbacks + AGNI)
+│   │   ├── agniLocationContext.js — Finds cities/states named in an AGNI question and attaches their real cached data
 │   │   ├── realData.js            — ⚠️ ILLUSTRATIVE/SEEDED data (not real) — details in Section 7
-│   │   ├── dashboardUtils.js      — Map math + login/auth localStorage helpers
+│   │   ├── dashboardUtils.js      — Map math + login/auth localStorage helpers + heatmap-grid buckets & intervention-impact preview
 │   │   ├── cityCoordinateResolver.js — Finds a city's lat/lon (exact match or fallback)
 │   │   ├── lulcFallback.js        — "Nearest real city" fallback logic for land-cover data
 │   │   ├── osmUtils.js            — Fetches live building-density from OpenStreetMap
@@ -90,12 +97,12 @@ Here's what happens, step by step, when a user opens the app:
 3. **Where does this cache come from?** Every night, a Vercel cron job (`"0 0 * * *"` in `vercel.json`) triggers `api/refresh-weather-cache.js`. This function fetches fresh data for every city from Open-Meteo, and — since serverless functions can't save files persistently — commits the result straight to GitHub via `githubCommit.js`, which automatically triggers a new deploy. That's why the map shows "Heat data loaded X min ago."
 
 4. **When a user clicks a state/city**, `App.jsx` does two things for that city in parallel:
-   - Fetches **real-time live weather** via the `useWeather()` hook (directly from Open-Meteo, just for this one city — fresher than the bulk cache)
+   - Fetches **real-time live weather** via the `useWeather()` hook (directly from Open-Meteo, just for this one city — fresher than the bulk cache). **If that live call fails** (timeout, rate limit, outage), the hook automatically shows the city's reading from the bulk cache instead, clearly labelled "Showing cached data from X ago" — it only shows an error if the cache has nothing for that city either (see Section 8.5).
    - Also pulls an **illustrative baseline** from `getCityData()` (which is NOT real — see Section 7) — used only for cosmetic/demo features
 
 5. **The dashboard's 5 tabs open up**: Overview (live weather+AQI), Analysis (satellite indices, ML model, land cover), Compare (multi-city radar chart), Interventions (cooling sliders + physics + cool-roof calculator), AI+Export (AGNI chat + download/share).
 
-6. **When someone asks AGNI a question**, the browser doesn't call Google Gemini directly (that would expose the API key) — it calls `/api/ask-ai` (a Vercel function), which calls Gemini on its own and sends the answer back.
+6. **When someone asks AGNI a question**, the browser doesn't call Google Gemini directly (that would expose the API key) — it calls `/api/ask-ai` (a Vercel function), which calls Gemini on its own and sends the answer. The request also carries the last few chat turns (so follow-ups make sense) and real cached data for any other cities/states named in the question (see Section 8.7). The endpoint allows 10 questions per minute per user. back.
 
 7. **When does data refresh:** The weather cache refreshes daily (via the midnight-UTC cron). Map boundaries (geojson), the ML model, and land-cover data are all static files that don't change until someone manually re-runs a script.
 
@@ -138,7 +145,14 @@ Here's what happens, step by step, when a user opens the app:
 | **Cool Roof ROI calculator** | `src/components/CoolRoofCalculator.jsx` |
 | **Physics explanations (formulas)** | `src/components/PhysicsPanel.jsx` |
 | **AGNI AI chatbot (frontend)** | `src/components/AIAnalystPanel.jsx` (main chat UI) + `src/components/FloatingAIAssistant.jsx` (floating bubble wrapper) |
-| **AGNI AI chatbot (backend/prompt)** | `api/_lib/askAI.js` (system prompt + Gemini call) → entry points: `api/ask-ai.js` (Vercel), `netlify/functions/ask-ai.js` (Netlify) |
+| **AGNI AI chatbot (backend/prompt)** | `api/_lib/askAI.js` (system prompt + Gemini call + rate limit + conversation memory) → entry points: `api/ask-ai.js` (Vercel), `netlify/functions/ask-ai.js` (Netlify), dev: `vite.config.js` |
+| **AGNI: other cities/states in a question** | `src/utils/agniLocationContext.js` (called from `AIAnalystPanel.jsx`) |
+| **Mobile / Laptop layout toggle** | `src/components/ViewModeToggle.jsx` + `src/hooks/useViewMode.js` + CSS rules `html[data-view-mode="compact"]` in `src/App.css` |
+| **"Data may be outdated / Live data unavailable" notes** | `src/App.jsx` — search for `CacheStatusNote`, `liveCacheStatus`, `isCacheStale` |
+| **Error screens ("Something went wrong", "Map could not be displayed")** | `src/components/AppErrorBoundary.jsx` (mounted in `src/main.jsx` and around `IndiaMap` in `src/App.jsx`) |
+| **Weather fallback when Open-Meteo fails** | `src/hooks/useWeather.js` (`resolveFallback`) + `src/utils/bulkWeatherCache.js` + partial-card rendering in `src/components/WeatherCard.jsx` |
+| **Intervention sliders → Analysis grid preview & badge** | `src/utils/dashboardUtils.js` (`computeInterventionImpact`, `getGridBucket`) + `src/App.jsx` (search `intervention-preview`, `grid-updated-badge`) |
+| **Collapsible map legend** | `src/App.jsx` — search for `legendOpen` inside `IndiaMap` |
 | **City comparison (radar chart)** | `src/components/CompareCitiesPanel.jsx` |
 | **Multilingual/language switcher** | `src/i18n/index.js` + `src/i18n/locales/*.json` — in App.jsx, search for `SUPPORTED_LANGUAGES`, `changeLanguage` |
 | **Sign-in/Register screen** | `src/components/LaunchScreen.jsx` |
@@ -161,6 +175,16 @@ Here's what happens, step by step, when a user opens the app:
 - **Want to add a new language** → Add a new `.json` file in `src/i18n/locales/` (copy `hi.json` and translate it, for example), then add it to the `SUPPORTED_LANGUAGES` list in `src/i18n/index.js`.
 
 - **Want to change how often weather refreshes** → Change the `schedule` (cron syntax) inside the `crons` array in `vercel.json`.
+
+- **Want to change when data counts as "outdated"** → `CACHE_STALE_MS` in `src/App.jsx` (currently 36 hours — the cron is daily, so this tolerates one late run).
+
+- **Want to change the colour palette** → The base tokens are CSS variables at the top of `src/App.css` (`--primary` amber `#d97706`, `--dark-bg`, `--card-bg`, and the risk colours `--extreme/--high/--moderate/--safe`). Map/legend colours: `HEAT_INDEX_BUCKETS` in `src/App.jsx`. Heatmap-grid colours: `GRID_BUCKETS` in `src/utils/dashboardUtils.js`. Heat-reactive panel accents: `UI_THEME_BUCKETS` in `src/App.jsx`.
+
+- **Want to change the Mobile/Laptop auto-default breakpoint** → `AUTO_BREAKPOINT_PX` in `src/hooks/useViewMode.js` (768px).
+
+- **Want AGNI to remember more/less of the chat, or allow more questions per minute** → `MAX_HISTORY_TURNS` and `RATE_LIMIT_MAX` in `api/_lib/askAI.js`.
+
+- **Want to change any network timeout** → each call passes `timeoutMs` to `fetchJson()` (`src/utils/fetchJson.js`); the default is 10s, GeoJSON maps use 90s.
 
 ---
 
@@ -187,6 +211,75 @@ Here's what happens, step by step, when a user opens the app:
 - **The Cool Roof calculator's cost coefficients** — reference numbers cited from real Indian pilot programs (Ahmedabad/Telangana), but they're static constants, not a live pricing feed
 
 **A simple rule of thumb the codebase itself follows:** wherever the UI shows a "Source: ..." badge (the `DataBadges.jsx` component), that number is real. Wherever there's no badge (like some Compare-panel fields, or the what-if simulator), it's the illustrative data from `realData.js`.
+
+---
+
+## 8. WHAT CHANGED ON 28 AUGUST 2026 — THE UPGRADE IN PLAIN LANGUAGE
+
+Everything below was built, tested with real failure simulations, and committed on 28 August 2026. Each item says what the problem was, what it looks like now, and exactly where the code lives.
+
+### 8.1 Visual redesign — a professional civic-tech look
+
+**Before:** neon green/cyan "hackathon" colours, glows, and gradients. **Now:** a single amber accent (`#d97706`) on a dark slate base, desaturated risk colours (Extreme `#b91c1c`, High `#c2410c`, Moderate `#ca8a04`, Safe `#15803d`), no glow effects — closer to an NDMA/IMD-style government dashboard.
+
+It was done in reviewed sections: **1** palette variables → **2** navbar (outline-style badges) → **3** ticker bar (muted text, red only for genuinely critical values like an AQI over 300 — a bug that stopped this from ever firing was fixed) → **1b** a four-part sweep that applied the palette everywhere the CSS variables couldn't reach (the map screen, dashboard panels, every component, launch/sign-in screens, even the custom cursor and loading screen) → **4** the map legend (see 8.2).
+
+A useful lesson from this pass, recorded so nobody repeats it: most of the visible UI is styled with inline `style={}` in `src/App.jsx`, not CSS classes. Changing a CSS class often changes nothing on screen. The sweep also found three CSS variables (`--green`, `--orange`, `--red`) that had been deleted while still referenced — those rules were silently dropped by the browser (invisible progress bars, unstyled buttons). All fixed; an audit now shows zero undefined variables.
+
+**Files:** `src/App.css`, `src/index.css`, `src/3d-styles.css`, `src/App.jsx`, every file in `src/components/`, `src/utils/3d-effects.js`.
+
+### 8.2 Map legend + mobile map layout
+
+- **Legend:** the "HEAT INDEX" card used to sit permanently over the map (covering ~60% of it on a phone). It's now collapsed into a small **🎨 Legend** button; tap to expand, ✕ to close. Its colours come from the same `HEAT_INDEX_BUCKETS` list that colours the states, so they can't drift apart. (`src/App.jsx`, search `legendOpen`.)
+- **Phone layout:** the map screen was a fixed two-column row (58% map / 42% panel) even at 375px, so India rendered about 105px wide. On phones the two columns now stack — map first, full width (India ≈ 205px wide, ~4× the area), side panel below. Because the page body itself can't scroll in this app, the map container becomes the scroll area. (`src/App.css`, the `html[data-view-mode="compact"]` rules; `src/App.jsx` classes `map-layout`, `map-layout-map`, `map-layout-side`.)
+
+### 8.3 Resilience — the app degrades gracefully instead of breaking
+
+Built in three priorities, each verified by actually blocking, delaying, or corrupting network responses:
+
+1. **Never a permanent spinner or blank page.** The map's data loader used to cache a *failed* download forever ("Loading map data…" for the whole session). It now shows "Map data could not be loaded" with a **Retry** button. Two safety nets were added: a root-level one (`src/main.jsx`) that turns any crash into a "Something went wrong — Try again / Reload" card, and a map-level one so a broken map leaves the navbar, ticker and panels working. (`src/components/AppErrorBoundary.jsx`.)
+2. **Honest data states everywhere.** The bulk weather cache can now be *loading*, *ready*, *outdated* (older than 36h) or *unavailable*. One shared `CacheStatusNote` shows the right line in every panel, the ticker badge says **LIVE / LOADING / CACHED / OFFLINE**, and a small chip on the map says when its colours come from cached or missing data. Before this, a missing cache silently showed hardcoded seed values as if they were live.
+3. **Every network call has a real timeout.** A shared helper, `src/utils/fetchJson.js`, gives each request a time limit (10s by default), treats non-200 responses as errors, and never lets a broken JSON body escape as a crash. All Open-Meteo calls, the weather cache, the ML/land-cover files and the GeoJSON maps go through it.
+
+Plus, on the server: the AGNI chat endpoint now allows **10 questions per minute per user**, caps question length, and returns clean errors instead of crashing on bad input (`api/_lib/askAI.js`).
+
+### 8.4 Weather-condition overlay on the map (rain / dust / cloud)
+
+Not new today, but documented here because the palette pass touched its colours. For each state, the app averages the bulk cache's PM10, rain-chance and cloud-cover across that state's cities, then picks **one** condition in priority order: dust if average PM10 ≥ 400, else rain if average rain chance ≥ 60%, else cloud if average cloud cover ≥ 80%, else clear. The state gets a translucent tint (hazy brown for dust, blue for rain, grey for cloud) drawn over its heat colour, plus a 🌫️ / 🌧️ / ☁️ marker at its geometric centre. The legend explains the tints. Because it's derived from the same bulk cache, the "outdated / unavailable" chip on the map covers it too. (`src/App.jsx`: `liveStateWeatherCondition`, `WEATHER_OVERLAY_TINTS`, `WeatherOverlayLayer`, `WeatherOverlayIcons`.)
+
+### 8.5 City-level weather fallback — live → cached → error
+
+When you open a city, the app asks Open-Meteo for fresh weather. Open-Meteo is free and occasionally rate-limits or times out. The order is now:
+
+1. **Live API** (fresh, most accurate) — with retries and backoff if rate-limited.
+2. **Cached reading** — if live fails, the hook checks this browser's last successful reading for that city *and* the daily bulk cache, and shows whichever is fresher, labelled **"Showing cached data from X ago — live data temporarily unavailable."** with a Force Refresh button. If the slow path takes more than 10s, the cached reading is shown immediately while the live call keeps trying.
+3. **Error** — only if neither exists (rare, since the cache covers ~1,700 cities).
+
+The bulk cache only has temperature, AQI, PM10, rain chance and cloud cover, so the cached card is a shorter version (no forecast, no humidity) and says so in its footer. Example: with Open-Meteo blocked and **Delhi** chosen, the card shows New Delhi's cached 32°C / AQI 152 instead of "Failed to fetch". (`src/hooks/useWeather.js` → `resolveFallback`; `src/utils/bulkWeatherCache.js`; `src/components/WeatherCard.jsx`.)
+
+### 8.6 📱 Mobile / 💻 Laptop view toggle
+
+A switch in the top-right of every navbar. **Mobile** = stacked panels, full-width map, one-column dashboard. **Laptop** = map and panels side by side, everything visible at once. The names describe the *layout*, not the device — anyone can pick either on any screen. First visit auto-selects (≤768px → Mobile), and the choice is saved in the browser (`localStorage` key `heatops_view_mode`). Technically the choice is stamped on the page as `<html data-view-mode="compact|full">` and the CSS reads that instead of screen size, so there's one layout system, not two. (`src/hooks/useViewMode.js`, `src/components/ViewModeToggle.jsx`, `src/main.jsx`, rules in `src/App.css`.)
+
+### 8.7 AGNI upgrade — memory, other cities, a human voice, strict scope
+
+- **Conversation memory:** the chat sends its last 10 turns with each question, so "aur uska AQI?" after asking about Delhi is understood as Delhi's AQI. (`src/components/AIAnalystPanel.jsx` builds `history`; `api/_lib/askAI.js` passes it to Gemini as a multi-turn conversation.)
+- **Other cities and states:** the question (and the last few turns) is scanned for city/state names in the bulk cache — with common aliases like Bangalore, Bombay, Gurgaon, Orissa. Matched cities get their real cached readings attached; matched states get a computed summary (average temperature, hottest and coolest cities, worst AQI). So "Rajasthan mein sabse garam sheher?" is answered from data, and "Mumbai vs Bengaluru" compares real numbers. Anything not in the cache is answered with "is city ka data abhi available nahi hai" — the prompt forbids guessing. (`src/utils/agniLocationContext.js`.)
+- **Voice:** the system prompt now describes AGNI as a warm, knowledgeable friend who loves this field — natural sentences, brief greetings for "hi" (no data dump), visible concern when a situation is dangerous, one consistent personality.
+- **Domain depth:** general questions inside the field ("UHI effect kya hota hai?") get a proper expert explanation, labelled as general climate science rather than app data.
+- **Scope boundary:** anything outside heat/climate/environment (coding, trivia, homework…) is politely declined and redirected, and AGNI holds that line even if the user insists.
+- **Honesty:** never invents a reading; says when data isn't available.
+
+All of this lives in the system prompt in `api/_lib/askAI.js` (sections WHO YOU ARE, VOICE & PERSONALITY, CONVERSATION MEMORY, DOMAIN DEPTH, MULTI-PART QUESTIONS, SCOPE BOUNDARY, HONESTY).
+
+### 8.8 Cross-tab sync — Interventions ↔ Analysis
+
+The three cooling sliders live on the **Interventions** tab but change the temperature heatmap grid on the **Analysis** tab, and nothing used to say so. Now:
+
+- Under the sliders, a live preview box recalculates as you drag: "−5.0°C per cell · 100/100 cells move to a cooler category · Extreme → Moderate: 45 · High → Low: 30 …", with a "View on Analysis tab →" shortcut.
+- When you then open Analysis, a "✨ Updated based on your intervention settings" badge sits above the grid for six seconds.
+
+How the two tabs share state: all three slider values are ordinary React state at the top of `App.jsx` (`treeSlider`, `roofSlider`, `waterSlider`), and both tabs read the same variables. The preview uses the exact same cell formula (`getCellTemp`) and the same colour thresholds (`getGridBucket`) as the grid, so what it predicts is what you see. A timestamp (`interventionTouchedAt`) records the last slider change; the Analysis tab shows the badge when it opens after that timestamp, once per change. (`src/utils/dashboardUtils.js`: `GRID_BUCKETS`, `getGridBucket`, `computeInterventionImpact`; `src/App.jsx`: search `intervention-preview`, `grid-updated-badge`.)
 
 ---
 
