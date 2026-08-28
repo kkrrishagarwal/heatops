@@ -1922,7 +1922,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           375px screen) it could cover nearly the entire visible map. */}
       {/* Cache-status chip — the state colours, weather-overlay tints and marker icons on this
           map all come from the bulk live-weather cache, so the map says so when that cache is
-          missing or older than 24h (same rule as CacheStatusNote / the ticker badge). */}
+          missing or older than 36h (same rule as CacheStatusNote / the ticker badge). */}
       {(cacheStatus !== 'ready' || cacheStale) && (
         <div style={{
           position: 'absolute', top: 60, left: 12, zIndex: 20,
@@ -2265,7 +2265,7 @@ const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveS
       padding: '0 16px', gap: 12, overflow: 'hidden'
     }}>
       {/* LIVE / CACHED / OFFLINE badge */}
-      <div title={cacheStale ? 'Bulk weather cache is older than 24h' : undefined} style={{
+      <div title={cacheStale ? 'Bulk weather cache is older than 36h' : undefined} style={{
         display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
         color: badge.color, flexShrink: 0
       }}>
@@ -2884,7 +2884,10 @@ function App({ user }) {
   // hours — if the refresh job behind it ever stalls (cron misconfigured, daemon not running,
   // a fresh pull never committed), this catches it and tells the user honestly instead of
   // quietly showing a days-old number as if it were current.
-  const isCacheStale = (iso) => !!iso && (Date.now() - new Date(iso).getTime()) > 24 * 60 * 60 * 1000
+  // 36h, not 24h: the refresh cron is daily, so a 24h threshold flipped the whole UI to
+  // "outdated" on a single delayed run. 36h tolerates one late run but still catches a stall.
+  const CACHE_STALE_MS = 36 * 60 * 60 * 1000
+  const isCacheStale = (iso) => !!iso && (Date.now() - new Date(iso).getTime()) > CACHE_STALE_MS
 
   // Sliders (Interventions)
   const [treeSlider, setTreeSlider] = useState(0)
