@@ -2,7 +2,7 @@
 // The frontend calls this endpoint instead of Gemini's API directly, so the
 // Gemini API key (process.env.GEMINI_API_KEY, server-side only) never reaches
 // the browser bundle or any request the client makes.
-import { callGemini, AskAIError } from './_lib/askAI.js'
+import { handleAskAI, getClientKey, AskAIError } from './_lib/askAI.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,14 +12,16 @@ export default async function handler(req, res) {
 
   try {
     const { question, context } = req.body || {}
-    console.log('[api/ask-ai] incoming request:', { question, context })
-    const { answer } = await callGemini({ question, context })
+    const clientKey = getClientKey(req.headers, req.socket?.remoteAddress)
+    console.log('[api/ask-ai] incoming request:', { question, context, clientKey })
+    const { answer } = await handleAskAI({ question, context, clientKey })
     console.log('[api/ask-ai] Gemini answered:', answer.slice(0, 120))
     return res.status(200).json({ answer })
   } catch (err) {
     const status = err instanceof AskAIError ? err.status : 500
     const retryAfterSeconds = err instanceof AskAIError ? err.retryAfterSeconds : null
     console.error('[api/ask-ai] error:', status, err.message)
+    if (retryAfterSeconds) res.setHeader('Retry-After', String(retryAfterSeconds))
     return res.status(status).json({ error: err.message || 'Internal server error.', retryAfterSeconds })
   }
 }

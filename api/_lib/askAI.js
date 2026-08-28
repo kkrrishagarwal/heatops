@@ -23,6 +23,90 @@ export class AskAIError extends Error {
   }
 }
 
+// ── Input limits ───────────────────────────────────────────────────────────
+// A single chat turn never legitimately needs more than this; anything larger is
+// either a bug or someone trying to burn tokens. Rejected with 400 before Gemini.
+const MAX_QUESTION_CHARS = 2000
+const MAX_CONTEXT_CHARS = 4000
+
+// ── Per-client rate limit (sliding window) ─────────────────────────────────
+// 10 requests / minute per client key (IP). Kept in process memory: on Vercel/
+// Netlify that means per warm function instance, so it is a best-effort guard
+// against one browser spamming the endpoint (the stated goal), not a
+// distributed quota. Good enough to stop a single user from saturating the
+// Gemini key; a shared store (Upstash/Redis) would be the next step if needed.
+export const RATE_LIMIT_MAX = 10
+export const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX_KEYS = 5000
+const rateBuckets = new Map() // clientKey -> ascending array of hit timestamps
+
+export function checkRateLimit(clientKey, now = Date.now()) {
+  const key = clientKey || 'unknown'
+  const cutoff = now - RATE_LIMIT_WINDOW_MS
+  let hits = rateBuckets.get(key)
+  if (hits) {
+    while (hits.length && hits[0] <= cutoff) hits.shift()
+  } else {
+    hits = []
+    rateBuckets.set(key, hits)
+  }
+  if (hits.length >= RATE_LIMIT_MAX) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((hits[0] + RATE_LIMIT_WINDOW_MS - now) / 1000))
+    return { allowed: false, remaining: 0, retryAfterSeconds }
+  }
+  hits.push(now)
+  // Opportunistic cleanup so the map can't grow without bound on a long-lived instance.
+  if (rateBuckets.size > RATE_LIMIT_MAX_KEYS) {
+    for (const [k, v] of rateBuckets) {
+      if (!v.length || v[v.length - 1] <= cutoff) rateBuckets.delete(k)
+    }
+  }
+  return { allowed: true, remaining: RATE_LIMIT_MAX - hits.length, retryAfterSeconds: null }
+}
+
+// Derive a stable per-client key from proxy headers (Vercel/Netlify put the real
+// client IP in x-forwarded-for / x-nf-client-connection-ip), falling back to the
+// socket address in local dev. Header lookup is case-insensitive.
+export function getClientKey(headers = {}, fallback = 'unknown') {
+  const get = (name) => {
+    const direct = headers[name] ?? headers[name.toLowerCase()]
+    if (direct != null) return direct
+    const found = Object.keys(headers).find(k => k.toLowerCase() === name.toLowerCase())
+    return found ? headers[found] : undefined
+  }
+  const raw = get('x-nf-client-connection-ip') || get('x-real-ip') || get('x-forwarded-for') || fallback
+  return String(raw).split(',')[0].trim() || fallback
+}
+
+// Single entry point used by every transport (Vercel, Netlify, Vite dev):
+// validate → rate-limit → Gemini. Throws AskAIError for every failure mode so
+// the transports only have to map {status, message, retryAfterSeconds} to a reply.
+export async function handleAskAI({ question, context, clientKey }) {
+  if (!question || typeof question !== 'string' || !question.trim()) {
+    throw new AskAIError(400, 'Missing "question" in request body.')
+  }
+  if (question.length > MAX_QUESTION_CHARS) {
+    throw new AskAIError(400, `Question is too long (max ${MAX_QUESTION_CHARS} characters).`)
+  }
+  if (context != null && typeof context !== 'string') {
+    throw new AskAIError(400, '"context" must be a string.')
+  }
+  if (context && context.length > MAX_CONTEXT_CHARS) {
+    throw new AskAIError(400, `Context is too long (max ${MAX_CONTEXT_CHARS} characters).`)
+  }
+
+  const limit = checkRateLimit(clientKey)
+  if (!limit.allowed) {
+    throw new AskAIError(
+      429,
+      `Too many requests — AGNI allows ${RATE_LIMIT_MAX} questions per minute. Please wait ${limit.retryAfterSeconds}s and try again.`,
+      limit.retryAfterSeconds
+    )
+  }
+
+  return callGemini({ question, context })
+}
+
 // Gemini's 429 responses include a structured google.rpc.RetryInfo detail
 // with a "13s"-style retryDelay string — pull the exact wait time out of it
 // so the frontend can show a real countdown instead of a guessed one.
@@ -265,7 +349,14 @@ ALWAYS REMEMBER
     clearTimeout(timeout)
   }
 
-  const data = await response.json()
+  let data
+  try {
+    data = await response.json()
+  } catch {
+    // Non-JSON body (HTML error page, truncated reply, etc.) — surface a clean
+    // upstream error instead of letting the JSON parse error escape as a 500.
+    throw new AskAIError(response.ok ? 502 : response.status, `Gemini API returned an unreadable response (HTTP ${response.status}).`)
+  }
 
   if (!response.ok) {
     const retryAfterSeconds = response.status === 429 ? parseRetryAfterSeconds(data) : null

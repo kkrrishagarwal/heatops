@@ -2,7 +2,7 @@
 // Netlify instead of Vercel. Reused via the same server-side-only callGemini()
 // helper so both deploy targets share one code path and one place the
 // GEMINI_API_KEY env var is read from.
-import { callGemini, AskAIError } from '../../api/_lib/askAI.js'
+import { handleAskAI, getClientKey, AskAIError } from '../../api/_lib/askAI.js'
 
 export async function handler(event) {
   if (event.httpMethod !== 'POST') {
@@ -10,15 +10,23 @@ export async function handler(event) {
   }
 
   try {
-    const { question, context } = JSON.parse(event.body || '{}')
-    console.log('[netlify/ask-ai] incoming request:', { question, context })
-    const { answer } = await callGemini({ question, context })
+    let body
+    try {
+      body = JSON.parse(event.body || '{}')
+    } catch {
+      return { statusCode: 400, body: JSON.stringify({ error: 'Request body must be valid JSON.', retryAfterSeconds: null }) }
+    }
+    const { question, context } = body
+    const clientKey = getClientKey(event.headers, 'unknown')
+    console.log('[netlify/ask-ai] incoming request:', { question, context, clientKey })
+    const { answer } = await handleAskAI({ question, context, clientKey })
     console.log('[netlify/ask-ai] Gemini answered:', answer.slice(0, 120))
     return { statusCode: 200, body: JSON.stringify({ answer }) }
   } catch (err) {
     const status = err instanceof AskAIError ? err.status : 500
     const retryAfterSeconds = err instanceof AskAIError ? err.retryAfterSeconds : null
     console.error('[netlify/ask-ai] error:', status, err.message)
-    return { statusCode: status, body: JSON.stringify({ error: err.message || 'Internal server error.', retryAfterSeconds }) }
+    const headers = retryAfterSeconds ? { 'Retry-After': String(retryAfterSeconds) } : undefined
+    return { statusCode: status, headers, body: JSON.stringify({ error: err.message || 'Internal server error.', retryAfterSeconds }) }
   }
 }

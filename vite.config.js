@@ -71,11 +71,22 @@ function askAIDevMiddleware(mode) {
         try {
           const chunks = []
           for await (const chunk of req) chunks.push(chunk)
-          const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}
-          console.log('[ask-ai dev middleware] incoming request:', { question: body.question, context: body.context })
+          let body = {}
+          if (chunks.length) {
+            try {
+              body = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+            } catch {
+              res.statusCode = 400
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ error: 'Request body must be valid JSON.', retryAfterSeconds: null }))
+              return
+            }
+          }
+          const { handleAskAI, getClientKey } = await server.ssrLoadModule('/api/_lib/askAI.js')
+          const clientKey = getClientKey(req.headers, req.socket?.remoteAddress)
+          console.log('[ask-ai dev middleware] incoming request:', { question: body.question, context: body.context, clientKey })
 
-          const { callGemini } = await server.ssrLoadModule('/api/_lib/askAI.js')
-          const { answer } = await callGemini({ question: body.question, context: body.context })
+          const { answer } = await handleAskAI({ question: body.question, context: body.context, clientKey })
           console.log('[ask-ai dev middleware] Gemini answered:', answer.slice(0, 120))
 
           res.setHeader('Content-Type', 'application/json')
@@ -85,6 +96,7 @@ function askAIDevMiddleware(mode) {
           const status = err?.status || 500
           res.statusCode = status
           res.setHeader('Content-Type', 'application/json')
+          if (err?.retryAfterSeconds) res.setHeader('Retry-After', String(err.retryAfterSeconds))
           res.end(JSON.stringify({ error: err.message || 'Internal server error.', retryAfterSeconds: err?.retryAfterSeconds ?? null }))
         }
       })
