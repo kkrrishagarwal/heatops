@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { buildLocationContext } from '../utils/agniLocationContext'
 
+const LANGUAGE_NAMES = { en: 'English', hi: 'Hindi', bn: 'Bengali', mr: 'Marathi', te: 'Telugu', ta: 'Tamil', gu: 'Gujarati', ur: 'Urdu', kn: 'Kannada', or: 'Odia', pa: 'Punjabi' }
+
 // Shared AI Analyst UI + logic — used by both the AI+Export tab panel and the
 // floating quick-access assistant, so behavior (free-text question, suggestion
 // chips, chat history, loading state) stays identical no matter where it's
@@ -41,7 +43,7 @@ export function AIAnalystPanel({
   chatHistory, setChatHistory, aiLoading, setAiLoading,
   selectedQuestion, setSelectedQuestion
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const city = cityName || 'this city'
   const [questionText, setQuestionText] = useState('')
   const [cooldownSeconds, setCooldownSeconds] = useState(0)
@@ -138,7 +140,9 @@ export function AIAnalystPanel({
     // only says "uska" still gets the earlier city's data attached.
     const recentUserText = history.filter(h => h.role === 'user').slice(-3).map(h => h.text).join(' ')
     const location = buildLocationContext(`${question} ${recentUserText}`, city)
-    const fullContext = context + location.text
+    // The app's UI language is the tie-breaker for messages with no language signal ("hi").
+    const uiLang = LANGUAGE_NAMES[(i18n?.language || 'en').split('-')[0]] || 'English'
+    const fullContext = `${context} Preferred reply language: ${uiLang}.` + location.text
     const requestBody = { question, context: fullContext, history }
     console.log('[AIAnalystPanel] sending request to /api/ask-ai:', { ...requestBody, extraLocations: { cities: location.cities, states: location.states } })
 
