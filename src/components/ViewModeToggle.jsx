@@ -1,11 +1,13 @@
 import React from 'react'
 
-// Segmented "Compact | Full" control. One shared component for every navbar so
-// the two modes are always switchable from the same place, on any device.
+// Segmented "📱 Mobile | 💻 Laptop" control. One shared component for every navbar so
+// the two modes are always switchable from the same place. The names describe the
+// LAYOUT, not the device: anyone can pick either one on any screen — internally
+// they are still the 'compact' / 'full' view modes (see hooks/useViewMode.js).
 export default function ViewModeToggle({ mode, onChange, size = 'sm' }) {
   const options = [
-    { value: 'compact', label: 'Compact', title: 'Compact view — stacked panels, full-width map' },
-    { value: 'full', label: 'Full', title: 'Full view — map and panels side by side' }
+    { value: 'compact', label: '📱 Mobile', title: 'Mobile layout — stacked panels, simple cards, full-width map (works on any device)' },
+    { value: 'full', label: '💻 Laptop', title: 'Laptop layout — map and detailed panels side by side (works on any device)' }
   ]
   const fontSize = size === 'sm' ? 9 : 11
   const pad = size === 'sm' ? '4px 8px' : '6px 10px'
@@ -13,7 +15,7 @@ export default function ViewModeToggle({ mode, onChange, size = 'sm' }) {
   return (
     <div
       role="group"
-      aria-label="View mode"
+      aria-label="Layout"
       style={{
         display: 'inline-flex',
         alignItems: 'stretch',
@@ -41,7 +43,6 @@ export default function ViewModeToggle({ mode, onChange, size = 'sm' }) {
               fontSize,
               fontWeight: 700,
               letterSpacing: '0.08em',
-              textTransform: 'uppercase',
               cursor: active ? 'default' : 'pointer',
               whiteSpace: 'nowrap',
               minHeight: 28,

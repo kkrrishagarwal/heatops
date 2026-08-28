@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 
-// View mode — "compact" (stacked panels, full-width map) vs "full" (side-by-side
-// map + panels). It is a user choice independent of the device: the CSS keys
+// View mode — "compact" (shown to users as 📱 Mobile: stacked panels, full-width
+// map) vs "full" (💻 Laptop: side-by-side map + panels). It is a user choice
+// independent of the device: the CSS keys
 // off `html[data-view-mode]`, not media queries, so a phone can run Full and a
 // desktop can run Compact. First visit auto-selects from the viewport width;
 // once the user picks a mode it is stored and the auto rule stops applying.
