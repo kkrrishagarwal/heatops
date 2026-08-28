@@ -362,18 +362,30 @@ body {
 }
 
 .status-hot {
-  background: rgba(255, 68, 68, 0.16);
-  border-color: rgba(255, 68, 68, 0.22);
+  background: transparent;
+  border-color: #b91c1c;
+}
+
+.status-hot .status-value {
+  color: #b91c1c;
 }
 
 .status-climate {
-  background: rgba(102, 126, 234, 0.14);
-  border-color: rgba(102, 126, 234, 0.24);
+  background: transparent;
+  border-color: #ca8a04;
+}
+
+.status-climate .status-value {
+  color: #ca8a04;
 }
 
 .status-online {
-  background: rgba(0, 255, 136, 0.12);
-  border-color: rgba(0, 255, 136, 0.22);
+  background: transparent;
+  border-color: #15803d;
+}
+
+.status-online .status-value {
+  color: #15803d;
 }
 
 .hud-right {
@@ -446,14 +458,16 @@ body {
 }
 
 .logout-pill {
-  color: #ff7676;
+  color: #b91c1c;
   font-weight: 700;
   justify-content: center;
+  background: transparent;
+  border-color: #b91c1c;
 }
 
 .logout-pill:hover {
-  background: rgba(255,118,118,0.12);
-  border-color: rgba(255,118,118,0.3);
+  background: rgba(185, 28, 28, 0.08);
+  border-color: #b91c1c;
 }
 
 .hud-bottom {
