@@ -236,7 +236,7 @@ function AQIDetail({ icon, label, value }) {
 const styles = {
   card: {
     background: 'rgba(10, 14, 26, 0.98)',
-    border: '1px solid rgba(0, 255, 136, 0.2)',
+    border: '1px solid rgba(148, 163, 184, 0.2)',
     borderRadius: '14px',
     padding: '20px',
     marginTop: '16px',
@@ -254,7 +254,7 @@ const styles = {
     alignItems: 'flex-start',
     marginBottom: '16px',
     paddingBottom: '12px',
-    borderBottom: '1px solid rgba(0, 255, 136, 0.15)'
+    borderBottom: '1px solid rgba(148, 163, 184, 0.15)'
   },
 
   title: {
@@ -283,9 +283,9 @@ const styles = {
   },
 
   retryBtn: {
-    background: 'rgba(0, 255, 136, 0.1)',
-    border: '1px solid rgba(0, 255, 136, 0.3)',
-    color: '#22c55e',
+    background: 'rgba(217, 119, 6, 0.1)',
+    border: '1px solid rgba(217, 119, 6, 0.35)',
+    color: '#d97706',
     fontSize: '13px',
     cursor: 'pointer',
     padding: '8px 14px',
@@ -305,9 +305,9 @@ const styles = {
 
   fallbackBadge: {
     fontSize: '10px',
-    color: 'rgba(0, 212, 255, 0.85)',
-    background: 'rgba(0, 212, 255, 0.08)',
-    border: '1px solid rgba(0, 212, 255, 0.25)',
+    color: 'rgba(217, 119, 6, 0.95)',
+    background: 'rgba(217, 119, 6, 0.08)',
+    border: '1px solid rgba(217, 119, 6, 0.3)',
     borderRadius: '6px',
     padding: '5px 8px',
     marginTop: '6px',
@@ -327,8 +327,8 @@ const styles = {
   },
 
   clockSection: {
-    background: 'linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(34, 197, 94, 0.05))',
-    border: '1px solid rgba(0, 255, 136, 0.25)',
+    background: 'rgba(30, 41, 59, 0.6)',
+    border: '1px solid rgba(148, 163, 184, 0.2)',
     borderRadius: '10px',
     padding: '14px',
     marginBottom: '14px',
@@ -355,8 +355,8 @@ const styles = {
   },
 
   mainTemp: {
-    background: 'rgba(0, 255, 136, 0.08)',
-    border: '1px solid rgba(0, 255, 136, 0.2)',
+    background: 'rgba(30, 41, 59, 0.6)',
+    border: '1px solid rgba(148, 163, 184, 0.2)',
     borderRadius: '10px',
     padding: '16px',
     marginBottom: '14px',
@@ -397,7 +397,7 @@ const styles = {
 
   statBox: {
     background: 'rgba(0, 100, 255, 0.08)',
-    border: '1px solid rgba(0, 150, 255, 0.15)',
+    border: '1px solid rgba(148, 163, 184, 0.15)',
     borderRadius: '8px',
     padding: '10px',
     textAlign: 'center'

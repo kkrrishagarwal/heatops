@@ -61,8 +61,8 @@ export function LandCoverPanel({ lulcData, cityName, stateName, coordsData }) {
         </div>
         <div style={{
           padding: "12px 14px",
-          background: "rgba(255,204,0,0.06)",
-          border: "1px solid rgba(255,204,0,0.25)",
+          background: "rgba(148,163,184,0.06)",
+          border: "1px solid rgba(148,163,184,0.2)",
           borderRadius: 8,
           fontSize: 11,
           lineHeight: 1.6,
@@ -79,9 +79,9 @@ export function LandCoverPanel({ lulcData, cityName, stateName, coordsData }) {
   }
 
   const segments = [
-    { key: 'builtUp', label: t('landCover.builtUp', 'Built-up'), color: '#ff6b35', value: entry.builtUp },
-    { key: 'vegetation', label: t('landCover.vegetation', 'Vegetation'), color: '#00ff88', value: entry.vegetation },
-    { key: 'water', label: t('landCover.water', 'Water'), color: '#00a8ff', value: entry.water },
+    { key: 'builtUp', label: t('landCover.builtUp', 'Built-up'), color: '#c2410c', value: entry.builtUp },
+    { key: 'vegetation', label: t('landCover.vegetation', 'Vegetation'), color: '#15803d', value: entry.vegetation },
+    { key: 'water', label: t('landCover.water', 'Water'), color: '#3b82f6', value: entry.water },
     { key: 'bareOther', label: t('landCover.bareOther', 'Bare Soil / Other'), color: '#94a3b8', value: entry.bareOther },
   ]
 
@@ -95,8 +95,8 @@ export function LandCoverPanel({ lulcData, cityName, stateName, coordsData }) {
         <div style={{
           marginBottom: 14,
           padding: "8px 12px",
-          background: "rgba(255,204,0,0.06)",
-          border: "1px solid rgba(255,204,0,0.3)",
+          background: "rgba(148,163,184,0.06)",
+          border: "1px solid rgba(148,163,184,0.2)",
           borderRadius: 8,
           fontSize: 10,
           lineHeight: 1.6,
@@ -117,8 +117,8 @@ export function LandCoverPanel({ lulcData, cityName, stateName, coordsData }) {
         <div style={{
           marginBottom: 14,
           padding: "8px 12px",
-          background: "rgba(0,168,255,0.06)",
-          border: "1px solid rgba(0,168,255,0.25)",
+          background: "rgba(148,163,184,0.06)",
+          border: "1px solid rgba(148,163,184,0.2)",
           borderRadius: 8,
           fontSize: 10,
           lineHeight: 1.5,

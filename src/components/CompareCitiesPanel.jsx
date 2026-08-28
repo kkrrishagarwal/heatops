@@ -16,7 +16,7 @@ import { useWeather } from '../hooks/useWeather'
 const MAX_COMPARE = 4
 const SEARCH_DEBOUNCE_MS = 250
 // index 0 is always the baseline (selectedCity); 1-4 are the added compare cities
-const SERIES_COLORS = ['#00ff88', '#ff6b35', '#00a8ff', '#ffcc00', '#c77dff']
+const SERIES_COLORS = ['#d97706', '#dc2626', '#3b82f6', '#22c55e', '#8b5cf6']
 
 function normalize(val, min, max) {
   return Math.round(Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100)))
@@ -30,8 +30,8 @@ const SuggestionRow = React.memo(function SuggestionRow({ city, state, isActive,
       style={{
         padding: '10px 14px',
         fontSize: 13,
-        color: isActive ? '#00ff88' : '#fff',
-        background: isActive ? 'rgba(0,255,136,0.1)' : 'transparent',
+        color: isActive ? '#d97706' : '#fff',
+        background: isActive ? 'rgba(217,119,6,0.1)' : 'transparent',
         cursor: 'pointer',
         borderBottom: '1px solid #1a2a4a',
         display: 'flex',
@@ -217,7 +217,7 @@ export function CompareCitiesPanel({ selectedCity, selectedState, liveWeather, a
         {dropOpen && suggestions.length > 0 && (
           <div style={{
             position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
-            background: '#0f1729', border: '1px solid #00ff88', borderRadius: 8,
+            background: '#0f1729', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 8,
             zIndex: 1000, maxHeight: 320, overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
           }}>
             {suggestions.map((s, i) => (
@@ -267,11 +267,11 @@ export function CompareCitiesPanel({ selectedCity, selectedState, liveWeather, a
                 />
               ))}
               <Legend wrapperStyle={{ fontSize: 12, color: '#fff' }} />
-              <Tooltip contentStyle={{ background: '#0f1729', border: '1px solid #00ff88', borderRadius: 8, color: '#fff', fontSize: 11 }} />
+              <Tooltip contentStyle={{ background: '#0f1729', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 8, color: '#fff', fontSize: 11 }} />
             </RadarChart>
           </ResponsiveContainer>
           {coolest && (
-            <div style={{ marginTop: 12, background: 'rgba(0,255,136,0.1)', border: '1px solid #00ff88', color: '#00ff88', padding: '10px 14px', borderRadius: 8, fontSize: 13 }}>
+            <div style={{ marginTop: 12, background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.4)', color: '#d97706', padding: '10px 14px', borderRadius: 8, fontSize: 13 }}>
               🌿 {coolest.city} {t('compareCities.coolest', 'is the coolest selected city')} ({coolest.lst}°C LST)
             </div>
           )}

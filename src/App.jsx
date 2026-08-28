@@ -427,14 +427,14 @@ function getTimeOffset(hour) {
 function getRiskBadgeColor(risk){
   const map = {
     // Legacy hardcoded STATE_DATA risk labels (pre-cache fallback)
-    EXTREME: {bg:'#ff2222', text:'#fff'},
-    HIGH: {bg:'#ff6b35', text:'#fff'},
-    MODERATE: {bg:'#ffcc00', text:'#222'},
-    COOL: {bg:'#00cc66', text:'#fff'},
+    EXTREME: {bg:'#b91c1c', text:'#fff'},
+    HIGH: {bg:'#c2410c', text:'#fff'},
+    MODERATE: {bg:'#ca8a04', text:'#0f172a'},
+    COOL: {bg:'#15803d', text:'#fff'},
     // Bucket labels from getRiskLabel(liveHeatIndex) — the live-derived path
-    'VERY HIGH': {bg:'#e63c00', text:'#fff'},
-    'LOW-MODERATE': {bg:'#99aa00', text:'#222'},
-    'LOW': {bg:'#00cc66', text:'#fff'}
+    'VERY HIGH': {bg:'#c2410c', text:'#fff'},
+    'LOW-MODERATE': {bg:'#4d7c0f', text:'#fff'},
+    'LOW': {bg:'#15803d', text:'#fff'}
   }
   return map[risk] || {bg:'#444', text:'#fff'}
 }
@@ -448,19 +448,19 @@ function submitSignIn(name, email, password){
 
 function getRiskBg(risk) {
   const m = {
-    EXTREME: "#ff2222",
-    HIGH: "#ff6b35",
-    MODERATE: "#ffcc00",
-    COOL: "#00cc66"
+    EXTREME: "#b91c1c",
+    HIGH: "#c2410c",
+    MODERATE: "#ca8a04",
+    COOL: "#15803d"
   }
   return m[risk] || "#444"
 }
 
 function getAQIColor(aqi) {
-  if (aqi > 300) return "#ff2222"
-  if (aqi > 200) return "#ff6b35"
-  if (aqi > 100) return "#ffcc00"
-  return "#00ff88"
+  if (aqi > 300) return "#dc2626"
+  if (aqi > 200) return "#ea580c"
+  if (aqi > 100) return "#eab308"
+  return "#22c55e"
 }
 
 function getRiskText(risk) {
@@ -517,8 +517,8 @@ function LanguageDropdown() {
               onClick={() => { changeLanguage(lang.code); setOpen(false) }}
               style={{
                 padding: '9px 14px', cursor: 'pointer', fontSize: 13, fontFamily: INDIC_FONT_STACK,
-                color: lang.code === current.code ? '#00ff88' : '#e2e8f0',
-                background: lang.code === current.code ? 'rgba(0,255,136,0.08)' : 'transparent',
+                color: lang.code === current.code ? '#d97706' : '#e2e8f0',
+                background: lang.code === current.code ? 'rgba(217,119,6,0.1)' : 'transparent',
                 borderBottom: '1px solid rgba(255,255,255,0.06)'
               }}
               onMouseEnter={e => { if (lang.code !== current.code) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
@@ -1092,7 +1092,7 @@ function getPrecautionInfo(temp, aqi) {
     return {
       category: 'COLD',
       groupKey: 'COLD',
-      color: '#00a8ff',
+      color: '#2563eb',
       items: [
         'Layer clothing, cover extremities (hands, ears, head)',
         'Watch for hypothermia signs in elderly/infants',
@@ -1974,15 +1974,15 @@ const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout }) => {
           display: 'flex', alignItems: 'center', gap: 6,
           cursor: 'pointer',
           background: 'rgba(255,255,255,0.03)',
-          border: `1px solid ${isAdmin ? 'rgba(255,215,0,0.3)' : 'rgba(0,212,255,0.2)'}`,
+          border: `1px solid ${isAdmin ? 'rgba(234,179,8,0.35)' : 'rgba(217,119,6,0.3)'}`,
           borderRadius: 6, padding: '3px 8px', fontSize: 11
         }}
       >
         <div style={{
           width: 20, height: 20, borderRadius: 3,
-          background: isAdmin ? 'rgba(255,215,0,0.2)' : 'rgba(0,212,255,0.2)',
+          background: isAdmin ? 'rgba(234,179,8,0.2)' : 'rgba(217,119,6,0.2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 10, color: isAdmin ? '#fbbf24' : '#00d4ff'
+          fontSize: 10, color: isAdmin ? '#eab308' : '#d97706'
         }}>
           {currentUser?.name?.charAt(0) || 'U'}
         </div>
@@ -2007,8 +2007,8 @@ const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout }) => {
               <div style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0' }}>{currentUser?.name}</div>
               <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>{currentUser?.email}</div>
               <div style={{
-                fontSize: 9, marginTop: 4, background: isAdmin ? 'rgba(255,215,0,0.15)' : 'rgba(0,212,255,0.15)',
-                color: isAdmin ? '#fbbf24' : '#00d4ff', borderRadius: 4, padding: '2px 6px',
+                fontSize: 9, marginTop: 4, background: isAdmin ? 'rgba(234,179,8,0.15)' : 'rgba(217,119,6,0.15)',
+                color: isAdmin ? '#eab308' : '#d97706', borderRadius: 4, padding: '2px 6px',
                 width: 'fit-content'
               }}>
                 {isAdmin ? 'ADMIN' : 'USER'}
@@ -2892,14 +2892,14 @@ function App({ user }) {
     // Live state heat index (mean of the state's live city temps) when the cache is in;
     // hardcoded avgLST only as the pre-load fallback.
     const stateHeat = liveIndiaData[selectedState]?.heatIndexLive ? liveIndiaData[selectedState].heatIndex : state.avgLST
-    if(stateHeat > 45) newAlerts.push({id:1,icon:'🔴',text:t('alerts.extremeHeat', 'EXTREME heat: LST > 45°C'),color:'#ff2222'})
-    if(liveWeather?.aqi?.usAQI > 300) newAlerts.push({id:2,icon:'🟠',text:t('alerts.highAqi', 'HIGH AQI: > 300'),color:'#ff6b35'})
-    if(state.ndbi > 0.5) newAlerts.push({id:3,icon:'🟡',text:t('alerts.moderateHeat', 'MODERATE urban heat'),color:'#ffcc00'})
+    if(stateHeat > 45) newAlerts.push({id:1,icon:'🔴',text:t('alerts.extremeHeat', 'EXTREME heat: LST > 45°C'),color:'#dc2626'})
+    if(liveWeather?.aqi?.usAQI > 300) newAlerts.push({id:2,icon:'🟠',text:t('alerts.highAqi', 'HIGH AQI: > 300'),color:'#ea580c'})
+    if(state.ndbi > 0.5) newAlerts.push({id:3,icon:'🟡',text:t('alerts.moderateHeat', 'MODERATE urban heat'),color:'#eab308'})
     if(marineHeatwave && ['Gujarat','Maharashtra','Kerala','Tamil Nadu'].includes(selectedState)) {
-      newAlerts.push({id:4,icon:'🔵',text:t('alerts.marineHeatwave', 'Marine heatwave active'),color:'#00a8ff'})
+      newAlerts.push({id:4,icon:'🔵',text:t('alerts.marineHeatwave', 'Marine heatwave active'),color:'#3b82f6'})
     }
     if(polarVortex === 'DISRUPTED') newAlerts.push({id:5,icon:'🟣',text:t('alerts.polarVortexWatch', 'WATCH: Polar vortex disrupted'),color:'#9d4edd'})
-    if(newAlerts.length === 0) newAlerts.push({id:6,icon:'🟢',text:t('alerts.allNormal', 'All values normal'),color:'#00ff88'})
+    if(newAlerts.length === 0) newAlerts.push({id:6,icon:'🟢',text:t('alerts.allNormal', 'All values normal'),color:'#22c55e'})
 
     setAlerts(newAlerts)
   }, [selectedState, selectedCity, marineHeatwave, polarVortex, liveWeather, liveIndiaData, t])
@@ -3832,7 +3832,7 @@ function App({ user }) {
                     const yoy = getYoYComparison(selectedCity, cityData, currentTemp)
                     if (!yoy) return null
                     const arrow = yoy.delta > 0 ? '▲' : yoy.delta < 0 ? '▼' : '–'
-                    const deltaColor = yoy.delta > 0 ? '#ff6b35' : yoy.delta < 0 ? '#00a8ff' : 'rgba(255,255,255,0.5)'
+                    const deltaColor = yoy.delta > 0 ? '#ea580c' : yoy.delta < 0 ? '#22c55e' : 'rgba(255,255,255,0.5)'
                     return (
                       <div style={{
                         marginTop: 10,
@@ -3859,12 +3859,12 @@ function App({ user }) {
                   <div className="comparison-bar">
                     <div className="bar-item">
                       <span>{t('dayNight.day', 'Day (12 PM)')}</span>
-                      <div className="bar" style={{background:'#ff6b35', width:'70%'}}/>
+                      <div className="bar" style={{background:'#c2410c', width:'70%'}}/>
                       <span>{getDayNightData(cityData, selectedCity)[5]?.day.toFixed(1) || (cityData.lst + 3).toFixed(1)}°C</span>
                     </div>
                     <div className="bar-item">
                       <span>{t('dayNight.night', 'Night (12 AM)')}</span>
-                      <div className="bar" style={{background:'#0066ff', width:'50%'}}/>
+                      <div className="bar" style={{background:'#2563eb', width:'50%'}}/>
                       <span>{getDayNightData(cityData, selectedCity)[5]?.night.toFixed(1) || (cityData.lst - 8).toFixed(1)}°C</span>
                     </div>
                   </div>
@@ -3917,7 +3917,7 @@ function App({ user }) {
                         <>
                           {lulcEntry.isFallback && (
                             <div className="index-card" style={{gridColumn: '1 / -1'}}>
-                              <div style={{fontSize: 10, color: 'rgba(255,204,0,0.85)', lineHeight: 1.5}}>
+                              <div style={{fontSize: 10, color: 'rgba(234,179,8,0.85)', lineHeight: 1.5}}>
                                 📍 {t('satellitePass.lulcFallback', 'No real classification for {{city}} itself — showing nearest available real data point ({{fallbackCity}}) below, as an estimate.', { city: selectedCity, fallbackCity: lulcEntry.fallbackCity })}
                               </div>
                             </div>
@@ -3925,7 +3925,7 @@ function App({ user }) {
                           <div className="index-card">
                             <span>{t('satelliteIndices.vegetationFraction', 'Vegetation Fraction')}</span>
                             <div className="progress-bar">
-                              <div className="progress" style={{width: lulcEntry.vegetation + '%', background:'#00ff88'}}/>
+                              <div className="progress" style={{width: lulcEntry.vegetation + '%', background:'#15803d'}}/>
                             </div>
                             <span className="index-value">{lulcEntry.vegetation}%</span>
                             <SourceBadge source={`ESA WorldCover 10m (2021) — real proxy for NDVI, not the spectral index itself${fallbackSuffix}`} />
@@ -3933,7 +3933,7 @@ function App({ user }) {
                           <div className="index-card">
                             <span>{t('satelliteIndices.builtUpFraction', 'Built-up Fraction')}</span>
                             <div className="progress-bar">
-                              <div className="progress" style={{width: lulcEntry.builtUp + '%', background:'#ff6b35'}}/>
+                              <div className="progress" style={{width: lulcEntry.builtUp + '%', background:'#c2410c'}}/>
                             </div>
                             <span className="index-value">{lulcEntry.builtUp}%</span>
                             <SourceBadge source={`ESA WorldCover 10m (2021) — real proxy for NDBI, not the spectral index itself${fallbackSuffix}`} />
@@ -3941,7 +3941,7 @@ function App({ user }) {
                           <div className="index-card">
                             <span>{t('satelliteIndices.waterFraction', 'Water Fraction')}</span>
                             <div className="progress-bar">
-                              <div className="progress" style={{width: Math.min(100, lulcEntry.water * 3) + '%', background:'#00a8ff'}}/>
+                              <div className="progress" style={{width: Math.min(100, lulcEntry.water * 3) + '%', background:'#3b82f6'}}/>
                             </div>
                             <span className="index-value">{lulcEntry.water}%</span>
                             <SourceBadge source={`ESA WorldCover 10m (2021) — real proxy for NDWI, not the spectral index itself${fallbackSuffix}`} />
@@ -4092,7 +4092,7 @@ function App({ user }) {
                             onClick={forceRefreshLiveWeather}
                             style={{
                               marginLeft: 10, fontSize: 11, padding: '4px 10px', borderRadius: 6,
-                              background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.3)',
+                              background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.35)',
                               color: '#22c55e', cursor: 'pointer', fontWeight: 600
                             }}
                           >↻ {t('weatherStatus.forceRefresh', 'Force Refresh')}</button>
@@ -4148,10 +4148,10 @@ function App({ user }) {
                         const col = i % 10
                         const cellTemp = getCellTemp(cityData.lst, row, col, treeSlider, roofSlider, waterSlider)
                         let color = '#1a3a0d'
-                        if(cellTemp < 35) color = '#0066ff'
-                        else if(cellTemp < 38) color = '#00ff88'
-                        else if(cellTemp < 41) color = '#ffcc00'
-                        else if(cellTemp < 44) color = '#ff6b35'
+                        if(cellTemp < 35) color = '#2563eb'
+                        else if(cellTemp < 38) color = '#15803d'
+                        else if(cellTemp < 41) color = '#ca8a04'
+                        else if(cellTemp < 44) color = '#c2410c'
                         else color = '#b81010'
 
                         return (
@@ -4193,11 +4193,11 @@ function App({ user }) {
                     <>
                       <div style={{display: 'flex', gap: 16, marginBottom: 8}}>
                         <div>
-                          <div style={{fontSize: 22, fontWeight: 700, color: '#ffa83c'}}>{osmDensity.buildingCount}</div>
+                          <div style={{fontSize: 22, fontWeight: 700, color: '#d97706'}}>{osmDensity.buildingCount}</div>
                           <div style={{fontSize: 10, color: 'rgba(255,255,255,0.5)'}}>{t('osm.buildings', 'buildings within {{radius}}m', {radius: osmDensity.radiusM})}</div>
                         </div>
                         <div>
-                          <div style={{fontSize: 22, fontWeight: 700, color: '#ffa83c'}}>{osmDensity.densityPerSqKm}</div>
+                          <div style={{fontSize: 22, fontWeight: 700, color: '#d97706'}}>{osmDensity.densityPerSqKm}</div>
                           <div style={{fontSize: 10, color: 'rgba(255,255,255,0.5)'}}>{t('osm.perSqKm', 'buildings / km²')}</div>
                         </div>
                       </div>
@@ -4248,14 +4248,14 @@ function App({ user }) {
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            background: 'rgba(255,107,53,0.06)',
-                            border: '1px solid rgba(255,107,53,0.15)',
+                            background: 'rgba(148,163,184,0.06)',
+                            border: '1px solid rgba(148,163,184,0.15)',
                             borderRadius: 8,
                             padding: '8px 12px',
                             fontSize: 12
                           }}>
                             <span style={{color: '#fff', fontWeight: 600}}>{ev.date}</span>
-                            <span style={{color: '#ff6b35'}}>{t('heatwaveTimeline.peakTemp', 'Peak temp')}: <strong>{ev.peakTemp}°C</strong></span>
+                            <span style={{color: '#ea580c'}}>{t('heatwaveTimeline.peakTemp', 'Peak temp')}: <strong>{ev.peakTemp}°C</strong></span>
                             <span style={{color: 'rgba(255,255,255,0.6)'}}>{t('heatwaveTimeline.duration', 'duration')}: {ev.durationDays} {t('heatwaveTimeline.days', 'days')}</span>
                           </div>
                         ))}

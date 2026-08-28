@@ -248,11 +248,11 @@ export function AIAnalystPanel({
                 setSelectedQuestion(index)
               }}
               style={{
-                background: index === selectedQuestion ? 'rgba(0,255,136,0.12)' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${index === selectedQuestion ? '#00ff88' : '#1a2a4a'}`,
+                background: index === selectedQuestion ? 'rgba(217,119,6,0.12)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${index === selectedQuestion ? '#d97706' : '#1a2a4a'}`,
                 borderRadius: 14,
                 padding: '5px 10px',
-                color: index === selectedQuestion ? '#00ff88' : 'rgba(255,255,255,0.7)',
+                color: index === selectedQuestion ? '#d97706' : 'rgba(255,255,255,0.7)',
                 fontSize: 11,
                 cursor: 'pointer',
                 transition: 'background 0.15s, border-color 0.15s',
@@ -287,7 +287,7 @@ export function AIAnalystPanel({
               boxSizing: 'border-box',
               transition: 'border-color 0.2s'
             }}
-            onFocus={e => { e.currentTarget.style.borderColor = '#00ff88' }}
+            onFocus={e => { e.currentTarget.style.borderColor = '#d97706' }}
             onBlur={e => { e.currentTarget.style.borderColor = '#1a2a4a' }}
           />
           <button

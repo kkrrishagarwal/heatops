@@ -61,15 +61,15 @@ export function PhysicsPanel({ cityData }) {
 
       {items.map((item, idx) => (
         <div key={idx} style={{
-          background:"rgba(0,255,136,0.03)",
-          border:"1px solid rgba(0,255,136,0.1)",
+          background:"rgba(148,163,184,0.04)",
+          border:"1px solid rgba(148,163,184,0.12)",
           borderRadius:10,
           padding:14,
           marginBottom:10
         }}>
           <div style={{
             fontSize:14, fontWeight:700,
-            color:"#00ff88", marginBottom:6
+            color:"#d97706", marginBottom:6
           }}>
             {item.icon} {item.title}
           </div>
@@ -84,7 +84,7 @@ export function PhysicsPanel({ cityData }) {
           <div style={{
             fontFamily:"monospace",
             fontSize:11,
-            color:"#00d4ff",
+            color:"#94a3b8",
             background:"rgba(0,0,0,0.3)",
             padding:"4px 8px",
             borderRadius:6,
@@ -113,7 +113,7 @@ export function PhysicsPanel({ cityData }) {
               }}>
                 {t('physics.cost', 'Cost:')}{" "}
               </span>
-              <span style={{color:"#ffcc00"}}>
+              <span style={{color:"#eab308"}}>
                 {item.cost}
               </span>
             </div>

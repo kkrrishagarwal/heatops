@@ -50,8 +50,8 @@ export function MLModelPanel({ mlModel, cityName }) {
   }
 
   const statBox = {
-    background: "rgba(0, 255, 136, 0.05)",
-    border: "1px solid rgba(0, 255, 136, 0.2)",
+    background: "rgba(148, 163, 184, 0.05)",
+    border: "1px solid rgba(148, 163, 184, 0.2)",
     borderRadius: "8px",
     padding: "12px",
     textAlign: "center"
@@ -91,8 +91,8 @@ export function MLModelPanel({ mlModel, cityName }) {
       <div style={{
         marginBottom: 14,
         padding: "8px 12px",
-        background: "rgba(255,204,0,0.06)",
-        border: "1px solid rgba(255,204,0,0.25)",
+        background: "rgba(148,163,184,0.06)",
+        border: "1px solid rgba(148,163,184,0.2)",
         borderRadius: 8,
         fontSize: 10,
         lineHeight: 1.5,
@@ -111,7 +111,7 @@ export function MLModelPanel({ mlModel, cityName }) {
           <div style={statLabel}>{t('mlModel.r2Score', 'R² Score')}</div>
           <div style={{
             ...statVal,
-            color:"#00ff88"
+            color:"#22c55e"
           }}>
             {mlModel.r2_score}
           </div>
@@ -121,7 +121,7 @@ export function MLModelPanel({ mlModel, cityName }) {
           <div style={statLabel}>{t('mlModel.mae', 'MAE')}</div>
           <div style={{
             ...statVal,
-            color:"#ffcc00"
+            color:"#eab308"
           }}>
             {mlModel.mae}°C
           </div>
@@ -131,7 +131,7 @@ export function MLModelPanel({ mlModel, cityName }) {
           <div style={statLabel}>{t('mlModel.trainTest', 'Train/Test')}</div>
           <div style={{
             ...statVal,
-            color:"#00d4ff",
+            color:"#94a3b8",
             fontSize:16
           }}>
             {trainPct}/{testPct}
@@ -144,14 +144,14 @@ export function MLModelPanel({ mlModel, cityName }) {
       <div style={{
         marginBottom: 14,
         padding: "8px 12px",
-        background: "rgba(255,107,53,0.05)",
-        border: "1px solid rgba(255,107,53,0.2)",
+        background: "rgba(148,163,184,0.05)",
+        border: "1px solid rgba(148,163,184,0.2)",
         borderRadius: 8,
         fontSize: 10,
         lineHeight: 1.6,
         color: "rgba(255,255,255,0.65)"
       }}>
-        <b style={{ color: "#ff6b35" }}>{t('mlModel.generalizationCheck', 'Unseen-city generalization check:')}</b>{' '}
+        <b style={{ color: "#d97706" }}>{t('mlModel.generalizationCheck', 'Unseen-city generalization check:')}</b>{' '}
         {t('mlModel.generalizationDetail', 'R² {{r2}} / MAE {{mae}}°C when entire cities ({{cities}}) are held out of training entirely, not just held-out years.', { r2: holdout.r2_score, mae: holdout.mae, cities: (holdout.held_out_cities || []).join(', ') })}
         {' '}{holdout.note}
       </div>
@@ -174,24 +174,24 @@ export function MLModelPanel({ mlModel, cityName }) {
         }}>
           <div style={{
             flex:`0 0 ${trainPct}%`,
-            background:"rgba(0,255,136,0.4)",
+            background:"rgba(21,128,61,0.45)",
             display:"flex",
             alignItems:"center",
             justifyContent:"center",
             fontSize:10,
-            color:"#00ff88",
+            color:"#22c55e",
             fontWeight:700
           }}>
             {t('mlModel.trainSamples', 'Train ({{n}} samples)', { n: mlModel.train_samples })}
           </div>
           <div style={{
             flex:`0 0 ${testPct}%`,
-            background:"rgba(255,107,53,0.4)",
+            background:"rgba(194,65,12,0.45)",
             display:"flex",
             alignItems:"center",
             justifyContent:"center",
             fontSize:10,
-            color:"#ff6b35",
+            color:"#ea580c",
             fontWeight:700
           }}>
             {t('mlModel.testSamples', 'Test ({{n}})', { n: mlModel.test_samples })}
@@ -208,8 +208,8 @@ export function MLModelPanel({ mlModel, cityName }) {
         {t('mlModel.featureImportance', 'Feature Importance (Gini)')}
       </div>
       {[
-        { key:"ndbi", label:"NDBI", color:"#ff2222" },
-        { key:"ndvi", label:"NDVI", color:"#00ff88" },
+        { key:"ndbi", label:"NDBI", color:"#dc2626" },
+        { key:"ndvi", label:"NDVI", color:"#22c55e" },
         { key:"elevation",label:t('mlModel.elevation', 'Elevation'),color:"#888" },
       ].map(f => (
         <div key={f.key} style={{marginBottom:8}}>
@@ -247,24 +247,24 @@ export function MLModelPanel({ mlModel, cityName }) {
       <div style={{
         marginTop:12,
         padding:"8px 12px",
-        background:"rgba(0,255,136,0.05)",
+        background:"rgba(148,163,184,0.05)",
         borderRadius:8,
-        border:"1px solid rgba(0,255,136,0.1)"
+        border:"1px solid rgba(148,163,184,0.12)"
       }}>
         <div style={{
           fontSize:10,
           color:"rgba(255,255,255,0.5)",
           lineHeight:1.6
         }}>
-          <b style={{color:"#00ff88"}}>
+          <b style={{color:"#d97706"}}>
             {t('mlModel.model', 'Model:')}</b> RandomForestRegressor
           (n_estimators=100, max_depth=None,
           random_state=42)<br/>
-          <b style={{color:"#00ff88"}}>
+          <b style={{color:"#d97706"}}>
             {t('mlModel.features', 'Features:')}</b> NDVI, NDBI, Elevation<br/>
-          <b style={{color:"#00ff88"}}>
+          <b style={{color:"#d97706"}}>
             {t('mlModel.target', 'Target:')}</b> {mlModel.target}<br/>
-          <b style={{color:"#00ff88"}}>
+          <b style={{color:"#d97706"}}>
             {t('mlModel.source', 'Source:')}</b> {mlModel.source?.title} — {mlModel.source?.publisher}, DOI: {mlModel.source?.doi}
         </div>
       </div>

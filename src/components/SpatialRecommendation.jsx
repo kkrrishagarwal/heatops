@@ -16,8 +16,8 @@ export function SpatialRecommendation({
 
   return (
     <div style={{
-      background:"rgba(255,204,0,0.05)",
-      border:"1px solid rgba(255,204,0,0.2)",
+      background:"rgba(148,163,184,0.05)",
+      border:"1px solid rgba(148,163,184,0.2)",
       borderRadius:10,
       padding:14,
       marginTop:12
@@ -25,7 +25,7 @@ export function SpatialRecommendation({
       <div style={{
         fontSize:13,
         fontWeight:700,
-        color:"#ffcc00",
+        color:"#d97706",
         marginBottom:10
       }}>
         {t('spatial.panelTitle', '📍 WHERE to Intervene in {{cityName}}', { cityName })}
@@ -36,29 +36,29 @@ export function SpatialRecommendation({
         color:"rgba(255,255,255,0.8)",
         lineHeight:1.7
       }}>
-        <b style={{color:"#ff6b35"}}>
+        <b style={{color:"#ea580c"}}>
           {t('spatial.hottestZones', '🔴 Hottest Zones:')}
         </b> {hotZones}
         <br/>
-        <b style={{color:"#00ff88"}}>
+        <b style={{color:"#22c55e"}}>
           {t('spatial.greenPriority', '🌳 Green Priority:')}
         </b> {greenPriority}
         <br/>
-        <b style={{color:"#0088ff"}}>
+        <b style={{color:"#94a3b8"}}>
           {t('spatial.waterPriority', '💧 Water Priority:')}
         </b>{" "}
         {cityData.water_body_pct < 5
           ? t('spatial.waterUrgent', 'Water body creation urgent')
           : t('spatial.waterMaintain', 'Maintain existing water bodies')}
         <br/>
-        <b style={{color:"#ffcc00"}}>
+        <b style={{color:"#eab308"}}>
           {t('spatial.areaNeeded', '📏 Area needed:')}
         </b>{" "}
         {Math.round(
           cityData.area_sqkm * 0.15
         )} {t('spatial.areaDescription', 'km² of green cover for target NDVI ≥ 0.35')}
         <br/>
-        <b style={{color:"#ff6b35"}}>
+        <b style={{color:"#ea580c"}}>
           {t('spatial.estimatedCost', '💰 Estimated cost:')}
         </b>{" "}
         ₹{(

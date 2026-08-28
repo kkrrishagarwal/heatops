@@ -97,7 +97,7 @@ export function RuralBaselinePanel({ cityName, cityState, cityLat, cityLon, city
     if (delta == null) return { label: 'Calculating...', color: '#888', badge: '⚪' }
     if (delta <= 0) return { label: t('uhi.severity.minimal', 'No Heat Island / Parity'), color: '#22c55e', badge: '🟢', desc: t('uhi.desc.parity', 'Urban and rural temperatures are equal or maritime buffer active.') }
     if (delta <= 1.5) return { label: t('uhi.severity.mild', 'Mild UHI Effect'), color: '#eab308', badge: '🟡', desc: t('uhi.desc.mild', 'Slight urban heat buildup in densely built clusters.') }
-    if (delta <= 3.5) return { label: t('uhi.severity.moderate', 'Moderate UHI Effect'), color: '#f97316', badge: '🟠', desc: t('uhi.desc.moderate', 'Noticeable urban heat trapping from concrete, asphalt, and traffic.') }
+    if (delta <= 3.5) return { label: t('uhi.severity.moderate', 'Moderate UHI Effect'), color: '#ea580c', badge: '🟠', desc: t('uhi.desc.moderate', 'Noticeable urban heat trapping from concrete, asphalt, and traffic.') }
     return { label: t('uhi.severity.severe', 'Severe UHI Effect'), color: '#ef4444', badge: '🔴', desc: t('uhi.desc.severe', 'Extreme heat island effect. Concrete retention and low vegetation cause severe urban heat trapping.') }
   }
 
@@ -201,7 +201,7 @@ export function RuralBaselinePanel({ cityName, cityState, cityLat, cityLon, city
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             🌾 {t('uhi.ruralLabel', 'Rural Baseline')}
           </div>
-          <div style={{ fontSize: '13px', fontWeight: '700', color: '#00ff88', marginTop: '2px' }}>
+          <div style={{ fontSize: '13px', fontWeight: '700', color: '#22c55e', marginTop: '2px' }}>
             {t('uhi.ruralPeriphery', 'Periphery (~40km)')}
           </div>
           <div style={{ fontSize: '26px', fontWeight: '800', color: '#22c55e', marginTop: '6px' }}>

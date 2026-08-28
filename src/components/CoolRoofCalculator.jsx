@@ -130,7 +130,7 @@ export function CoolRoofCalculator() {
             {t('coolRoof.darkAbsorbs', 'Absorbs 70–90% of solar heat')}
           </div>
           <div style={{
-            marginTop: '8px', fontSize: '20px', fontWeight: '800', color: '#ff4444',
+            marginTop: '8px', fontSize: '20px', fontWeight: '800', color: '#dc2626',
           }}>
             ↑ +5–15°C
           </div>
@@ -142,21 +142,21 @@ export function CoolRoofCalculator() {
         {/* Cool Roof */}
         <div style={{
           background: 'linear-gradient(135deg, #1a2a3a 0%, #0a1a2a 100%)',
-          border: '1px solid rgba(0, 200, 255, 0.3)',
+          border: '1px solid rgba(21, 128, 61, 0.35)',
           borderRadius: '10px', padding: '14px', textAlign: 'center',
         }}>
           <div style={{ fontSize: '28px', marginBottom: '6px' }}>❄️</div>
-          <div style={{ fontSize: '13px', fontWeight: '700', color: '#00d4ff', marginBottom: '4px' }}>
+          <div style={{ fontSize: '13px', fontWeight: '700', color: '#22c55e', marginBottom: '4px' }}>
             {t('coolRoof.coolRoof', 'Cool / Reflective Roof')}
           </div>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
             {t('coolRoof.coolDesc', 'Albedo 0.7–0.9')}
           </div>
-          <div style={{ fontSize: '10px', color: 'rgba(0,200,255,0.8)', marginTop: '4px' }}>
+          <div style={{ fontSize: '10px', color: 'rgba(34,197,94,0.8)', marginTop: '4px' }}>
             {t('coolRoof.coolReflects', 'Reflects 70–90% of solar heat')}
           </div>
           <div style={{
-            marginTop: '8px', fontSize: '20px', fontWeight: '800', color: '#00ff88',
+            marginTop: '8px', fontSize: '20px', fontWeight: '800', color: '#22c55e',
           }}>
             ↓ 2–5°C
           </div>
@@ -168,13 +168,13 @@ export function CoolRoofCalculator() {
 
       {/* Real-world credibility */}
       <div style={{
-        background: 'rgba(0, 255, 136, 0.05)',
-        border: '1px solid rgba(0, 255, 136, 0.15)',
+        background: 'rgba(148, 163, 184, 0.05)',
+        border: '1px solid rgba(148, 163, 184, 0.15)',
         borderRadius: '8px', padding: '10px 12px',
         fontSize: '11px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6,
         marginBottom: '20px',
       }}>
-        <span style={{ color: '#00ff88', fontWeight: 700 }}>📍 {t('coolRoof.realWorld', 'Real-world adoption:')}</span>{' '}
+        <span style={{ color: '#d97706', fontWeight: 700 }}>📍 {t('coolRoof.realWorld', 'Real-world adoption:')}</span>{' '}
         {t('coolRoof.realWorldText',
           'Telangana is India\'s first state to launch a formal Cool Roof Policy (2023–2028, April 2023). Ahmedabad and Hyderabad ran voluntary cool roof pilot programmes starting 2017, which became the foundation for this state-level policy. Multiple Indian cities now include cool roofs in their Heat Action Plans.'
         )}
@@ -187,7 +187,7 @@ export function CoolRoofCalculator() {
 
       {/* Input: Roof Area */}
       <div style={{ marginBottom: '14px' }}>
-        <label style={{ fontSize: '12px', color: '#ffcc00', fontWeight: '700', display: 'block', marginBottom: '6px' }}>
+        <label style={{ fontSize: '12px', color: '#d97706', fontWeight: '700', display: 'block', marginBottom: '6px' }}>
           {t('coolRoof.roofAreaLabel', '📐 Your Roof Area (sq ft):')}
         </label>
         <input
@@ -199,7 +199,7 @@ export function CoolRoofCalculator() {
           onChange={e => setRoofArea(e.target.value)}
           style={{
             width: '100%', padding: '10px 14px', fontSize: '14px',
-            background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,204,0,0.3)',
+            background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(148,163,184,0.25)',
             borderRadius: '8px', color: '#fff', outline: 'none',
             fontFamily: 'monospace',
           }}
@@ -208,7 +208,7 @@ export function CoolRoofCalculator() {
 
       {/* Coating Type Selector */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ fontSize: '12px', color: '#00d4ff', fontWeight: '700', display: 'block', marginBottom: '8px' }}>
+        <label style={{ fontSize: '12px', color: '#d97706', fontWeight: '700', display: 'block', marginBottom: '8px' }}>
           {t('coolRoof.coatingType', '🎨 Coating Type:')}
         </label>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -219,17 +219,17 @@ export function CoolRoofCalculator() {
               style={{
                 padding: '10px 12px', fontSize: '11px', fontWeight: '600',
                 background: selectedTier === c.key
-                  ? 'rgba(0, 212, 255, 0.15)'
+                  ? 'rgba(217, 119, 6, 0.15)'
                   : 'rgba(0,0,0,0.3)',
                 border: selectedTier === c.key
-                  ? '1px solid rgba(0, 212, 255, 0.5)'
+                  ? '1px solid rgba(217, 119, 6, 0.5)'
                   : '1px solid rgba(255,255,255,0.1)',
                 borderRadius: '8px', color: '#fff', cursor: 'pointer',
                 transition: 'all 0.2s',
                 textAlign: 'left',
               }}
             >
-              <div style={{ color: selectedTier === c.key ? '#00d4ff' : 'rgba(255,255,255,0.7)' }}>
+              <div style={{ color: selectedTier === c.key ? '#d97706' : 'rgba(255,255,255,0.7)' }}>
                 {c.label}
               </div>
               <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
@@ -248,14 +248,14 @@ export function CoolRoofCalculator() {
         }}>
           {/* Cost Estimate */}
           <div style={{
-            background: 'rgba(255, 204, 0, 0.06)',
-            border: '1px solid rgba(255, 204, 0, 0.2)',
+            background: 'rgba(217, 119, 6, 0.06)',
+            border: '1px solid rgba(217, 119, 6, 0.2)',
             borderRadius: '10px', padding: '14px',
           }}>
             <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               {t('coolRoof.costEstimate', 'Coating Cost')}
             </div>
-            <div style={{ fontSize: '22px', fontWeight: '800', color: '#ffcc00' }}>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#d97706' }}>
               ₹{formatINRAmount(costMin)}–₹{formatINRAmount(costMax)}
             </div>
             <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
@@ -265,14 +265,14 @@ export function CoolRoofCalculator() {
 
           {/* Temperature Reduction */}
           <div style={{
-            background: 'rgba(0, 255, 136, 0.06)',
-            border: '1px solid rgba(0, 255, 136, 0.2)',
+            background: 'rgba(21, 128, 61, 0.08)',
+            border: '1px solid rgba(21, 128, 61, 0.3)',
             borderRadius: '10px', padding: '14px',
           }}>
             <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               {t('coolRoof.tempReduction', 'Temp Reduction')}
             </div>
-            <div style={{ fontSize: '22px', fontWeight: '800', color: '#00ff88' }}>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#22c55e' }}>
               ↓ {tempReduction}°C
             </div>
             <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
@@ -282,14 +282,14 @@ export function CoolRoofCalculator() {
 
           {/* Monthly AC Savings */}
           <div style={{
-            background: 'rgba(0, 136, 255, 0.06)',
-            border: '1px solid rgba(0, 136, 255, 0.2)',
+            background: 'rgba(148, 163, 184, 0.06)',
+            border: '1px solid rgba(148, 163, 184, 0.2)',
             borderRadius: '10px', padding: '14px',
           }}>
             <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               {t('coolRoof.acSavings', 'AC Savings (Summer)')}
             </div>
-            <div style={{ fontSize: '22px', fontWeight: '800', color: '#0088ff' }}>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#e2e8f0' }}>
               ₹{formatINRAmount(monthlySavings)}
               <span style={{ fontSize: '12px', fontWeight: '400' }}>/mo</span>
             </div>
@@ -300,14 +300,14 @@ export function CoolRoofCalculator() {
 
           {/* Payback Period */}
           <div style={{
-            background: 'rgba(168, 85, 247, 0.06)',
-            border: '1px solid rgba(168, 85, 247, 0.2)',
+            background: 'rgba(148, 163, 184, 0.06)',
+            border: '1px solid rgba(148, 163, 184, 0.2)',
             borderRadius: '10px', padding: '14px',
           }}>
             <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               {t('coolRoof.payback', 'Payback Period')}
             </div>
-            <div style={{ fontSize: '22px', fontWeight: '800', color: '#a855f7' }}>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#e2e8f0' }}>
               {paybackYears < 0.1 ? '< 1' : paybackYears < 1 ? Math.round(paybackYears * 12) : paybackYears.toFixed(1)}
               <span style={{ fontSize: '12px', fontWeight: '400' }}>
                 {paybackYears < 1 ? ' months' : ' years'}

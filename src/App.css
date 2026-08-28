@@ -160,7 +160,7 @@ body {
 .question-select:focus {
   outline: none;
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--orange);
+  border-color: #d97706;
   box-shadow: none;
 }
 
@@ -1258,7 +1258,7 @@ path.state:hover {
   padding: 10px;
   background: rgba(26, 42, 74, 0.5);
   border-radius: 6px;
-  border-left: 2px solid var(--orange);
+  border-left: 2px solid #d97706;
 }
 
 /* Pollen */
@@ -1306,7 +1306,7 @@ path.state:hover {
   padding: 12px;
   background: rgba(26, 42, 74, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 3px solid var(--red);
+  border-left: 3px solid #b91c1c;
   border-radius: 6px;
   font-size: 13px;
 }
@@ -1329,7 +1329,7 @@ path.state:hover {
 }
 
 .alert-close:hover {
-  color: var(--red);
+  color: #dc2626;
 }
 
 /* Sliders */
@@ -1526,7 +1526,7 @@ path.state:hover {
 .chat-bubble.ai {
   background: rgba(30, 41, 59, 0.85);
   border: 1px solid rgba(148, 163, 184, 0.2);
-  color: var(--orange);
+  color: #e2e8f0;
   border-bottom-left-radius: 2px;
 }
 
@@ -1558,7 +1558,7 @@ path.state:hover {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--orange);
+  background: #d97706;
   animation: typingBounce 1.1s ease-in-out infinite;
 }
 

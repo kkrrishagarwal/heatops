@@ -18,7 +18,7 @@ export function SourceBadge({ source }) {
       gap: 4
     }}>
       <span style={{
-        color: "#00ff88",
+        color: "#22c55e",
         fontSize: 8
       }}>📡</span>
       {t('dataBadges.source', 'Source:')} {source}
