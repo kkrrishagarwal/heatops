@@ -46,6 +46,8 @@ import { SUPPORTED_LANGUAGES, changeLanguage } from './i18n'
 import { AIAnalystPanel } from './components/AIAnalystPanel'
 import { FloatingAIAssistant } from './components/FloatingAIAssistant'
 import { CompareCitiesPanel } from './components/CompareCitiesPanel'
+import ViewModeToggle from './components/ViewModeToggle'
+import { useViewMode } from './hooks/useViewMode'
 
 // Gemini API key is never read on the client. The AI Analyst calls the secure
 // /api/ask-ai backend proxy (see api/ask-ai.js + api/_lib/askAI.js), which reads
@@ -2325,7 +2327,11 @@ const LiveClock = () => {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', gap: 2, fontSize: 10,
-      textAlign: 'right', color: '#cbd5e1'
+      textAlign: 'right', color: '#cbd5e1',
+      // Fixed-width digits + a floor on the width: otherwise the 1Hz re-render
+      // changes the clock's width by a pixel or two as digits change, which
+      // nudges everything to its left (the view-mode toggle) every second.
+      fontVariantNumeric: 'tabular-nums', minWidth: 70
     }}>
       <div style={{ fontWeight: 700, fontSize: 11, letterSpacing: '0.08em' }}>
         {now.toLocaleTimeString('en-IN', { hour12: false })}
@@ -2337,7 +2343,7 @@ const LiveClock = () => {
   )
 }
 
-const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, cacheStatus, cacheStale }) => {
+const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, cacheStatus, cacheStale, viewMode, onViewModeChange }) => {
   const { t, i18n } = useTranslation()
   const isAdmin = currentUser?.role === 'admin'
 
@@ -2430,6 +2436,9 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
         {/* Right section — the whole navbar row scrolls now (see comment
             above), so this just needs to not get individually squished. */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+          {/* View mode — user's choice, independent of device (see hooks/useViewMode.js) */}
+          <ViewModeToggle mode={viewMode} onChange={onViewModeChange} />
+
           <LiveClock />
 
           {/* Language toggle — manual only, no auto-detect by location/browser */}
@@ -2516,6 +2525,9 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
 
 function App({ user }) {
   const { t, i18n } = useTranslation()
+  // Compact (stacked, full-width map) vs Full (side-by-side). Drives html[data-view-mode]
+  // which the layout CSS keys off — one CSS system, no device-specific code paths.
+  const { viewMode, setViewMode } = useViewMode()
 
   // Screen & Auth
   const [screen, setScreen] = useState(user ? "map" : "signin")
@@ -3382,6 +3394,8 @@ function App({ user }) {
           liveShimla={getLiveCity('Shimla', 'Himachal Pradesh')?.temp}
           cacheStatus={liveCacheStatus}
           cacheStale={isCacheStale(cacheLastUpdated)}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
 
         {/* Main content — updated height calculation. On phone widths .map-layout
@@ -3932,6 +3946,7 @@ function App({ user }) {
             <h2>{selectedCity}, {selectedState}</h2>
           </div>
           <div className="nav-right">
+            <ViewModeToggle mode={viewMode} onChange={setViewMode} size="md" />
             <LanguageDropdown />
             <div className="avatar">{userName[0]?.toUpperCase() || 'K'}</div>
             <button onClick={() => {setScreen("signin"); setUserName("")}} className="nav-btn">{t('nav.signOut', 'Sign Out')}</button>
@@ -4701,6 +4716,7 @@ function App({ user }) {
             <h2>{t('profile.title', 'My Profile')}</h2>
           </div>
           <div className="nav-right">
+            <ViewModeToggle mode={viewMode} onChange={setViewMode} size="md" />
             <button onClick={() => {setScreen("signin"); setUserName("")}} className="nav-btn">{t('nav.signOut', 'Sign Out')}</button>
           </div>
         </nav>
