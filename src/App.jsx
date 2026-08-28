@@ -24,6 +24,7 @@ import {
 } from 'react-simple-maps'
 import { geoCentroid } from 'd3'
 import './App.css'
+import { fetchJson, describeFetchError } from './utils/fetchJson'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
 import { SourceBadge } from './components/DataBadges'
@@ -918,18 +919,19 @@ const INDIA_MAP_PROJECTION_CONFIG = { scale: 1000, center: [82.8, 22.5] }
 // per URL means every layer reuses the same fetch+parse instead of redoing it.
 const geoDataCache = new Map()
 function useGeoData(url) {
-  const [data, setData] = useState(null)
+  const [state, setState] = useState({ data: null, error: null })
+  const [attempt, setAttempt] = useState(0)
   useEffect(() => {
-    let cached = geoDataCache.get(url)
-    if (!cached) {
-      cached = fetch(url).then(r => r.json())
-      geoDataCache.set(url, cached)
-    }
     let active = true
-    cached.then(json => { if (active) setData(json) })
+    setState(prev => (prev.error ? { data: prev.data, error: null } : prev))
+    loadGeoData(url).then(
+      json => { if (active) setState({ data: json, error: null }) },
+      err => { if (active) setState({ data: null, error: err }) }
+    )
     return () => { active = false }
-  }, [url])
-  return data
+  }, [url, attempt])
+  const retry = useCallback(() => setAttempt(a => a + 1), [])
+  return { data: state.data, error: state.error, retry }
 }
 const INDIA_MAP_LAYER_STYLE = { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }
 
@@ -954,6 +956,23 @@ function smoothRing(coords, iterations = 1) {
     ) {
       smoothed = [...smoothed, smoothed[0]]
     }
+// These files are 10s of MB, so the timeout is generous — but it is a real
+// timeout: a stalled CDN no longer leaves the map spinner up forever.
+const GEO_FETCH_TIMEOUT_MS = 90000
+function loadGeoData(url) {
+  let cached = geoDataCache.get(url)
+  if (!cached) {
+    cached = fetchJson(url, { timeoutMs: GEO_FETCH_TIMEOUT_MS }).catch(err => {
+      // Drop the failed promise so the next mount / Retry actually refetches.
+      // (Previously the rejected promise was cached forever, so a single failed
+      // load meant "Loading map data…" for the rest of the session.)
+      geoDataCache.delete(url)
+      throw err
+    })
+    geoDataCache.set(url, cached)
+  }
+  return cached
+}
   }
   return smoothed
 }
@@ -1593,15 +1612,17 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
   // DISTRICTS_URL/STATES_URL are large (~35MB/~23MB) geojson files — fetch +
   // parse genuinely takes several seconds. Without this, the map area looks
   // blank/stuck during that window instead of visibly loading.
-  const districtsGeoData = useGeoData(DISTRICTS_URL)
-  const statesGeoData = useGeoData(STATES_URL)
+  const { data: districtsGeoData, error: districtsGeoError, retry: retryDistrictsGeo } = useGeoData(DISTRICTS_URL)
+  const { data: statesGeoData, error: statesGeoError, retry: retryStatesGeo } = useGeoData(STATES_URL)
   // Reuses the same cached fetch the JK layers below already trigger (geoDataCache in
   // useGeoData dedupes by URL) — just also keeping the parsed data here, not only inside
   // those nested layers, so this component can compute centroids from it too.
-  const jkGeoData = useGeoData(JK_URL)
+  const { data: jkGeoData, error: jkGeoError, retry: retryJkGeo } = useGeoData(JK_URL)
   const districtsReady = !!districtsGeoData
   const statesReady = !!statesGeoData
-  const mapDataLoading = !districtsReady || !statesReady
+  const mapDataError = districtsGeoError || statesGeoError || jkGeoError || null
+  const mapDataLoading = !mapDataError && (!districtsReady || !statesReady)
+  const retryMapData = () => { retryDistrictsGeo(); retryStatesGeo(); retryJkGeo() }
 
   // Per-state centroid, computed once from the actual GeoJSON geometry (d3-geo's
   // geoCentroid) rather than guessed/hardcoded coordinates — INDIA_DATA has no lat/lon
@@ -1667,20 +1688,40 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           transition: isDragging ? 'none' : 'transform 0.1s ease'
         }}
       >
-        {mapDataLoading && (
+        {(mapDataLoading || mapDataError) && (
           <div style={{
             position: 'absolute', inset: 0, zIndex: 30,
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             gap: 10, background: 'rgba(10,14,26,0.85)'
           }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              border: '3px solid rgba(217,119,6,0.25)', borderTopColor: '#d97706',
-              animation: 'spin 0.9s linear infinite'
-            }} />
-            <div style={{ color: '#94a3b8', fontSize: 12 }}>
-              Loading map data…
-            </div>
+            {mapDataError ? (
+              <>
+                <div style={{ fontSize: 22 }}>⚠️</div>
+                <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>Map data could not be loaded</div>
+                <div style={{ color: '#94a3b8', fontSize: 11, maxWidth: 320 }}>{describeFetchError(mapDataError, 'the map')}</div>
+                <button
+                  type="button"
+                  onClick={retryMapData}
+                  style={{
+                    marginTop: 4, background: 'rgba(217,119,6,0.12)', border: '1px solid rgba(217,119,6,0.5)',
+                    color: '#d97706', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer'
+                  }}
+                >
+                  🔄 Retry
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  border: '3px solid rgba(217,119,6,0.25)', borderTopColor: '#d97706',
+                  animation: 'spin 0.9s linear infinite'
+                }} />
+                <div style={{ color: '#94a3b8', fontSize: 12 }}>
+                  Loading map data…
+                </div>
+              </>
+            )}
           </div>
         )}
         {/* LAYER 1: District texture colored by parent-state heat — extracted + memoized
@@ -1968,7 +2009,7 @@ function LegendRow({ color, label }) {
 const GEO_CHUNK_SIZE_BY_URL = { [STATES_URL]: 2, [JK_URL]: 2, [DISTRICTS_URL]: 40 }
 const GEO_CHUNK_SIZE_DEFAULT = 20
 function GeographiesLayer({ url, render }) {
-  const data = useGeoData(url)
+  const { data } = useGeoData(url)
   const chunkSize = GEO_CHUNK_SIZE_BY_URL[url] ?? GEO_CHUNK_SIZE_DEFAULT
   const totalFeatures = data?.features?.length ?? 0
   const [chunksRendered, setChunksRendered] = useState(1)
@@ -3536,11 +3577,11 @@ function App({ user }) {
                   </div>
                   <div className="metric-card">
                     <span className="metric-label">NDVI</span>
-                    <span className="metric-value">{STATE_DATA[selectedState]?.ndvi.toFixed(2)}</span>
+                    <span className="metric-value">{STATE_DATA[selectedState]?.ndvi?.toFixed(2) ?? '—'}</span>
                   </div>
                   <div className="metric-card">
                     <span className="metric-label">NDBI</span>
-                    <span className="metric-value">{STATE_DATA[selectedState]?.ndbi.toFixed(2)}</span>
+                    <span className="metric-value">{STATE_DATA[selectedState]?.ndbi?.toFixed(2) ?? '—'}</span>
                   </div>
                   <div className="metric-card">
                     <span className="metric-label">AQI</span>
@@ -3903,12 +3944,12 @@ function App({ user }) {
                     <div className="bar-item">
                       <span>{t('dayNight.day', 'Day (12 PM)')}</span>
                       <div className="bar" style={{background:'#c2410c', width:'70%'}}/>
-                      <span>{getDayNightData(cityData, selectedCity)[5]?.day.toFixed(1) || (cityData.lst + 3).toFixed(1)}°C</span>
+                      <span>{getDayNightData(cityData, selectedCity)[5]?.day?.toFixed(1) || (cityData.lst + 3).toFixed(1)}°C</span>
                     </div>
                     <div className="bar-item">
                       <span>{t('dayNight.night', 'Night (12 AM)')}</span>
                       <div className="bar" style={{background:'#2563eb', width:'50%'}}/>
-                      <span>{getDayNightData(cityData, selectedCity)[5]?.night.toFixed(1) || (cityData.lst - 8).toFixed(1)}°C</span>
+                      <span>{getDayNightData(cityData, selectedCity)[5]?.night?.toFixed(1) || (cityData.lst - 8).toFixed(1)}°C</span>
                     </div>
                   </div>
                 </section>

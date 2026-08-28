@@ -5,14 +5,23 @@ import { AmbientLight, DirectionalLight } from 'three'
 const earthTexture = '/textures/earth-blue-marble.jpg'
 const INDIA_COORDS = { lat: 20.5937, lng: 78.9629 }
 
-function GlobeErrorBoundary({ fallback, children }) {
-  const [failed, setFailed] = useState(false)
-
-  useEffect(() => {
-    // keep the boundary simple and safe for the login screen
-  }, [])
-
-  return failed ? fallback : children
+// A real error boundary (the previous function-component version could never
+// catch anything). If WebGL/three.js throws while rendering the globe, the
+// login screen keeps working and shows `fallback` instead of going blank.
+class GlobeErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { failed: false }
+  }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  componentDidCatch(error) {
+    console.warn('[IntroGlobe] globe failed to render, using fallback:', error?.message)
+  }
+  render() {
+    return this.state.failed ? (this.props.fallback ?? null) : this.props.children
+  }
 }
 
 const IntroGlobe = ({
