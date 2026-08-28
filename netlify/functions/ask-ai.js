@@ -16,10 +16,10 @@ export async function handler(event) {
     } catch {
       return { statusCode: 400, body: JSON.stringify({ error: 'Request body must be valid JSON.', retryAfterSeconds: null }) }
     }
-    const { question, context } = body
+    const { question, context, history } = body
     const clientKey = getClientKey(event.headers, 'unknown')
     console.log('[netlify/ask-ai] incoming request:', { question, context, clientKey })
-    const { answer } = await handleAskAI({ question, context, clientKey })
+    const { answer } = await handleAskAI({ question, context, history, clientKey })
     console.log('[netlify/ask-ai] Gemini answered:', answer.slice(0, 120))
     return { statusCode: 200, body: JSON.stringify({ answer }) }
   } catch (err) {

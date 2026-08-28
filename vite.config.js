@@ -86,7 +86,7 @@ function askAIDevMiddleware(mode) {
           const clientKey = getClientKey(req.headers, req.socket?.remoteAddress)
           console.log('[ask-ai dev middleware] incoming request:', { question: body.question, context: body.context, clientKey })
 
-          const { answer } = await handleAskAI({ question: body.question, context: body.context, clientKey })
+          const { answer } = await handleAskAI({ question: body.question, context: body.context, history: body.history, clientKey })
           console.log('[ask-ai dev middleware] Gemini answered:', answer.slice(0, 120))
 
           res.setHeader('Content-Type', 'application/json')

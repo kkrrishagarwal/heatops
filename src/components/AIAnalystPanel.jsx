@@ -128,9 +128,18 @@ export function AIAnalystPanel({
     // Other cities/states named in the question get their real cached readings appended
     // (bulk daily cache) so AGNI can answer "Delhi ka AQI?" while Mumbai is selected, or
     // compare two cities — and is told to say "no data" for anything not in the cache.
-    const location = buildLocationContext(question, city)
+    // Conversation memory: send the recent real turns (skip error/fallback/retry notices)
+    // so follow-ups like "aur uska AQI?" resolve against what was just discussed.
+    const history = chatHistory
+      .filter(m => (m.user && m.user !== question) || (m.ai && !m.isError && !m.isFallback && !String(m.ai).startsWith('⏱')))
+      .slice(-10)
+      .map(m => (m.user ? { role: 'user', text: String(m.user).slice(0, 1500) } : { role: 'model', text: String(m.ai).slice(0, 1500) }))
+    // Detect locations in the question AND the last few user turns, so a follow-up that
+    // only says "uska" still gets the earlier city's data attached.
+    const recentUserText = history.filter(h => h.role === 'user').slice(-3).map(h => h.text).join(' ')
+    const location = buildLocationContext(`${question} ${recentUserText}`, city)
     const fullContext = context + location.text
-    const requestBody = { question, context: fullContext }
+    const requestBody = { question, context: fullContext, history }
     console.log('[AIAnalystPanel] sending request to /api/ask-ai:', { ...requestBody, extraLocations: { cities: location.cities, states: location.states } })
 
     const controller = new AbortController()

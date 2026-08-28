@@ -11,10 +11,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { question, context } = req.body || {}
+    const { question, context, history } = req.body || {}
     const clientKey = getClientKey(req.headers, req.socket?.remoteAddress)
     console.log('[api/ask-ai] incoming request:', { question, context, clientKey })
-    const { answer } = await handleAskAI({ question, context, clientKey })
+    const { answer } = await handleAskAI({ question, context, history, clientKey })
     console.log('[api/ask-ai] Gemini answered:', answer.slice(0, 120))
     return res.status(200).json({ answer })
   } catch (err) {
