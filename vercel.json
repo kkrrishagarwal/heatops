@@ -4,6 +4,9 @@
     "api/refresh-weather-cache.js": {
       "maxDuration": 60,
       "includeFiles": "src/data/cityCoordinates.json"
+    },
+    "api/weather-history.js": {
+      "includeFiles": "public/data/history/**"
     }
   },
   "crons": [
