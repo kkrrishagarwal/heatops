@@ -3238,19 +3238,20 @@ function App({ user }) {
           liveShimla={getLiveCity('Shimla', 'Himachal Pradesh')?.temp}
         />
 
-        {/* Main content — updated height calculation */}
-        <div style={{
+        {/* Main content — updated height calculation. On phone widths .map-layout
+            (App.css) stacks these two columns so the map gets the full width. */}
+        <div className="map-layout" style={{
           display: 'flex',
           gap: 16,
           padding: '12px 16px',
           height: 'calc(100vh - 80px)'
         }}>
           {/* Left: India Map */}
-          <div style={{
+          <div className="map-layout-map" style={{
             flex: '0 0 58%',
             position: 'relative'
           }}>
-            <div style={{
+            <div className={`map-box ${mapExpanded ? 'is-expanded' : 'is-collapsed'}`} style={{
               position: 'relative',
               width: '100%',
               height: mapExpanded ? '70vh' : '48px',
@@ -3498,7 +3499,7 @@ function App({ user }) {
 
           {/* Right: Info Panel — themed by the CLICKED state's heat category (never
               hover, to avoid any continuous mouse-tracking re-renders). */}
-          <div style={{
+          <div className="map-layout-side" style={{
             flex: '0 0 42%',
             display: 'flex',
             flexDirection: 'column',

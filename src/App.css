@@ -1821,3 +1821,46 @@ path.state:hover {
   from { opacity: 0; transform: translateY(-4px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* ── Map screen on phone widths: stack map + side panel vertically so the map
+   gets the full width (it was a 58%/42% two-column row even at 375px, leaving
+   India ~105px wide). Inline styles set the desktop layout, hence !important.
+   The desktop row is a fixed-height flex row with the side panel scrolling
+   internally; html/body are overflow:hidden, so on phones .map-container
+   becomes the scroll container instead. ───────────────────────────────── */
+@media (max-width: 768px) {
+  .map-container {
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* The container is a flex column; once .map-layout grows taller than it,
+     flex-shrink would collapse the fixed-height navbar/ticker rows to 0. */
+  .map-container > * {
+    flex-shrink: 0;
+  }
+  .map-layout {
+    flex-direction: column !important;
+    height: auto !important;
+    gap: 12px !important;
+    padding: 10px 10px 28px !important;
+  }
+  .map-layout-map,
+  .map-layout-side {
+    flex: 0 0 auto !important;
+    width: 100%;
+    min-width: 0;
+  }
+  .map-layout-side {
+    overflow-y: visible !important;
+    padding-right: 0 !important;
+  }
+  /* Tall enough for India to be readable, short enough that a strip of the
+     page below it is always available for scrolling past the touch-drag map. */
+  .map-box.is-expanded {
+    height: 60vh !important;
+    height: 60dvh !important;
+  }
+}
+
