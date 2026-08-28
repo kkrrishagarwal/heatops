@@ -533,8 +533,8 @@ body {
   gap: 8px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(255, 68, 68, 0.14);
-  color: #ffb4b4;
+  background: rgba(21, 128, 61, 0.14);
+  color: #86efac;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -578,6 +578,11 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+}
+
+.ticker-critical {
+  color: #b91c1c !important;
+  font-weight: 700;
 }
 
 @media (max-width: 980px) {

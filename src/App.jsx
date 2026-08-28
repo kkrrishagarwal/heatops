@@ -2055,6 +2055,30 @@ const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout }) => {
 }
 
 const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla }) => {
+  const isCritical = (label, value) => {
+    if (!value || value === 'Loading...' || value === '...') return false
+    const valueStr = String(value).toLowerCase()
+
+    if (label === 'AQI Alert') {
+      const aqi = parseInt(valueStr)
+      return aqi > 300
+    }
+    if (label === 'Heat Leader' || label === 'Peak City') {
+      const temp = parseFloat(valueStr)
+      return temp >= 45
+    }
+    if (label === 'Storm Watch') {
+      const rainMatch = valueStr.match(/(\d+)%/)
+      const rainChance = rainMatch ? parseInt(rainMatch[1]) : 0
+      return rainChance >= 80
+    }
+    if (label === 'Mumbai' || label === 'Shimla') {
+      const temp = parseFloat(valueStr)
+      return temp >= 45
+    }
+    return false
+  }
+
   const items = [
     { icon: '🔥', label: 'Heat Leader', value: `${leaderBase[0]?.city} ${leaderBase[0]?.temp}°C` },
     { icon: '🌡️', label: 'Peak City', value: `${leaderBase[1]?.city} ${leaderBase[1]?.temp}°C` },
@@ -2079,10 +2103,10 @@ const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveS
       {/* LIVE badge */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
-        color: '#ff4444', flexShrink: 0
+        color: '#86efac', flexShrink: 0
       }}>
         <span style={{
-          width: 6, height: 6, borderRadius: '50%', background: '#ff4444',
+          width: 6, height: 6, borderRadius: '50%', background: '#86efac',
           animation: 'navPulse 1s ease-in-out infinite'
         }} />
         LIVE
@@ -2096,16 +2120,21 @@ const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveS
           display: 'flex', gap: 20,
           animation: 'navTicker 40s linear infinite'
         }}>
-          {[...items, ...items].map((item, i) => (
-            <div key={i} style={{
-              display: 'flex', gap: 6, alignItems: 'center',
-              fontSize: 10, color: '#cbd5e1', whiteSpace: 'nowrap', flexShrink: 0
-            }}>
-              <span>{item.icon}</span>
-              <span style={{ fontWeight: 600 }}>{item.label}:</span>
-              <span style={{ color: '#94a3b8' }}>{item.value}</span>
-            </div>
-          ))}
+          {[...items, ...items].map((item, i) => {
+            const critical = isCritical(item.label, item.value)
+            return (
+              <div key={i} style={{
+                display: 'flex', gap: 6, alignItems: 'center',
+                fontSize: 10, color: '#cbd5e1', whiteSpace: 'nowrap', flexShrink: 0
+              }}>
+                <span>{item.icon}</span>
+                <span style={{ fontWeight: 600 }}>{item.label}:</span>
+                <span className={critical ? 'ticker-critical' : ''} style={{ color: critical ? '#b91c1c' : '#94a3b8' }}>
+                  {item.value}
+                </span>
+              </div>
+            )
+          })}
         </div>
       </div>
 
