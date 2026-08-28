@@ -104,8 +104,36 @@ function askAIDevMiddleware(mode) {
   }
 }
 
+// Dev-only mirror of api/weather-history.js so `npm run dev` can serve
+// GET /api/weather-history exactly like production. Snapshot files are read from disk.
+function weatherHistoryDevMiddleware(mode) {
+  return {
+    name: 'weather-history-dev-middleware',
+    configureServer(server) {
+      const env = loadEnv(mode, process.cwd(), '')
+      if (env.DATABASE_URL && !process.env.DATABASE_URL) process.env.DATABASE_URL = env.DATABASE_URL
+      server.middlewares.use('/api/weather-history', async (req, res) => {
+        res.setHeader('Content-Type', 'application/json')
+        if (req.method !== 'GET') { res.statusCode = 405; res.end(JSON.stringify({ error: 'Method not allowed. Use GET.' })); return }
+        try {
+          const { handleWeatherHistory } = await server.ssrLoadModule('/api/_lib/weatherHistoryApi.js')
+          const query = Object.fromEntries(new URL(req.url, 'http://localhost').searchParams)
+          const { readFile } = await import('fs/promises')
+          const loadStatic = async (rel) => JSON.parse(await readFile(path.join(process.cwd(), 'public', rel), 'utf8'))
+          const { status, body } = await handleWeatherHistory(query, { loadStatic })
+          res.statusCode = status
+          res.end(JSON.stringify(body))
+        } catch (err) {
+          res.statusCode = 500
+          res.end(JSON.stringify({ error: err.message }))
+        }
+      })
+    }
+  }
+}
+
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), askAIDevMiddleware(mode), geoJsonCompressionMiddleware()],
+  plugins: [react(), askAIDevMiddleware(mode), weatherHistoryDevMiddleware(mode), geoJsonCompressionMiddleware()],
   build: {
     outDir: 'dist',
     sourcemap: false,

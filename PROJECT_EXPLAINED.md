@@ -61,14 +61,16 @@ heatops/
 │
 ├── api/                           — Vercel serverless functions (production backend)
 │   ├── ask-ai.js                  — Backend proxy for AGNI chat (the Gemini API key lives here)
-│   ├── refresh-weather-cache.js   — The daily cron hits this — refreshes weather for all cities
-│   └── _lib/                      — Logic shared between the two functions above (askAI.js, refreshWeatherData.js, githubCommit.js)
+│   ├── refresh-weather-cache.js   — The daily cron hits this — refreshes weather for all cities AND saves the day's history (see 8.9)
+│   ├── weather-history.js         — GET /api/weather-history — a city's past readings (Postgres if configured, else the snapshot files)
+│   └── _lib/                      — Shared logic: askAI.js, refreshWeatherData.js, githubCommit.js (now commits several files at once), weatherHistory.js (daily snapshots), weatherHistoryDb.js (Postgres), weatherHistoryApi.js
 │
 ├── netlify/functions/             — Same AGNI proxy, for Netlify deploys (if Netlify is used instead of Vercel)
 │
 ├── scripts/                       — Standalone Node/Python scripts — run manually or via cron, the app itself never runs these
 │   ├── refreshWeatherCache.mjs    — Bulk weather refresh (local/manual run)
 │   ├── weatherCacheDaemon.mjs     — Runs the one above in a loop every 20 min (for local dev)
+│   ├── backfillWeatherHistory.mjs — One-off: rebuilds public/data/history/ from every past cron commit (add --db to load Postgres too)
 │   ├── geocodeCities.mjs          — Builds src/data/cityCoordinates.json
 │   ├── train_lst_model.py         — Trains the ML model (real MODIS data, but non-Indian cities)
 │   ├── build_lulc_data.py         — Pulls real land-cover data from ESA WorldCover
@@ -76,6 +78,7 @@ heatops/
 │
 ├── public/
 │   ├── data/                      — All REAL data files the browser fetches (geojson maps, ML model output, LULC output, city coords)
+│   │   └── history/               — One compact snapshot per day of the bulk weather cache + index.json (historic data, tier 1)
 │   └── live-weather-cache.json    — Daily-refreshed bulk weather cache (all ~2,050 cities, powers the map/ticker)
 │
 ├── app.py, static/, templates/, requirements.txt, .venv/  — ⚠️ LEGACY Flask prototype, not used in production
@@ -139,6 +142,7 @@ Here's what happens, step by step, when a user opens the app:
 | **Live weather (temp, humidity, forecast) for one city** | `src/utils/weatherAPI.js` + `src/hooks/useWeather.js` + UI: `src/components/WeatherCard.jsx` |
 | **AQI calculation/category** | `src/utils/weatherAPI.js` (function `getAQICategory`) |
 | **Bulk weather cache (all cities, for the map/ticker)** | `scripts/refreshWeatherCache.mjs` (local) / `api/refresh-weather-cache.js` (production cron) → output: `public/live-weather-cache.json` |
+| **Historic weather (every day's readings)** | Snapshots: `public/data/history/` via `api/_lib/weatherHistory.js`; Postgres: `api/_lib/weatherHistoryDb.js` (needs `DATABASE_URL`); read: `api/weather-history.js`; backfill: `scripts/backfillWeatherHistory.mjs` |
 | **ML model (LST prediction)** | Train: `scripts/train_lst_model.py` → Output: `public/data/ml_model_real.json` → Display: `src/components/MLModelPanel.jsx` |
 | **Land cover (vegetation/built-up/water %)** | Build: `scripts/build_lulc_data.py` → Output: `public/data/lulc_real.json` → Display: `src/components/LandCoverPanel.jsx` + fallback logic: `src/utils/lulcFallback.js` |
 | **Intervention sliders (cool roof/greening/water)** | `src/App.jsx` — search for `roofSlider`, `treeSlider`, `waterSlider` (Interventions tab) |
@@ -280,6 +284,17 @@ The three cooling sliders live on the **Interventions** tab but change the tempe
 - When you then open Analysis, a "✨ Updated based on your intervention settings" badge sits above the grid for six seconds.
 
 How the two tabs share state: all three slider values are ordinary React state at the top of `App.jsx` (`treeSlider`, `roofSlider`, `waterSlider`), and both tabs read the same variables. The preview uses the exact same cell formula (`getCellTemp`) and the same colour thresholds (`getGridBucket`) as the grid, so what it predicts is what you see. A timestamp (`interventionTouchedAt`) records the last slider change; the Analysis tab shows the badge when it opens after that timestamp, once per change. (`src/utils/dashboardUtils.js`: `GRID_BUCKETS`, `getGridBucket`, `computeInterventionImpact`; `src/App.jsx`: search `intervention-preview`, `grid-updated-badge`.)
+
+### 8.9 Historic weather data — every cron run is now kept
+
+**Before:** the nightly refresh overwrote `public/live-weather-cache.json`, so yesterday's readings were gone (except buried in git commits). **Now** every run is stored twice:
+
+- **Tier 1 — snapshot files (no setup needed).** The cron writes a compact file for the day, `public/data/history/YYYY-MM-DD.json` (~60 KB: temperature, rain chance, AQI, cloud cover, PM10 for all ~1,690 cities), and updates `public/data/history/index.json` (the list of days). These go into the **same GitHub commit** as the cache — `api/_lib/githubCommit.js` now uses GitHub's Git Data API to commit several files at once — so it is still one commit and one deploy per night. `scripts/backfillWeatherHistory.mjs` rebuilt this from the repo's history: **63 days, 22 June → 28 August 2026**, are already there.
+- **Tier 2 — a real database (optional).** Set `DATABASE_URL` (any Postgres — Neon, Vercel Postgres, Supabase, Railway) in Vercel's environment variables and the same run also inserts one row per city into `weather_observations` (plus one row per run in `weather_runs`). Tables are created automatically; re-runs are idempotent. Run `node scripts/backfillWeatherHistory.mjs --db` once to load the 63 historical days into it.
+
+**Reading it:** `GET /api/weather-history?city=New%20Delhi&state=Delhi&days=30` returns that city's daily series (`source: "postgres"` when the database is configured, otherwise `"snapshots"`); `?runs=1` lists the available days. The local `npm run dev` server serves the same endpoint. Nothing in the UI uses this yet — it's the data foundation for trend charts.
+
+**Files:** `api/_lib/weatherHistory.js`, `api/_lib/weatherHistoryDb.js`, `api/_lib/weatherHistoryApi.js`, `api/weather-history.js`, `api/refresh-weather-cache.js`, `api/_lib/githubCommit.js`, `scripts/refreshWeatherCache.mjs`, `scripts/backfillWeatherHistory.mjs`, `.env.example`.
 
 ---
 

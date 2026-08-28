@@ -14,7 +14,11 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import { buildSnapshot, updateIndex, historyFilePath, INDEX_PATH } from '../api/_lib/weatherHistory.js'
+import { isDbConfigured, saveRunToDb } from '../api/_lib/weatherHistoryDb.js'
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const REPO_ROOT = path.join(__dirname, '..')
 const COORDS_PATH = path.join(__dirname, '../src/data/cityCoordinates.json')
 const OUTPUT_PATH = path.join(__dirname, '../public/live-weather-cache.json')
 
@@ -127,6 +131,26 @@ export async function refreshWeatherCache() {
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true })
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(payload))
   console.log(`Wrote ${Object.keys(result).length} cities to ${OUTPUT_PATH} (${failedBatches} batches failed)`)
+
+  // Historic data — same two tiers as the production cron (api/refresh-weather-cache.js):
+  // a compact snapshot for today + index, and Postgres when DATABASE_URL is set.
+  const snapshot = buildSnapshot(payload)
+  const indexAbs = path.join(REPO_ROOT, INDEX_PATH)
+  let index = null
+  try { index = JSON.parse(fs.readFileSync(indexAbs, 'utf8')) } catch {}
+  index = updateIndex(index, snapshot)
+  fs.mkdirSync(path.dirname(indexAbs), { recursive: true })
+  fs.writeFileSync(path.join(REPO_ROOT, historyFilePath(snapshot.date)), JSON.stringify(snapshot))
+  fs.writeFileSync(indexAbs, JSON.stringify(index, null, 2))
+  console.log(`History snapshot ${snapshot.date} written (${index.days.length} days indexed)`)
+  if (isDbConfigured()) {
+    try {
+      const r = await saveRunToDb(payload, { source: 'local' })
+      console.log(`History saved to Postgres: +${r.inserted} rows`)
+    } catch (err) {
+      console.warn(`History database write failed (snapshot file still written): ${err.message}`)
+    }
+  }
   return payload
 }
 
