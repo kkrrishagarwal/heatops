@@ -6,22 +6,24 @@
 }
 
 :root {
-  --dark-bg: #0a0e1a;
-  --card-bg: #0f1729;
-  --card-border: #1a2a4a;
-  --green: #00ff88;
-  --orange: #ff6b35;
-  --red: #ff2222;
+  --dark-bg: #0f172a;
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --primary: #d97706;
+  --extreme: #b91c1c;
+  --high: #c2410c;
+  --moderate: #ca8a04;
+  --safe: #15803d;
   --text-light: #f8fafc;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
 
   /* Dynamic "thermal" theme — set inline per-subtree (dashboard, map info panel) based
-     on the selected city/state's heat category. These root defaults (amber/moderate)
+     on the selected city/state's heat category. These root defaults (professional amber/moderate)
      are the neutral state before any city is selected, e.g. the login screen. */
-  --theme-accent: #ffa83c;
-  --theme-bg-start: #2a1c08;
-  --theme-bg-end: #1a1205;
-  --theme-glow: rgba(255, 170, 40, 0.3);
+  --theme-accent: #d97706;
+  --theme-bg-start: #1e293b;
+  --theme-bg-end: #0f172a;
+  --theme-glow: rgba(217, 119, 6, 0.06);
 }
 
 @keyframes skeleton-shimmer {
@@ -66,7 +68,7 @@ body {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,12 +103,12 @@ body {
   text-align: center;
   max-width: 400px;
   width: 90%;
-  background: rgba(15, 23, 41, 0.8);
+  background: rgba(30, 41, 59, 0.95);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(26, 42, 74, 0.5);
-  border-radius: 20px;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  border-radius: 12px;
   padding: 60px 40px;
-  box-shadow: 0 8px 32px rgba(0, 255, 136, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .satellite {
@@ -116,9 +118,9 @@ body {
   align-items: center;
   justify-content: center;
   margin: 0 auto 30px;
-  border: 2px solid rgba(0, 255, 136, 0.6);
+  border: 2px solid rgba(217, 119, 6, 0.5);
   border-radius: 50%;
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4), inset 0 0 20px rgba(0, 255, 136, 0.1);
+  box-shadow: 0 0 0 0;
   animation: spin 6s linear infinite;
   font-size: 36px;
 }
@@ -131,7 +133,7 @@ body {
 .signin-content h2 {
   font-size: 28px;
   margin-bottom: 40px;
-  background: linear-gradient(135deg, var(--green), #00ccff);
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -145,7 +147,7 @@ body {
   padding: 12px 16px;
   margin-bottom: 12px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(249, 115, 22, 0.2);
   border-radius: 8px;
   color: var(--text-light);
   font-size: 14px;
@@ -158,8 +160,8 @@ body {
 .question-select:focus {
   outline: none;
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--green);
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.2);
+  border-color: var(--orange);
+  box-shadow: none;
 }
 
 .password-container {
@@ -182,20 +184,21 @@ body {
 .signin-button {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, var(--green), #00d9a3);
-  color: var(--dark-bg);
+  background: #d97706;
+  color: #f8fafc;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .signin-button:hover {
-  box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
-  transform: translateY(-2px);
+  background: #b45309;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
 }
 
 .pulse-button {
@@ -227,19 +230,19 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 16px 28px;
-  background: linear-gradient(90deg, 
-    rgba(10, 14, 26, 0.95) 0%,
-    rgba(15, 23, 41, 0.88) 50%,
-    rgba(10, 14, 26, 0.95) 100%
+  background: linear-gradient(90deg,
+    rgba(26, 20, 16, 0.95) 0%,
+    rgba(42, 36, 32, 0.88) 50%,
+    rgba(26, 20, 16, 0.95) 100%
   );
   backdrop-filter: blur(14px);
-  border-bottom: 2px solid;
-  border-image: linear-gradient(90deg, 
-    rgba(0, 212, 255, 0.3) 0%,
-    rgba(0, 255, 136, 0.4) 50%,
-    rgba(0, 212, 255, 0.3) 100%
+  border-bottom: 1px solid;
+  border-image: linear-gradient(90deg,
+    rgba(249, 115, 22, 0.2) 0%,
+    rgba(72, 168, 154, 0.3) 50%,
+    rgba(249, 115, 22, 0.2) 100%
   ) 1;
-  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05);
   z-index: 100;
   position: relative;
 }
@@ -295,7 +298,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -427,7 +430,7 @@ body {
 .agent-status {
   font-size: 13px;
   font-weight: 700;
-  color: #00ff88;
+  color: #d97706;
 }
 
 .scroll-pill {
@@ -604,7 +607,7 @@ body {
   font-size: 24px;
   margin: 0;
   font-weight: 700;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
+  background: linear-gradient(135deg, #d97706 0%, #d97706 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -632,7 +635,7 @@ body {
 .nav-btn:hover {
   background: linear-gradient(135deg, rgba(0, 255, 136, 0.18), rgba(0, 212, 255, 0.18));
   border-color: rgba(0, 255, 136, 0.5);
-  color: #00ff88;
+  color: #d97706;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 255, 136, 0.15);
 }
@@ -716,7 +719,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4ff 50%, #ff6b35 100%);
+  background: linear-gradient(135deg, #d97706 0%, #d97706 50%, #d97706 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -858,7 +861,7 @@ path.state:hover {
 .analyze-btn {
   width: 100%;
   padding: 10px;
-  background: linear-gradient(135deg, var(--green), #00d9a3);
+  background: linear-gradient(135deg, var(--green), #b45309);
   color: var(--dark-bg);
   border: none;
   border-radius: 8px;
@@ -869,7 +872,7 @@ path.state:hover {
 }
 
 .analyze-btn:hover {
-  box-shadow: 0 0 16px rgba(0, 255, 136, 0.3);
+  box-shadow: none;
 }
 
 .hottest-section h4,
@@ -926,7 +929,7 @@ path.state:hover {
   color: var(--green);
   pointer-events: none;
   z-index: 1000;
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.2);
+  box-shadow: none;
 }
 
 /* DASHBOARD SCREEN */
@@ -1014,7 +1017,7 @@ path.state:hover {
 }
 
 .weather-card.temp {
-  border-left: 3px solid #ff6b35;
+  border-left: 3px solid #d97706;
 }
 
 .weather-card.humid {
@@ -1022,7 +1025,7 @@ path.state:hover {
 }
 
 .weather-card.wind {
-  border-left: 3px solid #00ff88;
+  border-left: 3px solid #d97706;
 }
 
 .weather-card.aqi {
@@ -1205,13 +1208,13 @@ path.state:hover {
 }
 
 .trend-urban {
-  background: linear-gradient(180deg, #ff6b35, #b81010);
+  background: linear-gradient(180deg, #d97706, #b81010);
   border-radius: 4px;
   width: 40%;
 }
 
 .trend-rural {
-  background: linear-gradient(180deg, #00ff88, #0a6638);
+  background: linear-gradient(180deg, #d97706, #0a6638);
   border-radius: 4px;
   width: 40%;
 }
@@ -1339,7 +1342,7 @@ path.state:hover {
   border-radius: 50%;
   background: var(--green);
   cursor: pointer;
-  box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+  box-shadow: none;
 }
 
 .slider::-moz-range-thumb {
@@ -1349,7 +1352,7 @@ path.state:hover {
   background: var(--green);
   cursor: pointer;
   border: none;
-  box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+  box-shadow: none;
 }
 
 .slider-group span {
@@ -1394,7 +1397,7 @@ path.state:hover {
 }
 
 .badge:hover {
-  box-shadow: 0 0 14px rgba(0, 255, 136, 0.35);
+  box-shadow: none;
   transform: translateY(-1px);
 }
 
@@ -1426,7 +1429,7 @@ path.state:hover {
 .ai-button {
   width: 100%;
   padding: 10px;
-  background: linear-gradient(135deg, var(--green), #00d9a3);
+  background: linear-gradient(135deg, var(--green), #b45309);
   color: var(--dark-bg);
   border: none;
   border-radius: 6px;
@@ -1437,7 +1440,7 @@ path.state:hover {
 }
 
 .ai-button:hover {
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.3);
+  box-shadow: none;
 }
 
 .ai-button:disabled {
@@ -1549,9 +1552,9 @@ path.state:hover {
 .chat-retry-btn {
   margin-top: 4px;
   background: rgba(0,212,255,0.08);
-  border: 1px solid #00d4ff;
+  border: 1px solid #d97706;
   border-radius: 6px;
-  color: #00d4ff;
+  color: #d97706;
   font-size: 11px;
   padding: 4px 10px;
   cursor: pointer;
@@ -1623,7 +1626,7 @@ path.state:hover {
 
 .progress-bar-main .progress {
   height: 100%;
-  background: linear-gradient(90deg, var(--green), #00d9a3);
+  background: linear-gradient(90deg, var(--green), #b45309);
   border-radius: 6px;
 }
 
