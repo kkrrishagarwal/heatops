@@ -2060,21 +2060,19 @@ const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveS
     const valueStr = String(value).toLowerCase()
 
     if (label === 'AQI Alert') {
-      const aqi = parseInt(valueStr)
+      const aqiMatch = valueStr.match(/(\d+)/)
+      const aqi = aqiMatch ? parseInt(aqiMatch[1]) : 0
       return aqi > 300
     }
-    if (label === 'Heat Leader' || label === 'Peak City') {
-      const temp = parseFloat(valueStr)
+    if (label === 'Heat Leader' || label === 'Peak City' || label === 'Mumbai' || label === 'Shimla') {
+      const tempMatch = valueStr.match(/(-?\d+(?:\.\d+)?)\s*°/)
+      const temp = tempMatch ? parseFloat(tempMatch[1]) : 0
       return temp >= 45
     }
     if (label === 'Storm Watch') {
       const rainMatch = valueStr.match(/(\d+)%/)
       const rainChance = rainMatch ? parseInt(rainMatch[1]) : 0
       return rainChance >= 80
-    }
-    if (label === 'Mumbai' || label === 'Shimla') {
-      const temp = parseFloat(valueStr)
-      return temp >= 45
     }
     return false
   }
