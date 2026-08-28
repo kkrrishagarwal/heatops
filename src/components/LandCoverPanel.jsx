@@ -14,7 +14,7 @@ import { getLulcWithFallback } from '../utils/lulcFallback'
 // no resolvable coordinate at all — its state's representative city), clearly labeled as
 // an estimate rather than a direct measurement. Only if neither resolves does this panel
 // say data isn't available, and it never shows a fabricated number either way.
-export function LandCoverPanel({ lulcData, cityName, stateName, coordsData }) {
+export function LandCoverPanel({ lulcData, cityName, stateName, coordsData, loadError = null, onRetry }) {
   const { t } = useTranslation()
 
   if (!lulcData) {
@@ -28,7 +28,22 @@ export function LandCoverPanel({ lulcData, cityName, stateName, coordsData }) {
         color: "rgba(255,255,255,0.5)",
         fontSize: 12
       }}>
-        {t('landCover.loading', 'Loading land cover data…')}
+        {loadError ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', color: '#eab308' }}>
+            ⚠️ {t('landCover.loadFailed', 'Land cover data could not be loaded.')}
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                style={{ background: 'transparent', border: '1px solid rgba(217,119,6,0.5)', color: '#d97706', borderRadius: 6, padding: '2px 8px', fontSize: 11, cursor: 'pointer' }}
+              >
+                🔄 {t('common.retry', 'Retry')}
+              </button>
+            )}
+          </span>
+        ) : (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>⏳ {t('landCover.loading', 'Loading land cover data…')}</span>
+        )}
       </div>
     )
   }

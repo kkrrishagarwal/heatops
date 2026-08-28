@@ -9,7 +9,7 @@ import { SourceBadge } from './DataBadges'
 // MODIS-derived satellite data (see disclosure block below). It is the same
 // for every city since the model itself is global, not per-city; cityName is
 // only used for the panel's heading.
-export function MLModelPanel({ mlModel, cityName }) {
+export function MLModelPanel({ mlModel, cityName, loadError = null, onRetry }) {
   const { t } = useTranslation()
 
   if (!mlModel) {
@@ -23,7 +23,22 @@ export function MLModelPanel({ mlModel, cityName }) {
         color: "rgba(255,255,255,0.5)",
         fontSize: 12
       }}>
-        {t('mlModel.loading', 'Loading model data…')}
+        {loadError ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', color: '#eab308' }}>
+            ⚠️ {t('mlModel.loadFailed', 'Model data could not be loaded.')}
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                style={{ background: 'transparent', border: '1px solid rgba(217,119,6,0.5)', color: '#d97706', borderRadius: 6, padding: '2px 8px', fontSize: 11, cursor: 'pointer' }}
+              >
+                🔄 {t('common.retry', 'Retry')}
+              </button>
+            )}
+          </span>
+        ) : (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>⏳ {t('mlModel.loading', 'Loading model data…')}</span>
+        )}
       </div>
     )
   }

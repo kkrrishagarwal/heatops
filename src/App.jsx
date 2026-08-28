@@ -25,6 +25,7 @@ import {
 import { geoCentroid } from 'd3'
 import './App.css'
 import { fetchJson, describeFetchError } from './utils/fetchJson'
+import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
 import { SourceBadge } from './components/DataBadges'
@@ -534,7 +535,46 @@ function LanguageDropdown() {
   )
 }
 
-function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze, liveCache, liveSelectedTemp, cacheLastUpdated, formatAgo, isCacheStale }) {
+// One consistent "where is this data coming from" line for every panel that reads the
+// bulk live-weather cache: loading → unavailable (baseline values) → outdated → live.
+function CacheStatusNote({ status, lastUpdated, isStale, formatAgo, onRetry, liveText = 'Live', marginBottom = 8, suffix = null }) {
+  const { t } = useTranslation()
+  const base = { fontSize: 9, marginBottom, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }
+  const retryBtn = onRetry ? (
+    <button
+      type="button"
+      onClick={onRetry}
+      style={{ background: 'transparent', border: '1px solid rgba(217,119,6,0.5)', color: '#d97706', borderRadius: 4, padding: '1px 6px', fontSize: 9, cursor: 'pointer' }}
+    >
+      🔄 {t('common.retry', 'Retry')}
+    </button>
+  ) : null
+  if (status === 'loading') {
+    return <div style={{ ...base, color: 'rgba(255,255,255,0.45)' }}>⏳ {t('panels.loadingLive', 'Loading live data…')}</div>
+  }
+  if (status === 'error') {
+    return (
+      <div style={{ ...base, color: '#eab308' }}>
+        ⚠️ {t('panels.liveUnavailable', 'Live data unavailable — showing baseline values.')} {retryBtn}
+      </div>
+    )
+  }
+  if (!lastUpdated) return null
+  if (isStale(lastUpdated)) {
+    return (
+      <div style={{ ...base, color: '#eab308' }}>
+        🟠 {t('panels.dataOutdated', 'Data may be outdated')} · last refresh {formatAgo(lastUpdated)}
+      </div>
+    )
+  }
+  return (
+    <div style={{ ...base, color: 'rgba(255,255,255,0.35)' }}>
+      📡 {liveText} · updated {formatAgo(lastUpdated)}{suffix}
+    </div>
+  )
+}
+
+function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze, liveCache, liveSelectedTemp, cacheLastUpdated, cacheStatus, onRetryCache, formatAgo, isCacheStale }) {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   
@@ -569,17 +609,15 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
         </span>
       </div>
 
-      {cacheLastUpdated && (
-        isCacheStale(cacheLastUpdated) ? (
-          <div style={{ fontSize: 9, color: "#ffb020", marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
-            🟠 {t('panels.dataOutdated', 'Data may be outdated')} · last refresh {formatAgo(cacheLastUpdated)}
-          </div>
-        ) : (
-          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginBottom: 8 }}>
-            📡 Live temps · updated {formatAgo(cacheLastUpdated)} · "~" = no live data for that city yet
-          </div>
-        )
-      )}
+      <CacheStatusNote
+        status={cacheStatus}
+        lastUpdated={cacheLastUpdated}
+        isStale={isCacheStale}
+        formatAgo={formatAgo}
+        onRetry={onRetryCache}
+        liveText="Live temps"
+        suffix={' · "~" = no live data for that city yet'}
+      />
 
       <div style={{
         position: "relative",
@@ -918,6 +956,23 @@ const INDIA_MAP_PROJECTION_CONFIG = { scale: 1000, center: [82.8, 22.5] }
 // contributor to the slow/"stuck" map load. One shared in-flight-promise cache
 // per URL means every layer reuses the same fetch+parse instead of redoing it.
 const geoDataCache = new Map()
+// These files are 10s of MB, so the timeout is generous — but it is a real
+// timeout: a stalled CDN no longer leaves the map spinner up forever.
+const GEO_FETCH_TIMEOUT_MS = 90000
+function loadGeoData(url) {
+  let cached = geoDataCache.get(url)
+  if (!cached) {
+    cached = fetchJson(url, { timeoutMs: GEO_FETCH_TIMEOUT_MS }).catch(err => {
+      // Drop the failed promise so the next mount / Retry actually refetches.
+      // (Previously the rejected promise was cached forever, so a single failed
+      // load meant "Loading map data…" for the rest of the session.)
+      geoDataCache.delete(url)
+      throw err
+    })
+    geoDataCache.set(url, cached)
+  }
+  return cached
+}
 function useGeoData(url) {
   const [state, setState] = useState({ data: null, error: null })
   const [attempt, setAttempt] = useState(0)
@@ -1558,7 +1613,7 @@ const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorder
 // forwardRef exposes the internal zoom/pan transform div so the parent can mutate its
 // style.transform directly via ref during a drag gesture (bypassing React state entirely
 // for that high-frequency path) — see the onMouseMove handler at the call site for why.
-const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false }, transformRef) => {
+const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null }, transformRef) => {
   // Legend is collapsed by default so the map itself stays fully visible (it covered ~60% of the map on phones).
   const [legendOpen, setLegendOpen] = useState(false)
   const { t } = useTranslation()
@@ -1692,7 +1747,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           <div style={{
             position: 'absolute', inset: 0, zIndex: 30,
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: 10, background: 'rgba(10,14,26,0.85)'
+            gap: 10, background: 'rgba(10,14,26,0.85)', padding: 16, textAlign: 'center'
           }}>
             {mapDataError ? (
               <>
@@ -1863,6 +1918,23 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           container on narrow screens — this card had no size cap at all
           before, so on a phone-width map container (already only ~58% of a
           375px screen) it could cover nearly the entire visible map. */}
+      {/* Cache-status chip — the state colours, weather-overlay tints and marker icons on this
+          map all come from the bulk live-weather cache, so the map says so when that cache is
+          missing or older than 24h (same rule as CacheStatusNote / the ticker badge). */}
+      {(cacheStatus !== 'ready' || cacheStale) && (
+        <div style={{
+          position: 'absolute', top: 60, left: 12, zIndex: 20,
+          background: 'rgba(10, 22, 40, 0.9)', border: '1px solid rgba(234,179,8,0.45)', borderRadius: 6,
+          padding: '4px 8px', color: cacheStatus === 'loading' ? '#94a3b8' : '#eab308',
+          fontFamily: 'monospace', fontSize: 10, maxWidth: '70%'
+        }}>
+          {cacheStatus === 'loading'
+            ? '⏳ Loading live cache…'
+            : cacheStatus === 'error'
+              ? '⚠️ Live cache unavailable · map shows baseline colours'
+              : `🟠 Map colours from cache · last refresh ${cacheAgeLabel || 'unknown'}`}
+        </div>
+      )}
       {!legendOpen ? (
         <button
           type="button"
@@ -2137,7 +2209,16 @@ const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout }) => {
   )
 }
 
-const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla }) => {
+const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, cacheStatus = 'ready', cacheStale = false }) => {
+  // The ticker's city temps come from the bulk cache, so the badge must say so
+  // honestly: LIVE only when the cache loaded and is fresh.
+  const badge = cacheStatus === 'error'
+    ? { text: 'OFFLINE', color: '#94a3b8', pulse: false }
+    : cacheStatus === 'loading'
+      ? { text: 'LOADING', color: '#94a3b8', pulse: true }
+      : cacheStale
+        ? { text: 'CACHED', color: '#eab308', pulse: false }
+        : { text: 'LIVE', color: '#86efac', pulse: true }
   const isCritical = (label, value) => {
     if (!value || value === 'Loading...' || value === '...') return false
     const valueStr = String(value).toLowerCase()
@@ -2181,16 +2262,16 @@ const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveS
       background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)',
       padding: '0 16px', gap: 12, overflow: 'hidden'
     }}>
-      {/* LIVE badge */}
-      <div style={{
+      {/* LIVE / CACHED / OFFLINE badge */}
+      <div title={cacheStale ? 'Bulk weather cache is older than 24h' : undefined} style={{
         display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
-        color: '#86efac', flexShrink: 0
+        color: badge.color, flexShrink: 0
       }}>
         <span style={{
-          width: 6, height: 6, borderRadius: '50%', background: '#86efac',
-          animation: 'navPulse 1s ease-in-out infinite'
+          width: 6, height: 6, borderRadius: '50%', background: badge.color,
+          animation: badge.pulse ? 'navPulse 1s ease-in-out infinite' : 'none'
         }} />
-        LIVE
+        {badge.text}
       </div>
 
       {/* Scrolling ticker */}
@@ -2256,7 +2337,7 @@ const LiveClock = () => {
   )
 }
 
-const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla }) => {
+const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, cacheStatus, cacheStale }) => {
   const { t, i18n } = useTranslation()
   const isAdmin = currentUser?.role === 'admin'
 
@@ -2426,6 +2507,8 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
         liveStormWatch={liveStormWatch}
         liveMumbai={liveMumbai}
         liveShimla={liveShimla}
+        cacheStatus={cacheStatus}
+        cacheStale={cacheStale}
       />
     </>
   )
@@ -2556,55 +2639,74 @@ function App({ user }) {
   // extra direct fetch above (liveWeather) for maximal freshness, layered on top of this cache.
   const [liveCityCache, setLiveCityCache] = useState({})
   const [cacheLastUpdated, setCacheLastUpdated] = useState(null)
+  // 'loading' | 'ready' | 'error' — surfaced by CacheStatusNote / the ticker badge so a
+  // missing or failed cache is visible ("baseline values") instead of silently showing
+  // hardcoded seed data as if it were live.
+  const [liveCacheStatus, setLiveCacheStatus] = useState('loading')
+  const [liveCacheAttempt, setLiveCacheAttempt] = useState(0)
+  const retryLiveCache = useCallback(() => setLiveCacheAttempt(a => a + 1), [])
 
   useEffect(() => {
-    // Defer fetch to avoid blocking UI on sign-in. Delay 500ms to let the
-    // map interactive before heavy JSON parsing starts.
+    // Defer the first fetch to avoid blocking UI on sign-in (500ms lets the map
+    // become interactive before heavy JSON parsing starts); retries run immediately.
+    let cancelled = false
+    setLiveCacheStatus('loading')
     const timer = setTimeout(() => {
-      fetch('/live-weather-cache.json')
-        .then(r => r.json())
+      fetchJson('/live-weather-cache.json', { timeoutMs: 20000 })
         .then(data => {
-          setLiveCityCache(data.cities || {})
-          setCacheLastUpdated(data.lastUpdated || null)
+          if (cancelled) return
+          setLiveCityCache(data?.cities || {})
+          setCacheLastUpdated(data?.lastUpdated || null)
+          setLiveCacheStatus('ready')
         })
-        .catch(() => {})
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [])
+        .catch(err => {
+          if (cancelled) return
+          console.warn('[live-weather-cache] load failed:', err?.message)
+          setLiveCacheStatus('error')
+        })
+    }, liveCacheAttempt === 0 ? 500 : 0)
+    return () => { cancelled = true; clearTimeout(timer) }
+  }, [liveCacheAttempt])
 
   // Real RandomForestRegressor metrics (R², MAE, feature_importances_) trained
   // on real MODIS satellite data — see scripts/train_lst_model.py. One global
   // model, not per-city, so this is fetched once and passed to MLModelPanel
   // regardless of which city is selected.
   const [mlModelReal, setMlModelReal] = useState(null)
+  const [mlModelError, setMlModelError] = useState(null)
+  const [mlModelAttempt, setMlModelAttempt] = useState(0)
+  const retryMlModel = useCallback(() => setMlModelAttempt(a => a + 1), [])
   useEffect(() => {
-    // Defer fetch to avoid blocking UI on sign-in. Delay 1s to let the
-    // map interactive before heavy JSON parsing starts.
+    // Deferred 1s on first load so the map becomes interactive first; retries are immediate.
+    let cancelled = false
+    setMlModelError(null)
     const timer = setTimeout(() => {
-      fetch('/data/ml_model_real.json')
-        .then(r => r.json())
-        .then(setMlModelReal)
-        .catch(() => {})
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [])
+      fetchJson('/data/ml_model_real.json', { timeoutMs: 15000 })
+        .then(data => { if (!cancelled) setMlModelReal(data) })
+        .catch(err => { if (!cancelled) setMlModelError(err) })
+    }, mlModelAttempt === 0 ? 1000 : 0)
+    return () => { cancelled = true; clearTimeout(timer) }
+  }, [mlModelAttempt])
 
   // Real ESA WorldCover land-cover classification — only computed for one
   // representative city per state (see scripts/build_lulc_data.py). Cities not
   // in this file fall back to the nearest real entry (getLulcWithFallback) rather
   // than showing nothing — see src/utils/lulcFallback.js.
   const [lulcReal, setLulcReal] = useState(null)
+  const [lulcError, setLulcError] = useState(null)
+  const [lulcAttempt, setLulcAttempt] = useState(0)
+  const retryLulc = useCallback(() => setLulcAttempt(a => a + 1), [])
   useEffect(() => {
-    // Defer fetch to avoid blocking UI on sign-in. Delay 1.5s to let the
-    // map interactive before heavy JSON parsing starts.
+    // Deferred 1.5s on first load so the map becomes interactive first; retries are immediate.
+    let cancelled = false
+    setLulcError(null)
     const timer = setTimeout(() => {
-      fetch('/data/lulc_real.json')
-        .then(r => r.json())
-        .then(setLulcReal)
-        .catch(() => {})
-    }, 1500)
-    return () => clearTimeout(timer)
-  }, [])
+      fetchJson('/data/lulc_real.json', { timeoutMs: 15000 })
+        .then(data => { if (!cancelled) setLulcReal(data) })
+        .catch(err => { if (!cancelled) setLulcError(err) })
+    }, lulcAttempt === 0 ? 1500 : 0)
+    return () => { cancelled = true; clearTimeout(timer) }
+  }, [lulcAttempt])
 
   // Precise per-city coordinates (1,689/1,956 cities) — used both by the live weather
   // resolver (weatherAPI.js) and to find the nearest real LULC data point for a city that
@@ -2762,7 +2864,8 @@ function App({ user }) {
     const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
     if (mins < 1) return 'just now'
     if (mins < 60) return `${mins}m ago`
-    return `${Math.round(mins / 60)}h ago`
+    if (mins < 48 * 60) return `${Math.round(mins / 60)}h ago`
+    return `${Math.round(mins / (60 * 24))}d ago`
   }
 
   // The bulk weather cache (live-weather-cache.json) is meant to refresh at least every few
@@ -3277,6 +3380,8 @@ function App({ user }) {
           liveStormWatch={liveRainiestCity}
           liveMumbai={getLiveCity('Mumbai', 'Maharashtra')?.temp}
           liveShimla={getLiveCity('Shimla', 'Himachal Pradesh')?.temp}
+          cacheStatus={liveCacheStatus}
+          cacheStale={isCacheStale(cacheLastUpdated)}
         />
 
         {/* Main content — updated height calculation. On phone widths .map-layout
@@ -3447,15 +3552,24 @@ function App({ user }) {
                           stay fixed-size regardless of scale. See the comment inside
                           IndiaMap's render for why this moved from wrapping the whole
                           component here to being handled inside it instead. */}
-                      <IndiaMap
-                        ref={mapTransformRef}
-                        INDIA_DATA={liveIndiaData}
-                        selectedState={selectedState}
-                        onStateClick={handleStateClick}
-                        scale={mapScale}
-                        pos={mapPos}
-                        isDragging={isDragging}
-                      />
+                      {/* Map-level boundary: if the map itself throws while rendering (e.g. a
+                          corrupt GeoJSON body that parses but has the wrong shape), only this
+                          section shows a fallback — navbar, ticker and the side panels stay up.
+                          The root boundary in main.jsx remains the last resort for everything else. */}
+                      <AppErrorBoundary compact title="Map could not be displayed">
+                        <IndiaMap
+                          ref={mapTransformRef}
+                          INDIA_DATA={liveIndiaData}
+                          selectedState={selectedState}
+                          onStateClick={handleStateClick}
+                          scale={mapScale}
+                          pos={mapPos}
+                          isDragging={isDragging}
+                          cacheStatus={liveCacheStatus}
+                          cacheStale={isCacheStale(cacheLastUpdated)}
+                          cacheAgeLabel={formatAgo(cacheLastUpdated)}
+                        />
+                      </AppErrorBoundary>
                     </div>
 
                     <div style={{
@@ -3597,6 +3711,8 @@ function App({ user }) {
                   liveCache={liveCityCache}
                   liveSelectedTemp={liveWeather?.current?.temp}
                   cacheLastUpdated={cacheLastUpdated}
+                  cacheStatus={liveCacheStatus}
+                  onRetryCache={retryLiveCache}
                   formatAgo={formatAgo}
                   isCacheStale={isCacheStale}
                   onCitySelect={(city) => {
@@ -3612,17 +3728,7 @@ function App({ user }) {
 
                 <div className="hottest-section">
                   <h4>🔥 {t('panels.hottestCities', 'Hottest Cities')}</h4>
-                  {cacheLastUpdated && (
-                    isCacheStale(cacheLastUpdated) ? (
-                      <div style={{ fontSize: 9, color: "#ffb020", marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        🟠 {t('panels.dataOutdated', 'Data may be outdated')} · last refresh {formatAgo(cacheLastUpdated)}
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>
-                        📡 Live · updated {formatAgo(cacheLastUpdated)}
-                      </div>
-                    )
-                  )}
+                  <CacheStatusNote status={liveCacheStatus} lastUpdated={cacheLastUpdated} isStale={isCacheStale} formatAgo={formatAgo} onRetry={retryLiveCache} marginBottom={4} />
                   <ul>
                     {liveLeaderBase.map((item, i) => (
                       <li key={i}>
@@ -3692,17 +3798,7 @@ function App({ user }) {
                   <h4 style={{ color: '#d97706', borderLeft: '2px solid #d97706', paddingLeft: 8, marginBottom: 10, marginTop: 0 }}>
                     📊 {t('nationalSummary.title', "Today's National Heat Summary")}
                   </h4>
-                  {cacheLastUpdated && (
-                    isCacheStale(cacheLastUpdated) ? (
-                      <div style={{ fontSize: 9, color: '#ffb020', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        🟠 {t('panels.dataOutdated', 'Data may be outdated')} · last refresh {formatAgo(cacheLastUpdated)}
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>
-                        📡 {t('nationalSummary.live', 'Live')} · {t('nationalSummary.updated', 'updated')} {formatAgo(cacheLastUpdated)}
-                      </div>
-                    )
-                  )}
+                  <CacheStatusNote status={liveCacheStatus} lastUpdated={cacheLastUpdated} isStale={isCacheStale} formatAgo={formatAgo} onRetry={retryLiveCache} marginBottom={10} liveText={t('nationalSummary.live', 'Live')} />
 
                   <div style={{ display: 'grid', gap: 10 }}>
                     <div style={{ background: 'rgba(184,16,16,0.1)', border: '1px solid rgba(184,16,16,0.3)', borderRadius: 8, padding: 12 }}>
@@ -4259,10 +4355,10 @@ function App({ user }) {
 
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 {/* PANEL C: ML Model Panel */}
-                <MLModelPanel mlModel={mlModelReal} cityName={selectedCity} />
+                <MLModelPanel mlModel={mlModelReal} cityName={selectedCity} loadError={mlModelError} onRetry={retryMlModel} />
 
                 {/* PANEL L: Land Use / Land Cover */}
-                <LandCoverPanel lulcData={lulcReal} cityName={selectedCity} stateName={selectedState} coordsData={cityCoordsData} />
+                <LandCoverPanel lulcData={lulcReal} cityName={selectedCity} stateName={selectedState} coordsData={cityCoordsData} loadError={lulcError} onRetry={retryLulc} />
 
                 {/* PANEL M: Urban Morphology (OpenStreetMap, live, real) */}
                 <section className="panel">
