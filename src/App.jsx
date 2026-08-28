@@ -25,6 +25,7 @@ import {
 import { geoCentroid } from 'd3'
 import './App.css'
 import { fetchJson, describeFetchError } from './utils/fetchJson'
+import { setBulkWeatherCache } from './utils/bulkWeatherCache'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
@@ -2669,6 +2670,8 @@ function App({ user }) {
           if (cancelled) return
           setLiveCityCache(data?.cities || {})
           setCacheLastUpdated(data?.lastUpdated || null)
+          // Also register it for useWeather's live-API fallback (see utils/bulkWeatherCache.js)
+          setBulkWeatherCache(data?.cities || {}, data?.lastUpdated || null)
           setLiveCacheStatus('ready')
         })
         .catch(err => {
@@ -4084,7 +4087,7 @@ function App({ user }) {
                           <div className="progress-bar">
                             <div className="progress" style={{width: (liveWeather.current.surfaceTemp/55)*100 + '%', background:'linear-gradient(90deg, #0a6638, #896e00, #bb5200, #b81010)'}}/>
                           </div>
-                          <span className="index-value">{liveWeather.current.surfaceTemp.toFixed(1)}°C</span>
+                          <span className="index-value">{typeof liveWeather.current.surfaceTemp === 'number' ? `${liveWeather.current.surfaceTemp.toFixed(1)}°C` : '—'}</span>
                           <SourceBadge source="Open-Meteo surface/skin temperature (live weather model)" />
                           <div style={{fontSize: 9, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', marginTop: 2}}>
                             ℹ️ {t('satellitePass.modeledNote', 'Modeled ground-surface temperature, not a satellite-measured Landsat reading — updates live, unlike a ~16-day satellite revisit.')}
@@ -4154,7 +4157,7 @@ function App({ user }) {
                           <div className="progress-bar">
                             <div className="progress" style={{width: Math.min(100, (liveWeather.elevation/3000)*100) + '%', background:'#888'}}/>
                           </div>
-                          <span className="index-value">{Math.round(liveWeather.elevation)}m</span>
+                          <span className="index-value">{typeof liveWeather.elevation === 'number' ? `${Math.round(liveWeather.elevation)}m` : '—'}</span>
                           <SourceBadge source="SRTM 30m DEM (via Open-Meteo Elevation API)" />
                         </>
                       ) : (liveWeatherError || liveWeatherTimedOut) ? (

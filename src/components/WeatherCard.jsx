@@ -35,6 +35,8 @@ export function WeatherCard({ city, state, onClose }) {
   }, [])
 
   if (!city) return null
+  const partial = !!weather?.isPartial
+  const has = (v) => typeof v === 'number'
 
   // Only show a full error/loading state if there is NO data of any kind (live or cached)
   // for this city — if we have a cached fallback, show it normally with a small stale badge
@@ -78,10 +80,12 @@ export function WeatherCard({ city, state, onClose }) {
       <div style={styles.header}>
         <div>
           <h3 style={styles.title}>
-            {weather.current.condition.icon} {weather.city}, {weather.state}
+            {weather.current.condition?.icon ?? '🗂️'} {weather.city}, {weather.state}
           </h3>
           <div style={styles.coords}>
-            📍 {weather.lat.toFixed(2)}°N {Math.abs(weather.lon).toFixed(2)}°E
+            📍 {has(weather.lat) && has(weather.lon)
+              ? `${weather.lat.toFixed(2)}°N ${Math.abs(weather.lon).toFixed(2)}°E`
+              : t('weatherCard.coordsUnavailable', 'coordinates unavailable')}
           </div>
           {weather.isFallbackLocation && (
             <div style={styles.fallbackBadge}>
@@ -90,7 +94,7 @@ export function WeatherCard({ city, state, onClose }) {
           )}
           {isStale && (
             <div style={styles.staleBadge}>
-              ⏱ {t('weatherCard.cachedAgo', 'Cached — {{age}}', { age: formatCacheAge(cachedAt, t) })}
+              ⏱ {t('weatherCard.cachedFallback', 'Showing cached data from {{age}} — live data temporarily unavailable.', { age: formatCacheAge(cachedAt, t) })}
               <button onClick={forceRefresh} style={styles.staleRefreshBtn}>↻ {t('weatherCard.forceRefresh', 'Force Refresh')}</button>
             </div>
           )}
@@ -117,29 +121,43 @@ export function WeatherCard({ city, state, onClose }) {
           {weather.current.temp}°C
         </div>
         <div style={styles.condition}>
-          {weather.current.condition.label}
+          {partial ? t('weatherCard.cachedReading', 'Cached reading') : weather.current.condition?.label}
         </div>
-        <div style={styles.feelsLike}>
-          {t('weatherCard.feelsLike', 'Feels like {{temp}}°C', { temp: weather.current.feelsLike })}
-        </div>
-        <div style={styles.todayRange}>
-          ▲ {weather.today.maxTemp}°C / ▼ {weather.today.minTemp}°C
-        </div>
+        {has(weather.current.feelsLike) && (
+          <div style={styles.feelsLike}>
+            {t('weatherCard.feelsLike', 'Feels like {{temp}}°C', { temp: weather.current.feelsLike })}
+          </div>
+        )}
+        {weather.today && (
+          <div style={styles.todayRange}>
+            ▲ {weather.today.maxTemp}°C / ▼ {weather.today.minTemp}°C
+          </div>
+        )}
       </div>
 
       {/* Stats Grid */}
       <div style={styles.statsGrid}>
+        {partial ? (
+          <>
+            {has(weather.current.cloudCover) && <StatBox icon="☁️" label={t('weatherCard.cloudCover', 'Cloud Cover')} value={`${weather.current.cloudCover}%`} />}
+            {has(weather.current.rainChance) && <StatBox icon="🌧️" label={t('weatherCard.rainChance', 'Rain chance')} value={`${weather.current.rainChance}%`} />}
+          </>
+        ) : (
+          <>
         <StatBox icon="💧" label={t('weatherCard.humidity', 'Humidity')} value={`${weather.current.humidity}%`} />
         <StatBox icon="💨" label={t('weatherCard.wind', 'Wind')} value={`${weather.current.windSpeed} km/h ${weather.current.windDirection}`} />
         <StatBox icon="🌡️" label={t('weatherCard.pressure', 'Pressure')} value={`${weather.current.pressure} hPa`} />
         <StatBox icon="👁️" label={t('weatherCard.visibility', 'Visibility')} value={`${weather.current.visibility} km`} />
         <StatBox icon="☀️" label={t('weatherCard.uvIndex', 'UV Index')} value={weather.current.uvIndex} />
         <StatBox icon="☁️" label={t('weatherCard.cloudCover', 'Cloud Cover')} value={`${weather.current.cloudCover}%`} />
-        <StatBox icon="🌅" label={t('weatherCard.sunrise', 'Sunrise')} value={weather.today.sunrise} />
-        <StatBox icon="🌇" label={t('weatherCard.sunset', 'Sunset')} value={weather.today.sunset} />
+        <StatBox icon="🌅" label={t('weatherCard.sunrise', 'Sunrise')} value={weather.today?.sunrise} />
+        <StatBox icon="🌇" label={t('weatherCard.sunset', 'Sunset')} value={weather.today?.sunset} />
+          </>
+        )}
       </div>
 
       {/* AQI Section */}
+      {weather.aqi && (
       <div style={styles.section}>
         <div style={styles.sectionTitle}>
           🌍 {t('weatherCard.aqiTitle', 'Air Quality Index (AQI)')}
@@ -157,17 +175,20 @@ export function WeatherCard({ city, state, onClose }) {
           </div>
         </div>
         <div style={styles.aqiDetails}>
-          <AQIDetail icon="🔵" label="PM2.5" value={`${weather.aqi.pm25} µg/m³`} />
-          <AQIDetail icon="🔴" label="PM10" value={`${weather.aqi.pm10} µg/m³`} />
-          <AQIDetail icon="🟣" label="NO₂" value={`${weather.aqi.no2} ppb`} />
-          <AQIDetail icon="🟠" label="O₃" value={`${weather.aqi.o3} ppb`} />
+          {has(weather.aqi.pm25) && <AQIDetail icon="🔵" label="PM2.5" value={`${weather.aqi.pm25} µg/m³`} />}
+          {has(weather.aqi.pm10) && <AQIDetail icon="🔴" label="PM10" value={`${weather.aqi.pm10} µg/m³`} />}
+          {has(weather.aqi.no2) && <AQIDetail icon="🟣" label="NO₂" value={`${weather.aqi.no2} ppb`} />}
+          {has(weather.aqi.o3) && <AQIDetail icon="🟠" label="O₃" value={`${weather.aqi.o3} ppb`} />}
         </div>
         <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.4 }}>
           {t('weatherCard.aqiMethodNote', 'AQI score follows US EPA methodology (24-h rolling average for PM, 8-h for O₃) — pollutant readings above are instantaneous, so the two can differ during fast-changing events.')}
         </div>
       </div>
 
+      )}
+
       {/* 7-Day Forecast */}
+      {weather.forecast?.length > 0 && (
       <div style={styles.section}>
         <div style={styles.sectionTitle}>📊 {t('weatherCard.sevenDayForecast', '7-Day Forecast')}</div>
         <div style={styles.forecastContainer}>
@@ -185,7 +206,10 @@ export function WeatherCard({ city, state, onClose }) {
         </div>
       </div>
 
+      )}
+
       {/* Hourly Forecast (next 12 hours) */}
+      {weather.hourly?.length > 0 && (
       <div style={styles.section}>
         <div style={styles.sectionTitle}>⏰ {t('weatherCard.next12Hours', 'Next 12 Hours')}</div>
         <div style={styles.hourlyContainer}>
@@ -200,9 +224,13 @@ export function WeatherCard({ city, state, onClose }) {
         </div>
       </div>
 
+      )}
+
       {/* Footer */}
       <div style={styles.footer}>
-        📡 {t('weatherCard.dataSource', 'Data: Open-Meteo.com (WMO • ERA5 reanalysis)')} • {isStale
+        📡 {partial
+          ? t('weatherCard.dataSourceBulk', 'Data: BhaskarOps daily cache (Open-Meteo) — partial reading')
+          : t('weatherCard.dataSource', 'Data: Open-Meteo.com (WMO • ERA5 reanalysis)')} • {isStale
           ? t('weatherCard.cachedFooter', 'Cached {{age}}', { age: formatCacheAge(cachedAt, t) })
           : t('weatherCard.updatedFooter', 'Updated: {{time}} IST', { time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }) })}
       </div>

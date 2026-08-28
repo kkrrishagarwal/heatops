@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { fetchCompleteWeather } from '../utils/weatherAPI'
+import { getBulkWeatherEntry, buildWeatherFromBulkEntry } from '../utils/bulkWeatherCache'
 
 // Single shared source of live weather data for the whole app. The in-memory cache below is a
 // MODULE-LEVEL singleton (not component state), so every component that calls useWeather()
@@ -87,8 +88,26 @@ function getEntry(city, state, callerTag) {
   return entry
 }
 
-function buildState({ data, loading, error, isStale, cachedAt, timedOut }) {
-  return { data, loading, error, isStale, cachedAt, timedOut }
+function buildState({ data, loading, error, isStale, cachedAt, timedOut, fallbackSource = null }) {
+  return { data, loading, error, isStale, cachedAt, timedOut, fallbackSource }
+}
+
+// When the live fetch has failed (after the 429 backoff), pick the best cached reading:
+//   1. this browser's last successful live fetch for the city (full data), or
+//   2. the city's entry in the daily bulk cache (partial data — temp/AQI/cloud/rain),
+// whichever is fresher. Only if neither exists does the caller surface an error.
+async function resolveFallback(cacheKey, city, state) {
+  const persisted = readPersisted(cacheKey)
+  const bulk = getBulkWeatherEntry(city, state)
+  const bulkTs = bulk?.lastUpdated ? new Date(bulk.lastUpdated).getTime() : 0
+  if (persisted && (!bulk || persisted.timestamp >= bulkTs)) {
+    return { data: persisted.data, timestamp: persisted.timestamp, source: 'persisted' }
+  }
+  if (bulk) {
+    const data = await buildWeatherFromBulkEntry(bulk.entry, bulk.lastUpdated, city, state)
+    return { data, timestamp: bulkTs || Date.now(), source: 'bulk' }
+  }
+  return null
 }
 
 /**
@@ -124,8 +143,19 @@ export function useWeather(city, cityState, callerTag = 'unknown') {
 
     const entry = getEntry(city, cityState, callerTag)
 
+    // Slow path (10s, e.g. a 429 backoff in progress): rather than an interim
+    // "taking too long" message, show the best cached reading immediately —
+    // clearly labelled — while the live fetch keeps going. If live data arrives
+    // it replaces the cached card; if it fails, the same cached card stays.
     const timeoutId = setTimeout(() => {
-      if (!cancelled) setState(s => (s.loading ? { ...s, timedOut: true } : s))
+      if (cancelled) return
+      setState(s => (s.loading ? { ...s, timedOut: true } : s))
+      resolveFallback(cacheKey, city, cityState).then(fallback => {
+        if (cancelled || !fallback) return
+        setState(s => (s.loading && !s.data
+          ? { ...s, data: fallback.data, isStale: true, cachedAt: fallback.timestamp, fallbackSource: fallback.source, timedOut: false }
+          : s))
+      })
     }, REQUEST_TIMEOUT_MS)
 
     entry.promise
@@ -133,12 +163,13 @@ export function useWeather(city, cityState, callerTag = 'unknown') {
         if (cancelled) return
         setState(buildState({ data, loading: false, error: null, isStale: false, cachedAt: null, timedOut: false }))
       })
-      .catch(err => {
+      .catch(async err => {
         if (cancelled) return
-        const fallback = readPersisted(cacheKey)
+        const fallback = await resolveFallback(cacheKey, city, cityState)
+        if (cancelled) return
         if (fallback) {
-          console.log(`[useWeather] live fetch failed for "${city}, ${cityState}" — falling back to cache from ${new Date(fallback.timestamp).toLocaleTimeString()}`)
-          setState(buildState({ data: fallback.data, loading: false, error: null, isStale: true, cachedAt: fallback.timestamp, timedOut: false }))
+          console.log(`[useWeather] live fetch failed for "${city}, ${cityState}" (${err?.message}) — showing ${fallback.source} cache from ${new Date(fallback.timestamp).toISOString()}`)
+          setState(buildState({ data: fallback.data, loading: false, error: null, isStale: true, cachedAt: fallback.timestamp, timedOut: false, fallbackSource: fallback.source }))
         } else {
           setState(buildState({ data: null, loading: false, error: err, isStale: false, cachedAt: null, timedOut: false }))
         }
@@ -163,16 +194,22 @@ export function useWeather(city, cityState, callerTag = 'unknown') {
     const entry = getEntry(city, cityState, `${callerTag} (force refresh)`)
     const timeoutId = setTimeout(() => {
       setState(s => (s.loading ? { ...s, timedOut: true } : s))
+      resolveFallback(cacheKey, city, cityState).then(fallback => {
+        if (!fallback) return
+        setState(s => (s.loading && !s.data
+          ? { ...s, data: fallback.data, isStale: true, cachedAt: fallback.timestamp, fallbackSource: fallback.source, timedOut: false }
+          : s))
+      })
     }, REQUEST_TIMEOUT_MS)
 
     entry.promise
       .then(data => {
         setState(buildState({ data, loading: false, error: null, isStale: false, cachedAt: null, timedOut: false }))
       })
-      .catch(err => {
-        const fallback = readPersisted(cacheKey)
+      .catch(async err => {
+        const fallback = await resolveFallback(cacheKey, city, cityState)
         if (fallback) {
-          setState(buildState({ data: fallback.data, loading: false, error: null, isStale: true, cachedAt: fallback.timestamp, timedOut: false }))
+          setState(buildState({ data: fallback.data, loading: false, error: null, isStale: true, cachedAt: fallback.timestamp, timedOut: false, fallbackSource: fallback.source }))
         } else {
           setState(buildState({ data: null, loading: false, error: err, isStale: false, cachedAt: null, timedOut: false }))
         }
