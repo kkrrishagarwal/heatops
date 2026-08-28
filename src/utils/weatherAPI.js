@@ -3,6 +3,7 @@
  * Provides real-time weather, AQI, forecasts for any Indian city with accurate IST time
  */
 import { loadCityCoordinates, getExactCoordinates, STATE_REPRESENTATIVE_CITY } from './cityCoordinateResolver'
+import { fetchJson } from './fetchJson'
 
 // WMO Weather Code to readable conditions mapping
 const WMO_CODES = {
@@ -89,8 +90,9 @@ export async function getCityCoordinates(cityName, stateName) {
     }
 
     const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=10&language=en&format=json`
-    const res = await fetch(url)
-    const data = await res.json()
+    // Real timeout + status check: a slow/unavailable geocoder now fails fast with a
+    // clear error instead of hanging the whole weather load or choking on an HTML body.
+    const data = await fetchJson(url, { timeoutMs: 10000 })
 
     if (data.results && data.results.length > 0) {
       const indiaResults = data.results.filter(r => r.country_code === 'IN')
@@ -185,9 +187,9 @@ export async function getWeatherData(lat, lon) {
       precipitation_unit: 'mm'
     })
 
-    const res = await fetch(url)
-    if (!res.ok) throw new Error(`Weather API error: ${res.status}`)
-    return await res.json()
+    // fetchJson's error message keeps the HTTP status ("HTTP 429 …"), which
+    // useWeather's isRateLimited() relies on to decide whether to back off and retry.
+    return await fetchJson(url, { timeoutMs: 10000 })
   } catch (err) {
     console.error('Weather data error:', err)
     throw err
@@ -212,9 +214,7 @@ export async function getAirQuality(lat, lon) {
       timezone: 'Asia/Kolkata'
     })
 
-    const res = await fetch(url)
-    if (!res.ok) throw new Error(`AQI API error: ${res.status}`)
-    return await res.json()
+    return await fetchJson(url, { timeoutMs: 10000 })
   } catch (err) {
     console.error('Air quality error:', err)
     throw err
