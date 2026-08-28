@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BhaskarOps — Weather History</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --border:rgba(148,163,184,0.2); --text:#e2e8f0; --muted:#94a3b8; --accent:#d97706; --red:#dc2626; --green:#22c55e; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:Inter,system-ui,sans-serif; }
+  header { display:flex; align-items:center; gap:14px; padding:14px 20px; border-bottom:1px solid var(--border); background:rgba(15,23,42,0.95); }
+  header .brand { font-weight:800; letter-spacing:.1em; color:var(--accent); font-size:13px; }
+  header .sub { font-size:11px; color:var(--muted); }
+  header a { margin-left:auto; color:var(--accent); font-size:12px; text-decoration:none; border:1px solid rgba(217,119,6,0.5); border-radius:6px; padding:5px 10px; }
+  main { max-width:1100px; margin:0 auto; padding:18px 16px 40px; display:flex; flex-direction:column; gap:16px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
+  label { font-size:11px; color:var(--muted); display:flex; flex-direction:column; gap:4px; }
+  input, select { background:#0f172a; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 12px; font-size:14px; min-width:160px; }
+  button { background:var(--accent); color:#0f172a; border:1px solid rgba(217,119,6,0.6); border-radius:8px; padding:9px 16px; font-weight:700; cursor:pointer; font-size:13px; }
+  button.secondary { background:transparent; color:var(--accent); }
+  .status { font-size:12px; color:var(--muted); }
+  .status.error { color:#eab308; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+  .stat { background:#0f172a; border:1px solid var(--border); border-radius:10px; padding:12px; }
+  .stat .k { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+  .stat .v { font-size:22px; font-weight:800; margin-top:4px; }
+  svg { width:100%; height:260px; display:block; }
+  .legend { display:flex; gap:16px; font-size:11px; color:var(--muted); margin-top:6px; }
+  .legend i { display:inline-block; width:10px; height:3px; margin-right:6px; vertical-align:middle; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th, td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--border); }
+  th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.06em; position:sticky; top:0; background:var(--card); }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .table-wrap { max-height:420px; overflow:auto; }
+  .hot { color:var(--red); font-weight:700; }
+  .bad { color:var(--red); }
+  .ok { color:var(--green); }
+  datalist { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <div><div class="brand">BHASKAR OPS</div><div class="sub">Weather history viewer</div></div>
+  <a href="/">← Back to the app</a>
+</header>
+<main>
+  <div class="card">
+    <div class="controls">
+      <label>City <input id="city" list="cities" placeholder="e.g. New Delhi" value="New Delhi" /></label>
+      <label>State (optional) <input id="state" placeholder="e.g. Delhi" value="Delhi" /></label>
+      <label>Days <select id="days"><option>14</option><option>30</option><option selected>60</option><option>90</option><option>180</option><option>365</option></select></label>
+      <button id="load">Show history</button>
+      <button id="csv" class="secondary" disabled>Download CSV</button>
+      <datalist id="cities"></datalist>
+    </div>
+    <div id="status" class="status" style="margin-top:10px">Loading available days…</div>
+  </div>
+
+  <div class="card">
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <div class="card">
+    <svg id="chart" viewBox="0 0 1000 260" preserveAspectRatio="none" aria-label="Temperature and AQI over time"></svg>
+    <div class="legend"><span><i style="background:#d97706"></i>Temperature (°C)</span><span><i style="background:#dc2626"></i>AQI</span><span><i style="background:#3b82f6"></i>Rain chance (%)</span></div>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table id="table"><thead><tr><th>Date</th><th>Temp °C</th><th>AQI</th><th>PM10 µg/m³</th><th>Rain %</th><th>Cloud %</th><th>Observed (UTC)</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+</main>
+<script>
+(function () {
+  const $ = id => document.getElementById(id)
+  let points = [], source = ''
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+  const fmt = v => (v === null || v === undefined) ? '—' : v
+
+  async function loadDays() {
+    try {
+      const r = await fetch('/api/weather-history?runs=1'); const d = await r.json()
+      if (d.runs) $('status').textContent = `${d.runs.length} days of history available (${d.runs[d.runs.length - 1].observedAt.slice(0, 10)} → ${d.runs[0].observedAt.slice(0, 10)}) · source: ${d.source}`
+      // city suggestions from the latest snapshot
+      const idx = await (await fetch('/data/history/index.json')).json()
+      const latest = idx.days[idx.days.length - 1]
+      const snap = await (await fetch('/data/history/' + latest.file)).json()
+      const list = $('cities'); Object.keys(snap.cities).sort().forEach(k => { const o = document.createElement('option'); o.value = k.split('|')[0]; o.label = k.replace('|', ', '); list.appendChild(o) })
+    } catch (e) { $('status').className = 'status error'; $('status').textContent = 'Could not load the history index: ' + e.message }
+  }
+
+  async function load() {
+    const city = $('city').value.trim(), state = $('state').value.trim(), days = $('days').value
+    if (!city) return
+    $('status').className = 'status'; $('status').textContent = 'Loading…'
+    try {
+      const r = await fetch(`/api/weather-history?city=${encodeURIComponent(city)}${state ? '&state=' + encodeURIComponent(state) : ''}&days=${days}`)
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error || r.status)
+      points = d.points || []; source = d.source
+      $('status').textContent = points.length ? `${points.length} days for ${esc(city)}${state ? ', ' + esc(state) : ''} · source: ${source}` : `No data for "${city}" — check the spelling (try the suggestions) or the state.`
+      $('csv').disabled = !points.length
+      render()
+    } catch (e) { $('status').className = 'status error'; $('status').textContent = 'Error: ' + e.message }
+  }
+
+  function render() {
+    const temps = points.map(p => p.temp).filter(v => typeof v === 'number')
+    const aqis = points.map(p => p.aqi).filter(v => typeof v === 'number')
+    const hottest = points.reduce((a, p) => (typeof p.temp === 'number' && (!a || p.temp > a.temp)) ? p : a, null)
+    const worst = points.reduce((a, p) => (typeof p.aqi === 'number' && (!a || p.aqi > a.aqi)) ? p : a, null)
+    $('stats').innerHTML = points.length ? [
+      ['Days', points.length],
+      ['Avg temp', temps.length ? (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1) + ' °C' : '—'],
+      ['Hottest day', hottest ? `${hottest.temp} °C · ${hottest.date}` : '—'],
+      ['Avg AQI', aqis.length ? Math.round(aqis.reduce((a, b) => a + b, 0) / aqis.length) : '—'],
+      ['Worst AQI', worst ? `${worst.aqi} · ${worst.date}` : '—']
+    ].map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('') : ''
+
+    // chart
+    const W = 1000, H = 260, L = 40, R = 40, T = 12, B = 28
+    const svg = $('chart'); svg.innerHTML = ''
+    if (!points.length) return
+    const x = i => L + (points.length === 1 ? 0 : i * (W - L - R) / (points.length - 1))
+    const series = [
+      { key: 'temp', color: '#d97706', min: 0, max: Math.max(50, ...temps) },
+      { key: 'aqi', color: '#dc2626', min: 0, max: Math.max(300, ...aqis) },
+      { key: 'rainChance', color: '#3b82f6', min: 0, max: 100 }
+    ]
+    let g = ''
+    for (let i = 0; i <= 4; i++) { const y = T + i * (H - T - B) / 4; g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="rgba(148,163,184,0.15)" />` }
+    for (const s of series) {
+      const y = v => H - B - (v - s.min) / (s.max - s.min) * (H - T - B)
+      const pts = points.map((p, i) => typeof p[s.key] === 'number' ? `${x(i)},${y(p[s.key])}` : null).filter(Boolean)
+      if (pts.length) g += `<polyline fill="none" stroke="${s.color}" stroke-width="2" points="${pts.join(' ')}" />`
+      points.forEach((p, i) => { if (typeof p[s.key] === 'number') g += `<circle cx="${x(i)}" cy="${y(p[s.key])}" r="2.5" fill="${s.color}"><title>${p.date} · ${s.key}: ${p[s.key]}</title></circle>` })
+    }
+    const step = Math.max(1, Math.ceil(points.length / 8))
+    points.forEach((p, i) => { if (i % step === 0 || i === points.length - 1) g += `<text x="${x(i)}" y="${H - 8}" font-size="10" fill="#94a3b8" text-anchor="middle">${p.date.slice(5)}</text>` })
+    g += `<text x="${L - 6}" y="${T + 10}" font-size="10" fill="#d97706" text-anchor="end">${series[0].max}°</text><text x="${W - R + 6}" y="${T + 10}" font-size="10" fill="#dc2626">${series[1].max}</text>`
+    svg.innerHTML = g
+
+    // table
+    $('table').querySelector('tbody').innerHTML = points.slice().reverse().map(p => `<tr>
+      <td>${p.date}</td>
+      <td class="num ${typeof p.temp === 'number' && p.temp >= 40 ? 'hot' : ''}">${fmt(p.temp)}</td>
+      <td class="num ${typeof p.aqi === 'number' ? (p.aqi > 150 ? 'bad' : p.aqi <= 50 ? 'ok' : '') : ''}">${fmt(p.aqi)}</td>
+      <td class="num">${fmt(p.pm10)}</td><td class="num">${fmt(p.rainChance)}</td><td class="num">${fmt(p.cloudCover)}</td>
+      <td style="color:#64748b">${(p.observedAt || '').replace('T', ' ').slice(0, 16)}</td></tr>`).join('')
+  }
+
+  $('csv').onclick = () => {
+    const head = 'date,observed_at,city,state,temp_c,aqi,pm10,rain_chance_pct,cloud_cover_pct'
+    const rows = points.map(p => [p.date, p.observedAt, $('city').value.trim(), $('state').value.trim(), p.temp, p.aqi, p.pm10, p.rainChance, p.cloudCover].map(v => v === null || v === undefined ? '' : `"${String(v).replace(/"/g, '""')}"`).join(','))
+    const blob = new Blob([head + '\n' + rows.join('\n')], { type: 'text/csv' })
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `bhaskarops-history-${$('city').value.trim().replace(/\s+/g, '_')}.csv`; a.click()
+  }
+  $('load').onclick = load
+  document.querySelectorAll('input').forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') load() }))
+  loadDays().then(load)
+})()
+</script>
+</body>
+</html>
