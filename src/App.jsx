@@ -393,10 +393,10 @@ function getHeatColor(name) {
   if(!name) return '#0d1f3c'
   const risk = STATE_DATA[name]?.risk
   const m = {
-    EXTREME: '#b81010',
-    HIGH: '#bb5200',
-    MODERATE: '#ffcc00',
-    COOL: '#0a6638'
+    EXTREME: '#b91c1c',
+    HIGH: '#c2410c',
+    MODERATE: '#ca8a04',
+    COOL: '#15803d'
   }
   return m[risk] || '#444'
 }
@@ -985,12 +985,12 @@ function smoothGeoFeature(feature) {
 // Single source of truth for heat-index color/risk buckets — used by getHeatIndexColor,
 // getRiskLabel, and the map legend, so they can never drift out of sync with each other.
 const HEAT_INDEX_BUCKETS = [
-  { min: 45, color: '#cc0000', label: 'EXTREME', legend: 'EXTREME 45+' },
-  { min: 40, color: '#e63c00', label: 'VERY HIGH', legend: 'VERY HIGH 40-45' },
-  { min: 35, color: '#cc6600', label: 'HIGH', legend: 'HIGH 35-40' },
-  { min: 30, color: '#aa8800', label: 'MODERATE', legend: 'MODERATE 30-35' },
-  { min: 25, color: '#667700', label: 'LOW-MODERATE', legend: 'LOW-MODERATE 25-30' },
-  { min: -Infinity, color: '#1a6622', label: 'LOW', legend: 'LOW <25' }
+  { min: 45, color: '#b91c1c', label: 'EXTREME', legend: 'EXTREME 45+' },
+  { min: 40, color: '#c2410c', label: 'VERY HIGH', legend: 'VERY HIGH 40-45' },
+  { min: 35, color: '#b45309', label: 'HIGH', legend: 'HIGH 35-40' },
+  { min: 30, color: '#ca8a04', label: 'MODERATE', legend: 'MODERATE 30-35' },
+  { min: 25, color: '#4d7c0f', label: 'LOW-MODERATE', legend: 'LOW-MODERATE 25-30' },
+  { min: -Infinity, color: '#15803d', label: 'LOW', legend: 'LOW <25' }
 ]
 
 function getHeatIndexColor(heatIndex) {
@@ -1540,6 +1540,8 @@ const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorder
 // style.transform directly via ref during a drag gesture (bypassing React state entirely
 // for that high-frequency path) — see the onMouseMove handler at the call site for why.
 const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false }, transformRef) => {
+  // Legend is collapsed by default so the map itself stays fully visible (it covered ~60% of the map on phones).
+  const [legendOpen, setLegendOpen] = useState(false)
   const { t } = useTranslation()
   const [hoveredState, setHoveredState] = useState(null)
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, name: '' })
@@ -1820,6 +1822,31 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           container on narrow screens — this card had no size cap at all
           before, so on a phone-width map container (already only ~58% of a
           375px screen) it could cover nearly the entire visible map. */}
+      {!legendOpen ? (
+        <button
+          type="button"
+          onClick={() => setLegendOpen(true)}
+          aria-label="Show heat index legend"
+          style={{
+            position: 'absolute',
+            bottom: 16,
+            left: 16,
+            zIndex: 20,
+            background: 'rgba(10, 22, 40, 0.9)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: 8,
+            padding: '6px 10px',
+            color: '#e2e8f0',
+            fontFamily: 'monospace',
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: 0.5,
+            cursor: 'pointer'
+          }}
+        >
+          🎨 Legend
+        </button>
+      ) : (
       <div
         className="map-heat-legend"
         style={{
@@ -1837,7 +1864,21 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           boxSizing: 'border-box'
         }}
       >
-        <div style={{ fontWeight: 700, marginBottom: 6, letterSpacing: 0.5 }}>HEAT INDEX</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
+          <span style={{ fontWeight: 700, letterSpacing: 0.5 }}>HEAT INDEX</span>
+          <button
+            type="button"
+            onClick={() => setLegendOpen(false)}
+            aria-label="Hide heat index legend"
+            style={{
+              background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 4,
+              color: '#94a3b8', fontFamily: 'monospace', fontSize: 10, lineHeight: 1,
+              padding: '2px 5px', cursor: 'pointer'
+            }}
+          >
+            ✕
+          </button>
+        </div>
         {HEAT_INDEX_BUCKETS.map(b => (
           <LegendRow key={b.label} color={b.color} label={b.legend} />
         ))}
@@ -1872,6 +1913,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           </div>
         )}
       </div>
+      )}
     </div>
   )
 })
@@ -3551,16 +3593,16 @@ function App({ user }) {
                 <div className="legend-section">
                   <h4>🌡️ Heat Legend</h4>
                   <div className="legend-item">
-                    <span className="legend-dot" style={{background:'#b81010'}}/>Extreme {'>44°C'}
+                    <span className="legend-dot" style={{background:'#b91c1c'}}/>Extreme {'>44°C'}
                   </div>
                   <div className="legend-item">
-                    <span className="legend-dot" style={{background:'#bb5200'}}/>High {'38-44°C'}
+                    <span className="legend-dot" style={{background:'#c2410c'}}/>High {'38-44°C'}
                   </div>
                   <div className="legend-item">
-                    <span className="legend-dot" style={{background:'#896e00'}}/>Moderate {'32-38°C'}
+                    <span className="legend-dot" style={{background:'#ca8a04'}}/>Moderate {'32-38°C'}
                   </div>
                   <div className="legend-item">
-                    <span className="legend-dot" style={{background:'#0a6638'}}/>Cool {'<32°C'}
+                    <span className="legend-dot" style={{background:'#15803d'}}/>Cool {'<32°C'}
                   </div>
                 </div>
 
