@@ -146,7 +146,7 @@ const LaunchScreen = ({ onSignIn }) => {
           const rx = Math.sqrt(Math.max(0, R * R - y * y))
           ctx.beginPath()
           ctx.ellipse(cx, cy + y, rx, rx * 0.3, 0, 0, Math.PI * 2)
-          ctx.strokeStyle = 'rgba(0,212,255,0.35)'
+          ctx.strokeStyle = 'rgba(217,119,6,0.35)'
           ctx.lineWidth = 0.8
           ctx.stroke()
         }
@@ -162,14 +162,14 @@ const LaunchScreen = ({ onSignIn }) => {
             if (t === 0) ctx.moveTo(x2d, y2d)
             else ctx.lineTo(x2d, y2d)
           }
-          ctx.strokeStyle = `rgba(0,212,255,${Math.cos(angle) > 0 ? 0.4 : 0.15})`
+          ctx.strokeStyle = `rgba(217,119,6,${Math.cos(angle) > 0 ? 0.4 : 0.15})`
           ctx.lineWidth = 0.8
           ctx.stroke()
         }
 
         ctx.beginPath()
         ctx.arc(cx, cy, R, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(0,212,255,0.5)'
+        ctx.strokeStyle = 'rgba(217,119,6,0.5)'
         ctx.lineWidth = 1.5
         ctx.stroke()
 
@@ -182,9 +182,9 @@ const LaunchScreen = ({ onSignIn }) => {
         ctx.save()
         ctx.translate(sx, sy)
         ctx.rotate(satAngle + Math.PI / 4)
-        ctx.fillStyle = '#00d4ff'
+        ctx.fillStyle = '#d97706'
         ctx.fillRect(-8, -3, 16, 6)
-        ctx.fillStyle = '#00ff88'
+        ctx.fillStyle = '#22c55e'
         ctx.fillRect(-22, -2, 12, 4)
         ctx.fillRect(10, -2, 12, 4)
         ctx.restore()
@@ -192,7 +192,7 @@ const LaunchScreen = ({ onSignIn }) => {
         ctx.beginPath()
         ctx.setLineDash([4, 8])
         ctx.ellipse(cx, cy, orbitA, orbitB, 0, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(0,212,255,0.15)'
+        ctx.strokeStyle = 'rgba(217,119,6,0.15)'
         ctx.lineWidth = 1
         ctx.stroke()
         ctx.setLineDash([])
@@ -348,7 +348,7 @@ const LaunchScreen = ({ onSignIn }) => {
               skipIntro={skipIntro}
               width={globeSize}
               height={globeSize}
-              style={{ filter: 'drop-shadow(0 0 32px rgba(0,212,255,0.25))' }}
+              style={{ filter: 'drop-shadow(0 0 32px rgba(217,119,6,0.2))' }}
               onZoomComplete={() => {
                 if (skipIntro) return
               }}
@@ -365,7 +365,7 @@ const LaunchScreen = ({ onSignIn }) => {
               right: '-12px',
               top: '-12px',
               background: 'rgba(15,23,42,0.9)',
-              border: '1px solid rgba(0,212,255,0.5)',
+              border: '1px solid rgba(217,119,6,0.5)',
               borderRadius: '999px',
               color: '#dbeafe',
               padding: '6px 10px',
@@ -389,7 +389,7 @@ const LaunchScreen = ({ onSignIn }) => {
         border: '1px solid #1a2a4a',
         borderRadius: '16px',
         backdropFilter: 'blur(10px)',
-        boxShadow: '0 0 40px rgba(0,212,255,0.1)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
         margin: wideScreen ? '0 0 0 8%' : '0 16px'
       }}>
         <div style={{
@@ -401,14 +401,14 @@ const LaunchScreen = ({ onSignIn }) => {
           boxSizing: 'border-box'
         }}>
           <div style={{ textAlign: 'center', marginBottom: 8 }}>
-            <div style={{ fontSize: 28, fontWeight: 'bold', color: '#00d4ff', letterSpacing: 1 }}>BHASKAR OPS</div>
-            <div style={{ fontSize: 10, color: 'rgba(0,212,255,0.65)', marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 28, fontWeight: 'bold', color: '#d97706', letterSpacing: 1 }}>BHASKAR OPS</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 }}>
               BHASKAR — Bharat Heat Analysis, Surveillance, Knowledge & Assessment Resource
             </div>
-            <div style={{ fontSize: 10, color: 'rgba(0,212,255,0.65)', marginTop: 18, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 18, lineHeight: 1.5 }}>
               OPS — Optimization &amp; Planning System
             </div>
-            <div style={{ fontSize: 10, color: '#00d4ff', fontFamily: 'monospace', letterSpacing: 2, marginTop: 6 }}>
+            <div style={{ fontSize: 10, color: '#94a3b8', fontFamily: 'monospace', letterSpacing: 2, marginTop: 6 }}>
               URBAN HEAT ISLAND MONITORING SYSTEM
             </div>
           </div>
@@ -531,13 +531,13 @@ const LaunchScreen = ({ onSignIn }) => {
           </div>
 
           {authError && (
-            <div style={{ color: '#ff4444', fontSize: 12, textAlign: 'center', fontFamily: 'monospace' }}>
+            <div style={{ color: '#dc2626', fontSize: 12, textAlign: 'center', fontFamily: 'monospace' }}>
               {authError}
             </div>
           )}
 
           {authSuccess && (
-            <div style={{ color: '#00ff88', fontSize: 12, textAlign: 'center', fontFamily: 'monospace' }}>
+            <div style={{ color: '#22c55e', fontSize: 12, textAlign: 'center', fontFamily: 'monospace' }}>
               {authSuccess}
             </div>
           )}
@@ -570,7 +570,7 @@ const LaunchScreen = ({ onSignIn }) => {
                 <button
                   type="button"
                   onClick={() => { setAuthTab('register'); setAuthError(''); setAuthSuccess('') }}
-                  style={{ background: 'none', border: 'none', padding: 0, color: '#00d4ff', cursor: 'pointer', fontSize: 12, fontWeight: 'bold' }}
+                  style={{ background: 'none', border: 'none', padding: 0, color: '#d97706', cursor: 'pointer', fontSize: 12, fontWeight: 'bold' }}
                 >
                   Register here
                 </button>
@@ -581,7 +581,7 @@ const LaunchScreen = ({ onSignIn }) => {
                 <button
                   type="button"
                   onClick={() => { setAuthTab('login'); setAuthError(''); setAuthSuccess('') }}
-                  style={{ background: 'none', border: 'none', padding: 0, color: '#00d4ff', cursor: 'pointer', fontSize: 12, fontWeight: 'bold' }}
+                  style={{ background: 'none', border: 'none', padding: 0, color: '#d97706', cursor: 'pointer', fontSize: 12, fontWeight: 'bold' }}
                 >
                   Sign In here
                 </button>

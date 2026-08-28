@@ -2787,7 +2787,7 @@ function App({ user }) {
         const rx = Math.sqrt(Math.max(0, R * R - y * y))
         ctx.beginPath()
         ctx.ellipse(cx, cy + y, rx, rx * 0.3, 0, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(0,212,255,0.35)'
+        ctx.strokeStyle = 'rgba(217,119,6,0.35)'
         ctx.lineWidth = 0.8
         ctx.stroke()
       }
@@ -2803,14 +2803,14 @@ function App({ user }) {
           if (t === 0) ctx.moveTo(x2d, y2d)
           else ctx.lineTo(x2d, y2d)
         }
-        ctx.strokeStyle = `rgba(0,212,255,${Math.cos(angle) > 0 ? 0.4 : 0.15})`
+        ctx.strokeStyle = `rgba(217,119,6,${Math.cos(angle) > 0 ? 0.4 : 0.15})`
         ctx.lineWidth = 0.8
         ctx.stroke()
       }
 
       ctx.beginPath()
       ctx.arc(cx, cy, R, 0, Math.PI * 2)
-      ctx.strokeStyle = 'rgba(0,212,255,0.5)'
+      ctx.strokeStyle = 'rgba(217,119,6,0.5)'
       ctx.lineWidth = 1.5
       ctx.stroke()
 
@@ -2823,9 +2823,9 @@ function App({ user }) {
       ctx.save()
       ctx.translate(sx, sy)
       ctx.rotate(satAngle + Math.PI / 4)
-      ctx.fillStyle = '#00d4ff'
+      ctx.fillStyle = '#d97706'
       ctx.fillRect(-8, -3, 16, 6)
-      ctx.fillStyle = '#00ff88'
+      ctx.fillStyle = '#22c55e'
       ctx.fillRect(-22, -2, 12, 4)
       ctx.fillRect(10, -2, 12, 4)
       ctx.restore()
@@ -2833,7 +2833,7 @@ function App({ user }) {
       ctx.beginPath()
       ctx.setLineDash([4, 8])
       ctx.ellipse(cx, cy, orbitA, orbitB, 0, 0, Math.PI * 2)
-      ctx.strokeStyle = 'rgba(0,212,255,0.15)'
+      ctx.strokeStyle = 'rgba(217,119,6,0.15)'
       ctx.lineWidth = 1
       ctx.stroke()
       ctx.setLineDash([])
@@ -2935,7 +2935,7 @@ function App({ user }) {
           border: '1px solid #1a2a4a',
           borderRadius: '16px',
           backdropFilter: 'blur(10px)',
-          boxShadow: '0 0 40px rgba(0,212,255,0.1)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
           margin: wideScreen ? '0 0 0 8%' : '0 16px'
         }}>
           <div style={{
@@ -2947,8 +2947,8 @@ function App({ user }) {
             boxSizing: 'border-box'
           }}>
             <div style={{ textAlign: 'center', marginBottom: 8 }}>
-              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#00d4ff' }}>BhaskarOps</div>
-              <div style={{ fontSize: 10, color: '#00d4ff', fontFamily: 'monospace', letterSpacing: 2 }}>
+              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#d97706' }}>BhaskarOps</div>
+              <div style={{ fontSize: 10, color: '#94a3b8', fontFamily: 'monospace', letterSpacing: 2 }}>
                 URBAN HEAT ISLAND MONITORING SYSTEM
               </div>
             </div>
@@ -2959,8 +2959,8 @@ function App({ user }) {
                 padding: '8px',
                 borderRadius: 6,
                 border: 'none',
-                background: '#00d4ff',
-                color: '#000',
+                background: '#d97706',
+                color: '#0f172a',
                 cursor: 'pointer',
                 fontSize: 13
               }}>
@@ -3045,7 +3045,7 @@ function App({ user }) {
               </label>
               <button 
                 onClick={() => {setForgotMode(true); setForgotEmail(userEmail)}}
-                style={{background: "none", border: "none", color: "#00d4ff", cursor: "pointer", textDecoration: "underline"}}
+                style={{background: "none", border: "none", color: "#d97706", cursor: "pointer", textDecoration: "underline"}}
               >
                 Forgot password?
               </button>
@@ -3053,15 +3053,15 @@ function App({ user }) {
 
             {forgotMode && (
               <div style={{
-                background: "rgba(0,212,255,0.05)",
-                border: "1px solid #00d4ff",
+                background: "rgba(217,119,6,0.05)",
+                border: "1px solid rgba(217,119,6,0.4)",
                 borderRadius: "8px",
                 padding: "12px",
                 color: "#64748b"
               }}>
                 <button 
                   onClick={() => setForgotMode(false)}
-                  style={{float: "right", background: "none", border: "none", color: "#00d4ff", cursor: "pointer"}}
+                  style={{float: "right", background: "none", border: "none", color: "#d97706", cursor: "pointer"}}
                 >
                   ✕
                 </button>
@@ -3090,8 +3090,8 @@ function App({ user }) {
                     setForgotMode(false)
                   }}
                   style={{
-                    width: '100%', padding: '8px', background: 'rgba(0,212,255,0.2)',
-                    border: '1px solid #00d4ff', borderRadius: 6, color: '#00d4ff',
+                    width: '100%', padding: '8px', background: 'rgba(217,119,6,0.15)',
+                    border: '1px solid rgba(217,119,6,0.5)', borderRadius: 6, color: '#d97706',
                     cursor: 'pointer', fontSize: 11, fontWeight: 'bold'
                   }}
                 >
@@ -3122,10 +3122,10 @@ function App({ user }) {
                 })
               }
             }} style={{
-              width: '100%', padding: '12px', background: 'linear-gradient(90deg, #00d4ff, #0088cc)',
+              width: '100%', padding: '12px', background: '#d97706',
               border: 'none', borderRadius: 8, color: '#000', fontSize: 15,
               fontWeight: 'bold', cursor: 'pointer', marginTop: 4,
-              boxShadow: '0 0 20px rgba(0,212,255,0.3)'
+              boxShadow: '0 4px 14px rgba(0,0,0,0.35)'
             }}>
               {t('nav.signIn', 'SIGN IN')}
             </button>
@@ -4622,14 +4622,14 @@ function App({ user }) {
           borderRadius: '8px',
           background: 'rgba(0,0,0,0.3)'
         }}>
-          <h1 style={{ fontSize: 20, color: '#00d4ff', margin: 0 }}>
+          <h1 style={{ fontSize: 20, color: '#d97706', margin: 0 }}>
             🛡️ Admin Analytics Dashboard
           </h1>
           <div style={{ display: 'flex', gap: '12px' }}>
             <button onClick={() => { setScreen("signin"); setUserName("") }} style={{
-              background: 'rgba(255,107,53,0.1)',
-              border: '1px solid #ff6b35',
-              color: '#ff6b35',
+              background: 'rgba(185,28,28,0.12)',
+              border: '1px solid rgba(185,28,28,0.5)',
+              color: '#dc2626',
               padding: '6px 12px',
               borderRadius: '6px',
               cursor: 'pointer',
@@ -4648,57 +4648,57 @@ function App({ user }) {
           marginBottom: '24px'
         }}>
           <div style={{
-            background: 'rgba(0,255,136,0.1)',
-            border: '1px solid rgba(0,255,136,0.2)',
+            background: 'rgba(148,163,184,0.06)',
+            border: '1px solid rgba(148,163,184,0.2)',
             borderRadius: '8px',
             padding: '16px'
           }}>
             <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>
               {t('admin.totalUsers', 'Total Users')}
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#00ff88' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#f8fafc' }}>
               {analytics.users?.length || 0}
             </div>
           </div>
 
           <div style={{
-            background: 'rgba(0,212,255,0.1)',
-            border: '1px solid rgba(0,212,255,0.2)',
+            background: 'rgba(148,163,184,0.06)',
+            border: '1px solid rgba(148,163,184,0.2)',
             borderRadius: '8px',
             padding: '16px'
           }}>
             <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>
               {t('admin.totalLoginEvents', 'Total Login Events')}
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#00d4ff' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#f8fafc' }}>
               {analytics.history?.length || 0}
             </div>
           </div>
 
           <div style={{
-            background: 'rgba(255,204,0,0.1)',
-            border: '1px solid rgba(255,204,0,0.2)',
+            background: 'rgba(148,163,184,0.06)',
+            border: '1px solid rgba(148,163,184,0.2)',
             borderRadius: '8px',
             padding: '16px'
           }}>
             <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>
               {t('admin.citiesAnalyzed', 'Cities Analyzed')}
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffcc00' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#f8fafc' }}>
               {Object.keys(analytics.cityCount || {}).length}
             </div>
           </div>
 
           <div style={{
-            background: 'rgba(255,107,53,0.1)',
-            border: '1px solid rgba(255,107,53,0.2)',
+            background: 'rgba(148,163,184,0.06)',
+            border: '1px solid rgba(148,163,184,0.2)',
             borderRadius: '8px',
             padding: '16px'
           }}>
             <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>
               {t('admin.successRate', 'Success Rate')}
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff6b35' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#22c55e' }}>
               {((analytics.history?.filter(h => h.status === 'success').length || 0) / (analytics.history?.length || 1) * 100).toFixed(1)}%
             </div>
           </div>
@@ -4718,14 +4718,14 @@ function App({ user }) {
             borderRadius: '8px',
             padding: '16px'
           }}>
-            <h3 style={{ margin: '0 0 12px 0', color: '#00d4ff' }}>{t('admin.hourlyLoginPattern', '📊 Hourly Login Pattern')}</h3>
+            <h3 style={{ margin: '0 0 12px 0', color: '#d97706' }}>{t('admin.hourlyLoginPattern', '📊 Hourly Login Pattern')}</h3>
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={hourlyData}>
                 <CartesianGrid strokeDasharray="3,3" stroke="#1a2a4a" />
                 <XAxis dataKey="hour" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
                 <Tooltip contentStyle={{ background: '#0a0e1a', border: '1px solid #1a2a4a' }} />
-                <Line type="monotone" dataKey="logins" stroke="#00d4ff" dot={false} />
+                <Line type="monotone" dataKey="logins" stroke="#d97706" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -4737,15 +4737,15 @@ function App({ user }) {
             borderRadius: '8px',
             padding: '16px'
           }}>
-            <h3 style={{ margin: '0 0 12px 0', color: '#00ff88' }}>{t('admin.dailyLoginTrend', '📈 Daily Login Trend (30 days)')}</h3>
+            <h3 style={{ margin: '0 0 12px 0', color: '#d97706' }}>{t('admin.dailyLoginTrend', '📈 Daily Login Trend (30 days)')}</h3>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={dailyData}>
                 <CartesianGrid strokeDasharray="3,3" stroke="#1a2a4a" />
                 <XAxis dataKey="date" stroke="#64748b" tick={{ fontSize: 10 }} />
                 <YAxis stroke="#64748b" />
                 <Tooltip contentStyle={{ background: '#0a0e1a', border: '1px solid #1a2a4a' }} />
-                <Bar dataKey="success" stackId="a" fill="#00ff88" />
-                <Bar dataKey="failed" stackId="a" fill="#ff6b35" />
+                <Bar dataKey="success" stackId="a" fill="#15803d" />
+                <Bar dataKey="failed" stackId="a" fill="#b91c1c" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -4759,14 +4759,14 @@ function App({ user }) {
           padding: '16px',
           marginBottom: '24px'
         }}>
-          <h3 style={{ margin: '0 0 12px 0', color: '#ffcc00' }}>{t('admin.topCitiesAnalyzed', '🏙️ Top 10 Cities Analyzed')}</h3>
+          <h3 style={{ margin: '0 0 12px 0', color: '#d97706' }}>{t('admin.topCitiesAnalyzed', '🏙️ Top 10 Cities Analyzed')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart layout="vertical" data={cityCountData}>
               <CartesianGrid strokeDasharray="3,3" stroke="#1a2a4a" />
               <XAxis type="number" stroke="#64748b" />
               <YAxis dataKey="name" type="category" stroke="#64748b" width={100} tick={{ fontSize: 11 }} />
               <Tooltip contentStyle={{ background: '#0a0e1a', border: '1px solid #1a2a4a' }} />
-              <Bar dataKey="value" fill="#ffcc00" />
+              <Bar dataKey="value" fill="#d97706" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -4778,7 +4778,7 @@ function App({ user }) {
           borderRadius: '8px',
           padding: '16px'
         }}>
-          <h3 style={{ margin: '0 0 12px 0', color: '#ff6b35' }}>{t('admin.recentLoginActivity', '📝 Recent Login Activity')}</h3>
+          <h3 style={{ margin: '0 0 12px 0', color: '#d97706' }}>{t('admin.recentLoginActivity', '📝 Recent Login Activity')}</h3>
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
             <table style={{
               width: '100%',
@@ -4787,11 +4787,11 @@ function App({ user }) {
             }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #1a2a4a' }}>
-                  <th style={{ textAlign: 'left', padding: '8px', color: '#00d4ff' }}>{t('admin.tableUser', 'User')}</th>
-                  <th style={{ textAlign: 'left', padding: '8px', color: '#00d4ff' }}>{t('admin.tableEmail', 'Email')}</th>
-                  <th style={{ textAlign: 'left', padding: '8px', color: '#00d4ff' }}>{t('admin.tableTime', 'Time')}</th>
-                  <th style={{ textAlign: 'left', padding: '8px', color: '#00d4ff' }}>{t('admin.tableStatus', 'Status')}</th>
-                  <th style={{ textAlign: 'left', padding: '8px', color: '#00d4ff' }}>{t('admin.tableDuration', 'Duration')}</th>
+                  <th style={{ textAlign: 'left', padding: '8px', color: '#94a3b8' }}>{t('admin.tableUser', 'User')}</th>
+                  <th style={{ textAlign: 'left', padding: '8px', color: '#94a3b8' }}>{t('admin.tableEmail', 'Email')}</th>
+                  <th style={{ textAlign: 'left', padding: '8px', color: '#94a3b8' }}>{t('admin.tableTime', 'Time')}</th>
+                  <th style={{ textAlign: 'left', padding: '8px', color: '#94a3b8' }}>{t('admin.tableStatus', 'Status')}</th>
+                  <th style={{ textAlign: 'left', padding: '8px', color: '#94a3b8' }}>{t('admin.tableDuration', 'Duration')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -4804,7 +4804,7 @@ function App({ user }) {
                     </td>
                     <td style={{
                       padding: '8px',
-                      color: entry.status === 'success' ? '#00ff88' : '#ff6b35'
+                      color: entry.status === 'success' ? '#22c55e' : '#dc2626'
                     }}>
                       {entry.status === 'success' ? '✓ Success' : '✗ Failed'}
                     </td>

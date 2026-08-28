@@ -99,19 +99,19 @@ const IntroGlobe = ({
         height={height}
         globeImageUrl={earthTexture}
         backgroundColor="rgba(0,0,0,0)"
-        atmosphereColor="#00d4ff"
+        atmosphereColor="#d97706"
         atmosphereAltitude={0.18}
         rendererConfig={{ antialias: false, powerPreference: 'low-power' }}
         pointsData={[INDIA_COORDS]}
         pointLat="lat"
         pointLng="lng"
-        pointColor={() => '#00ff88'}
+        pointColor={() => '#d97706'}
         pointAltitude={0.01}
         pointRadius={0.5}
         ringsData={[INDIA_COORDS]}
         ringLat="lat"
         ringLng="lng"
-        ringColor={() => (t) => `rgba(0,255,136,${1 - t})`}
+        ringColor={() => (t) => `rgba(217,119,6,${1 - t})`}
         ringMaxRadius={6}
         ringPropagationSpeed={2}
         ringRepeatPeriod={1400}

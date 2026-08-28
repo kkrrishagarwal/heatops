@@ -6,11 +6,11 @@
   --deep-space: #00000f;
   --dark-navy: #0a0e1a;
   --card-bg: #0d1528;
-  --neon-green: #00ff88;
-  --cyan-glow: #00d4ff;
-  --hot-orange: #ff6b35;
-  --danger-red: #ff2222;
-  --gold: #ffd700;
+  --neon-green: #d97706;
+  --cyan-glow: #f59e0b;
+  --hot-orange: #c2410c;
+  --danger-red: #b91c1c;
+  --gold: #eab308;
 }
 
 * {
@@ -55,7 +55,7 @@ body {
   width: 40px;
   height: 40px;
   border-color: var(--cyan-glow);
-  box-shadow: 0 0 20px var(--cyan-glow);
+  box-shadow: none;
 }
 
 .custom-cursor-dot {
