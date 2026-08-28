@@ -36,7 +36,7 @@ import { PhysicsPanel } from './components/PhysicsPanel'
 import { CoolRoofCalculator } from './components/CoolRoofCalculator'
 import { GEEPipelinePanel } from './components/GEEPipelinePanel'
 import { SpatialRecommendation } from './components/SpatialRecommendation'
-import { normalizeStateName, getCellTemp, getHistoricalData, getDayNightData, getHeatwaveEvents, getYoYComparison, getUsers, getLoginHistory, saveLoginHistory, getAnalyticsData, getTimeSpent } from './utils/dashboardUtils'
+import { normalizeStateName, getCellTemp, getGridBucket, computeInterventionImpact, getHistoricalData, getDayNightData, getHeatwaveEvents, getYoYComparison, getUsers, getLoginHistory, saveLoginHistory, getAnalyticsData, getTimeSpent } from './utils/dashboardUtils'
 import { WeatherCard } from './components/WeatherCard'
 import { getAQICategory } from './utils/weatherAPI'
 import { useWeather } from './hooks/useWeather'
@@ -2896,6 +2896,19 @@ function App({ user }) {
   const [treeSlider, setTreeSlider] = useState(0)
   const [roofSlider, setRoofSlider] = useState(0)
   const [waterSlider, setWaterSlider] = useState(0)
+  // Cross-tab awareness: sliders live on the Interventions tab but drive the Analysis tab's
+  // heatmap grid. Record when they were last touched so the Analysis tab can flag the grid
+  // as freshly updated the next time the user lands on it.
+  const [interventionTouchedAt, setInterventionTouchedAt] = useState(0)
+  const [showGridUpdatedBadge, setShowGridUpdatedBadge] = useState(false)
+  const seenInterventionRef = useRef(0)
+  useEffect(() => {
+    if (activeTab !== 'Analysis' || interventionTouchedAt <= seenInterventionRef.current) return undefined
+    seenInterventionRef.current = interventionTouchedAt
+    setShowGridUpdatedBadge(true)
+    const timer = setTimeout(() => setShowGridUpdatedBadge(false), 6000)
+    return () => clearTimeout(timer)
+  }, [activeTab, interventionTouchedAt])
   
   // Auth flows
   const [forgotMode, setForgotMode] = useState(false)
@@ -4339,6 +4352,19 @@ function App({ user }) {
                 {/* PANEL E: Heatmap Grid with Dynamic Updates */}
                 <section className="panel">
                   <h3>🔥 {t('panels.heatmapGrid', 'TEMPERATURE HEATMAP GRID')}</h3>
+                  {showGridUpdatedBadge && (
+                    <div
+                      data-testid="grid-updated-badge"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 10,
+                        background: 'rgba(217,119,6,0.12)', border: '1px solid rgba(217,119,6,0.5)',
+                        color: '#d97706', borderRadius: 999, padding: '4px 10px', fontSize: 11, fontWeight: 700,
+                        animation: 'tabFadeIn 0.25s ease'
+                      }}
+                    >
+                      ✨ {t('interventions.gridUpdated', 'Updated based on your intervention settings')}
+                    </div>
+                  )}
                   <div style={{marginBottom: "12px", fontSize: "11px", color: "rgba(255,255,255,0.6)"}}>
                     🌳 {t('physics.items.urbanGreening', 'Urban Greening')}: <strong>{(treeSlider*18).toFixed(1)}°C</strong> | 🏠 {t('physics.items.coolRoofs', 'Cool Roofs')}: <strong>{(roofSlider*14).toFixed(1)}°C</strong> | 💧 {t('physics.items.waterBodies', 'Water Bodies')}: <strong>{(waterSlider*12).toFixed(1)}°C</strong>
                   </div>
@@ -4348,12 +4374,8 @@ function App({ user }) {
                         const row = Math.floor(i / 10)
                         const col = i % 10
                         const cellTemp = getCellTemp(cityData.lst, row, col, treeSlider, roofSlider, waterSlider)
-                        let color = '#1a3a0d'
-                        if(cellTemp < 35) color = '#2563eb'
-                        else if(cellTemp < 38) color = '#15803d'
-                        else if(cellTemp < 41) color = '#ca8a04'
-                        else if(cellTemp < 44) color = '#c2410c'
-                        else color = '#b81010'
+                        // Same thresholds/colours as computeInterventionImpact() on the Interventions tab
+                        const color = getGridBucket(cellTemp).color
 
                         return (
                           <div
@@ -4494,7 +4516,7 @@ function App({ user }) {
                         {t('sliders.urbanGreening', '🌳 Urban Greening (NDVI +0.3):')} {(treeSlider*100).toFixed(0)}%
                       </label>
                       <input type="range" min="0" max="0.3" step="0.01" value={treeSlider}
-                        onChange={e => setTreeSlider(parseFloat(e.target.value))}
+                        onChange={e => { setTreeSlider(parseFloat(e.target.value)); setInterventionTouchedAt(Date.now()) }}
                         style={{width: "100%", marginTop: "6px"}}
                       />
                       <div style={{fontSize: "10px", color: "rgba(255,255,255,0.5)", marginTop: "4px"}}>
@@ -4506,7 +4528,7 @@ function App({ user }) {
                         {t('sliders.coolRoofs', '🏠 Cool Roofs (Albedo +0.2):')} {(roofSlider*100).toFixed(0)}%
                       </label>
                       <input type="range" min="0" max="0.2" step="0.01" value={roofSlider}
-                        onChange={e => setRoofSlider(parseFloat(e.target.value))}
+                        onChange={e => { setRoofSlider(parseFloat(e.target.value)); setInterventionTouchedAt(Date.now()) }}
                         style={{width: "100%", marginTop: "6px"}}
                       />
                       <div style={{fontSize: "10px", color: "rgba(255,255,255,0.5)", marginTop: "4px"}}>
@@ -4518,7 +4540,7 @@ function App({ user }) {
                         {t('sliders.waterBodies', '💧 Water Bodies (NDWI +0.1):')} {(waterSlider*100).toFixed(0)}%
                       </label>
                       <input type="range" min="0" max="0.1" step="0.01" value={waterSlider}
-                        onChange={e => setWaterSlider(parseFloat(e.target.value))}
+                        onChange={e => { setWaterSlider(parseFloat(e.target.value)); setInterventionTouchedAt(Date.now()) }}
                         style={{width: "100%", marginTop: "6px"}}
                       />
                       <div style={{fontSize: "10px", color: "rgba(255,255,255,0.5)", marginTop: "4px"}}>
@@ -4526,6 +4548,50 @@ function App({ user }) {
                       </div>
                     </div>
                   </div>
+
+                  {/* Live preview of what these settings do to the Analysis tab's heatmap grid —
+                      same getCellTemp() + bucket thresholds the grid renders with, so the user
+                      doesn't have to switch tabs to confirm the effect. */}
+                  {(() => {
+                    const impact = computeInterventionImpact(cityData.lst, treeSlider, roofSlider, waterSlider)
+                    const active = impact.totalCooling > 0
+                    return (
+                      <div
+                        data-testid="intervention-preview"
+                        style={{
+                          marginTop: 14, padding: '10px 12px', borderRadius: 8,
+                          background: active ? 'rgba(217,119,6,0.08)' : 'rgba(148,163,184,0.06)',
+                          border: `1px solid ${active ? 'rgba(217,119,6,0.35)' : 'rgba(148,163,184,0.2)'}`,
+                          fontSize: 11, lineHeight: 1.6, color: '#e2e8f0'
+                        }}
+                      >
+                        <div style={{ fontWeight: 700, color: active ? '#d97706' : '#94a3b8', marginBottom: 2 }}>
+                          📊 {t('interventions.previewTitle', 'Estimated impact on the Analysis heatmap grid')}
+                        </div>
+                        {!active ? (
+                          <div style={{ color: '#94a3b8' }}>{t('interventions.previewIdle', 'Move a slider to preview its effect — the grid on the Analysis tab updates live with these settings.')}</div>
+                        ) : (
+                          <>
+                            <div>
+                              −{impact.totalCooling.toFixed(1)}°C {t('interventions.perCell', 'per cell')} · <strong>{impact.changed}</strong>/100 {t('interventions.cellsChange', 'cells move to a cooler category')}
+                            </div>
+                            {impact.transitions.length > 0 && (
+                              <div style={{ color: '#cbd5e1' }}>
+                                {impact.transitions.map(tr => `${tr.from} → ${tr.to}: ${tr.count}`).join(' · ')}
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab('Analysis')}
+                              style={{ marginTop: 6, background: 'transparent', border: '1px solid rgba(217,119,6,0.5)', color: '#d97706', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                            >
+                              {t('interventions.viewGrid', 'View on Analysis tab →')}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )
+                  })()}
                 </section>
 
                 {/* Cool Roof Awareness + ROI Calculator — reuses the roofSlider*14 formula above */}

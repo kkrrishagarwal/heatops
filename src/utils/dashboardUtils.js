@@ -252,3 +252,47 @@ export function getTimeSpent(userId) {
     ? `${totalHours}h ${totalMins}m`
     : `${totalMins}m`
 }
+
+// Temperature buckets used by the Analysis tab's 100-cell heatmap grid. Kept here
+// (next to getCellTemp) so the grid colouring and the Interventions tab's impact
+// preview classify cells with the exact same thresholds.
+export const GRID_BUCKETS = [
+  { max: 35, label: 'Cool', color: '#2563eb' },
+  { max: 38, label: 'Low', color: '#15803d' },
+  { max: 41, label: 'Moderate', color: '#ca8a04' },
+  { max: 44, label: 'High', color: '#c2410c' },
+  { max: Infinity, label: 'Extreme', color: '#b81010' }
+]
+
+export function getGridBucket(temp) {
+  return GRID_BUCKETS.find(b => temp < b.max)
+}
+
+// How the current slider settings change the heatmap grid versus no intervention:
+// per-cell cooling, how many of the 100 cells move to a cooler bucket, and the
+// bucket transitions involved. Same getCellTemp() the grid renders with.
+export function computeInterventionImpact(baseTemp, treeSlider, roofSlider, waterSlider) {
+  const totalCooling = treeSlider * 18 + roofSlider * 14 + waterSlider * 12
+  const transitions = new Map()
+  let changed = 0
+  for (let i = 0; i < 100; i++) {
+    const row = Math.floor(i / 10)
+    const col = i % 10
+    const before = getGridBucket(getCellTemp(baseTemp, row, col, 0, 0, 0))
+    const after = getGridBucket(getCellTemp(baseTemp, row, col, treeSlider, roofSlider, waterSlider))
+    if (before.label !== after.label) {
+      changed += 1
+      const key = `${before.label}→${after.label}`
+      transitions.set(key, (transitions.get(key) || 0) + 1)
+    }
+  }
+  return {
+    totalCooling: parseFloat(totalCooling.toFixed(1)),
+    changed,
+    transitions: [...transitions.entries()].map(([key, count]) => {
+      const [from, to] = key.split('→')
+      return { from, to, count }
+    }).sort((a, b) => b.count - a.count)
+  }
+}
+
