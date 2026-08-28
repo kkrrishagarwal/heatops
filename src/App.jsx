@@ -2139,7 +2139,7 @@ const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveS
       {/* SAT ACTIVE badge */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 700,
-        color: '#00d4ff', flexShrink: 0, paddingLeft: 12, borderLeft: '1px solid rgba(255,255,255,0.1)'
+        color: '#86efac', flexShrink: 0, paddingLeft: 12, borderLeft: '1px solid rgba(255,255,255,0.1)'
       }}>
         ● SAT ACTIVE
       </div>
