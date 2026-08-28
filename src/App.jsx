@@ -4289,7 +4289,7 @@ function App({ user }) {
                   <h3>🎛️ {t('panels.interventionSliders', 'UHI INTERVENTIONS (Real-time cooling)')}</h3>
                   <div style={{display: "grid", gap: "14px"}}>
                     <div>
-                      <label style={{fontSize: "12px", color: "#00ff88", fontWeight: "700"}}>
+                      <label style={{fontSize: "12px", color: "#22c55e", fontWeight: "700"}}>
                         {t('sliders.urbanGreening', '🌳 Urban Greening (NDVI +0.3):')} {(treeSlider*100).toFixed(0)}%
                       </label>
                       <input type="range" min="0" max="0.3" step="0.01" value={treeSlider}
@@ -4301,7 +4301,7 @@ function App({ user }) {
                       </div>
                     </div>
                     <div>
-                      <label style={{fontSize: "12px", color: "#ffcc00", fontWeight: "700"}}>
+                      <label style={{fontSize: "12px", color: "#d97706", fontWeight: "700"}}>
                         {t('sliders.coolRoofs', '🏠 Cool Roofs (Albedo +0.2):')} {(roofSlider*100).toFixed(0)}%
                       </label>
                       <input type="range" min="0" max="0.2" step="0.01" value={roofSlider}
@@ -4313,7 +4313,7 @@ function App({ user }) {
                       </div>
                     </div>
                     <div>
-                      <label style={{fontSize: "12px", color: "#0088ff", fontWeight: "700"}}>
+                      <label style={{fontSize: "12px", color: "#94a3b8", fontWeight: "700"}}>
                         {t('sliders.waterBodies', '💧 Water Bodies (NDWI +0.1):')} {(waterSlider*100).toFixed(0)}%
                       </label>
                       <input type="range" min="0" max="0.1" step="0.01" value={waterSlider}

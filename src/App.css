@@ -230,18 +230,9 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 16px 28px;
-  background: linear-gradient(90deg,
-    rgba(26, 20, 16, 0.95) 0%,
-    rgba(42, 36, 32, 0.88) 50%,
-    rgba(26, 20, 16, 0.95) 100%
-  );
+  background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid;
-  border-image: linear-gradient(90deg,
-    rgba(249, 115, 22, 0.2) 0%,
-    rgba(72, 168, 154, 0.3) 50%,
-    rgba(249, 115, 22, 0.2) 100%
-  ) 1;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05);
   z-index: 100;
   position: relative;
@@ -643,7 +634,6 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: 1px;
-  text-shadow: 0 2px 8px rgba(0, 255, 136, 0.2);
 }
 
 .nav-right button {
@@ -651,8 +641,8 @@ body {
 }
 
 .nav-btn {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.08), rgba(0, 212, 255, 0.08));
-  border: 1px solid rgba(0, 255, 136, 0.25);
+  background: rgba(217, 119, 6, 0.08);
+  border: 1px solid rgba(217, 119, 6, 0.35);
   color: var(--text-light);
   cursor: pointer;
   font-size: 16px;
@@ -664,11 +654,11 @@ body {
 }
 
 .nav-btn:hover {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.18), rgba(0, 212, 255, 0.18));
-  border-color: rgba(0, 255, 136, 0.5);
+  background: rgba(217, 119, 6, 0.16);
+  border-color: rgba(217, 119, 6, 0.6);
   color: #d97706;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 255, 136, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .nav-btn:active {
@@ -755,17 +745,17 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: #000;
+  color: #0f172a;
   font-size: 16px;
-  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
-  border: 2px solid rgba(0, 255, 136, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  border: 2px solid rgba(217, 119, 6, 0.4);
   transition: all 0.3s ease;
 }
 
 .avatar:hover {
   transform: scale(1.08);
-  box-shadow: 0 6px 18px rgba(0, 255, 136, 0.5);
-  border-color: rgba(0, 255, 136, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border-color: rgba(217, 119, 6, 0.7);
 }
 
 .clock-bar {
@@ -875,7 +865,7 @@ path.state:hover {
 .metric-value {
   font-size: 16px;
   font-weight: 600;
-  color: var(--green);
+  color: var(--text-light);
 }
 
 .city-section {
@@ -892,7 +882,7 @@ path.state:hover {
 .analyze-btn {
   width: 100%;
   padding: 10px;
-  background: linear-gradient(135deg, var(--green), #b45309);
+  background: #d97706;
   color: var(--dark-bg);
   border: none;
   border-radius: 8px;
@@ -908,8 +898,8 @@ path.state:hover {
 
 .hottest-section h4,
 .legend-section h4 {
-  color: var(--green);
-  border-left: 2px solid var(--green);
+  color: #d97706;
+  border-left: 2px solid #d97706;
   padding-left: 8px;
   margin-bottom: 8px;
 }
@@ -953,11 +943,11 @@ path.state:hover {
 .tooltip {
   position: fixed;
   background: rgba(15, 23, 41, 0.95);
-  border: 1px solid var(--green);
+  border: 1px solid rgba(148, 163, 184, 0.3);
   border-radius: 6px;
   padding: 8px 12px;
   font-size: 12px;
-  color: var(--green);
+  color: #e2e8f0;
   pointer-events: none;
   z-index: 1000;
   box-shadow: none;
@@ -1034,7 +1024,7 @@ path.state:hover {
 
 .weather-card {
   background: linear-gradient(135deg, rgba(26, 42, 74, 0.6), rgba(26, 42, 74, 0.3));
-  border: 1px solid rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 8px;
   padding: 12px;
   text-align: center;
@@ -1116,7 +1106,7 @@ path.state:hover {
 
 .index-value {
   font-size: 13px;
-  color: var(--green);
+  color: var(--text-light);
   font-weight: 600;
 }
 
@@ -1135,7 +1125,7 @@ path.state:hover {
 .risk-label {
   font-size: 18px;
   font-weight: 600;
-  color: var(--green);
+  color: var(--text-light);
 }
 
 /* Heatmap */
@@ -1214,7 +1204,7 @@ path.state:hover {
 
 .bar-item span:last-child {
   font-size: 13px;
-  color: var(--green);
+  color: var(--text-light);
   font-weight: 600;
   min-width: 40px;
   text-align: right;
@@ -1280,7 +1270,7 @@ path.state:hover {
 
 .pollen-card {
   background: linear-gradient(135deg, rgba(26, 42, 74, 0.6), rgba(26, 42, 74, 0.3));
-  border: 1px solid rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 8px;
   padding: 10px;
   text-align: center;
@@ -1296,7 +1286,7 @@ path.state:hover {
 
 .climate-card {
   background: rgba(26, 42, 74, 0.5);
-  border: 1px solid rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 8px;
   padding: 10px;
   font-size: 12px;
@@ -1371,7 +1361,7 @@ path.state:hover {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--green);
+  background: #d97706;
   cursor: pointer;
   box-shadow: none;
 }
@@ -1380,7 +1370,7 @@ path.state:hover {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--green);
+  background: #d97706;
   cursor: pointer;
   border: none;
   box-shadow: none;
@@ -1388,7 +1378,7 @@ path.state:hover {
 
 .slider-group span {
   font-size: 12px;
-  color: var(--green);
+  color: #d97706;
 }
 
 .total-cooling {
@@ -1406,7 +1396,7 @@ path.state:hover {
 .points-display {
   font-size: 20px;
   font-weight: 600;
-  color: var(--green);
+  color: #d97706;
   margin-bottom: 12px;
 }
 
@@ -1418,12 +1408,12 @@ path.state:hover {
 
 .badge {
   display: inline-block;
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 255, 136, 0.05));
-  border: 1px solid rgba(0, 255, 136, 0.4);
+  background: rgba(217, 119, 6, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.4);
   border-radius: 20px;
   padding: 6px 12px;
   font-size: 12px;
-  color: var(--green);
+  color: #d97706;
   transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
@@ -1435,7 +1425,7 @@ path.state:hover {
 /* AI Terminal */
 .ai-terminal {
   background: #000000;
-  border: 1px solid var(--green);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 8px;
   padding: 12px;
   font-family: 'Courier New', monospace;
@@ -1445,7 +1435,7 @@ path.state:hover {
 }
 
 .terminal-header {
-  color: var(--green);
+  color: #d97706;
   font-size: 12px;
   margin-bottom: 10px;
   font-weight: 600;
@@ -1460,7 +1450,7 @@ path.state:hover {
 .ai-button {
   width: 100%;
   padding: 10px;
-  background: linear-gradient(135deg, var(--green), #b45309);
+  background: #d97706;
   color: var(--dark-bg);
   border: none;
   border-radius: 6px;
@@ -1487,7 +1477,7 @@ path.state:hover {
   min-height: 0;
   overflow-y: auto;
   background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 4px;
   padding: 10px;
   display: flex;
@@ -1534,8 +1524,8 @@ path.state:hover {
 }
 
 .chat-bubble.ai {
-  background: rgba(255, 107, 53, 0.12);
-  border: 1px solid rgba(255, 107, 53, 0.3);
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   color: var(--orange);
   border-bottom-left-radius: 2px;
 }
@@ -1547,9 +1537,9 @@ path.state:hover {
 }
 
 .chat-bubble.ai.fallback {
-  background: rgba(0, 212, 255, 0.08);
-  border-color: rgba(0, 212, 255, 0.3);
-  color: #8fd9ff;
+  background: rgba(217, 119, 6, 0.08);
+  border-color: rgba(217, 119, 6, 0.3);
+  color: #cbd5e1;
 }
 
 .chat-bubble.ai.typing {
@@ -1582,7 +1572,7 @@ path.state:hover {
 
 .chat-retry-btn {
   margin-top: 4px;
-  background: rgba(0,212,255,0.08);
+  background: rgba(217, 119, 6, 0.08);
   border: 1px solid #d97706;
   border-radius: 6px;
   color: #d97706;
@@ -1652,12 +1642,12 @@ path.state:hover {
   background: rgba(26, 42, 74, 0.5);
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .progress-bar-main .progress {
   height: 100%;
-  background: linear-gradient(90deg, var(--green), #b45309);
+  background: #d97706;
   border-radius: 6px;
 }
 
@@ -1676,9 +1666,9 @@ path.state:hover {
 
 .export-buttons button {
   padding: 10px;
-  background: rgba(0, 255, 136, 0.15);
-  border: 1px solid rgba(0, 255, 136, 0.3);
-  color: var(--green);
+  background: rgba(217, 119, 6, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  color: #d97706;
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
@@ -1686,16 +1676,16 @@ path.state:hover {
 }
 
 .export-buttons button:hover {
-  background: rgba(0, 255, 136, 0.25);
+  background: rgba(217, 119, 6, 0.22);
 }
 
 /* Glossary */
 .glossary-toggle {
   width: 100%;
   padding: 10px;
-  background: rgba(0, 255, 136, 0.15);
-  border: 1px solid rgba(0, 255, 136, 0.3);
-  color: var(--green);
+  background: rgba(217, 119, 6, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  color: #d97706;
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
@@ -1703,7 +1693,7 @@ path.state:hover {
 }
 
 .glossary-toggle:hover {
-  background: rgba(0, 255, 136, 0.25);
+  background: rgba(217, 119, 6, 0.22);
 }
 
 .glossary-grid {
@@ -1717,18 +1707,18 @@ path.state:hover {
   font-size: 12px;
   padding: 10px;
   background: rgba(26, 42, 74, 0.5);
-  border: 1px solid rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 6px;
 }
 
 .glossary-grid strong {
-  color: var(--green);
+  color: #d97706;
 }
 
 /* About */
 .about-card {
   background: rgba(26, 42, 74, 0.5);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 8px;
   padding: 12px;
   font-size: 13px;
@@ -1736,7 +1726,7 @@ path.state:hover {
 }
 
 .about-card h4 {
-  color: var(--green);
+  color: #d97706;
   margin-bottom: 8px;
 }
 
