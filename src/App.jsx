@@ -552,9 +552,9 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
     <div style={{ marginTop: 12 }}>
       <div style={{
         fontSize: 11,
-        color: "#00ff88",
+        color: "#d97706",
         fontWeight: 700,
-        borderLeft: "3px solid #00ff88",
+        borderLeft: "3px solid #d97706",
         paddingLeft: 8,
         marginBottom: 10
       }}>
@@ -609,9 +609,9 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
             boxSizing: "border-box"
           }}
           onFocus={e => {
-            e.target.style.borderColor = "#00ff88"
+            e.target.style.borderColor = "#d97706"
             e.target.style.boxShadow =
-              "0 0 12px rgba(0,255,136,0.2)"
+              "0 0 0 2px rgba(217,119,6,0.2)"
           }}
           onBlur={e => {
             e.target.style.borderColor = "#1a2a4a"
@@ -655,7 +655,7 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
         borderRadius: 10,
         background: "#080c18",
         scrollbarWidth: "thin",
-        scrollbarColor: "#00ff88 #0a0e1a"
+        scrollbarColor: "#334155 #0a0e1a"
       }}>
         {filtered.length === 0 ? (
           <div style={{
@@ -694,14 +694,14 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
                   alignItems: "center",
                   cursor: "pointer",
                   background: isSelected
-                    ? "rgba(0,255,136,0.12)"
+                    ? "rgba(217,119,6,0.12)"
                     : "transparent",
                   borderBottom: idx < filtered.length-1
                     ? "1px solid rgba(255,255,255,0.05)"
                     : "none",
                   transition: "background 0.15s",
                   borderLeft: isSelected
-                    ? "3px solid #00ff88"
+                    ? "3px solid #d97706"
                     : "3px solid transparent"
                 }}
                 onMouseEnter={e => {
@@ -720,7 +720,7 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
                     fontSize: 13,
                     fontWeight: isSelected ? 700 : 400,
                     color: isSelected
-                      ? "#00ff88" : "#ffffff"
+                      ? "#d97706" : "#ffffff"
                   }}>
                     {city}
                   </div>
@@ -749,8 +749,8 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
                   {isSelected && (
                     <span style={{
                       fontSize: 9,
-                      background: "#00ff88",
-                      color: "#000",
+                      background: "#d97706",
+                      color: "#0f172a",
                       borderRadius: 4,
                       padding: "1px 5px",
                       fontWeight: 700
@@ -772,10 +772,10 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
             width: "100%",
             marginTop: 10,
             padding: "12px",
-            background: "linear-gradient(135deg, #00ff88, #00d4ff)",
+            background: "#d97706",
             border: "none",
             borderRadius: 10,
-            color: "#000",
+            color: "#0f172a",
             fontSize: 14,
             fontWeight: 800,
             cursor: "pointer",
@@ -1043,9 +1043,9 @@ const GAUGE_SEGMENTS = (() => {
 // from HEAT_INDEX_BUCKETS above: the map's 6-bucket legend/fill colors are fixed
 // data-meaning and must never change with this. This is a visual theme layer only.
 const UI_THEME_BUCKETS = [
-  { min: 40, accent: '#ff5c3c', bgStart: '#2a0a08', bgEnd: '#1a0605', glow: 'rgba(255,70,40,0.4)' },
-  { min: 30, accent: '#ffa83c', bgStart: '#2a1c08', bgEnd: '#1a1205', glow: 'rgba(255,170,40,0.3)' },
-  { min: -Infinity, accent: '#3ca8ff', bgStart: '#081c2a', bgEnd: '#05111a', glow: 'rgba(60,160,255,0.4)' }
+  { min: 40, accent: '#dc2626', bgStart: '#221417', bgEnd: '#0f172a', glow: 'rgba(185,28,28,0.35)' },
+  { min: 30, accent: '#d97706', bgStart: '#231a0f', bgEnd: '#0f172a', glow: 'rgba(217,119,6,0.35)' },
+  { min: -Infinity, accent: '#22c55e', bgStart: '#0f1f17', bgEnd: '#0f172a', glow: 'rgba(21,128,61,0.35)' }
 ]
 
 // Single place every themed surface reads from — pass a heat value, get back the CSS
@@ -1106,7 +1106,7 @@ function getPrecautionInfo(temp, aqi) {
   return {
     category: temp >= 32 ? 'MODERATE' : 'COOL',
     groupKey: 'MILD',
-    color: '#00ff88',
+    color: '#15803d',
     items: [
       'General sun safety (sunscreen, hat, sunglasses)',
       'Stay hydrated',
@@ -1429,7 +1429,7 @@ const JKInteractiveLayer = React.memo(function JKInteractiveLayer({ DATA, onStat
                     },
                     hover: {
                       fill: `${color}aa`,
-                      stroke: '#00d4ff',
+                      stroke: '#d97706',
                       outline: 'none',
                       cursor: 'pointer',
                       pointerEvents: 'auto'
@@ -1581,7 +1581,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
     if (hoveredState) {
       const el = borderRefsMap.current.get(hoveredState)
       if (el) {
-        el.style.stroke = '#00d4ff'
+        el.style.stroke = '#d97706'
         el.style.strokeWidth = '2.8'
       }
     }
@@ -1673,7 +1673,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           }}>
             <div style={{
               width: 32, height: 32, borderRadius: '50%',
-              border: '3px solid rgba(0,212,255,0.25)', borderTopColor: '#00d4ff',
+              border: '3px solid rgba(217,119,6,0.25)', borderTopColor: '#d97706',
               animation: 'spin 0.9s linear infinite'
             }} />
             <div style={{ color: '#94a3b8', fontSize: 12 }}>
@@ -1784,13 +1784,13 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
             right: 16,
             minWidth: 190,
             background: 'rgba(10, 22, 40, 0.92)',
-            border: '1px solid rgba(0, 212, 255, 0.4)',
+            border: '1px solid rgba(148, 163, 184, 0.3)',
             borderRadius: 10,
             padding: '12px 14px',
             color: '#e2e8f0',
             fontFamily: 'monospace',
             fontSize: 12,
-            boxShadow: '0 0 20px rgba(0,212,255,0.15)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
             pointerEvents: 'none',
             zIndex: 20
           }}
@@ -1811,7 +1811,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
             </span>
           </div>
           <div style={{ marginBottom: 4 }}>📍 Cities: <strong>{activeData.cities?.length || 0}</strong></div>
-          <div style={{ color: '#00d4ff', fontSize: 11, marginTop: 6 }}>Click to explore cities →</div>
+          <div style={{ color: '#d97706', fontSize: 11, marginTop: 6 }}>Click to explore cities →</div>
         </div>
       )}
 
@@ -3226,9 +3226,9 @@ function App({ user }) {
                   right: 10,
                   zIndex: 50,
                   background: 'rgba(0,0,0,0.6)',
-                  border: '1px solid #00d4ff',
+                  border: '1px solid rgba(148,163,184,0.4)',
                   borderRadius: 8,
-                  color: '#00d4ff',
+                  color: '#94a3b8',
                   padding: '4px 10px',
                   cursor: 'pointer',
                   fontFamily: 'monospace',
@@ -3388,9 +3388,9 @@ function App({ user }) {
                         style={{
                           width: 44, height: 44,
                           background: 'rgba(0,0,0,0.7)',
-                          border: '1px solid #00d4ff',
+                          border: '1px solid rgba(148,163,184,0.4)',
                           borderRadius: 8,
-                          color: '#00d4ff',
+                          color: '#94a3b8',
                           fontSize: 20,
                           cursor: 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -3401,9 +3401,9 @@ function App({ user }) {
                         style={{
                           width: 44, height: 44,
                           background: 'rgba(0,0,0,0.7)',
-                          border: '1px solid #00d4ff',
+                          border: '1px solid rgba(148,163,184,0.4)',
                           borderRadius: 8,
-                          color: '#00d4ff',
+                          color: '#94a3b8',
                           fontSize: 20,
                           cursor: 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -3414,9 +3414,9 @@ function App({ user }) {
                         style={{
                           width: 44, height: 44,
                           background: 'rgba(0,0,0,0.7)',
-                          border: '1px solid #00d4ff',
+                          border: '1px solid rgba(148,163,184,0.4)',
                           borderRadius: 8,
-                          color: '#00d4ff',
+                          color: '#94a3b8',
                           fontSize: 11,
                           cursor: 'pointer',
                           fontFamily: 'monospace',
@@ -3433,7 +3433,7 @@ function App({ user }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#00d4ff',
+                  color: '#94a3b8',
                   fontFamily: 'monospace',
                   letterSpacing: 1,
                   fontSize: 12,
@@ -3443,9 +3443,9 @@ function App({ user }) {
                     width: 10,
                     height: 10,
                     borderRadius: '50%',
-                    background: '#00ff88',
+                    background: '#22c55e',
                     border: '1.5px solid #ffffff',
-                    boxShadow: '0 0 8px 2px rgba(0,255,136,0.8)',
+                    boxShadow: 'none',
                     animation: 'pulse 1.2s ease-in-out infinite'
                   }} />
                   [ INDIA HEAT MAP — CLICK TO EXPAND ]
@@ -3564,8 +3564,8 @@ function App({ user }) {
                   </div>
                 </div>
 
-                <div className="history-section" style={{marginTop:20, padding:16, border:'1px solid rgba(0,255,136,0.18)', borderRadius:12, background:'rgba(0,0,0,0.35)'}}>
-                  <h4 style={{marginBottom:10, color:'#00ff88'}}>🧾 Recent Sign-ins</h4>
+                <div className="history-section" style={{marginTop:20, padding:16, border:'1px solid rgba(148,163,184,0.15)', borderRadius:12, background:'rgba(0,0,0,0.35)'}}>
+                  <h4 style={{marginBottom:10, color:'#d97706'}}>🧾 Recent Sign-ins</h4>
                   {loginHistory.length > 0 ? (
                     <ul style={{listStyle:'none', padding:0, margin:0, display:'grid', gap:8}}>
                       {loginHistory.map((entry, idx) => (
@@ -3601,11 +3601,11 @@ function App({ user }) {
 
                 <div style={{
                   background: 'rgba(10, 14, 26, 0.6)',
-                  border: '1px solid rgba(0,212,255,0.2)',
+                  border: '1px solid rgba(148,163,184,0.15)',
                   borderRadius: 12,
                   padding: 16
                 }}>
-                  <h4 style={{ color: '#00d4ff', borderLeft: '2px solid #00d4ff', paddingLeft: 8, marginBottom: 10, marginTop: 0 }}>
+                  <h4 style={{ color: '#d97706', borderLeft: '2px solid #d97706', paddingLeft: 8, marginBottom: 10, marginTop: 0 }}>
                     📊 {t('nationalSummary.title', "Today's National Heat Summary")}
                   </h4>
                   {cacheLastUpdated && (
@@ -3640,11 +3640,11 @@ function App({ user }) {
                       </div>
                     </div>
 
-                    <div style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.3)', borderRadius: 8, padding: 12 }}>
+                    <div style={{ background: 'rgba(217,119,6,0.08)', border: '1px solid rgba(217,119,6,0.3)', borderRadius: 8, padding: 12 }}>
                       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
                         🇮🇳 {t('nationalSummary.avgTemp', 'Average national temperature')}
                       </div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: '#00d4ff' }}>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: '#d97706' }}>
                         {nationalAvgTemp.toFixed(1)}°C
                       </div>
                     </div>
@@ -3665,10 +3665,10 @@ function App({ user }) {
                           setScreen('dashboard')
                         }}
                         style={{
-                          background: 'rgba(0,212,255,0.08)',
-                          border: '1px solid rgba(0,212,255,0.3)',
+                          background: 'rgba(217,119,6,0.08)',
+                          border: '1px solid rgba(217,119,6,0.3)',
                           borderRadius: 999,
-                          color: '#00d4ff',
+                          color: '#d97706',
                           fontSize: 12,
                           fontWeight: 600,
                           padding: '6px 14px',
@@ -3676,12 +3676,12 @@ function App({ user }) {
                           transition: 'background 0.2s ease, border-color 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(0,212,255,0.22)'
-                          e.currentTarget.style.borderColor = 'rgba(0,212,255,0.6)'
+                          e.currentTarget.style.background = 'rgba(217,119,6,0.22)'
+                          e.currentTarget.style.borderColor = 'rgba(217,119,6,0.6)'
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'rgba(0,212,255,0.08)'
-                          e.currentTarget.style.borderColor = 'rgba(0,212,255,0.3)'
+                          e.currentTarget.style.background = 'rgba(217,119,6,0.08)'
+                          e.currentTarget.style.borderColor = 'rgba(217,119,6,0.3)'
                         }}
                       >
                         {qp.label}
