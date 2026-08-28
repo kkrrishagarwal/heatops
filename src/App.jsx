@@ -1085,7 +1085,7 @@ function getPrecautionInfo(temp, aqi) {
       items.push('AQI is also high — limit outdoor exposure further')
       items.push('Consider wearing an N95 mask outdoors')
     }
-    return { category, groupKey: 'HOT', color: category === 'EXTREME' ? '#ff2222' : '#ff6b35', items }
+    return { category, groupKey: 'HOT', color: category === 'EXTREME' ? '#dc2626' : '#ea580c', items }
   }
 
   if (temp < 15) {

@@ -54,7 +54,7 @@ export const create3DCardTilt = (element, options = {}) => {
   }
 }
 
-export const particleBurst = (x, y, color = '#00ff88') => {
+export const particleBurst = (x, y, color = '#d97706') => {
   const count = 20
   for (let i = 0; i < count; i++) {
     const particle = document.createElement('div')
@@ -125,7 +125,7 @@ export const createScanLine = () => {
     left: 0;
     right: 0;
     height: 2px;
-    background: rgba(0, 255, 136, 0.3);
+    background: rgba(217, 119, 6, 0.3);
     filter: blur(4px);
     z-index: 5000;
     pointer-events: none;
@@ -192,7 +192,7 @@ export const createLoadingScreen = (onComplete) => {
     align-items: center;
     justify-content: center;
     z-index: 10000;
-    color: #00ff88;
+    color: #d97706;
     font-family: 'Courier New', monospace;
   `
 
@@ -211,14 +211,14 @@ export const createLoadingScreen = (onComplete) => {
     height: 60px;
     display: flex;
     align-items: center;
-    text-shadow: 0 0 10px #00ff88;
+    text-shadow: none;
   `
 
   const progressBar = document.createElement('div')
   progressBar.style.cssText = `
     width: 200px;
     height: 4px;
-    border: 1px solid #00ff88;
+    border: 1px solid rgba(217, 119, 6, 0.4);
     margin-top: 30px;
     overflow: hidden;
     border-radius: 2px;
@@ -227,7 +227,7 @@ export const createLoadingScreen = (onComplete) => {
   const progressFill = document.createElement('div')
   progressFill.style.cssText = `
     height: 100%;
-    background: linear-gradient(90deg, #00ff88, #00d4ff);
+    background: #d97706;
     width: 0%;
     animation: loading-fill 2s ease-in-out forwards;
   `
