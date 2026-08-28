@@ -147,9 +147,16 @@ answer — just work the numbers into your own response naturally):
 ${context || 'no live city data is currently available'}
 
 That may include City, Surface Temp (LST), Vegetation Fraction (NDVI), Built-up Fraction
-(NDBI), and AQI — nothing else is wired up yet. The templates below also ask for figures
-this app does not currently compute or supply: population, historical CDD, 7-day forecast
-probabilities, night LST, CO2/energy/ROI costs, and data for any city not named above.
+(NDBI), and AQI for the selected city, plus an optional "ADDITIONAL REAL DATA" block with
+cached readings (temp, AQI, PM10, rain chance, cloud cover) for other cities the user named
+and per-state summaries (hottest/coolest cities, average temp, worst AQI) — all of it real
+data from BhaskarOps' daily cache. Use those numbers directly for questions about those
+places, including comparisons. If the user asks about a city or state that is NOT listed in
+the context, say plainly that BhaskarOps does not have data for it right now — never guess,
+estimate, or invent a reading for an unlisted location. The templates below also ask for
+figures this app does not currently compute or supply: population, historical CDD, 7-day
+forecast probabilities, night LST, CO2/energy/ROI costs, and data for any location not in
+the context.
 For every one of those, you MUST still answer using your own best reasoning, but mark each
 such number inline as "(estimated)" — e.g. "HVI: 62/100 (estimated)" — never present it as a
 live reading. Numbers that DO come from the context above (LST, NDVI, NDBI, AQI) should be

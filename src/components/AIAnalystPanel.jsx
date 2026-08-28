@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { buildLocationContext } from '../utils/agniLocationContext'
 
 // Shared AI Analyst UI + logic — used by both the AI+Export tab panel and the
 // floating quick-access assistant, so behavior (free-text question, suggestion
@@ -124,8 +125,13 @@ export function AIAnalystPanel({
     setAiLoading(true)
 
     const context = `City: ${city}, Surface Temp: ${typeof lst === 'number' ? lst.toFixed(1) + '°C (live)' : 'not available'}, Vegetation Fraction: ${typeof ndvi === 'number' ? ndvi + '% (ESA WorldCover)' : 'not available for this city'}, Built-up Fraction: ${typeof ndbi === 'number' ? ndbi + '% (ESA WorldCover)' : 'not available for this city'}, AQI: ${aqi ?? 'N/A'} (live).`
-    const requestBody = { question, context }
-    console.log('[AIAnalystPanel] sending request to /api/ask-ai:', requestBody)
+    // Other cities/states named in the question get their real cached readings appended
+    // (bulk daily cache) so AGNI can answer "Delhi ka AQI?" while Mumbai is selected, or
+    // compare two cities — and is told to say "no data" for anything not in the cache.
+    const location = buildLocationContext(question, city)
+    const fullContext = context + location.text
+    const requestBody = { question, context: fullContext }
+    console.log('[AIAnalystPanel] sending request to /api/ask-ai:', { ...requestBody, extraLocations: { cities: location.cities, states: location.states } })
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), ASK_AI_TIMEOUT_MS)

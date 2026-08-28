@@ -21,6 +21,10 @@ export function getBulkWeatherLastUpdated() {
   return registry.lastUpdated
 }
 
+export function getBulkWeatherCities() {
+  return registry.cities
+}
+
 // Exact "City|State" key first; otherwise the first entry whose city name matches
 // case-insensitively (state spellings differ between data sources occasionally).
 export function getBulkWeatherEntry(city, state) {
