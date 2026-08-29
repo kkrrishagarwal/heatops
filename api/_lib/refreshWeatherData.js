@@ -99,7 +99,17 @@ function loadCoordinates() {
 export async function refreshWeatherData(existingCities = {}, previousLastUpdated = null) {
   const entries = loadCoordinates()
   const batches = chunk(entries, BATCH_SIZE)
-  const result = { ...existingCities }
+  // Seed from the previous cache, but only for cities that are STILL in the coordinate
+  // list. A city dropped from cityCoordinates.json (e.g. one whose coordinates turned out
+  // to point at the wrong place) must not live on as a carried-forward reading.
+  const knownKeys = new Set(entries.map(e => `${e.city}|${e.state}`))
+  const result = {}
+  let dropped = 0
+  for (const [key, city] of Object.entries(existingCities || {})) {
+    if (knownKeys.has(key)) result[key] = city
+    else dropped++
+  }
+  if (dropped) console.warn(`  dropped ${dropped} cached cities no longer in cityCoordinates.json`)
   const nowIso = new Date().toISOString()
   const freshKeys = new Set()
   let failedBatches = 0

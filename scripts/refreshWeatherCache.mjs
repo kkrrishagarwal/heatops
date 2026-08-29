@@ -94,7 +94,15 @@ export async function refreshWeatherCache() {
   if (fs.existsSync(OUTPUT_PATH)) {
     try {
       const prev = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8'))
-      result = prev.cities || {}
+      // Only cities still in the coordinate list — a city dropped from cityCoordinates.json
+      // (e.g. wrong-place coordinates) must not live on as a carried-forward reading.
+      const knownKeys = new Set(entries.map(e => `${e.city}|${e.state}`))
+      let dropped = 0
+      for (const [key, city] of Object.entries(prev.cities || {})) {
+        if (knownKeys.has(key)) result[key] = city
+        else dropped++
+      }
+      if (dropped) console.warn(`  dropped ${dropped} cached cities no longer in cityCoordinates.json`)
       previousLastUpdated = prev.lastUpdated || null
     } catch {}
   }
