@@ -101,7 +101,7 @@ Here's what happens, step by step, when a user opens the app:
 
 1. **The sign-in screen appears** (`LaunchScreen.jsx`) — with a 3D globe. Login/register happens purely in `localStorage` (there's no real database — this is demo-level auth, not real user accounts).
 
-2. **After sign-in, the map screen appears** (the `IndiaMap` component inside `App.jsx`). At this point, `public/live-weather-cache.json` gets fetched in the background — a file that already has the current temperature, rain-chance, AQI, cloud-cover, and PM10 stored for all ~2,050 cities (because fetching all 2,050 cities live would be far too slow).
+2. **After sign-in, the map screen appears** (the `IndiaMap` component inside `App.jsx`). At this point, `public/live-weather-cache.json` gets fetched in the background — a file that already has the current temperature, rain-chance, AQI, cloud-cover, and PM10 stored for all 1,908 cities (because fetching all 2,050 cities live would be far too slow).
 
 3. **Where does this cache come from?** Every night, a Vercel cron job (`"0 0 * * *"` in `vercel.json`) triggers `api/refresh-weather-cache.js`. This function fetches fresh data for every city from Open-Meteo, and — since serverless functions can't save files persistently — commits the result straight to GitHub via `githubCommit.js`, which automatically triggers a new deploy. That's why the map shows "Heat data loaded X min ago."
 
@@ -212,7 +212,7 @@ Here's what happens, step by step, when a user opens the app:
 
 ### ✅ Real / Live (comes from an actual source)
 - **Live weather, humidity, wind, forecast, AQI (per-city)** — Open-Meteo API (`src/utils/weatherAPI.js`)
-- **Bulk cache (temp/rain/AQI/cloud/PM10 for ~2,050 cities)** — Open-Meteo, refreshed daily (`public/live-weather-cache.json`)
+- **Bulk cache (temp/rain/AQI/cloud/PM10 for 1,908 cities)** — Open-Meteo, refreshed daily (`public/live-weather-cache.json`)
 - **Land cover % (vegetation/built-up/water)** — ESA WorldCover 10m satellite data (`public/data/lulc_real.json`), direct for representative cities only; other cities use a "nearest real city" fallback (honestly labeled)
 - **Building density** — a live OpenStreetMap Overpass API call (`src/utils/osmUtils.js`)
 - **ML model metrics (R², feature importance)** — a genuinely trained Random Forest, on real MODIS satellite training data — **but ⚠️ the training data is from non-Indian cities (20 global cities)**, and this is disclosed in the UI too
