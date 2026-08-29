@@ -4641,7 +4641,8 @@ function App({ user }) {
                         : t('citizen.help.elderly', 'Check on elderly and vulnerable neighbours during the hottest hours (12–4 pm).') },
                     { icon: '💧', text: t('citizen.help.water', 'Identify and help maintain a public water point or a shaded resting spot in your locality.') },
                     { icon: '🏠', text: t('citizen.help.coolRoof', 'Spread the word about cool roofs and green cover in your building or society.') },
-                    { icon: '📣', text: t('citizen.help.rwa', "Ask your local RWA / ward office about the city's Heat Action Plan and share it in your group.") }
+                    { icon: '📣', text: t('citizen.help.rwa', "Ask your local RWA / ward office about the city's Heat Action Plan and share it in your group.") },
+                    { icon: '🪴', text: t('citizen.help.plants', 'Grow heat-resistant plants at home — Aloe Vera, Snake Plant, Money Plant or Neem saplings help cool your surroundings and are easy to maintain.') }
                   ]
                   const ordered = urgent ? items : [...items.slice(1), items[0]]
                   return (
