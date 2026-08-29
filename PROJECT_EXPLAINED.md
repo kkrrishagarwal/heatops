@@ -39,9 +39,13 @@ heatops/
 │   ├── components/                — Reusable UI pieces — each one a small, focused component (Section 5/6 has a file-by-file breakdown)
 │   ├── components/AppErrorBoundary.jsx — Safety net: if a section crashes, shows "Something went wrong — Try again" instead of a blank page (root + map-level)
 │   ├── components/ViewModeToggle.jsx   — The 📱 Mobile / 💻 Laptop layout switch in every navbar
+│   ├── components/AudienceToggle.jsx   — The 🧑 Citizen / 🏛️ Authority switch (laptop navbars; the mobile drawer has its own row)
+│   ├── components/AudienceChooser.jsx  — The one-time "Who are you?" screen after sign-in (see 8.10)
+│   ├── components/HeatActionChecklist.jsx — Authority-only Heatwave Action Checklist (5 HAP steps, ticks saved per city in the browser)
 │   ├── hooks/
 │   │   ├── useWeather.js          — The shared hook for fetching live weather data — caching + retry + fallback chain (live → cached → error) all live here
-│   │   └── useViewMode.js         — Remembers the user's Mobile/Laptop layout choice (localStorage) and stamps it on <html>
+│   │   ├── useViewMode.js         — Remembers the user's Mobile/Laptop layout choice (localStorage) and stamps it on <html>
+│   │   └── useAudienceMode.js     — Remembers Citizen/Authority (localStorage `heatops_audience`, or ?view=citizen|authority) and stamps it on <html>
 │   ├── utils/                     — Pure logic/helper functions (no UI) — data fetching, math, formatting
 │   │   ├── weatherAPI.js          — Fetches REAL live weather+AQI from Open-Meteo (for one city, on demand) — every call has a 10s timeout
 │   │   ├── fetchJson.js           — The one shared "fetch JSON safely" helper (timeout, status check, clean errors) used by every data load
@@ -71,7 +75,8 @@ heatops/
 │   ├── refreshWeatherCache.mjs    — Bulk weather refresh (local/manual run)
 │   ├── weatherCacheDaemon.mjs     — Runs the one above in a loop every 20 min (for local dev)
 │   ├── backfillWeatherHistory.mjs — One-off: rebuilds public/data/history/ from every past cron commit (add --db to load Postgres too)
-│   ├── geocodeCities.mjs          — Builds src/data/cityCoordinates.json
+│   ├── geocodeCities.mjs          — Builds src/data/cityCoordinates.json — Open-Meteo + OSM Nominatim, every result validated to lie in its own state (see 8.13)
+│   ├── exportWeatherHistory.mjs   — Exports the daily history snapshots to a CSV (one row per city per day, with a carried_forward flag)
 │   ├── train_lst_model.py         — Trains the ML model (real MODIS data, but non-Indian cities)
 │   ├── build_lulc_data.py         — Pulls real land-cover data from ESA WorldCover
 │   └── build_lst_insat.py         — ISRO INSAT satellite pipeline — ⚠️ **not active yet**, pending MOSDAC approval
@@ -79,7 +84,8 @@ heatops/
 ├── public/
 │   ├── data/                      — All REAL data files the browser fetches (geojson maps, ML model output, LULC output, city coords)
 │   │   └── history/               — One compact snapshot per day of the bulk weather cache + index.json (historic data, tier 1)
-│   └── live-weather-cache.json    — Daily-refreshed bulk weather cache (all ~2,050 cities, powers the map/ticker)
+│   ├── history.html               — Standalone viewer for the historic weather data (pick a city, see its daily series; carried-forward days drawn hollow/dashed)
+│   └── live-weather-cache.json    — Daily-refreshed bulk weather cache (1,908 cities, powers the map/ticker/city list)
 │
 ├── app.py, static/, templates/, requirements.txt, .venv/  — ⚠️ LEGACY Flask prototype, not used in production
 ├── vercel.json                    — Deploy config + daily cron schedule
@@ -138,7 +144,10 @@ Here's what happens, step by step, when a user opens the app:
 |---|---|
 | **India map (colors, layers, zoom/pan)** | `src/App.jsx` — search for `IndiaMap`, `DistrictsLayer`, `WeatherOverlayLayer` |
 | **Heat-index color logic (which state gets which color)** | `src/App.jsx` — search for `getHeatIndexColor` |
-| **Weather-condition overlay (rain/dust/cloud tint+icons)** | `src/App.jsx` — search for `WeatherOverlayLayer`, `WeatherOverlayIcons`, `liveStateWeatherCondition` |
+| **Weather-condition overlay (rain/dust/cloud pattern fills + icons)** | `src/App.jsx` — search for `WEATHER_OVERLAY_PATTERNS`, `WeatherOverlayPatternDefs`, `WeatherOverlayLayer`, `WeatherOverlayIcons`, `liveStateWeatherCondition` |
+| **Heat-reactive theme colour (red/orange/yellow/green from the selected city's live temperature)** | `src/App.jsx` — search for `UI_THEME_BUCKETS`, `getThemeVars`, `getThemeAccent`; the Heat Risk Gauge readout uses the same four tiers |
+| **City list "NO LIVE DATA" (no fabricated temperatures)** | `src/App.jsx` — search for `no-live-data` inside `CityPanel`; global search fallback right below the `Search any city` input |
+| **Map fit / zoom floor (1× = fit to card)** | `src/App.jsx` — `INDIA_MAP_PROJECTION_CONFIG` (scale 1120, centre 23.2°N) and `setMapScale` (wheel + the +/−/↺ buttons) |
 | **Live weather (temp, humidity, forecast) for one city** | `src/utils/weatherAPI.js` + `src/hooks/useWeather.js` + UI: `src/components/WeatherCard.jsx` |
 | **AQI calculation/category** | `src/utils/weatherAPI.js` (function `getAQICategory`) |
 | **Bulk weather cache (all cities, for the map/ticker)** | `scripts/refreshWeatherCache.mjs` (local) / `api/refresh-weather-cache.js` (production cron) → output: `public/live-weather-cache.json` |
@@ -151,7 +160,13 @@ Here's what happens, step by step, when a user opens the app:
 | **AGNI AI chatbot (frontend)** | `src/components/AIAnalystPanel.jsx` (main chat UI) + `src/components/FloatingAIAssistant.jsx` (floating bubble wrapper) |
 | **AGNI AI chatbot (backend/prompt)** | `api/_lib/askAI.js` (system prompt + Gemini call + rate limit + conversation memory) → entry points: `api/ask-ai.js` (Vercel), `netlify/functions/ask-ai.js` (Netlify), dev: `vite.config.js` |
 | **AGNI: other cities/states in a question** | `src/utils/agniLocationContext.js` (called from `AIAnalystPanel.jsx`) |
-| **Citizen / Authority view (audience)** | `src/hooks/useAudienceMode.js` + `src/components/AudienceChooser.jsx` (asked once after sign-in) + citizen strip/tabs in `src/App.jsx` |
+| **Citizen / Authority view (audience)** | `src/hooks/useAudienceMode.js` + `src/components/AudienceChooser.jsx` (asked once after sign-in) + `src/components/AudienceToggle.jsx` + citizen strip/tabs in `src/App.jsx` |
+| **Citizen extras: Share with family (WhatsApp), Safe hours today, How you can help your neighbourhood** | `src/App.jsx` — search for `whatsapp-share`, `SAFEHOURS`, `safe-hours-now`, `data-panel="HELP"` |
+| **Heatwave Action Checklist (Authority)** | `src/components/HeatActionChecklist.jsx` (localStorage key `heatops_checklist:<city>|<state>`), rendered after PANEL K in `src/App.jsx` |
+| **Historic weather viewer + CSV** | `public/history.html` (reads `/api/weather-history`) + `scripts/exportWeatherHistory.mjs` |
+| **City coordinates (geocoding + validation)** | `scripts/geocodeCities.mjs` → `src/data/cityCoordinates.json`; live fallback chain in `src/utils/weatherAPI.js` (`getCityCoordinates`) |
+| **Mobile header (stacked rows + ☰ drawer)** | `src/App.jsx` — search for `CompactNavbar`, `audienceSwitchRow`; CSS `html[data-view-mode="compact"]` in `src/App.css` |
+| **AGNI markdown replies (bold, lists, headings)** | `src/components/AIAnalystPanel.jsx` (`react-markdown`, `className="chat-bubble ai md"`) + `.chat-bubble.md` styles in `src/App.css` |
 | **Mobile / Laptop layout toggle** | `src/components/ViewModeToggle.jsx` + `src/hooks/useViewMode.js` + CSS rules `html[data-view-mode="compact"]` in `src/App.css` |
 | **"Data may be outdated / Live data unavailable" notes** | `src/App.jsx` — search for `CacheStatusNote`, `liveCacheStatus`, `isCacheStale` |
 | **Error screens ("Something went wrong", "Map could not be displayed")** | `src/components/AppErrorBoundary.jsx` (mounted in `src/main.jsx` and around `IndiaMap` in `src/App.jsx`) |
@@ -221,9 +236,9 @@ Here's what happens, step by step, when a user opens the app:
 
 ---
 
-## 8. WHAT CHANGED ON 28 AUGUST 2026 — THE UPGRADE IN PLAIN LANGUAGE
+## 8. WHAT CHANGED ON 28–29 AUGUST 2026 — THE UPGRADE IN PLAIN LANGUAGE
 
-Everything below was built, tested with real failure simulations, and committed on 28 August 2026. Each item says what the problem was, what it looks like now, and exactly where the code lives.
+Everything below was built, tested with real failure simulations / Playwright screenshots, and committed on 28–29 August 2026 (8.1–8.9 on the 28th, 8.10–8.14 on the 29th). Each item says what the problem was, what it looks like now, and exactly where the code lives.
 
 ### 8.1 Visual redesign — a professional civic-tech look
 
@@ -252,7 +267,13 @@ Plus, on the server: the AGNI chat endpoint now allows **10 questions per minute
 
 ### 8.4 Weather-condition overlay on the map (rain / dust / cloud)
 
-Not new today, but documented here because the palette pass touched its colours. For each state, the app averages the bulk cache's PM10, rain-chance and cloud-cover across that state's cities, then picks **one** condition in priority order: dust if average PM10 ≥ 400, else rain if average rain chance ≥ 60%, else cloud if average cloud cover ≥ 80%, else clear. The state gets a translucent tint (hazy brown for dust, blue for rain, grey for cloud) drawn over its heat colour, plus a 🌫️ / 🌧️ / ☁️ marker at its geometric centre. The legend explains the tints. Because it's derived from the same bulk cache, the "outdated / unavailable" chip on the map covers it too. (`src/App.jsx`: `liveStateWeatherCondition`, `WEATHER_OVERLAY_TINTS`, `WeatherOverlayLayer`, `WeatherOverlayIcons`.)
+For each state, the app averages the bulk cache's PM10, rain-chance and cloud-cover across that state's cities, then picks **one** condition in priority order: dust if average PM10 ≥ 400, else rain if average rain chance ≥ 60%, else cloud if average cloud cover ≥ 80%, else clear.
+
+**Updated 29 Aug:** the old translucent tints were too subtle to notice over the heat colours, so the overlay is now two things you can actually see:
+- a **pattern fill** on the state — orange diagonal stripes for dust, blue dashes for rain, grey dots for heavy cloud (`WEATHER_OVERLAY_PATTERNS`, `WeatherOverlayPatternDefs` — SVG `<pattern>`s, so they scale with the map), and
+- a **condition icon** (🌫️ / 🌧️ / ☁️) on a dark backing disc at the state's centroid, so it stays readable over green *and* red states.
+
+The legend rows say "(orange stripes overlay)" etc. so the pattern is explained where you look for it. **Citizen view** hides the state-wide pattern layer — citizens see the icon for their own selected city's state only, plus a one-line "🌧️ Rain likely" / "🌫️ Dusty air (high PM10)" / "☁️ Heavy cloud" note in the citizen strip — while **Authority view** keeps the full overlay system. (`src/App.jsx` — `WeatherOverlayLayer`, `WeatherOverlayIcons`, `IndiaMap` prop `audience`, `WX_WORDS`.)
 
 ### 8.5 City-level weather fallback — live → cached → error
 
@@ -260,7 +281,7 @@ When you open a city, the app asks Open-Meteo for fresh weather. Open-Meteo is f
 
 1. **Live API** (fresh, most accurate) — with retries and backoff if rate-limited.
 2. **Cached reading** — if live fails, the hook checks this browser's last successful reading for that city *and* the daily bulk cache, and shows whichever is fresher, labelled **"Showing cached data from X ago — live data temporarily unavailable."** with a Force Refresh button. If the slow path takes more than 10s, the cached reading is shown immediately while the live call keeps trying.
-3. **Error** — only if neither exists (rare, since the cache covers ~1,700 cities).
+3. **Error** — only if neither exists (rare, since the cache covers 1,908 cities).
 
 The bulk cache only has temperature, AQI, PM10, rain chance and cloud cover, so the cached card is a shorter version (no forecast, no humidity) and says so in its footer. Example: with Open-Meteo blocked and **Delhi** chosen, the card shows New Delhi's cached 32°C / AQI 152 instead of "Failed to fetch". (`src/hooks/useWeather.js` → `resolveFallback`; `src/utils/bulkWeatherCache.js`; `src/components/WeatherCard.jsx`.)
 
@@ -292,12 +313,12 @@ How the two tabs share state: all three slider values are ordinary React state a
 
 **Before:** the nightly refresh overwrote `public/live-weather-cache.json`, so yesterday's readings were gone (except buried in git commits). **Now** every run is stored twice:
 
-- **Tier 1 — snapshot files (no setup needed).** The cron writes a compact file for the day, `public/data/history/YYYY-MM-DD.json` (~60 KB: temperature, rain chance, AQI, cloud cover, PM10 for all ~1,690 cities), and updates `public/data/history/index.json` (the list of days). These go into the **same GitHub commit** as the cache — `api/_lib/githubCommit.js` now uses GitHub's Git Data API to commit several files at once — so it is still one commit and one deploy per night. `scripts/backfillWeatherHistory.mjs` rebuilt this from the repo's history: **63 days, 22 June → 28 August 2026**, are already there.
+- **Tier 1 — snapshot files (no setup needed).** The cron writes a compact file for the day, `public/data/history/YYYY-MM-DD.json` (~60 KB: temperature, rain chance, AQI, cloud cover, PM10 for all ~1,900 cities), and updates `public/data/history/index.json` (the list of days). These go into the **same GitHub commit** as the cache — `api/_lib/githubCommit.js` now uses GitHub's Git Data API to commit several files at once — so it is still one commit and one deploy per night. `scripts/backfillWeatherHistory.mjs` rebuilt this from the repo's history: **63 days, 22 June → 28 August 2026**, are already there.
 - **Tier 2 — a real database (optional).** Set `DATABASE_URL` (any Postgres — Neon, Vercel Postgres, Supabase, Railway) in Vercel's environment variables and the same run also inserts one row per city into `weather_observations` (plus one row per run in `weather_runs`). Tables are created automatically; re-runs are idempotent. Run `node scripts/backfillWeatherHistory.mjs --db` once to load the 63 historical days into it.
 
 **Carried-forward readings are flagged (radical honesty).** When an Open-Meteo batch fails, the refresh keeps a city's previous values so the map never blanks out — but that value is now stamped `isCarriedForward: true` with its real `observedAt`, and the day's snapshot stores it as `carried = 1`. The backfill also labels older runs: if a city's whole reading is identical to the previous day's, it is marked `carried = 2` (“inferred”). The history viewer draws these as dashed lines / hollow points and labels them “⚠️ carried forward” in the table; the CSV export has a `carried_forward` column. Rebuilding the history this way showed **43% of all city-days over the last two months were carried-forward values** — e.g. Jaisalmer's week-long flat stretches — which is why this flag matters.
 
-**Reading it:** `GET /api/weather-history?city=New%20Delhi&state=Delhi&days=30` returns that city's daily series (`source: "postgres"` when the database is configured, otherwise `"snapshots"`); `?runs=1` lists the available days. The local `npm run dev` server serves the same endpoint. Nothing in the UI uses this yet — it's the data foundation for trend charts.
+**Reading it:** `GET /api/weather-history?city=New%20Delhi&state=Delhi&days=30` returns that city's daily series (`source: "postgres"` when the database is configured, otherwise `"snapshots"`); `?runs=1` lists the available days. The local `npm run dev` server serves the same endpoint. There is a standalone viewer at **`/history.html`** (pick a city → daily temperature/AQI/rain series; carried-forward days are drawn hollow/dashed) and `node scripts/exportWeatherHistory.mjs` writes the whole archive to CSV with a `carried_forward` column. The main dashboard doesn't chart it yet — it's the data foundation for trend charts.
 
 **Files:** `api/_lib/weatherHistory.js`, `api/_lib/weatherHistoryDb.js`, `api/_lib/weatherHistoryApi.js`, `api/weather-history.js`, `api/refresh-weather-cache.js`, `api/_lib/githubCommit.js`, `scripts/refreshWeatherCache.mjs`, `scripts/backfillWeatherHistory.mjs`, `.env.example`.
 
@@ -307,11 +328,45 @@ Separate from the 📱 Mobile / 💻 Laptop toggle (that's *density*; this is *a
 
 - **First sign-in:** a one-time screen asks **"Who are you?"** with two big choices — **🧑‍🤝‍🧑 Citizen** and **🏛️ Government / Planner** — and a "Skip, show me everything →" link (Skip = Authority). The choice is saved in the browser (`localStorage` key `heatops_audience`) and never asked again. A direct link works too: `?view=citizen` or `?view=authority` sets it without the question.
 - **Citizen view:** top bar shows only the essentials — 📍 city, 🌡️ temperature, a plain-language **risk badge** (Low / Medium / High / Extreme, from the same rules as the Health & Safety panel), the air-quality category and one 💡 safety tip; the system badges (HEAT HIGH, EL NIÑO, SYSTEM OPS, SAT ACTIVE) and the ticker are hidden. The dashboard has just two tabs: **Overview** (weather card with AQI shown as a category only, heat-risk gauge, alerts) and **What to do** (the Health & Safety precautions plus a simple AGNI box with resident-friendly suggestions). AGNI is told the audience is a resident and answers without jargon.
-- **Citizen extras:** a **📤 Share with family** button (WhatsApp `wa.me` link pre-filled with the city's temperature, risk level, air quality and safety tip), a **Safe hours today** strip (24 hourly cells from the existing forecast — 🔴 avoid ≥ 40 °C feels-like, 🟡 only if necessary 35–39 °C, 🟢 safe), and a **How you can help your neighbourhood** card on *What to do* (five concrete actions; on High/Extreme days the "check on elderly neighbours NOW" step moves first in red).
+- **Citizen extras:** a **📤 Share with family** button (WhatsApp `wa.me` link pre-filled with the city's temperature, risk level, air quality and safety tip), a **Safe hours today** section — one clean bar for the day (🔴 avoid ≥ 40 °C feels-like, 🟡 only if necessary 35–39 °C, 🟢 safe), a prominent "Right now: …" status line and the time windows written out on one wrapping line underneath (no truncated labels at 375 px), and a **How you can help your neighbourhood** card on *What to do* (five concrete actions; on High/Extreme days the "check on elderly neighbours NOW" step moves first in red).
 - **Authority view:** everything as before — every badge, all five tabs, ML model, comparisons, intervention calculators, exports — plus a **Heatwave Action Checklist** on the Overview tab: five Heat Action Plan steps (cooling centres, health-department alert, public advisory, water tankers, prioritise Cool Roof/green-cover interventions with a link to the Interventions tab). It shows STANDBY until the city's risk reaches High/Extreme, then ACTIVE; ticks are saved in the browser per city with a timestamp, so it works as a live operational aid in a demo (`src/components/HeatActionChecklist.jsx`).
 - **Switching later** is deliberately *not* in the header: it's the "👁️ View: Citizen ⚙️ · switch to Authority" item in the avatar menu (map screen), the "View" row in the mobile ☰ drawer, and a "Switch to … view" button on the My Profile page.
 
 **Files:** `src/hooks/useAudienceMode.js` (state + storage + URL param), `src/components/AudienceChooser.jsx` (the one-time screen, mounted from `src/App3D.jsx`), `src/App.jsx` (citizen top-bar strip, tab set, `data-panel` tags on the Overview panels, menu items), `src/App.css` (which panels each citizen tab shows), `src/components/WeatherCard.jsx` (`simpleAqi`), `src/components/AIAnalystPanel.jsx` (citizen suggestions/placeholder/context).
+
+### 8.11 Mobile header without sideways scrolling + AGNI replies that render properly
+
+- **Mobile header:** the compact navbar used to be one long row that scrolled horizontally. It now stacks into rows (brand + clock + ☰ on top, the badges underneath, the ticker in a single-item "most critical" mode) and the rarely used controls — language, Mobile/Laptop, Citizen/Authority, profile, logout — live in a ☰ drawer. Nothing scrolls sideways at 375 px. (`CompactNavbar`, `TickerBar compact` in `src/App.jsx`; compact rules in `src/App.css`.)
+- **AGNI markdown:** Gemini answers in markdown (bold, bullet lists, headings) and the chat used to show the raw asterisks. Bubbles are now rendered with `react-markdown` (`className="chat-bubble ai md"`), with list markers restored (the global CSS reset had hidden them). (`src/components/AIAnalystPanel.jsx`, `.chat-bubble.md` in `src/App.css`.)
+
+### 8.12 Theme colour follows the selected city's live temperature
+
+The dashboard's accent/glow/background tint used to come from the *state's* illustrative heat bucket, so a cool hill town in a hot state was painted orange. It now follows the **currently selected city's live current temperature**, in four tiers that match the risk language everywhere else:
+
+| Live temperature | Tier | Accent |
+|---|---|---|
+| ≥ 45 °C | Extreme | red `#dc2626` |
+| 35–44.9 °C | High | orange `#ea580c` |
+| 25–34.9 °C | Moderate | yellow `#eab308` |
+| < 25 °C | Low | green `#22c55e` |
+
+`UI_THEME_BUCKETS` → `getThemeVars(temp)` sets `--theme-accent / --theme-glow / --theme-bg-*` on the dashboard container and the map side panel; when no live reading exists yet it falls back to the seeded value (only for colour — never shown as a number). The **Heat Risk Gauge** readout (label + dot) was aligned to the same four tiers, so the gauge no longer says "LOW-MODERATE 🟢" under a yellow heading. Verified with Playwright by forcing three different live temperatures on three cities.
+
+### 8.13 No fabricated temperatures — and every city's coordinates verified
+
+**The bug:** the map-screen city list showed "~21.8 °C" for cities missing from the live cache. That number was `state avgLST ± a hash of the city name` — invented — and it was caught 7 °C from reality (Sundernagar, HP, on a 29 °C afternoon). Digging into *why* those cities were missing exposed two data problems in `cityCoordinates.json`:
+
+1. **267 cities had no coordinates** — Open-Meteo's geocoder doesn't know Sundernagar, Keylong, Akhnoor, Nandprayag, Suheli Par… so the nightly cron never fetched them.
+2. **202 cities pointed at the wrong place** — Tawang in East Java, Hunder in Denmark, Drass in Austria, Kutch in Colorado, Koderma in Albania — because the old script trusted the first hit for a bare city name. Those showed as *live* readings, which is worse than an estimate.
+
+**The fix, in three parts:**
+- **UI (honesty):** the city list shows an explicit **"NO LIVE DATA"** badge (tooltip: nothing is estimated); global search falls back to the *live* state average labelled "(state avg)", then blank; the live-fetch geocoder only accepts a hit whose state matches, otherwise it uses the labelled state-representative fallback — and that fallback reading is no longer shown as the selected city's own temperature in the list.
+- **Data (`scripts/geocodeCities.mjs`):** every result must be in India *and* either carry the requested state as its admin1/address.state or lie inside the padded bounding box of that state's already-trusted cities (~35 km — this keeps Delhi-NCR entries like Gurugram/Noida, which are legitimately in Haryana/UP). Open-Meteo first, then **OSM Nominatim** with "City, State, India" (1 request/second). Result: **1,908 / 1,956 cities validated** (1,486 Open-Meteo state-matched, 35 bbox, 385 Nominatim), none outside India's bounding box; 48 tiny places remain unresolved and stay honestly blank.
+- **Refresh (`api/_lib/refreshWeatherData.js`, `scripts/refreshWeatherCache.mjs`):** both used to carry forward *every* previously cached key, so a removed wrong-place city would have lived on as a "carried forward" reading. They now only carry forward cities still in the coordinate list. The cache was refreshed with the corrected coordinates (1,908 fresh readings; e.g. Sundernagar 25 °C at 21:40 IST, Tawang 9 °C, Suheli Par 28 °C).
+
+### 8.14 Map fills its card; zoom-out stops at "fit"
+
+Two reasons the Authority map could look like a small India floating in an empty card: zoom-out went down to 0.5× although 1× was already fit-to-card (each "−" only shrank the map into empty space), and the projection left ~17 % of the box unused under Kanyakumari. Now the zoom floor is **1×** for the button and the scroll wheel (the "−" button is disabled at fit and returning to 1× re-centres the pan), and the projection is `scale 1120, centre 23.2°N`, so India fills **93 %** of the box. Verified with screenshots at 1920×1080, 1366×768, 1280×860, 1024×600, 900×420 and 375×812 — nothing clips at Kashmir, Arunachal or the A&N / Lakshadweep labels. Very short windows remain height-bound (India is roughly square, so a 200 px-tall card can only show a ~190 px India).
 
 ---
 
