@@ -1867,3 +1867,36 @@ html[data-view-mode="compact"] .map-box.is-expanded {
 html[data-view-mode="compact"] .dashboard-content {
   grid-template-columns: 1fr;
 }
+
+/* Mobile layout: the dashboard/profile navbar wraps into two rows (title row, controls
+   row) so LOGOUT and the layout toggle are never pushed off-screen. */
+html[data-view-mode="compact"] .navbar {
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 10px 12px;
+}
+html[data-view-mode="compact"] .nav-left {
+  width: 100%;
+  gap: 10px;
+}
+html[data-view-mode="compact"] .nav-left h2 {
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html[data-view-mode="compact"] .nav-right {
+  width: 100%;
+  justify-content: space-between;
+  gap: 8px;
+}
+html[data-view-mode="compact"] .nav-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+html[data-view-mode="compact"] .avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 13px;
+}
+

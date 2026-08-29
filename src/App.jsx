@@ -2212,7 +2212,7 @@ const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout }) => {
   )
 }
 
-const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, cacheStatus = 'ready', cacheStale = false }) => {
+const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, cacheStatus = 'ready', cacheStale = false, compact = false }) => {
   // The ticker's city temps come from the bulk cache, so the badge must say so
   // honestly: LIVE only when the cache loaded and is fresh.
   const badge = cacheStatus === 'error'
@@ -2258,6 +2258,37 @@ const TickerBar = ({ leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveS
     { icon: '🌡️', label: 'Mumbai', value: typeof liveMumbai === 'number' ? `${liveMumbai}°C` : '...' },
     { icon: '🌿', label: 'Shimla', value: typeof liveShimla === 'number' ? `${liveShimla}°C` : '...' }
   ]
+
+  // Mobile layout: no scrolling marquee — a single static line with the badge, only the
+  // genuinely critical values (or the heat leader if nothing is critical), and SAT ACTIVE.
+  if (compact) {
+    const critical = items.filter(item => isCritical(item.label, item.value))
+    const shown = (critical.length ? critical : items).slice(0, 1) // one item, full width — two truncate at 375px
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', height: 30, gap: 10, padding: '0 12px',
+        background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden'
+      }}>
+        <div title={cacheStale ? 'Bulk weather cache is older than 36h' : undefined} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: badge.color, flexShrink: 0 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: badge.color, animation: badge.pulse ? 'navPulse 1s ease-in-out infinite' : 'none' }} />
+          {badge.text}
+        </div>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: 12, overflow: 'hidden' }}>
+          {shown.map(item => {
+            const crit = isCritical(item.label, item.value)
+            return (
+              <div key={item.label} style={{ display: 'flex', gap: 5, alignItems: 'center', fontSize: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>
+                <span>{item.icon}</span>
+                <span style={{ fontWeight: 600, color: '#cbd5e1' }}>{item.label}:</span>
+                <span className={crit ? 'ticker-critical' : ''} style={{ color: crit ? '#b91c1c' : '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.value}</span>
+              </div>
+            )
+          })}
+        </div>
+        <div style={{ fontSize: 9, fontWeight: 700, color: '#86efac', flexShrink: 0 }}>● SAT ACTIVE</div>
+      </div>
+    )
+  }
 
   return (
     <div style={{
@@ -2353,6 +2384,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
   // against scrollWidth/clientWidth, not a fixed breakpoint, since translated
   // pill/label text length varies across the app's 11 languages).
   const navRowRef = useRef(null)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [navRowOverflow, setNavRowOverflow] = useState({ left: false, right: false })
   const updateNavRowOverflow = useCallback(() => {
     const el = navRowRef.current
@@ -2367,6 +2399,97 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
     window.addEventListener('resize', updateNavRowOverflow)
     return () => window.removeEventListener('resize', updateNavRowOverflow)
   }, [updateNavRowOverflow])
+
+  const statusPills = [
+    { icon: '🔴', label: 'HEAT', value: 'HIGH', color: '#dc2626', border: 'rgba(185,28,28,0.55)' },
+    { icon: '🟡', label: 'CLIMATE', value: 'EL NIÑO', color: '#eab308', border: 'rgba(202,138,4,0.55)' },
+    { icon: '🟢', label: 'SYSTEM', value: 'OPS', color: '#22c55e', border: 'rgba(21,128,61,0.55)' }
+  ]
+  const logoutBtnStyle = {
+    padding: '8px 14px', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+    background: 'transparent', color: '#dc2626', border: '1px solid rgba(185,28,28,0.5)', borderRadius: 6, cursor: 'pointer'
+  }
+
+  // ── Mobile layout: nothing important lives behind a horizontal scroll ──
+  //   row 1: brand + ☰ (opens a drawer with layout toggle, language, profile, LOGOUT)
+  //   row 2: the three status pills (fit at 375px)
+  //   row 3: static ticker with only the critical values (TickerBar compact)
+  if (viewMode === 'compact') {
+    return (
+      <>
+        <div style={{ position: 'relative', background: 'linear-gradient(90deg, rgba(4,11,26,0.98), rgba(9,18,40,0.95))', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, height: 48, padding: '0 12px' }}>
+            <div style={{ fontSize: 18 }}>🛰️</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#d97706' }}>BHASKAR OPS</div>
+              <div style={{ fontSize: 8, letterSpacing: '0.12em', color: '#64748b' }}>THERMAL</div>
+            </div>
+            <div style={{ flex: 1 }} />
+            <LiveClock />
+            <button
+              type="button"
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={menuOpen}
+              style={{
+                width: 40, height: 36, borderRadius: 8, fontSize: 18, lineHeight: 1,
+                background: menuOpen ? 'rgba(217,119,6,0.15)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${menuOpen ? 'rgba(217,119,6,0.6)' : 'rgba(255,255,255,0.12)'}`,
+                color: menuOpen ? '#d97706' : '#e2e8f0', cursor: 'pointer', flexShrink: 0
+              }}
+            >
+              {menuOpen ? '✕' : '☰'}
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: 8, padding: '0 12px 8px', justifyContent: 'space-between' }}>
+            {statusPills.map(pill => (
+              <div key={pill.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, fontSize: 8, fontWeight: 700, color: pill.color, border: `1px solid ${pill.border}`, borderRadius: 4, padding: '4px 6px', textAlign: 'center' }}>
+                <span style={{ letterSpacing: '0.08em' }}>{pill.label}</span>
+                <span>{pill.value}</span>
+              </div>
+            ))}
+          </div>
+          {menuOpen && (
+            <div
+              data-testid="mobile-menu"
+              style={{
+                position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300,
+                background: 'rgba(9,18,40,0.98)', borderBottom: '1px solid rgba(217,119,6,0.35)',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.5)', padding: 14, display: 'flex', flexDirection: 'column', gap: 12
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                <span style={{ fontSize: 11, color: '#94a3b8' }}>Layout</span>
+                <ViewModeToggle mode={viewMode} onChange={m => { onViewModeChange?.(m); setMenuOpen(false) }} size="md" />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                <span style={{ fontSize: 11, color: '#94a3b8' }}>Language</span>
+                <LanguageDropdown />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                <span style={{ fontSize: 11, color: '#94a3b8' }}>Signed in as</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0' }}>{currentUser?.name || 'User'} <span style={{ fontSize: 9, color: '#22c55e', marginLeft: 6 }}>🤖 AGENT ONLINE</span></span>
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button type="button" onClick={() => { setScreen?.('profile'); setMenuOpen(false) }} style={{ flex: 1, padding: '8px 12px', fontSize: 11, fontWeight: 700, background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.45)', color: '#d97706', borderRadius: 6, cursor: 'pointer' }}>👤 My Profile</button>
+                <button type="button" onClick={() => { setMenuOpen(false); setScreen('signin'); onLogout?.() }} style={{ ...logoutBtnStyle, flex: 1 }}>{t('nav.signOut', 'LOGOUT')}</button>
+              </div>
+            </div>
+          )}
+        </div>
+        <TickerBar
+          leaderBase={leaderBase}
+          liveAqiAlert={liveAqiAlert}
+          liveStormWatch={liveStormWatch}
+          liveMumbai={liveMumbai}
+          liveShimla={liveShimla}
+          cacheStatus={cacheStatus}
+          cacheStale={cacheStale}
+          compact
+        />
+      </>
+    )
+  }
 
   return (
     <>
@@ -2410,11 +2533,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
 
         {/* Status pills — all inline */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-          {[
-            { icon: '🔴', label: 'HEAT', value: 'HIGH', color: '#dc2626', border: 'rgba(185,28,28,0.55)' },
-            { icon: '🟡', label: 'CLIMATE', value: 'EL NIÑO', color: '#eab308', border: 'rgba(202,138,4,0.55)' },
-            { icon: '🟢', label: 'SYSTEM', value: 'OPS', color: '#22c55e', border: 'rgba(21,128,61,0.55)' }
-          ].map(pill => (
+          {statusPills.map(pill => (
             <div
               key={pill.label}
               style={{
@@ -3975,6 +4094,19 @@ function App({ user }) {
         {/* Dashboard tab bar — horizontally scrollable with fade hints on
             whichever edge(s) still have hidden tabs, so a narrow screen doesn't
             just silently clip INTERVENTIONS/AI+EXPORT with no sign they exist. */}
+        {viewMode === 'compact' ? (
+          /* Mobile layout: one native dropdown instead of a horizontally scrolling tab row */
+          <div style={{ background: '#0a0f1e', borderBottom: '1px solid #1a2a4a', padding: '8px 12px' }}>
+            <select
+              aria-label="Dashboard section"
+              value={activeTab}
+              onChange={e => setActiveTab(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', fontSize: 13, fontWeight: 700, letterSpacing: '0.04em', background: '#0f172a', color: '#d97706', border: '1px solid rgba(217,119,6,0.5)', borderRadius: 8 }}
+            >
+              {TABS.map(tab => <option key={tab} value={tab}>{TAB_LABELS[tab]}</option>)}
+            </select>
+          </div>
+        ) : (
         <div style={{ position: 'relative', background: '#0a0f1e', borderBottom: '1px solid #1a2a4a' }}>
           <div
             ref={tabBarScrollRef}
@@ -4029,6 +4161,7 @@ function App({ user }) {
             }}>›</div>
           )}
         </div>
+        )}
 
         <div className="dashboard-scroll">
           {activeTab === 'Overview' && (
