@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { buildLocationContext } from '../utils/agniLocationContext'
 
 const LANGUAGE_NAMES = { en: 'English', hi: 'Hindi', bn: 'Bengali', mr: 'Marathi', te: 'Telugu', ta: 'Tamil', gu: 'Gujarati', ur: 'Urdu', kn: 'Kannada', or: 'Odia', pa: 'Punjabi' }
@@ -229,8 +231,11 @@ export function AIAnalystPanel({
         )}
         {chatHistory.map((msg, i) => (
           <div key={i} className={`chat-row ${msg.user ? 'user' : 'ai'}`}>
-            <div className={`chat-bubble ${msg.user ? 'user' : 'ai'} ${msg.isError ? 'error' : ''} ${msg.isFallback ? 'fallback' : ''}`}>
-              {msg.user || msg.ai}
+            <div className={`chat-bubble ${msg.user ? 'user' : 'ai md'} ${msg.isError ? 'error' : ''} ${msg.isFallback ? 'fallback' : ''}`}>
+              {msg.user
+                ? msg.user
+                : /* AGNI writes markdown (**bold**, bullets, headings) — render it instead of showing raw asterisks */
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{String(msg.ai ?? '')}</ReactMarkdown>}
             </div>
             {msg.isError && msg.retryQuestion && (
               <button

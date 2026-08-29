@@ -1900,3 +1900,20 @@ html[data-view-mode="compact"] .avatar {
   font-size: 13px;
 }
 
+/* AGNI replies are markdown — keep the bubble compact and on-palette. */
+.chat-bubble.md { white-space: normal; }
+.chat-bubble.md p { margin: 0 0 6px; }
+.chat-bubble.md > :last-child { margin-bottom: 0; }
+.chat-bubble.md ul, .chat-bubble.md ol { margin: 4px 0 6px 18px; padding: 0; }
+.chat-bubble.md li { margin: 2px 0; }
+.chat-bubble.md strong { color: #f8fafc; }
+.chat-bubble.md em { color: #cbd5e1; }
+.chat-bubble.md h1, .chat-bubble.md h2, .chat-bubble.md h3, .chat-bubble.md h4 { font-size: 13px; margin: 8px 0 4px; color: #d97706; }
+.chat-bubble.md code { background: rgba(255,255,255,0.08); padding: 0 4px; border-radius: 3px; font-size: 11px; }
+.chat-bubble.md pre { background: rgba(0,0,0,0.35); padding: 8px; border-radius: 6px; overflow-x: auto; }
+.chat-bubble.md hr { border: 0; border-top: 1px solid rgba(148,163,184,0.25); margin: 6px 0; }
+.chat-bubble.md blockquote { margin: 4px 0; padding-left: 8px; border-left: 2px solid rgba(217,119,6,0.5); color: #cbd5e1; }
+.chat-bubble.md table { border-collapse: collapse; margin: 4px 0; font-size: 11px; }
+.chat-bubble.md th, .chat-bubble.md td { border: 1px solid rgba(148,163,184,0.25); padding: 3px 6px; }
+.chat-bubble.md a { color: #d97706; }
+
