@@ -49,6 +49,7 @@ import { FloatingAIAssistant } from './components/FloatingAIAssistant'
 import { CompareCitiesPanel } from './components/CompareCitiesPanel'
 import ViewModeToggle from './components/ViewModeToggle'
 import AudienceToggle from './components/AudienceToggle'
+import HeatActionChecklist from './components/HeatActionChecklist'
 import { useViewMode } from './hooks/useViewMode'
 import { useAudienceMode } from './hooks/useAudienceMode'
 
@@ -4557,6 +4558,18 @@ function App({ user }) {
                     ))}
                   </div>
                 </section>
+
+                {/* AUTHORITY ONLY — operational Heatwave Action Checklist (HAP steps), ticks kept
+                    locally per city so it works as a live tool in a demo. */}
+                {!citizen && (
+                  <HeatActionChecklist
+                    city={selectedCity}
+                    state={selectedState}
+                    risk={citizenSummary?.risk}
+                    temp={citizenSummary?.temp}
+                    onOpenInterventions={() => setActiveTab('Interventions')}
+                  />
+                )}
 
                 {/* PANEL S: Health & Safety Precautions — rules-based, no AI call, loads instantly.
                     Reads the SAME shared liveWeather (useWeather hook) as the Weather Conditions
