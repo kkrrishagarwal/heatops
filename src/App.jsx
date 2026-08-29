@@ -4629,7 +4629,7 @@ function App({ user }) {
                   )
                 })()}
 
-                {/* CITIZEN ONLY — "How you can help your community". Mostly static, but the
+                {/* CITIZEN ONLY — "How you can help your neighbourhood". Mostly static, but the
                     order and emphasis follow today's risk word (Extreme/High put the
                     elderly-neighbours check first and in red). */}
                 {citizen && activeTab === 'What to do' && (() => {
@@ -4639,14 +4639,14 @@ function App({ user }) {
                     { icon: '🧓', urgent: true, text: urgent
                         ? t('citizen.help.elderlyNow', 'Check on elderly and vulnerable neighbours NOW — a phone call or a knock during 12–4 pm can prevent heat stroke.')
                         : t('citizen.help.elderly', 'Check on elderly and vulnerable neighbours during the hottest hours (12–4 pm).') },
-                    { icon: '💧', text: t('citizen.help.water', 'Identify and help maintain a community water point or a shaded resting spot near you.') },
+                    { icon: '💧', text: t('citizen.help.water', 'Identify and help maintain a public water point or a shaded resting spot in your locality.') },
                     { icon: '🏠', text: t('citizen.help.coolRoof', 'Spread the word about cool roofs and green cover in your building or society.') },
                     { icon: '📣', text: t('citizen.help.rwa', "Ask your local RWA / ward office about the city's Heat Action Plan and share it in your group.") }
                   ]
                   const ordered = urgent ? items : [...items.slice(1), items[0]]
                   return (
                     <section className="panel" data-panel="HELP" style={urgent ? { borderLeft: '4px solid #dc2626' } : undefined}>
-                      <h3>🤝 {t('citizen.help.title', 'How you can help your community')}</h3>
+                      <h3>🤝 {t('citizen.help.title', 'How you can help your neighbourhood')}</h3>
                       {urgent && (
                         <div style={{ fontSize: 12, color: '#dc2626', fontWeight: 700, marginBottom: 8 }}>
                           {t('citizen.help.urgentNote', '{{risk}} heat risk today — the first step matters most.', { risk })}
