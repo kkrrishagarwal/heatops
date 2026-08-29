@@ -1417,7 +1417,8 @@ const WeatherOverlayIcons = React.memo(function WeatherOverlayIcons({ DATA, cent
                 that stack has no emoji glyphs and, inside an <svg>, blocks the normal
                 OS emoji-font fallback that HTML text elsewhere on this page relies on
                 (confirmed via DOM inspection: the glyph was present but invisible). */}
-            <text textAnchor='middle' fontSize={11} fontFamily='"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif' style={{ pointerEvents: 'none' }}>{icon}</text>
+            <circle r={9} fill='rgba(15,23,42,0.78)' stroke='rgba(226,232,240,0.55)' strokeWidth={0.8} />
+            <text textAnchor='middle' dominantBaseline='central' fontSize={12} fontFamily='"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif' style={{ pointerEvents: 'none' }}>{icon}</text>
           </Marker>
         )
       })}
@@ -1814,11 +1815,12 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
       {/* LAYER 1.5: weather-condition tint overlay (rain/dust/cloud) — see WeatherOverlayLayer
           above. Sits directly above the heat-index districts layer, below the interactive/
           border layers, so it never intercepts clicks/hover and never alters the heat color. */}
-      {/* Citizens see their own city's condition in the top strip instead of a national pattern layer */}
+      {/* Pattern fills are Authority-only; citizens get the icons + their own city's condition in the top strip */}
       {audience !== 'citizen' && <WeatherOverlayLayer DATA={DATA} />}
 
       {/* LAYER 1.6: weather-overlay icon markers (rain/dust) — see WeatherOverlayIcons above. */}
-      {audience !== 'citizen' && <WeatherOverlayIcons DATA={DATA} centroids={stateCentroids} />}
+      {/* Condition icons show in BOTH views — small, unambiguous, no blending with heat colours */}
+      <WeatherOverlayIcons DATA={DATA} centroids={stateCentroids} />
 
       {/* LAYER 2 + 2.5: extracted + memoized above (StatesInteractiveLayer/JKInteractiveLayer)
           — click/hover detection no longer forces a recompute of these GeoJSON layers on
