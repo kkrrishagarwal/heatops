@@ -1122,10 +1122,13 @@ const GAUGE_SEGMENTS = (() => {
 // glows, headings and button accents via CSS custom properties. Completely separate
 // from HEAT_INDEX_BUCKETS above: the map's 6-bucket legend/fill colors are fixed
 // data-meaning and must never change with this. This is a visual theme layer only.
+// Four risk tiers, keyed off the SELECTED CITY's live current temperature (°C):
+//   Extreme ≥ 45 → red · High 35–45 → orange · Moderate 25–35 → yellow · Low < 25 → green
 const UI_THEME_BUCKETS = [
-  { min: 40, accent: '#dc2626', bgStart: '#221417', bgEnd: '#0f172a', glow: 'rgba(185,28,28,0.35)' },
-  { min: 30, accent: '#d97706', bgStart: '#231a0f', bgEnd: '#0f172a', glow: 'rgba(217,119,6,0.35)' },
-  { min: -Infinity, accent: '#22c55e', bgStart: '#0f1f17', bgEnd: '#0f172a', glow: 'rgba(21,128,61,0.35)' }
+  { min: 45, label: 'Extreme', accent: '#dc2626', bgStart: '#221417', bgEnd: '#0f172a', glow: 'rgba(185,28,28,0.35)' },
+  { min: 35, label: 'High', accent: '#ea580c', bgStart: '#23160f', bgEnd: '#0f172a', glow: 'rgba(194,65,12,0.35)' },
+  { min: 25, label: 'Moderate', accent: '#eab308', bgStart: '#231f0f', bgEnd: '#0f172a', glow: 'rgba(202,138,4,0.35)' },
+  { min: -Infinity, label: 'Low', accent: '#22c55e', bgStart: '#0f1f17', bgEnd: '#0f172a', glow: 'rgba(21,128,61,0.35)' }
 ]
 
 // Single place every themed surface reads from — pass a heat value, get back the CSS
@@ -3923,7 +3926,9 @@ function App({ user }) {
             paddingRight: 4,
             scrollbarWidth: 'thin',
             scrollbarColor: '#1a2a4a #0a0e1a',
-            ...(selectedState ? getThemeVars(getAdjustedLST(selectedState)) : {})
+            // Theme follows the selected city's LIVE temperature (not the state aggregate); the
+            // state's adjusted LST is only the fallback while no live reading exists.
+            ...(selectedState ? getThemeVars(typeof liveWeather?.current?.temp === 'number' ? liveWeather.current.temp : getAdjustedLST(selectedState)) : {})
           }}>
             {selectedState ? (
               <>
@@ -4159,7 +4164,10 @@ function App({ user }) {
 
           return (
             <div style={{ display: screen === 'dashboard' ? 'contents' : 'none' }}>
-      <div className="dashboard-container" style={getThemeVars(lst)}>
+      {/* Theme colour = the selected city's LIVE current temperature; the seeded `lst` is only
+          the fallback before the live reading arrives (it was the cause of e.g. Lucknow at 28°C
+          showing a red theme because the seed followed the state's bucket). */}
+      <div className="dashboard-container" style={getThemeVars(typeof liveWeather?.current?.temp === 'number' ? liveWeather.current.temp : lst)}>
         {/* Floating AI Assistant — quick access from any dashboard tab without
             switching to AI+Export, reuses the same AIAnalystPanel/state.
             Suppressed on the AI+Export tab itself: that tab already renders
