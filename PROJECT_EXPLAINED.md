@@ -209,6 +209,7 @@ Here's what happens, step by step, when a user opens the app:
 - **Land-cover for non-representative cities** — borrows the nearest real city's data, labeled as an estimate/with the distance shown
 - **Building density when Overpass fails** — shows "unavailable," never fakes a number
 - **Carried-forward bulk-cache values** — when the nightly refresh can't reach Open-Meteo for a batch of cities, their previous values are kept but flagged (`isCarriedForward`), and the history viewer/CSV show them as “carried forward”, never as fresh readings
+- **Cities with no live reading** — the map-screen city list and global search show an explicit "NO LIVE DATA" badge (search may show the state's *live* average, labelled "(state avg)"). Nothing is estimated: the earlier "~21.8°C"-style guesses (state avgLST ± a hash of the city name) were removed on 29 Aug 2026 after they were caught 7°C from reality. City coordinates are validated to lie in their own state (`scripts/geocodeCities.mjs`, Open-Meteo + OSM Nominatim); 48 of 1,956 cities remain unresolved and stay honestly blank.
 - **ML model applied to any Indian city** — the model itself is real, but since it's trained on non-Indian data, its predictions for Indian cities should be treated as a "generalization estimate"
 
 ### ❌ Static / Illustrative (fabricated, not a real measurement)
