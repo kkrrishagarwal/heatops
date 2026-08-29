@@ -1,6 +1,6 @@
 import React from 'react'
 
-// Shown once, right after sign-in, when the user has never picked an audience mode.
+// Shown once, right after sign-in, when the user has never picked an audience mode. English only.
 // Two big choices; "Skip" opens the full (authority) dashboard. Citizen is presented
 // first as the simpler default. The choice is stored and can be changed later from the
 // profile / settings menu ("View: Citizen ⚙️") — deliberately not from the header.
@@ -36,7 +36,7 @@ export default function AudienceChooser({ onChoose, userName }) {
       <div style={{ maxWidth: 720, width: '100%' }}>
         <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.12em', color: '#d97706', marginBottom: 6 }}>BHASKAR OPS</div>
         <h1 style={{ fontSize: 26, margin: '0 0 6px', fontWeight: 800 }}>
-          {userName ? `Welcome, ${userName}. ` : ''}Aap kaun hain?
+          {typeof userName === 'string' && userName.trim().length >= 2 ? `Welcome, ${userName.trim()}. ` : 'Welcome. '}Who are you?
         </h1>
         <p style={{ color: '#94a3b8', fontSize: 14, margin: '0 0 22px', lineHeight: 1.5 }}>
           Choose how much detail you want. You can switch any time from your profile menu.
