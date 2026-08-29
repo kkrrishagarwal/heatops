@@ -622,7 +622,7 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
         formatAgo={formatAgo}
         onRetry={onRetryCache}
         liveText="Live temps"
-        suffix={' · "~" = no live data for that city yet'}
+        suffix={' · "NO LIVE DATA" = city not in the weather cache yet (nothing is estimated)'}
       />
 
       <div style={{
@@ -719,14 +719,11 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
               ? liveSelectedTemp
               : liveEntry?.temp
             const isLive = typeof liveTemp === 'number'
-
-            const seed = city.split('')
-              .reduce((a,c)=>a+c.charCodeAt(0),0)%100
-            const estimatedLst = (
-              (stateData.avgLST || 38) +
-              (seed/100)*4 - 2
-            )
-            const lst = (isLive ? liveTemp : estimatedLst).toFixed(1)
+            // No fabricated fallback. The old "~estimate" (state avgLST ± a hash of the
+            // city name) was a made-up number that could sit 7°C off reality, e.g.
+            // Sundernagar showing ~21.8°C on a 29°C day. A city that is not in the live
+            // cache says so instead.
+            const lst = isLive ? liveTemp.toFixed(1) : null
 
             return (
               <div
@@ -783,14 +780,33 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
                   alignItems: "center",
                   gap: 6
                 }}>
-                  <span style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: getThemeAccent(parseFloat(lst)),
-                    transition: 'color 0.4s ease'
-                  }}>
-                    {isLive ? '' : '~'}{lst}°C
-                  </span>
+                  {isLive ? (
+                    <span style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: getThemeAccent(liveTemp),
+                      transition: 'color 0.4s ease'
+                    }}>
+                      {lst}°C
+                    </span>
+                  ) : (
+                    <span
+                      data-testid="no-live-data"
+                      title={t('cityList.noLiveDataTitle', 'No live reading for this city yet — it is not in the weather cache. Nothing is estimated.')}
+                      style={{
+                        fontSize: 9,
+                        fontWeight: 600,
+                        letterSpacing: '0.04em',
+                        color: 'rgba(255,255,255,0.45)',
+                        border: '1px solid rgba(255,255,255,0.14)',
+                        borderRadius: 4,
+                        padding: '1px 5px',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {t('cityList.noLiveData', 'NO LIVE DATA')}
+                    </span>
+                  )}
                   {isSelected && (
                     <span style={{
                       fontSize: 9,
@@ -3732,18 +3748,25 @@ function App({ user }) {
                                 <div style={{ fontWeight: 700 }}>{res.city}</div>
                                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{res.state}</div>
                               </div>
-                              {/* Prefer the city's own live cached temp, then the state's live
-                                  average; the hardcoded state avgLST only as a labeled fallback. */}
+                              {/* The city's own live cached temp; else the state's LIVE average
+                                  (labelled as such); else an honest blank — never the hardcoded
+                                  illustrative avgLST. */}
                               {(() => {
                                 const live = getLiveCity(res.city, res.state)
                                 const sd = liveIndiaData[res.state]
-                                const temp = typeof live?.temp === 'number' ? live.temp
-                                  : (sd?.heatIndexLive ? sd.heatIndex : res.lst)
-                                const isLive = typeof live?.temp === 'number' || sd?.heatIndexLive
+                                const cityLive = typeof live?.temp === 'number'
+                                const temp = cityLive ? live.temp : (sd?.heatIndexLive ? sd.heatIndex : null)
+                                if (typeof temp !== 'number') {
+                                  return (
+                                    <div style={{ textAlign: 'right', fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>
+                                      {t('cityList.noLiveData', 'NO LIVE DATA')}
+                                    </div>
+                                  )
+                                }
                                 const label = getRiskLabel(temp)
                                 return (
                                   <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: getRiskText(label) }}>{temp}°C{isLive ? '' : ' (est.)'}</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: getRiskText(label) }}>{temp}°C{cityLive ? '' : ' (state avg)'}</div>
                                     <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{label}</div>
                                   </div>
                                 )
@@ -3974,7 +3997,7 @@ function App({ user }) {
                   stateData={STATE_DATA[selectedState]}
                   selectedCity={selectedCity}
                   liveCache={liveCityCache}
-                  liveSelectedTemp={liveWeather?.current?.temp}
+                  liveSelectedTemp={liveWeather?.isFallbackLocation ? undefined : liveWeather?.current?.temp}
                   cacheLastUpdated={cacheLastUpdated}
                   cacheStatus={liveCacheStatus}
                   onRetryCache={retryLiveCache}

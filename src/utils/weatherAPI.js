@@ -62,7 +62,8 @@ export function getWindDirection(degrees) {
 }
 
 // Step 1: Resolve a city to lat/lon — tiered, in order of precision:
-//   1. Exact (city, state) match in the bundled cityCoordinates.json (1,689/1,956 cities) —
+//   1. Exact (city, state) match in the bundled cityCoordinates.json (1,908/1,956 cities,
+//      every one validated to lie in its own state — see scripts/geocodeCities.mjs) —
 //      precise, deterministic, zero ambiguity, no network round-trip.
 //   2. Live Open-Meteo geocoding by name, preferring whichever India result's admin1 (state)
 //      actually matches the requested state — Open-Meteo returns several same-named towns
@@ -71,8 +72,7 @@ export function getWindDirection(degrees) {
 //      the right city's name. Same disambiguation approach already used by
 //      scripts/geocodeCities.mjs when building cityCoordinates.json offline.
 //   3. State-representative-city fallback — for towns Open-Meteo's geocoder has no listing
-//      for at all (verified: ~267 small towns return zero results, not a query-strictness
-//      issue), fall back to that state's designated real-data city (same one already used for
+//      for at all (48 small towns after the Nominatim pass), fall back to that state's designated real-data city (same one already used for
 //      LULC — see cityCoordinateResolver.js) and mark the result as a fallback location so the
 //      UI can label it honestly rather than silently passing off another city's weather as the
 //      requested one's.
@@ -100,11 +100,17 @@ export async function getCityCoordinates(cityName, stateName) {
         (r.admin1 || '').toLowerCase().includes(stateName.toLowerCase()) ||
         stateName.toLowerCase().includes((r.admin1 || '').toLowerCase())
       )
-      const best = stateMatch || indiaResults[0] || data.results[0]
-      return {
-        lat: best.latitude, lon: best.longitude,
-        name: cityName, state: stateName || best.admin1 || '', country: best.country, timezone: best.timezone || 'Asia/Kolkata',
-        source: 'geocoded', requestedCity: cityName, requestedState: stateName
+      // Only a state-matched hit counts. The old `|| indiaResults[0] || data.results[0]`
+      // fallback is how "Tawang" became East Java and "Kutch" became Colorado — another
+      // place's real weather under the requested city's name. With no state match we drop
+      // to tier 3, which is labelled as a fallback in the UI.
+      const best = stateMatch || (!stateName ? indiaResults[0] : null)
+      if (best) {
+        return {
+          lat: best.latitude, lon: best.longitude,
+          name: cityName, state: stateName || best.admin1 || '', country: best.country, timezone: best.timezone || 'Asia/Kolkata',
+          source: 'geocoded', requestedCity: cityName, requestedState: stateName
+        }
       }
     }
 
