@@ -1919,3 +1919,16 @@ html[data-view-mode="compact"] .avatar {
 .chat-bubble.md th, .chat-bubble.md td { border: 1px solid rgba(148,163,184,0.25); padding: 3px 6px; }
 .chat-bubble.md a { color: #d97706; }
 
+/* Citizen audience: the Overview tab keeps only the essentials; "What to do" shows the
+   safety precautions + a simple AGNI box. Panels are tagged data-panel in App.jsx. */
+.dashboard-content[data-citizen-tab="Overview"] [data-panel="G"],
+.dashboard-content[data-citizen-tab="Overview"] [data-panel="B"],
+.dashboard-content[data-citizen-tab="Overview"] [data-panel="S"],
+.dashboard-content[data-citizen-tab="Overview"] [data-panel="J"] { display: none; }
+.dashboard-content[data-citizen-tab="What to do"] [data-panel="A"],
+.dashboard-content[data-citizen-tab="What to do"] [data-panel="G"],
+.dashboard-content[data-citizen-tab="What to do"] [data-panel="B"],
+.dashboard-content[data-citizen-tab="What to do"] [data-panel="D"],
+.dashboard-content[data-citizen-tab="What to do"] [data-panel="K"],
+.dashboard-content[data-citizen-tab="What to do"] [data-panel="J"] { display: none; }
+

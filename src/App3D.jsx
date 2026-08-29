@@ -2,6 +2,8 @@ import React, { useState, useEffect, Suspense, lazy } from 'react'
 import CustomCursor from './components/CustomCursor'
 // Navbar3D (old top navbar) removed — use CompactNavbar inside App
 import App from './App'
+import AudienceChooser from './components/AudienceChooser'
+import { readStoredAudience, storeAudience } from './hooks/useAudienceMode'
 import { createLoadingScreen } from './utils/3d-effects'
 import '../src/3d-styles.css'
 
@@ -13,6 +15,8 @@ const LaunchScreen = lazy(() => import('./components/LaunchScreen'))
 const App3D = () => {
   const [screen, setScreen] = useState('launch') // 'launch' or 'dashboard'
   const [user, setUser] = useState(null)
+  // Asked once per browser: citizen vs authority view (see hooks/useAudienceMode.js)
+  const [audienceChosen, setAudienceChosen] = useState(() => readStoredAudience() !== null)
 
   const handleSignIn = (userData) => {
     // Show loading screen
@@ -42,6 +46,17 @@ const App3D = () => {
   }
 
   // Dashboard with 3D enhancements
+  if (!audienceChosen) {
+    return (
+      <>
+        <CustomCursor />
+        <AudienceChooser
+          userName={user?.name}
+          onChoose={(mode) => { storeAudience(mode); setAudienceChosen(true) }}
+        />
+      </>
+    )
+  }
   return (
     <>
       <CustomCursor />

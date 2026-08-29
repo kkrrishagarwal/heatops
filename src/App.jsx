@@ -49,6 +49,7 @@ import { FloatingAIAssistant } from './components/FloatingAIAssistant'
 import { CompareCitiesPanel } from './components/CompareCitiesPanel'
 import ViewModeToggle from './components/ViewModeToggle'
 import { useViewMode } from './hooks/useViewMode'
+import { useAudienceMode } from './hooks/useAudienceMode'
 
 // Gemini API key is never read on the client. The AI Analyst calls the secure
 // /api/ask-ai backend proxy (see api/ask-ai.js + api/_lib/askAI.js), which reads
@@ -2121,7 +2122,7 @@ function GeographiesLayer({ url, render }) {
 
 // ════════ COMPACT NAVBAR COMPONENTS ════════
 
-const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout }) => {
+const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout, audience = 'authority', onAudienceChange }) => {
   const [open, setOpen] = useState(false)
 
   return (
@@ -2175,6 +2176,8 @@ const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout }) => {
             {[
               { icon: '👤', label: 'My Profile', fn: () => { setScreen?.('profile'); setOpen(false) } },
               { icon: '🏆', label: 'My Badges', fn: () => { setScreen?.('profile'); setOpen(false) } },
+              // Discreet audience switch — deliberately here, not in the header
+              { icon: '👁️', label: `View: ${audience === 'citizen' ? 'Citizen' : 'Authority'} ⚙️ · switch to ${audience === 'citizen' ? 'Authority' : 'Citizen'}`, fn: () => { onAudienceChange?.(audience === 'citizen' ? 'authority' : 'citizen'); setOpen(false) } },
               ...(isAdmin ? [{ icon: '🛡️', label: 'Admin Panel', fn: () => { setScreen?.('admin'); setOpen(false) } }] : [])
             ].map(item => (
               <div
@@ -2375,7 +2378,9 @@ const LiveClock = () => {
   )
 }
 
-const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, cacheStatus, cacheStale, viewMode, onViewModeChange }) => {
+const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, cacheStatus, cacheStale, viewMode, onViewModeChange, audience = 'authority', onAudienceChange, citizenSummary }) => {
+  const citizen = audience === 'citizen'
+  const otherAudience = citizen ? 'authority' : 'citizen'
   const { t, i18n } = useTranslation()
   const isAdmin = currentUser?.role === 'admin'
 
@@ -2405,6 +2410,39 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
     { icon: '🟡', label: 'CLIMATE', value: 'EL NIÑO', color: '#eab308', border: 'rgba(202,138,4,0.55)' },
     { icon: '🟢', label: 'SYSTEM', value: 'OPS', color: '#22c55e', border: 'rgba(21,128,61,0.55)' }
   ]
+  // Citizen top bar: plain-language essentials instead of system badges + ticker
+  const riskColor = { Extreme: '#dc2626', High: '#ea580c', Medium: '#eab308', Low: '#22c55e' }
+  const citizenStrip = (
+    <div data-testid="citizen-strip" style={{
+      display: 'flex', alignItems: 'center', gap: 10, height: 34, padding: '0 14px', overflow: 'hidden',
+      background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: 11, color: '#e2e8f0'
+    }}>
+      {citizenSummary?.city ? (
+        <>
+          <span style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>📍 {citizenSummary.city}</span>
+          {citizenSummary.temp != null && <span style={{ whiteSpace: 'nowrap' }}>🌡️ {citizenSummary.temp}°C{citizenSummary.cached ? ' (cached)' : ''}</span>}
+          {citizenSummary.risk && (
+            <span style={{ whiteSpace: 'nowrap', fontWeight: 700, fontSize: 10, padding: '2px 8px', borderRadius: 999, color: riskColor[citizenSummary.risk], border: `1px solid ${riskColor[citizenSummary.risk]}88` }}>
+              {citizenSummary.risk} risk
+            </span>
+          )}
+          {citizenSummary.aqiLabel && <span style={{ whiteSpace: 'nowrap', color: '#cbd5e1' }}>Air: {citizenSummary.aqiLabel}</span>}
+          {citizenSummary.tip && <span style={{ color: '#94a3b8', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>💡 {citizenSummary.tip}</span>}
+        </>
+      ) : (
+        <span style={{ color: '#94a3b8' }}>📍 Tap a state on the map to see your city's heat risk and what to do today</span>
+      )}
+    </div>
+  )
+  const audienceSwitchRow = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+      <span style={{ fontSize: 11, color: '#94a3b8' }}>View: <strong style={{ color: '#e2e8f0' }}>{citizen ? 'Citizen' : 'Authority'}</strong> ⚙️</span>
+      <button type="button" onClick={() => { onAudienceChange?.(otherAudience); setMenuOpen(false) }} style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, background: 'transparent', border: '1px solid rgba(217,119,6,0.45)', color: '#d97706', borderRadius: 6, cursor: 'pointer' }}>
+        Switch to {citizen ? 'Authority' : 'Citizen'}
+      </button>
+    </div>
+  )
+
   const logoutBtnStyle = {
     padding: '8px 14px', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
     background: 'transparent', color: '#dc2626', border: '1px solid rgba(185,28,28,0.5)', borderRadius: 6, cursor: 'pointer'
@@ -2441,6 +2479,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
               {menuOpen ? '✕' : '☰'}
             </button>
           </div>
+          {!citizen && (
           <div style={{ display: 'flex', gap: 8, padding: '0 12px 8px', justifyContent: 'space-between' }}>
             {statusPills.map(pill => (
               <div key={pill.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, fontSize: 8, fontWeight: 700, color: pill.color, border: `1px solid ${pill.border}`, borderRadius: 4, padding: '4px 6px', textAlign: 'center' }}>
@@ -2449,6 +2488,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
               </div>
             ))}
           </div>
+          )}
           {menuOpen && (
             <div
               data-testid="mobile-menu"
@@ -2466,6 +2506,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
                 <span style={{ fontSize: 11, color: '#94a3b8' }}>Language</span>
                 <LanguageDropdown />
               </div>
+              {audienceSwitchRow}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                 <span style={{ fontSize: 11, color: '#94a3b8' }}>Signed in as</span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0' }}>{currentUser?.name || 'User'} <span style={{ fontSize: 9, color: '#22c55e', marginLeft: 6 }}>🤖 AGENT ONLINE</span></span>
@@ -2477,6 +2518,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
             </div>
           )}
         </div>
+        {citizen ? citizenStrip : (
         <TickerBar
           leaderBase={leaderBase}
           liveAqiAlert={liveAqiAlert}
@@ -2487,6 +2529,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
           cacheStale={cacheStale}
           compact
         />
+        )}
       </>
     )
   }
@@ -2528,6 +2571,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
           </div>
         </div>
 
+        {!citizen && (<>
         {/* Divider */}
         <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
 
@@ -2549,6 +2593,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
             </div>
           ))}
         </div>
+        </>)}
 
         {/* Spacer */}
         <div style={{ flex: 1 }} />
@@ -2583,6 +2628,8 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
           <UserAvatarMenu
             currentUser={currentUser}
             isAdmin={isAdmin}
+            audience={audience}
+            onAudienceChange={onAudienceChange}
             setScreen={setScreen}
             onLogout={() => { setScreen('signin'); onLogout?.() }}
           />
@@ -2629,7 +2676,8 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
       )}
       </div>
 
-      {/* Ticker bar — 28px */}
+      {/* Ticker bar — 28px (authority) / citizen strip */}
+      {citizen ? citizenStrip : (
       <TickerBar
         leaderBase={leaderBase}
         liveAqiAlert={liveAqiAlert}
@@ -2639,6 +2687,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
         cacheStatus={cacheStatus}
         cacheStale={cacheStale}
       />
+      )}
     </>
   )
 }
@@ -2648,6 +2697,9 @@ function App({ user }) {
   // Compact (stacked, full-width map) vs Full (side-by-side). Drives html[data-view-mode]
   // which the layout CSS keys off — one CSS system, no device-specific code paths.
   const { viewMode, setViewMode } = useViewMode()
+  // Citizen vs authority audience — independent of the Mobile/Laptop density toggle.
+  const { audience, setAudience } = useAudienceMode()
+  const citizen = audience === 'citizen'
 
   // Screen & Auth
   const [screen, setScreen] = useState(user ? "map" : "signin")
@@ -2705,6 +2757,9 @@ function App({ user }) {
     }
   }, [])
   const [activeTab, setActiveTab] = useState('Overview')
+  useEffect(() => {
+    if (!citizen && activeTab === 'What to do') setActiveTab('Overview')
+  }, [citizen, activeTab])
   // Dashboard tab bar overflow-fade hints (mobile: OVERVIEW/ANALYSIS/COMPARE/
   // INTERVENTIONS/AI+EXPORT don't all fit under ~500px). Measured via ref rather
   // than a fixed breakpoint since i18n label lengths vary a lot across the app's
@@ -2763,6 +2818,21 @@ function App({ user }) {
     data: liveWeather, error: liveWeatherError, timedOut: liveWeatherTimedOut,
     isStale: liveWeatherStale, cachedAt: liveWeatherCachedAt, forceRefresh: forceRefreshLiveWeather
   } = useWeather(selectedCity, selectedState, 'App.selectedCity')
+
+  // Plain-language strip for the citizen top bar: city, temperature, risk word, one tip.
+  const citizenSummary = useMemo(() => {
+    const temp = liveWeather?.current?.temp
+    const info = typeof temp === 'number' ? getPrecautionInfo(temp, liveWeather?.aqi?.usAQI) : null
+    const riskWord = { EXTREME: 'Extreme', HIGH: 'High', MODERATE: 'Medium', COOL: 'Low', COLD: 'Low' }
+    return {
+      city: selectedCity || null,
+      temp: typeof temp === 'number' ? temp : null,
+      risk: info ? (riskWord[info.category] || 'Low') : null,
+      tip: info?.items?.[0] || null,
+      aqiLabel: liveWeather?.aqi?.category?.label || null,
+      cached: !!liveWeather?.isPartial
+    }
+  }, [selectedCity, liveWeather])
 
   // Live weather cache for the MAP screen — same live-data pipeline as above, but pre-fetched
   // in bulk for all ~1,700 geocoded cities (via scripts/refreshWeatherCache.mjs, refreshed every
@@ -3499,6 +3569,7 @@ function App({ user }) {
             reachable without switching screens. It shows a hint when no city
             is selected. */}
         <FloatingAIAssistant
+          audience={audience}
           cityName={selectedCity}
           ensoPhase={ensoPhase}
           lst={liveWeather?.current?.temp}
@@ -3534,6 +3605,9 @@ function App({ user }) {
           cacheStale={isCacheStale(cacheLastUpdated)}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          audience={audience}
+          onAudienceChange={setAudience}
+          citizenSummary={citizenSummary}
         />
 
         {/* Main content — updated height calculation. On phone widths .map-layout
@@ -4038,8 +4112,10 @@ function App({ user }) {
     const realSurfaceTemp = liveWeather?.current?.surfaceTemp
     const realLulcEntry = lulcReal?.cities?.[selectedCity]
 
-    const TABS = ['Overview', 'Analysis', 'Compare', 'Interventions', 'AI + Export']
+    // Citizens get two plain tabs; the full technical set is authority-only.
+    const TABS = citizen ? ['Overview', 'What to do'] : ['Overview', 'Analysis', 'Compare', 'Interventions', 'AI + Export']
     const TAB_LABELS = {
+      'What to do': t('tabs.whatToDo', 'WHAT TO DO'),
       'Overview': t('tabs.overview', 'OVERVIEW'),
       'Analysis': t('tabs.analysis', 'ANALYSIS'),
       'Compare': t('tabs.compare', 'COMPARE'),
@@ -4060,6 +4136,7 @@ function App({ user }) {
             panel's pinned input bar naturally sits). */}
         {activeTab !== 'AI + Export' && (
           <FloatingAIAssistant
+          audience={audience}
             cityName={selectedCity}
             ensoPhase={ensoPhase}
             lst={realSurfaceTemp}
@@ -4164,15 +4241,15 @@ function App({ user }) {
         )}
 
         <div className="dashboard-scroll">
-          {activeTab === 'Overview' && (
-            <div className="dashboard-content">
+          {(activeTab === 'Overview' || activeTab === 'What to do') && (
+            <div className="dashboard-content" data-citizen-tab={citizen ? activeTab : undefined}>
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 {/* PANEL A: Weather Conditions — single source of truth is the live Open-Meteo WeatherCard.
                     The old static/estimated Temperature/Humidity/Wind/AQI cards (Landsat/ERA5/CPCB-labeled
                     placeholder values) have been removed entirely per data-accuracy fix. */}
-                <section className="panel">
+                <section className="panel" data-panel="A">
                   <h3>🌡️ {t('panels.weatherConditions', 'WEATHER CONDITIONS')}</h3>
-                  <WeatherCard city={selectedCity} state={selectedState} onClose={() => {}} />
+                  <WeatherCard city={selectedCity} state={selectedState} onClose={() => {}} simpleAqi={citizen} />
                   {/* Year-over-year comparison — additive stat, derived from existing 10-year trend data */}
                   {(() => {
                     const currentTemp = liveWeather?.current?.temp
@@ -4201,7 +4278,7 @@ function App({ user }) {
                 </section>
 
                 {/* PANEL G: Day vs Night */}
-                <section className="panel">
+                <section className="panel" data-panel="G">
                   <h3>📊 {t('panels.dayNightTemp', 'DAY vs NIGHT TEMPERATURE')}</h3>
                   <div className="comparison-bar">
                     <div className="bar-item">
@@ -4223,7 +4300,7 @@ function App({ user }) {
                     value or an explicit "not available" state. Nothing here is estimated/
                     seeded; see the Random Forest panel disclosure for the same standard
                     applied to the ML model. */}
-                <section className="panel">
+                <section className="panel" data-panel="B">
                   <h3>🔥 {t('panels.satelliteIndices', 'SATELLITE INDICES')}</h3>
                   <div className="indices-grid">
                     <div className="index-card">
@@ -4316,7 +4393,7 @@ function App({ user }) {
                 </section>
 
                 {/* PANEL D: Heat Risk Gauge */}
-                <section className="panel">
+                <section className="panel" data-panel="D">
                   <h3>⚠️ {t('panels.heatRiskGauge', 'HEAT RISK GAUGE')}</h3>
                   <div className="gauge-container">
                     <svg width="200" height="120" viewBox="0 0 200 120">
@@ -4367,7 +4444,7 @@ function App({ user }) {
                 </section>
 
                 {/* PANEL K: Alerts */}
-                <section className="panel">
+                <section className="panel" data-panel="K">
                   <h3>🚨 {t('panels.activeAlerts', 'ACTIVE ALERTS')} ({alerts.length})</h3>
                   <div className="alerts-list">
                     {alerts.map(alert => (
@@ -4390,7 +4467,7 @@ function App({ user }) {
                   const precautionAqi = liveWeather?.aqi?.usAQI
                   const info = getPrecautionInfo(precautionTemp, precautionAqi)
                   return (
-                    <section className="panel" style={info ? { borderLeft: `4px solid ${info.color}` } : undefined}>
+                    <section className="panel" data-panel="S" style={info ? { borderLeft: `4px solid ${info.color}` } : undefined}>
                       <h3>🩺 {t('panels.healthSafety', 'HEALTH & SAFETY PRECAUTIONS')}</h3>
                       {info ? (
                         <>
@@ -4451,8 +4528,32 @@ function App({ user }) {
                   )
                 })()}
 
+                {/* Citizen "What to do": a simple AGNI box next to the safety precautions */}
+                {citizen && activeTab === 'What to do' && (
+                  <section className="panel" data-panel="AGNI-citizen">
+                    <h3>🤖 {t('panels.askAgni', 'ASK AGNI — is it safe today?')}</h3>
+                    <AIAnalystPanel
+                        cityName={selectedCity}
+                        ensoPhase={ensoPhase}
+                        lst={realSurfaceTemp}
+                        ndvi={realLulcEntry?.vegetation ?? null}
+                        ndbi={realLulcEntry?.builtUp ?? null}
+                        aqi={liveWeather?.aqi?.usAQI}
+                        chatHistory={chatHistory}
+                        setChatHistory={setChatHistory}
+                        aiLoading={aiLoading}
+                        setAiLoading={setAiLoading}
+                        selectedQuestion={selectedQuestion}
+                        setSelectedQuestion={setSelectedQuestion}
+                        questionDropOpen={questionDropOpen}
+                        setQuestionDropOpen={setQuestionDropOpen}
+                      audience="citizen"
+                    />
+                  </section>
+                )}
+
                 {/* PANEL J: Climate Oscillations */}
-                <section className="panel">
+                <section className="panel" data-panel="J">
                   <h3>🌐 {t('panels.climateOscillations', 'GLOBAL CLIMATE SYSTEMS')}</h3>
                   <div className="climate-grid">
                     <div className="climate-card">
@@ -4936,6 +5037,15 @@ function App({ user }) {
                 <div style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{userName || 'User'}</div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{userEmail || 'No email on file'}</div>
               </div>
+            </div>
+            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(148,163,184,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 12, color: '#94a3b8' }}>
+                View: <strong style={{ color: '#e2e8f0' }}>{citizen ? '🧑‍🤝‍🧑 Citizen' : '🏛️ Authority'}</strong> ⚙️
+                <div style={{ fontSize: 11, marginTop: 2 }}>{citizen ? 'Simple essentials — temperature, risk level, what to do.' : 'Full technical dashboard — every tab, model and calculator.'}</div>
+              </div>
+              <button type="button" onClick={() => setAudience(citizen ? 'authority' : 'citizen')} className="nav-btn" style={{ fontSize: 12 }}>
+                Switch to {citizen ? 'Authority' : 'Citizen'} view
+              </button>
             </div>
           </section>
 

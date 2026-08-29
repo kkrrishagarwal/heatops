@@ -9,6 +9,7 @@ import { AIAnalystPanel } from './AIAnalystPanel'
 // additional entry point, not a second AI integration.
 export function FloatingAIAssistant({
   cityName,
+  audience = 'authority',
   ensoPhase,
   lst,
   ndvi,
@@ -117,6 +118,7 @@ export function FloatingAIAssistant({
         {cityName ? (
           <AIAnalystPanel
             cityName={cityName}
+            audience={audience}
             ensoPhase={ensoPhase}
             lst={lst}
             ndvi={ndvi}

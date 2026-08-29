@@ -151,6 +151,7 @@ Here's what happens, step by step, when a user opens the app:
 | **AGNI AI chatbot (frontend)** | `src/components/AIAnalystPanel.jsx` (main chat UI) + `src/components/FloatingAIAssistant.jsx` (floating bubble wrapper) |
 | **AGNI AI chatbot (backend/prompt)** | `api/_lib/askAI.js` (system prompt + Gemini call + rate limit + conversation memory) → entry points: `api/ask-ai.js` (Vercel), `netlify/functions/ask-ai.js` (Netlify), dev: `vite.config.js` |
 | **AGNI: other cities/states in a question** | `src/utils/agniLocationContext.js` (called from `AIAnalystPanel.jsx`) |
+| **Citizen / Authority view (audience)** | `src/hooks/useAudienceMode.js` + `src/components/AudienceChooser.jsx` (asked once after sign-in) + citizen strip/tabs in `src/App.jsx` |
 | **Mobile / Laptop layout toggle** | `src/components/ViewModeToggle.jsx` + `src/hooks/useViewMode.js` + CSS rules `html[data-view-mode="compact"]` in `src/App.css` |
 | **"Data may be outdated / Live data unavailable" notes** | `src/App.jsx` — search for `CacheStatusNote`, `liveCacheStatus`, `isCacheStale` |
 | **Error screens ("Something went wrong", "Map could not be displayed")** | `src/components/AppErrorBoundary.jsx` (mounted in `src/main.jsx` and around `IndiaMap` in `src/App.jsx`) |
@@ -298,6 +299,17 @@ How the two tabs share state: all three slider values are ordinary React state a
 **Reading it:** `GET /api/weather-history?city=New%20Delhi&state=Delhi&days=30` returns that city's daily series (`source: "postgres"` when the database is configured, otherwise `"snapshots"`); `?runs=1` lists the available days. The local `npm run dev` server serves the same endpoint. Nothing in the UI uses this yet — it's the data foundation for trend charts.
 
 **Files:** `api/_lib/weatherHistory.js`, `api/_lib/weatherHistoryDb.js`, `api/_lib/weatherHistoryApi.js`, `api/weather-history.js`, `api/refresh-weather-cache.js`, `api/_lib/githubCommit.js`, `scripts/refreshWeatherCache.mjs`, `scripts/backfillWeatherHistory.mjs`, `.env.example`.
+
+### 8.10 Citizen / Authority view — who the dashboard is for
+
+Separate from the 📱 Mobile / 💻 Laptop toggle (that's *density*; this is *audience*), so any combination works — "Citizen + Mobile", "Authority + Laptop", etc.
+
+- **First sign-in:** a one-time screen asks **"Aap kaun hain?"** with two big choices — **🧑‍🤝‍🧑 Citizen** and **🏛️ Government / Planner** — and a "Skip, show me everything →" link (Skip = Authority). The choice is saved in the browser (`localStorage` key `heatops_audience`) and never asked again. A direct link works too: `?view=citizen` or `?view=authority` sets it without the question.
+- **Citizen view:** top bar shows only the essentials — 📍 city, 🌡️ temperature, a plain-language **risk badge** (Low / Medium / High / Extreme, from the same rules as the Health & Safety panel), the air-quality category and one 💡 safety tip; the system badges (HEAT HIGH, EL NIÑO, SYSTEM OPS, SAT ACTIVE) and the ticker are hidden. The dashboard has just two tabs: **Overview** (weather card with AQI shown as a category only, heat-risk gauge, alerts) and **What to do** (the Health & Safety precautions plus a simple AGNI box with resident-friendly suggestions). AGNI is told the audience is a resident and answers without jargon.
+- **Authority view:** everything as before — every badge, all five tabs, ML model, comparisons, intervention calculators, exports.
+- **Switching later** is deliberately *not* in the header: it's the "👁️ View: Citizen ⚙️ · switch to Authority" item in the avatar menu (map screen), the "View" row in the mobile ☰ drawer, and a "Switch to … view" button on the My Profile page.
+
+**Files:** `src/hooks/useAudienceMode.js` (state + storage + URL param), `src/components/AudienceChooser.jsx` (the one-time screen, mounted from `src/App3D.jsx`), `src/App.jsx` (citizen top-bar strip, tab set, `data-panel` tags on the Overview panels, menu items), `src/App.css` (which panels each citizen tab shows), `src/components/WeatherCard.jsx` (`simpleAqi`), `src/components/AIAnalystPanel.jsx` (citizen suggestions/placeholder/context).
 
 ---
 

@@ -21,7 +21,7 @@ function formatCacheAge(timestamp, t) {
   return hrs < 24 ? t('weatherCard.hAgo', '{{hrs}}h ago', { hrs }) : t('weatherCard.dAgo', '{{days}}d ago', { days: Math.round(hrs / 24) })
 }
 
-export function WeatherCard({ city, state, onClose }) {
+export function WeatherCard({ city, state, onClose, simpleAqi = false }) {
   const { t } = useTranslation()
   const { data: weather, loading, error, isStale, cachedAt, timedOut, forceRefresh } = useWeather(city, state, 'WeatherCard')
   const [istTime, setIstTime] = useState(getISTDateTime())
@@ -166,6 +166,7 @@ export function WeatherCard({ city, state, onClose }) {
           <div style={{ ...styles.aqiValue, color: weather.aqi.category.color }}>
             {weather.aqi.category.label}
           </div>
+          {!simpleAqi && (
           <div style={styles.aqiScore}>
             {/* "500+" when the upstream EPA-methodology value exceeded the scale's official
                 500 ceiling and was clipped — a silent flat "500" reads as a calculation bug
@@ -173,16 +174,26 @@ export function WeatherCard({ city, state, onClose }) {
                 off-the-scale event (e.g. Thar desert dust storms). */}
             {t('weatherCard.score', 'Score:')} <strong>{weather.aqi.usAQI}{weather.aqi.usAQIClamped ? '+' : ''}</strong>
           </div>
+          )}
         </div>
+        {simpleAqi && (
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>
+            {t('weatherCard.aqiSimpleNote', 'Air quality category (index {{n}})', { n: weather.aqi.usAQI })}
+          </div>
+        )}
+        {!simpleAqi && (
         <div style={styles.aqiDetails}>
           {has(weather.aqi.pm25) && <AQIDetail icon="🔵" label="PM2.5" value={`${weather.aqi.pm25} µg/m³`} />}
           {has(weather.aqi.pm10) && <AQIDetail icon="🔴" label="PM10" value={`${weather.aqi.pm10} µg/m³`} />}
           {has(weather.aqi.no2) && <AQIDetail icon="🟣" label="NO₂" value={`${weather.aqi.no2} ppb`} />}
           {has(weather.aqi.o3) && <AQIDetail icon="🟠" label="O₃" value={`${weather.aqi.o3} ppb`} />}
         </div>
+        )}
+        {!simpleAqi && (
         <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.4 }}>
           {t('weatherCard.aqiMethodNote', 'AQI score follows US EPA methodology (24-h rolling average for PM, 8-h for O₃) — pollutant readings above are instantaneous, so the two can differ during fast-changing events.')}
         </div>
+        )}
       </div>
 
       )}

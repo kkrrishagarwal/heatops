@@ -41,7 +41,7 @@ function buildFallbackAnswer({ city, lst, ndvi, ndbi, aqi }) {
 }
 
 export function AIAnalystPanel({
-  cityName, ensoPhase, lst, ndvi, ndbi, aqi,
+  cityName, ensoPhase, lst, ndvi, ndbi, aqi, audience = 'authority',
   chatHistory, setChatHistory, aiLoading, setAiLoading,
   selectedQuestion, setSelectedQuestion
 }) {
@@ -65,7 +65,11 @@ export function AIAnalystPanel({
   // The label shown on each chip is translated; the question actually sent to askQuestion()
   // stays in English regardless of UI language, so AGNI's backend behavior is unaffected by
   // the language toggle — only the visible chip text changes.
-  const suggestions = [
+  const suggestions = audience === 'citizen' ? [
+    { question: `Is it safe to go outside in ${city} today?`, label: t('aiAnalyst.citizen.safeOutside', `Is it safe to go outside in ${city} today?`, { city }) },
+    { question: `What should I do to stay safe in this heat in ${city}?`, label: t('aiAnalyst.citizen.staySafe', 'What should I do to stay safe in this heat?') },
+    { question: `Is the air quality in ${city} OK for children and elderly people today?`, label: t('aiAnalyst.citizen.airKids', 'Is the air OK for kids and elderly today?') }
+  ] : [
     {
       question: `Why is ${city} so hot right now?`,
       label: t('aiAnalyst.suggestions.whyHot', `Why is ${city} so hot right now?`, { city })
@@ -144,7 +148,8 @@ export function AIAnalystPanel({
     const location = buildLocationContext(`${question} ${recentUserText}`, city)
     // The app's UI language is the tie-breaker for messages with no language signal ("hi").
     const uiLang = LANGUAGE_NAMES[(i18n?.language || 'en').split('-')[0]] || 'English'
-    const fullContext = `${context} Preferred reply language: ${uiLang}.` + location.text
+    const audienceNote = audience === 'citizen' ? ' Audience: a resident, not an expert — answer simply and briefly, no jargon or index acronyms, focus on practical safety.' : ''
+    const fullContext = `${context} Preferred reply language: ${uiLang}.${audienceNote}` + location.text
     const requestBody = { question, context: fullContext, history }
     console.log('[AIAnalystPanel] sending request to /api/ask-ai:', { ...requestBody, extraLocations: { cities: location.cities, states: location.states } })
 
@@ -299,7 +304,7 @@ export function AIAnalystPanel({
             value={questionText}
             onChange={e => setQuestionText(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') askQuestion() }}
-            placeholder={t('aiAnalyst.inputPlaceholder', 'Ask about heat, weather, or this city...')}
+            placeholder={audience === 'citizen' ? t('aiAnalyst.citizen.placeholder', 'Ask about staying safe in the heat…') : t('aiAnalyst.inputPlaceholder', 'Ask about heat, weather, or this city...')}
             style={{
               background: '#0a0e1a',
               border: '1px solid #1a2a4a',
