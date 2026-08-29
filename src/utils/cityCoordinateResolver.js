@@ -1,7 +1,7 @@
 // Shared coordinate-resolution layer used by both the live weather pipeline (weatherAPI.js)
 // and the LULC/satellite-data fallback (lulcFallback.js).
 //
-// Why this exists: the app covers 1,956 cities, but only 1,689 of them have a precise,
+// Why this exists: the app covers 1,956 cities, but only 1,908 of them have a precise,
 // state-disambiguated lat/lon already resolved offline (src/data/cityCoordinates.json, built
 // by scripts/geocodeCities.mjs). The other 267 are small towns that Open-Meteo's geocoding API
 // genuinely has zero listing for (verified directly — not a strictness/query-format issue).

@@ -56,7 +56,7 @@ heatops/
 │   │   ├── exportUtils.js         — CSV/PDF/WhatsApp export functions — ⚠️ **currently not used anywhere** (dead code)
 │   │   └── 3d-effects.js          — Visual polish effects (card tilt, particles) — for App3D/Card3D
 │   ├── data/
-│   │   └── cityCoordinates.json   — Real lat/lon lookup for 1,689 cities (geocoded offline)
+│   │   └── cityCoordinates.json   — Real lat/lon lookup for 1,908 cities (geocoded offline, each validated to lie in its own state)
 │   └── i18n/                      — Translation files for 11 languages (react-i18next setup)
 │
 ├── api/                           — Vercel serverless functions (production backend)
@@ -203,7 +203,7 @@ Here's what happens, step by step, when a user opens the app:
 - **ML model metrics (R², feature importance)** — a genuinely trained Random Forest, on real MODIS satellite training data — **but ⚠️ the training data is from non-Indian cities (20 global cities)**, and this is disclosed in the UI too
 - **Map boundaries** — real GeoJSON state/district shapefiles
 - **AGNI's answers** — a real, live Gemini API call (if it's offline, a clearly-labeled canned fallback shows instead)
-- **City coordinates** — real geocoded lat/lon (1,689 cities), from Open-Meteo's geocoding
+- **City coordinates** — real geocoded lat/lon (1,908 cities, each validated to lie in its own state), from Open-Meteo + OSM Nominatim geocoding
 
 ### ⚠️ Estimated / Fallback (derived from a real source, but not a direct measurement)
 - **Land-cover for non-representative cities** — borrows the nearest real city's data, labeled as an estimate/with the distance shown

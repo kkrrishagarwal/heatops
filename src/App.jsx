@@ -2959,7 +2959,7 @@ function App({ user }) {
     return () => { cancelled = true; clearTimeout(timer) }
   }, [lulcAttempt])
 
-  // Precise per-city coordinates (1,689/1,956 cities) — used both by the live weather
+  // Precise per-city coordinates (1,908/1,956 cities, state-validated) — used both by the live weather
   // resolver (weatherAPI.js) and to find the nearest real LULC data point for a city that
   // doesn't have its own classification (getLulcWithFallback).
   const [cityCoordsData, setCityCoordsData] = useState(null)

@@ -164,7 +164,7 @@ BhaskarOps is built to avoid both:
 - **It closes the loop**: monitoring (Overview/Analysis) → comparison (Compare) → action (Interventions, with quantified projected impact) → communication (AGNI explains it in plain language, Export shares it with stakeholders).
 - **Honest ML reporting**: the prediction model's accuracy is shown two ways — a flattering same-city metric (R²=0.95) and a much harder unseen-city metric (R²=-0.39). Disclosing both signals the model's real limitations rather than hiding them.
 - **Built for India's actual linguistic diversity** (11 languages), not just English.
-- **Stays fresh without anyone babysitting it**: a daily Vercel Cron job re-fetches live data for all 1,689 cities and auto-redeploys — so a judge checking the live site weeks after submission still sees data that's at most ~24h old, not a frozen demo snapshot.
+- **Stays fresh without anyone babysitting it**: a daily Vercel Cron job re-fetches live data for all 1,908 cities and auto-redeploys — so a judge checking the live site weeks after submission still sees data that's at most ~24h old, not a frozen demo snapshot.
 
 ## How will it solve the problem?
 
@@ -215,7 +215,7 @@ Concretely: (1) genuine multi-source real-data fusion with honest gaps disclosed
   +-----------------------------+    |   (gemini-2.5-flash)        |
   | VERCEL CRON (daily, 00:00 UTC)|   +-----------------------------+
   | -> api/refresh-weather-cache.js|
-  | -> fetches all 1,689 cities    |
+  | -> fetches all 1,908 cities    |
   |    from Open-Meteo (batched)   |
   | -> commits live-weather-cache. |
   |    json to GitHub via REST API |
