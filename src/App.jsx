@@ -970,7 +970,11 @@ function fixStateName(raw) {
 const STATES_URL = '/data/india_states_full.geojson'
 const DISTRICTS_URL = '/data/india_districts_full.geojson'
 const JK_URL = '/data/jk_ladakh_official.geojson'
-const INDIA_MAP_PROJECTION_CONFIG = { scale: 1000, center: [82.8, 22.5] }
+// scale 1120 / centre 23.2°N: India fills ~93% of the 800×600 map box (was 83% at
+// scale 1000, with the extra slack sitting under Kanyakumari because 22.5°N is south of
+// India's Mercator mid-latitude). Kashmir, Arunachal and the A&N / Lakshadweep labels
+// stay inside the box — checked at scale 1120; anything larger clips the top.
+const INDIA_MAP_PROJECTION_CONFIG = { scale: 1120, center: [82.8, 23.2] }
 
 // STATES_URL (~23MB) and JK_URL are each used by TWO separate map layers
 // (fill + border). Without this cache, react-simple-maps' <Geographies> fetches
@@ -3784,7 +3788,13 @@ function App({ user }) {
                       onWheel={(e) => {
                         e.preventDefault()
                         const delta = e.deltaY > 0 ? -0.15 : 0.15
-                        setMapScale(prev => Math.min(Math.max(prev + delta, 0.5), 5))
+                        // 1× is already "fit to card" — zooming out further only shrinks India
+                        // into empty space, so 1× is the floor and returning to it re-centres.
+                        setMapScale(prev => {
+                          const next = Math.min(Math.max(prev + delta, 1), 5)
+                          if (next === 1 && prev !== 1) setMapPos({ x: 0, y: 0 })
+                          return next
+                        })
                       }}
                       onMouseDown={(e) => {
                         setIsDragging(true)
@@ -3868,6 +3878,7 @@ function App({ user }) {
                       zIndex: 50
                     }}>
                       <button
+                        aria-label="Zoom in"
                         onClick={() => setMapScale(prev => Math.min(prev + 0.3, 5))}
                         style={{
                           width: 44, height: 44,
@@ -3881,15 +3892,22 @@ function App({ user }) {
                         }}
                       >+</button>
                       <button
-                        onClick={() => setMapScale(prev => Math.max(prev - 0.3, 0.5))}
+                        aria-label="Zoom out"
+                        disabled={mapScale <= 1}
+                        title={mapScale <= 1 ? 'Already at fit-to-card zoom' : 'Zoom out'}
+                        onClick={() => setMapScale(prev => {
+                          const next = Math.max(prev - 0.3, 1)
+                          if (next === 1) setMapPos({ x: 0, y: 0 })
+                          return next
+                        })}
                         style={{
                           width: 44, height: 44,
                           background: 'rgba(0,0,0,0.7)',
                           border: '1px solid rgba(148,163,184,0.4)',
                           borderRadius: 8,
-                          color: '#94a3b8',
+                          color: mapScale <= 1 ? 'rgba(148,163,184,0.35)' : '#94a3b8',
                           fontSize: 20,
-                          cursor: 'pointer',
+                          cursor: mapScale <= 1 ? 'default' : 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center'
                         }}
                       >−</button>
