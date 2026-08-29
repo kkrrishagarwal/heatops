@@ -4560,8 +4560,11 @@ function App({ user }) {
                       const gaugeVal = isCityLive ? liveWeather.current.temp
                         : (sd?.heatIndexLive ? sd.heatIndex : lst)
                       const isLive = isCityLive || sd?.heatIndexLive
-                      const label = getRiskLabel(gaugeVal)
-                      const icon = { 'EXTREME': '🔴', 'VERY HIGH': '🟠', 'HIGH': '🟠', 'MODERATE': '🟡', 'LOW-MODERATE': '🟢', 'LOW': '🟢' }[label] || '⚪'
+                      // Label + dot use the SAME four tiers as the theme colours (UI_THEME_BUCKETS),
+                      // so the heading colour and the gauge readout can never disagree.
+                      const tier = UI_THEME_BUCKETS.find(b => gaugeVal >= b.min)
+                      const label = tier.label.toUpperCase()
+                      const icon = { Extreme: '🔴', High: '🟠', Moderate: '🟡', Low: '🟢' }[tier.label] || '⚪'
                       return (
                         <div className="risk-label">
                           {icon} {label} · {gaugeVal}°C
