@@ -94,10 +94,14 @@ function loadCoordinates() {
 // existingCities: whatever was already in live-weather-cache.json before this run, so a
 // batch failure here just leaves those cities at their last-known value instead of blanking
 // them — same safety behavior as the local daemon script.
-export async function refreshWeatherData(existingCities = {}) {
+// previousLastUpdated: the timestamp of the cache this run started from — becomes the
+// observedAt of any city we could NOT refresh this run.
+export async function refreshWeatherData(existingCities = {}, previousLastUpdated = null) {
   const entries = loadCoordinates()
   const batches = chunk(entries, BATCH_SIZE)
   const result = { ...existingCities }
+  const nowIso = new Date().toISOString()
+  const freshKeys = new Set()
   let failedBatches = 0
 
   const weatherResults = await runWithConcurrency(batches, b => fetchWeatherBatch(b), CONCURRENCY)
@@ -111,24 +115,44 @@ export async function refreshWeatherData(existingCities = {}) {
       return
     }
     batch.forEach((entry, i) => {
-      result[`${entry.city}|${entry.state}`] = {
+      const key = `${entry.city}|${entry.state}`
+      freshKeys.add(key)
+      result[key] = {
         city: entry.city,
         state: entry.state,
         temp: weatherRes[i]?.temp ?? null,
         rainChance: weatherRes[i]?.rainChance ?? null,
         aqi: aqiRes[i]?.aqi ?? null,
         cloudCover: weatherRes[i]?.cloudCover ?? null,
-        pm10: aqiRes[i]?.pm10 ?? null
+        pm10: aqiRes[i]?.pm10 ?? null,
+        observedAt: nowIso,
+        isCarriedForward: false
       }
     })
   })
 
+  // Radical-honesty rule: a city whose batch failed keeps its previous values so the map
+  // never blanks out, but that reading is explicitly flagged as carried forward, with the
+  // timestamp it was actually observed at, so nothing downstream can mistake it for fresh.
+  let carriedForward = 0
+  for (const [key, city] of Object.entries(result)) {
+    if (freshKeys.has(key)) continue
+    result[key] = {
+      ...city,
+      isCarriedForward: true,
+      observedAt: city.observedAt || (city.isCarriedForward ? null : previousLastUpdated) || previousLastUpdated || null
+    }
+    carriedForward++
+  }
+
   return {
     payload: {
-      lastUpdated: new Date().toISOString(),
+      lastUpdated: nowIso,
       cityCount: Object.keys(result).length,
+      carriedForwardCount: carriedForward,
       cities: result
     },
+    carriedForward,
     batchCount: batches.length,
     failedBatches
   }

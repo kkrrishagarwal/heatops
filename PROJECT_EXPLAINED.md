@@ -207,6 +207,7 @@ Here's what happens, step by step, when a user opens the app:
 ### ⚠️ Estimated / Fallback (derived from a real source, but not a direct measurement)
 - **Land-cover for non-representative cities** — borrows the nearest real city's data, labeled as an estimate/with the distance shown
 - **Building density when Overpass fails** — shows "unavailable," never fakes a number
+- **Carried-forward bulk-cache values** — when the nightly refresh can't reach Open-Meteo for a batch of cities, their previous values are kept but flagged (`isCarriedForward`), and the history viewer/CSV show them as “carried forward”, never as fresh readings
 - **ML model applied to any Indian city** — the model itself is real, but since it's trained on non-Indian data, its predictions for Indian cities should be treated as a "generalization estimate"
 
 ### ❌ Static / Illustrative (fabricated, not a real measurement)
@@ -291,6 +292,8 @@ How the two tabs share state: all three slider values are ordinary React state a
 
 - **Tier 1 — snapshot files (no setup needed).** The cron writes a compact file for the day, `public/data/history/YYYY-MM-DD.json` (~60 KB: temperature, rain chance, AQI, cloud cover, PM10 for all ~1,690 cities), and updates `public/data/history/index.json` (the list of days). These go into the **same GitHub commit** as the cache — `api/_lib/githubCommit.js` now uses GitHub's Git Data API to commit several files at once — so it is still one commit and one deploy per night. `scripts/backfillWeatherHistory.mjs` rebuilt this from the repo's history: **63 days, 22 June → 28 August 2026**, are already there.
 - **Tier 2 — a real database (optional).** Set `DATABASE_URL` (any Postgres — Neon, Vercel Postgres, Supabase, Railway) in Vercel's environment variables and the same run also inserts one row per city into `weather_observations` (plus one row per run in `weather_runs`). Tables are created automatically; re-runs are idempotent. Run `node scripts/backfillWeatherHistory.mjs --db` once to load the 63 historical days into it.
+
+**Carried-forward readings are flagged (radical honesty).** When an Open-Meteo batch fails, the refresh keeps a city's previous values so the map never blanks out — but that value is now stamped `isCarriedForward: true` with its real `observedAt`, and the day's snapshot stores it as `carried = 1`. The backfill also labels older runs: if a city's whole reading is identical to the previous day's, it is marked `carried = 2` (“inferred”). The history viewer draws these as dashed lines / hollow points and labels them “⚠️ carried forward” in the table; the CSV export has a `carried_forward` column. Rebuilding the history this way showed **43% of all city-days over the last two months were carried-forward values** — e.g. Jaisalmer's week-long flat stretches — which is why this flag matters.
 
 **Reading it:** `GET /api/weather-history?city=New%20Delhi&state=Delhi&days=30` returns that city's daily series (`source: "postgres"` when the database is configured, otherwise `"snapshots"`); `?runs=1` lists the available days. The local `npm run dev` server serves the same endpoint. Nothing in the UI uses this yet — it's the data foundation for trend charts.
 

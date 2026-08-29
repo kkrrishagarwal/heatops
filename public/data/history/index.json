@@ -1,11 +1,12 @@
 {
-  "updatedAt": "2026-08-29T00:04:32.967Z",
+  "updatedAt": "2026-08-29T04:40:45.177Z",
   "fields": [
     "temp",
     "rainChance",
     "aqi",
     "cloudCover",
-    "pm10"
+    "pm10",
+    "carried"
   ],
   "days": [
     {

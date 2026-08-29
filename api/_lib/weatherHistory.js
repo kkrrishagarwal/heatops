@@ -8,11 +8,15 @@
 // is configured the same run is additionally written to Postgres (weatherHistoryDb.js).
 //
 // Snapshot format (compact — ~60 KB/day instead of ~200 KB):
-//   { date, lastUpdated, cityCount, fields: [...], cities: { "City|State": [temp, rainChance, aqi, cloudCover, pm10] } }
+//   { date, lastUpdated, cityCount, fields: [...], cities: { "City|State": [temp, rainChance, aqi, cloudCover, pm10, carried] } }
+// "carried": 0 = fresh reading that run, 1 = the refresh flagged it as carried forward
+// (its Open-Meteo batch failed, previous values kept), 2 = inferred by the backfill (the
+// whole reading was identical to the previous day's, in a run made before flagging existed).
 
 export const HISTORY_DIR = 'public/data/history'
 export const INDEX_PATH = `${HISTORY_DIR}/index.json`
-export const SNAPSHOT_FIELDS = ['temp', 'rainChance', 'aqi', 'cloudCover', 'pm10']
+export const SNAPSHOT_FIELDS = ['temp', 'rainChance', 'aqi', 'cloudCover', 'pm10', 'carried']
+export const CARRIED_LABEL = { 0: null, 1: 'flagged', 2: 'inferred' }
 
 export function snapshotDate(iso) {
   const d = new Date(iso)
@@ -28,7 +32,10 @@ export function historyFilePath(date) {
 export function buildSnapshot(payload) {
   const cities = {}
   for (const [key, c] of Object.entries(payload.cities || {})) {
-    cities[key] = SNAPSHOT_FIELDS.map(f => (typeof c?.[f] === 'number' ? c[f] : null))
+    cities[key] = SNAPSHOT_FIELDS.map(f => {
+      if (f === 'carried') return c?.isCarriedForward === true ? 1 : c?.carriedForwardInferred === true ? 2 : 0
+      return typeof c?.[f] === 'number' ? c[f] : null
+    })
   }
   return {
     date: snapshotDate(payload.lastUpdated),
@@ -46,7 +53,10 @@ export function expandSnapshot(snapshot) {
   for (const [key, values] of Object.entries(snapshot.cities || {})) {
     const [city, state = ''] = key.split('|')
     const entry = { city, state }
-    fields.forEach((f, i) => { entry[f] = values?.[i] ?? null })
+    fields.forEach((f, i) => { if (f !== 'carried') entry[f] = values?.[i] ?? null })
+    const carried = fields.includes('carried') ? (values?.[fields.indexOf('carried')] ?? 0) : 0
+    entry.isCarriedForward = carried >= 1
+    entry.carriedForwardSource = CARRIED_LABEL[carried] ?? null
     cities[key] = entry
   }
   return { lastUpdated: snapshot.lastUpdated, cityCount: Object.keys(cities).length, cities }
@@ -85,7 +95,10 @@ export async function cityHistoryFromSnapshots(index, { city, state, days = 30 }
     const values = snap.cities[key]
     const fields = snap.fields || SNAPSHOT_FIELDS
     const point = { date: day.date, observedAt: snap.lastUpdated }
-    fields.forEach((f, i) => { point[f] = values?.[i] ?? null })
+    fields.forEach((f, i) => { if (f !== 'carried') point[f] = values?.[i] ?? null })
+    const carried = fields.includes('carried') ? (values?.[fields.indexOf('carried')] ?? 0) : 0
+    point.isCarriedForward = carried >= 1
+    point.carriedForwardSource = CARRIED_LABEL[carried] ?? null
     points.push(point)
   }
   return points

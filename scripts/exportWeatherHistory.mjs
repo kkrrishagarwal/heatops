@@ -19,7 +19,7 @@ const cityFilter = !stateOnly && args[0] ? args[0].toLowerCase() : null
 const stateFilter = !stateOnly && args[1] ? args[1].toLowerCase() : null
 
 const q = v => (v === null || v === undefined) ? '' : `"${String(v).replace(/"/g, '""')}"`
-const lines = ['date,observed_at,city,state,temp_c,rain_chance_pct,aqi,cloud_cover_pct,pm10']
+const lines = ['date,observed_at,city,state,temp_c,rain_chance_pct,aqi,cloud_cover_pct,pm10,carried_forward']
 let rows = 0
 for (const day of index.days) {
   const snap = JSON.parse(fs.readFileSync(path.join(dir, day.file), 'utf8'))
@@ -28,7 +28,8 @@ for (const day of index.days) {
     if (stateOnly && c.state.toLowerCase() !== stateOnly.toLowerCase()) continue
     if (cityFilter && c.city.toLowerCase() !== cityFilter) continue
     if (stateFilter && c.state.toLowerCase() !== stateFilter) continue
-    lines.push([day.date, snap.lastUpdated, c.city, c.state, c.temp, c.rainChance, c.aqi, c.cloudCover, c.pm10].map(q).join(','))
+    const carried = c.isCarriedForward ? (c.carriedForwardSource === 'inferred' ? 'yes (inferred)' : 'yes') : 'no'
+    lines.push([day.date, snap.lastUpdated, c.city, c.state, c.temp, c.rainChance, c.aqi, c.cloudCover, c.pm10, carried].map(q).join(','))
     rows++
   }
 }

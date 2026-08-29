@@ -30,8 +30,13 @@ export async function getCurrentCacheFile() {
   const data = await res.json()
   const decoded = Buffer.from(data.content, 'base64').toString('utf8')
   let cities = {}
-  try { cities = JSON.parse(decoded).cities || {} } catch {}
-  return { sha: data.sha, cities }
+  let lastUpdated = null
+  try {
+    const parsed = JSON.parse(decoded)
+    cities = parsed.cities || {}
+    lastUpdated = parsed.lastUpdated || null
+  } catch {}
+  return { sha: data.sha, cities, lastUpdated }
 }
 
 export async function commitCacheFile(payload, sha) {

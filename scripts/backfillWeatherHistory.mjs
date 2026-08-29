@@ -47,10 +47,26 @@ const indexAbs = path.join(REPO_ROOT, INDEX_PATH)
 try { index = JSON.parse(fs.readFileSync(indexAbs, 'utf8')) } catch {}
 fs.mkdirSync(path.dirname(indexAbs), { recursive: true })
 
+// Runs made before the refresh flagged carried-forward cities can still be labelled
+// honestly: if a city's ENTIRE reading (all five values) is identical to the previous
+// day's, it was almost certainly a failed batch keeping old values. Those get carried=2
+// ("inferred") so they are never confused with a recorded flag. Runs that already carry
+// isCarriedForward flags keep them as-is (carried=1).
+const READING = ['temp', 'rainChance', 'aqi', 'cloudCover', 'pm10']
+let prevPayload = null
+let inferredTotal = 0
 let written = 0
 let dbRows = 0
 for (const date of [...byDate.keys()].sort()) {
   const payload = byDate.get(date)
+  if (prevPayload) {
+    for (const [key, c] of Object.entries(payload.cities)) {
+      if (c.isCarriedForward !== undefined) continue // refresh already recorded the truth
+      const p = prevPayload.cities[key]
+      if (p && READING.every(f => (c[f] ?? null) === (p[f] ?? null))) { c.carriedForwardInferred = true; inferredTotal++ }
+    }
+  }
+  prevPayload = payload
   const snapshot = buildSnapshot(payload)
   fs.writeFileSync(path.join(REPO_ROOT, historyFilePath(snapshot.date)), JSON.stringify(snapshot))
   index = updateIndex(index, snapshot)
@@ -63,4 +79,4 @@ for (const date of [...byDate.keys()].sort()) {
   }
 }
 fs.writeFileSync(indexAbs, JSON.stringify(index, null, 2))
-console.log(`Wrote ${written} snapshot files, index now lists ${index.days.length} days${withDb ? `, ${dbRows} rows inserted into Postgres` : ''}`)
+console.log(`Wrote ${written} snapshot files, index now lists ${index.days.length} days${withDb ? `, ${dbRows} rows inserted into Postgres` : ''}; ${inferredTotal} city-days marked carried-forward (inferred)`)

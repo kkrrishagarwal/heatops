@@ -19,8 +19,8 @@ export default async function handler(req, res) {
 
   const startedAt = Date.now()
   try {
-    const { cities: existingCities } = await getCurrentCacheFile()
-    const { payload, batchCount, failedBatches } = await refreshWeatherData(existingCities)
+    const { cities: existingCities, lastUpdated: previousLastUpdated } = await getCurrentCacheFile()
+    const { payload, batchCount, failedBatches, carriedForward } = await refreshWeatherData(existingCities, previousLastUpdated)
 
     // History tier 1: today's compact snapshot + updated index, committed together with
     // the cache in ONE commit (one deploy), so nothing about the existing pipeline changes.
@@ -48,13 +48,14 @@ export default async function handler(req, res) {
     }
 
     const durationSec = Math.round((Date.now() - startedAt) / 1000)
-    console.log(`[refresh-weather-cache] OK in ${durationSec}s — ${payload.cityCount} cities, ${failedBatches}/${batchCount} batches failed, commit ${commitResult.commit?.sha}, history day ${snapshot.date} (${index.days.length} days indexed), db ${db ? (db.ok ? `+${db.inserted} rows` : 'FAILED') : 'not configured'}`)
+    console.log(`[refresh-weather-cache] OK in ${durationSec}s — ${payload.cityCount} cities, ${failedBatches}/${batchCount} batches failed, ${carriedForward} cities carried forward, commit ${commitResult.commit?.sha}, history day ${snapshot.date} (${index.days.length} days indexed), db ${db ? (db.ok ? `+${db.inserted} rows` : 'FAILED') : 'not configured'}`)
     return res.status(200).json({
       ok: true,
       cityCount: payload.cityCount,
       lastUpdated: payload.lastUpdated,
       failedBatches,
       batchCount,
+      carriedForward,
       commitSha: commitResult.commit?.sha,
       history: { date: snapshot.date, daysIndexed: index.days.length },
       db,

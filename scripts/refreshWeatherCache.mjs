@@ -90,9 +90,16 @@ export async function refreshWeatherCache() {
   // Start from whatever's already cached so a batch failure this run doesn't blank out
   // cities that loaded fine on a previous run.
   let result = {}
+  let previousLastUpdated = null
   if (fs.existsSync(OUTPUT_PATH)) {
-    try { result = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8')).cities || {} } catch {}
+    try {
+      const prev = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8'))
+      result = prev.cities || {}
+      previousLastUpdated = prev.lastUpdated || null
+    } catch {}
   }
+  const nowIso = new Date().toISOString()
+  const freshKeys = new Set()
   let failedBatches = 0
 
   for (const batch of batches) {
@@ -103,14 +110,18 @@ export async function refreshWeatherCache() {
       await new Promise(r => setTimeout(r, 3000))
       const aqiRes = await fetchAqiBatch(batch)
       batch.forEach((entry, i) => {
-        result[`${entry.city}|${entry.state}`] = {
+        const key = `${entry.city}|${entry.state}`
+        freshKeys.add(key)
+        result[key] = {
           city: entry.city,
           state: entry.state,
           temp: weatherRes[i]?.temp ?? null,
           rainChance: weatherRes[i]?.rainChance ?? null,
           aqi: aqiRes[i]?.aqi ?? null,
           cloudCover: weatherRes[i]?.cloudCover ?? null,
-          pm10: aqiRes[i]?.pm10 ?? null
+          pm10: aqiRes[i]?.pm10 ?? null,
+          observedAt: nowIso,
+          isCarriedForward: false
         }
       })
     } catch (err) {
@@ -123,9 +134,20 @@ export async function refreshWeatherCache() {
     await new Promise(r => setTimeout(r, 25000))
   }
 
+  // Same honesty rule as the production cron (api/_lib/refreshWeatherData.js): cities a
+  // failed batch left untouched are flagged as carried forward, with their real observedAt.
+  let carriedForward = 0
+  for (const [key, city] of Object.entries(result)) {
+    if (freshKeys.has(key)) continue
+    result[key] = { ...city, isCarriedForward: true, observedAt: city.observedAt || previousLastUpdated || null }
+    carriedForward++
+  }
+  if (carriedForward) console.warn(`  ${carriedForward} cities carried forward from ${previousLastUpdated || 'an earlier run'} (flagged isCarriedForward)`)
+
   const payload = {
-    lastUpdated: new Date().toISOString(),
+    lastUpdated: nowIso,
     cityCount: Object.keys(result).length,
+    carriedForwardCount: carriedForward,
     cities: result
   }
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true })

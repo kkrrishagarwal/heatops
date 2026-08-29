@@ -34,6 +34,9 @@
   td.num { text-align:right; font-variant-numeric:tabular-nums; }
   .table-wrap { max-height:420px; overflow:auto; }
   .hot { color:var(--red); font-weight:700; }
+  .carried { color:#eab308; font-size:11px; white-space:nowrap; }
+  tr.is-carried td { color:var(--muted); }
+  .note { font-size:11px; color:var(--muted); margin-top:8px; line-height:1.5; }
   .bad { color:var(--red); }
   .ok { color:var(--green); }
   datalist { display:none; }
@@ -63,12 +66,13 @@
 
   <div class="card">
     <svg id="chart" viewBox="0 0 1000 260" preserveAspectRatio="none" aria-label="Temperature and AQI over time"></svg>
-    <div class="legend"><span><i style="background:#d97706"></i>Temperature (°C)</span><span><i style="background:#dc2626"></i>AQI</span><span><i style="background:#3b82f6"></i>Rain chance (%)</span></div>
+    <div class="legend"><span><i style="background:#d97706"></i>Temperature (°C)</span><span><i style="background:#dc2626"></i>AQI</span><span><i style="background:#3b82f6"></i>Rain chance (%)</span><span><i style="background:transparent;border-top:2px dashed #94a3b8;height:0"></i>dashed / hollow = carried-forward value (not a fresh reading)</span></div>
+    <div class="note">⚠️ A <strong>carried-forward</strong> day means the refresh could not get a new reading for this city (the Open-Meteo batch failed) and kept the previous value. “Inferred” = the run predates flagging, so it was detected because the whole reading is identical to the previous day. Never read these as fresh observations.</div>
   </div>
 
   <div class="card">
     <div class="table-wrap">
-      <table id="table"><thead><tr><th>Date</th><th>Temp °C</th><th>AQI</th><th>PM10 µg/m³</th><th>Rain %</th><th>Cloud %</th><th>Observed (UTC)</th></tr></thead><tbody></tbody></table>
+      <table id="table"><thead><tr><th>Date</th><th>Reading</th><th>Temp °C</th><th>AQI</th><th>PM10 µg/m³</th><th>Rain %</th><th>Cloud %</th><th>Run (UTC)</th></tr></thead><tbody></tbody></table>
     </div>
   </div>
 </main>
@@ -109,14 +113,15 @@
   function render() {
     const temps = points.map(p => p.temp).filter(v => typeof v === 'number')
     const aqis = points.map(p => p.aqi).filter(v => typeof v === 'number')
-    const hottest = points.reduce((a, p) => (typeof p.temp === 'number' && (!a || p.temp > a.temp)) ? p : a, null)
-    const worst = points.reduce((a, p) => (typeof p.aqi === 'number' && (!a || p.aqi > a.aqi)) ? p : a, null)
+    const fresh = points.filter(p => !p.isCarriedForward)
+    const hottest = fresh.reduce((a, p) => (typeof p.temp === 'number' && (!a || p.temp > a.temp)) ? p : a, null)
+    const worst = fresh.reduce((a, p) => (typeof p.aqi === 'number' && (!a || p.aqi > a.aqi)) ? p : a, null)
     $('stats').innerHTML = points.length ? [
-      ['Days', points.length],
+      ['Days', `${points.length} <span style="font-size:12px;color:#94a3b8">(${points.filter(p => p.isCarriedForward).length} carried-forward)</span>`],
       ['Avg temp', temps.length ? (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1) + ' °C' : '—'],
-      ['Hottest day', hottest ? `${hottest.temp} °C · ${hottest.date}` : '—'],
+      ['Hottest day (fresh readings)', hottest ? `${hottest.temp} °C · ${hottest.date}` : '—'],
       ['Avg AQI', aqis.length ? Math.round(aqis.reduce((a, b) => a + b, 0) / aqis.length) : '—'],
-      ['Worst AQI', worst ? `${worst.aqi} · ${worst.date}` : '—']
+      ['Worst AQI (fresh readings)', worst ? `${worst.aqi} · ${worst.date}` : '—']
     ].map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('') : ''
 
     // chart
@@ -133,9 +138,16 @@
     for (let i = 0; i <= 4; i++) { const y = T + i * (H - T - B) / 4; g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="rgba(148,163,184,0.15)" />` }
     for (const s of series) {
       const y = v => H - B - (v - s.min) / (s.max - s.min) * (H - T - B)
-      const pts = points.map((p, i) => typeof p[s.key] === 'number' ? `${x(i)},${y(p[s.key])}` : null).filter(Boolean)
-      if (pts.length) g += `<polyline fill="none" stroke="${s.color}" stroke-width="2" points="${pts.join(' ')}" />`
-      points.forEach((p, i) => { if (typeof p[s.key] === 'number') g += `<circle cx="${x(i)}" cy="${y(p[s.key])}" r="2.5" fill="${s.color}"><title>${p.date} · ${s.key}: ${p[s.key]}</title></circle>` })
+      let prev = null
+      points.forEach((p, i) => {
+        if (typeof p[s.key] !== 'number') { prev = null; return }
+        const cx = x(i), cy = y(p[s.key])
+        if (prev) g += `<line x1="${prev.cx}" y1="${prev.cy}" x2="${cx}" y2="${cy}" stroke="${s.color}" stroke-width="2" ${p.isCarriedForward ? 'stroke-dasharray="4 4" stroke-opacity="0.55"' : ''} />`
+        g += p.isCarriedForward
+          ? `<circle cx="${cx}" cy="${cy}" r="3" fill="#0f172a" stroke="${s.color}" stroke-width="1.5" stroke-opacity="0.7"><title>${p.date} · ${s.key}: ${p[s.key]} — CARRIED FORWARD${p.carriedForwardSource === 'inferred' ? ' (inferred)' : ''}, not a fresh reading</title></circle>`
+          : `<circle cx="${cx}" cy="${cy}" r="2.5" fill="${s.color}"><title>${p.date} · ${s.key}: ${p[s.key]}</title></circle>`
+        prev = { cx, cy }
+      })
     }
     const step = Math.max(1, Math.ceil(points.length / 8))
     points.forEach((p, i) => { if (i % step === 0 || i === points.length - 1) g += `<text x="${x(i)}" y="${H - 8}" font-size="10" fill="#94a3b8" text-anchor="middle">${p.date.slice(5)}</text>` })
@@ -143,8 +155,9 @@
     svg.innerHTML = g
 
     // table
-    $('table').querySelector('tbody').innerHTML = points.slice().reverse().map(p => `<tr>
+    $('table').querySelector('tbody').innerHTML = points.slice().reverse().map(p => `<tr class="${p.isCarriedForward ? 'is-carried' : ''}">
       <td>${p.date}</td>
+      <td>${p.isCarriedForward ? `<span class="carried">⚠️ carried forward${p.carriedForwardSource === 'inferred' ? ' (inferred)' : ''}</span>` : '<span class="ok">fresh</span>'}</td>
       <td class="num ${typeof p.temp === 'number' && p.temp >= 40 ? 'hot' : ''}">${fmt(p.temp)}</td>
       <td class="num ${typeof p.aqi === 'number' ? (p.aqi > 150 ? 'bad' : p.aqi <= 50 ? 'ok' : '') : ''}">${fmt(p.aqi)}</td>
       <td class="num">${fmt(p.pm10)}</td><td class="num">${fmt(p.rainChance)}</td><td class="num">${fmt(p.cloudCover)}</td>
@@ -152,8 +165,8 @@
   }
 
   $('csv').onclick = () => {
-    const head = 'date,observed_at,city,state,temp_c,aqi,pm10,rain_chance_pct,cloud_cover_pct'
-    const rows = points.map(p => [p.date, p.observedAt, $('city').value.trim(), $('state').value.trim(), p.temp, p.aqi, p.pm10, p.rainChance, p.cloudCover].map(v => v === null || v === undefined ? '' : `"${String(v).replace(/"/g, '""')}"`).join(','))
+    const head = 'date,run_at,city,state,temp_c,aqi,pm10,rain_chance_pct,cloud_cover_pct,carried_forward'
+    const rows = points.map(p => [p.date, p.observedAt, $('city').value.trim(), $('state').value.trim(), p.temp, p.aqi, p.pm10, p.rainChance, p.cloudCover, p.isCarriedForward ? (p.carriedForwardSource === 'inferred' ? 'yes (inferred)' : 'yes') : 'no'].map(v => v === null || v === undefined ? '' : `"${String(v).replace(/"/g, '""')}"`).join(','))
     const blob = new Blob([head + '\n' + rows.join('\n')], { type: 'text/csv' })
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `bhaskarops-history-${$('city').value.trim().replace(/\s+/g, '_')}.csv`; a.click()
   }
