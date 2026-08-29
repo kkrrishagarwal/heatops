@@ -4323,17 +4323,15 @@ function App({ user }) {
                                 style={{ flex: `${r.end - r.start + 1} 0 0`, background: r.zone ? ZONE[r.zone].bg : 'rgba(148,163,184,0.2)', borderRight: i < runs.length - 1 ? '1px solid rgba(15,23,42,0.6)' : 'none' }} />
                             ))}
                           </div>
-                          <div data-testid="safe-hours-labels" style={{ display: 'flex', width: '100%', marginTop: 4 }}>
-                            {runs.map((r, i) => {
-                              const hours = r.end - r.start + 1
-                              return (
-                                <div key={i} style={{ flex: `${hours} 0 0`, minWidth: 0, textAlign: 'center', fontSize: 10, lineHeight: 1.3, color: r.zone ? ZONE[r.zone].color : '#94a3b8', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                                  {hours >= 2 ? `${fmtHour(r.start)}–${fmtHour(r.end + 1)}` : ''}
-                                </div>
-                              )
-                            })}
+                          {/* Windows in reading order — wraps on narrow screens instead of truncating */}
+                          <div data-testid="safe-hours-labels" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', marginTop: 6, fontSize: 11 }}>
+                            {runs.filter(r => r.zone).map((r, i) => (
+                              <span key={i} style={{ color: ZONE[r.zone].color, whiteSpace: 'nowrap' }}>
+                                {ZONE[r.zone].dot} {fmtHour(r.start)}–{fmtHour(r.end + 1)}
+                              </span>
+                            ))}
                           </div>
-                          <div style={{ fontSize: 10, color: '#64748b', marginTop: 8 }}>{t('citizen.hours.keyShort', '🟢 safe · 🟡 only if necessary · 🔴 avoid — from today\'s hourly "feels like" forecast for {{city}}', { city: selectedCity })}</div>
+                          <div style={{ fontSize: 10, color: '#64748b', marginTop: 8 }}>{t('citizen.hours.keyShort', '🟢 safe · 🟡 only if necessary · 🔴 avoid — today\'s hourly "feels like" forecast, {{city}}', { city: selectedCity })}</div>
                         </>
                       )}
                     </section>
