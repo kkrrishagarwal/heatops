@@ -4282,6 +4282,69 @@ function App({ user }) {
                   )
                 })()}
 
+                {/* CITIZEN ONLY — Safe-hours timeline for today, derived from the same hourly
+                    forecast the WeatherCard already has (no new data). Zones by feels-like
+                    temperature: 🔴 ≥ 40°C avoid stepping out · 🟡 35–39°C only if necessary ·
+                    🟢 < 35°C safe. */}
+                {citizen && (() => {
+                  const hourly = Array.isArray(liveWeather?.hourly) ? liveWeather.hourly.slice(0, 24) : []
+                  const zoneOf = (h) => {
+                    const v = typeof h?.feelsLike === 'number' ? h.feelsLike : h?.temp
+                    if (typeof v !== 'number') return null
+                    return v >= 40 ? 'red' : v >= 35 ? 'yellow' : 'green'
+                  }
+                  const ZONE = {
+                    red: { color: '#dc2626', bg: 'rgba(185,28,28,0.35)', label: t('citizen.hours.avoid', 'Avoid stepping out') },
+                    yellow: { color: '#eab308', bg: 'rgba(202,138,4,0.35)', label: t('citizen.hours.onlyIfNeeded', 'Only go out if necessary') },
+                    green: { color: '#22c55e', bg: 'rgba(21,128,61,0.35)', label: t('citizen.hours.safe', 'Safe to go outside') }
+                  }
+                  const zones = hourly.map(zoneOf)
+                  const nowHour = Number(new Date().toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: 'Asia/Kolkata' })) % 24
+                  const fmtHour = (i) => (i === 0 ? '12am' : i < 12 ? `${i}am` : i === 12 ? '12pm' : `${i - 12}pm`)
+                  // contiguous runs → "6–9 am, after 7 pm"
+                  const runs = []
+                  zones.forEach((z, i) => { const last = runs[runs.length - 1]; if (last && last.zone === z) last.end = i; else runs.push({ zone: z, start: i, end: i }) })
+                  const describe = (zone) => runs.filter(r => r.zone === zone).map(r => r.end >= 23 ? `after ${fmtHour(r.start)}` : r.start === r.end ? fmtHour(r.start) : `${fmtHour(r.start)}–${fmtHour(r.end + 1)}`).join(', ')
+                  return (
+                    <section className="panel" data-panel="SAFEHOURS">
+                      <h3>🕒 {t('citizen.hours.title', 'Safe hours today')}</h3>
+                      {hourly.length < 12 ? (
+                        <div style={{ fontSize: 12, color: '#94a3b8' }}>{t('citizen.hours.unavailable', 'Hourly forecast is not available right now — treat 12–4 pm as the riskiest window and prefer early morning or evening.')}</div>
+                      ) : (
+                        <>
+                          <div data-testid="safe-hours-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, 1fr)', gap: 2, marginBottom: 6 }}>
+                            {hourly.map((h, i) => {
+                              const z = zones[i]
+                              const v = typeof h?.feelsLike === 'number' ? h.feelsLike : h?.temp
+                              return (
+                                <div key={i} data-zone={z || 'none'} title={`${fmtHour(i)} · feels like ${v ?? '—'}°C · ${z ? ZONE[z].label : 'no data'}`} style={{
+                                  height: 28, borderRadius: 4, background: z ? ZONE[z].bg : 'rgba(148,163,184,0.15)',
+                                  border: `1px solid ${z ? ZONE[z].color : 'rgba(148,163,184,0.3)'}`,
+                                  outline: i === nowHour ? '2px solid #f8fafc' : 'none', outlineOffset: 1,
+                                  display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontSize: 8, color: '#cbd5e1', paddingBottom: 2
+                                }}>{i % 6 === 0 ? fmtHour(i) : ''}</div>
+                              )
+                            })}
+                          </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, fontSize: 11, color: '#cbd5e1', marginBottom: 8 }}>
+                            {['green', 'yellow', 'red'].map(k => (
+                              <span key={k}><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: ZONE[k].color, marginRight: 6, verticalAlign: 'middle' }} />{ZONE[k].label}</span>
+                            ))}
+                            <span style={{ color: '#94a3b8' }}>▢ {t('citizen.hours.now', 'white outline = now')}</span>
+                          </div>
+                          <div style={{ fontSize: 12, lineHeight: 1.6 }}>
+                            {describe('green') && <div>🟢 <strong>{t('citizen.hours.safeShort', 'Safe')}:</strong> {describe('green')}</div>}
+                            {describe('yellow') && <div>🟡 <strong>{t('citizen.hours.cautionShort', 'Only if necessary')}:</strong> {describe('yellow')}</div>}
+                            {describe('red') && <div>🔴 <strong>{t('citizen.hours.avoidShort', 'Avoid')}:</strong> {describe('red')}</div>}
+                            {!describe('red') && !describe('yellow') && <div style={{ color: '#94a3b8' }}>{t('citizen.hours.allClear', 'No high-heat hours expected today — still carry water and prefer shade at midday.')}</div>}
+                          </div>
+                          <div style={{ fontSize: 10, color: '#64748b', marginTop: 6 }}>{t('citizen.hours.source', 'Based on today\'s hourly "feels like" forecast (Open-Meteo) for {{city}}.', { city: selectedCity })}</div>
+                        </>
+                      )}
+                    </section>
+                  )
+                })()}
+
                 {/* PANEL A: Weather Conditions — single source of truth is the live Open-Meteo WeatherCard.
                     The old static/estimated Temperature/Humidity/Wind/AQI cards (Landsat/ERA5/CPCB-labeled
                     placeholder values) have been removed entirely per data-accuracy fix. */}
