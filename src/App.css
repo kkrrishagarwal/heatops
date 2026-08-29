@@ -1925,6 +1925,7 @@ html[data-view-mode="compact"] .avatar {
 .dashboard-content[data-citizen-tab="Overview"] [data-panel="B"],
 .dashboard-content[data-citizen-tab="Overview"] [data-panel="S"],
 .dashboard-content[data-citizen-tab="Overview"] [data-panel="J"] { display: none; }
+.dashboard-content[data-citizen-tab="What to do"] [data-panel="SHARE"],
 .dashboard-content[data-citizen-tab="What to do"] [data-panel="A"],
 .dashboard-content[data-citizen-tab="What to do"] [data-panel="G"],
 .dashboard-content[data-citizen-tab="What to do"] [data-panel="B"],

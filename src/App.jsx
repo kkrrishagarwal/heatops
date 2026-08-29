@@ -4247,6 +4247,41 @@ function App({ user }) {
           {(activeTab === 'Overview' || activeTab === 'What to do') && (
             <div className="dashboard-content" data-citizen-tab={citizen ? activeTab : undefined}>
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+                {/* CITIZEN ONLY — share today's summary with family on WhatsApp (wa.me link,
+                    pre-filled text; no backend). Authority view never renders this. */}
+                {citizen && (() => {
+                  const cs = citizenSummary || {}
+                  const parts = [
+                    `🌡️ Heat update for ${selectedCity}${selectedState ? ', ' + selectedState : ''}`,
+                    cs.temp != null ? `Temperature: ${cs.temp}°C${cs.cached ? ' (cached reading)' : ''}` : null,
+                    cs.risk ? `Heat risk: ${cs.risk}` : null,
+                    cs.aqiLabel ? `Air quality: ${String(cs.aqiLabel).replace(/^[^\w]+/, '')}` : null,
+                    cs.tip ? `💡 ${cs.tip}` : null,
+                    '',
+                    'Shared from BhaskarOps — https://heatops.vercel.app'
+                  ].filter(x => x !== null)
+                  const waHref = `https://wa.me/?text=${encodeURIComponent(parts.join('\n'))}`
+                  return (
+                    <section className="panel" data-panel="SHARE" style={{ padding: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                        <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                          <strong style={{ color: '#f8fafc' }}>{t('citizen.shareTitle', 'Warn family & friends')}</strong>
+                          <div style={{ color: '#94a3b8' }}>{t('citizen.shareSub', "Sends today's temperature, risk level and safety tip for {{city}} as a WhatsApp message.", { city: selectedCity })}</div>
+                        </div>
+                        <a
+                          href={waHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          data-testid="whatsapp-share"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#15803d', color: '#f8fafc', border: '1px solid rgba(34,197,94,0.6)', borderRadius: 8, padding: '9px 14px', fontSize: 13, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}
+                        >
+                          📤 {t('citizen.shareButton', 'Share with family')}
+                        </a>
+                      </div>
+                    </section>
+                  )
+                })()}
+
                 {/* PANEL A: Weather Conditions — single source of truth is the live Open-Meteo WeatherCard.
                     The old static/estimated Temperature/Humidity/Wind/AQI cards (Landsat/ERA5/CPCB-labeled
                     placeholder values) have been removed entirely per data-accuracy fix. */}
