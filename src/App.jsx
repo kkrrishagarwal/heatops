@@ -48,6 +48,7 @@ import { AIAnalystPanel } from './components/AIAnalystPanel'
 import { FloatingAIAssistant } from './components/FloatingAIAssistant'
 import { CompareCitiesPanel } from './components/CompareCitiesPanel'
 import ViewModeToggle from './components/ViewModeToggle'
+import AudienceToggle from './components/AudienceToggle'
 import { useViewMode } from './hooks/useViewMode'
 import { useAudienceMode } from './hooks/useAudienceMode'
 
@@ -2601,7 +2602,8 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
         {/* Right section — the whole navbar row scrolls now (see comment
             above), so this just needs to not get individually squished. */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-          {/* View mode — user's choice, independent of device (see hooks/useViewMode.js) */}
+          {/* Audience (citizen/authority) and density (mobile/laptop) — two independent toggles */}
+          <AudienceToggle audience={audience} onChange={onAudienceChange} />
           <ViewModeToggle mode={viewMode} onChange={onViewModeChange} />
 
           <LiveClock />
@@ -4161,6 +4163,7 @@ function App({ user }) {
             <h2>{selectedCity}, {selectedState}</h2>
           </div>
           <div className="nav-right">
+            <AudienceToggle audience={audience} onChange={setAudience} size="md" />
             <ViewModeToggle mode={viewMode} onChange={setViewMode} size="md" />
             <LanguageDropdown />
             <div className="avatar">{userName[0]?.toUpperCase() || 'K'}</div>
@@ -5022,6 +5025,7 @@ function App({ user }) {
             <h2>{t('profile.title', 'My Profile')}</h2>
           </div>
           <div className="nav-right">
+            <AudienceToggle audience={audience} onChange={setAudience} size="md" />
             <ViewModeToggle mode={viewMode} onChange={setViewMode} size="md" />
             <button onClick={() => {setScreen("signin"); setUserName("")}} className="nav-btn">{t('nav.signOut', 'Sign Out')}</button>
           </div>
