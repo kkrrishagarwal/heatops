@@ -1303,6 +1303,26 @@ const WEATHER_OVERLAY_TINTS = {
   cloud: 'rgba(190,196,210,0.32)', // heavy cloud cover — softens/desaturates the base color
   clear: null                      // no overlay — base heat color shows as-is
 }
+// Overlay fills are SVG PATTERNS (stripes / dashes / dots), not flat colour washes: a flat
+// tint blended into the heat colour and read as "a slightly different heat shade"; a
+// pattern reads unmistakably as a separate layer on top of the base colour.
+const WEATHER_OVERLAY_PATTERNS = { dust: 'url(#wx-dust)', rain: 'url(#wx-rain)', cloud: 'url(#wx-cloud)', clear: null }
+const WeatherOverlayPatternDefs = () => (
+  <defs>
+    <pattern id="wx-dust" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+      <rect width="8" height="8" fill="rgba(120,80,30,0.18)" />
+      <rect width="3" height="8" fill="rgba(217,150,60,0.85)" />
+    </pattern>
+    <pattern id="wx-rain" patternUnits="userSpaceOnUse" width="7" height="9">
+      <rect width="7" height="9" fill="rgba(30,90,200,0.18)" />
+      <rect x="3" y="1" width="1.6" height="5" rx="0.8" fill="rgba(96,165,250,0.95)" />
+    </pattern>
+    <pattern id="wx-cloud" patternUnits="userSpaceOnUse" width="8" height="8">
+      <rect width="8" height="8" fill="rgba(200,205,220,0.12)" />
+      <circle cx="4" cy="4" r="1.6" fill="rgba(226,232,240,0.85)" />
+    </pattern>
+  </defs>
+)
 const WeatherOverlayLayer = React.memo(function WeatherOverlayLayer({ DATA }) {
   return (
     <>
@@ -1311,6 +1331,7 @@ const WeatherOverlayLayer = React.memo(function WeatherOverlayLayer({ DATA }) {
         projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
         style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
       >
+        <WeatherOverlayPatternDefs />
         <GeographiesLayer
           url={STATES_URL}
           render={(geographies) =>
@@ -1319,7 +1340,7 @@ const WeatherOverlayLayer = React.memo(function WeatherOverlayLayer({ DATA }) {
               const name = fixStateName(raw, DATA)
               if (/jammu|kashmir|ladakh/i.test(name || raw)) return null
               const condType = DATA?.[name]?.weatherCondition?.type
-              const fill = WEATHER_OVERLAY_TINTS[condType]
+              const fill = WEATHER_OVERLAY_PATTERNS[condType]
               if (!fill) return null
               return (
                 <Geography
@@ -1351,7 +1372,7 @@ const WeatherOverlayLayer = React.memo(function WeatherOverlayLayer({ DATA }) {
                 const rawState = p.NAME_1 || p.ST_NM || p.STATE || p.st_nm || ''
                 const stateName = fixStateName(rawState, DATA)
                 const condType = DATA?.[stateName]?.weatherCondition?.type
-                const fill = WEATHER_OVERLAY_TINTS[condType]
+                const fill = WEATHER_OVERLAY_PATTERNS[condType]
                 if (!fill) return null
                 return (
                   <Geography
@@ -1619,7 +1640,7 @@ const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorder
 // forwardRef exposes the internal zoom/pan transform div so the parent can mutate its
 // style.transform directly via ref during a drag gesture (bypassing React state entirely
 // for that high-frequency path) — see the onMouseMove handler at the call site for why.
-const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null }, transformRef) => {
+const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority' }, transformRef) => {
   // Legend is collapsed by default so the map itself stays fully visible (it covered ~60% of the map on phones).
   const [legendOpen, setLegendOpen] = useState(false)
   const { t } = useTranslation()
@@ -1793,10 +1814,11 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
       {/* LAYER 1.5: weather-condition tint overlay (rain/dust/cloud) — see WeatherOverlayLayer
           above. Sits directly above the heat-index districts layer, below the interactive/
           border layers, so it never intercepts clicks/hover and never alters the heat color. */}
-      <WeatherOverlayLayer DATA={DATA} />
+      {/* Citizens see their own city's condition in the top strip instead of a national pattern layer */}
+      {audience !== 'citizen' && <WeatherOverlayLayer DATA={DATA} />}
 
       {/* LAYER 1.6: weather-overlay icon markers (rain/dust) — see WeatherOverlayIcons above. */}
-      <WeatherOverlayIcons DATA={DATA} centroids={stateCentroids} />
+      {audience !== 'citizen' && <WeatherOverlayIcons DATA={DATA} centroids={stateCentroids} />}
 
       {/* LAYER 2 + 2.5: extracted + memoized above (StatesInteractiveLayer/JKInteractiveLayer)
           — click/hover detection no longer forces a recompute of these GeoJSON layers on
@@ -2015,15 +2037,15 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
         <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
             <span>🌧️</span>
-            <span>{t('heatLegend.activeRain', 'Active rain (tint)')}</span>
+            <span>{t('heatLegend.activeRain', 'Active rain (blue dashes overlay)')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
             <span>🌫️</span>
-            <span>{t('heatLegend.dustStorm', 'Dust storm — high PM10 (tint)')}</span>
+            <span>{t('heatLegend.dustStorm', 'Dust storm — high PM10 (orange stripes overlay)')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span>☁️</span>
-            <span>{t('heatLegend.heavyCloud', 'Heavy cloud cover (tint)')}</span>
+            <span>{t('heatLegend.heavyCloud', 'Heavy cloud cover (grey dots overlay)')}</span>
           </div>
         </div>
         {dataAgeLabel && (
@@ -2429,6 +2451,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
             </span>
           )}
           {citizenSummary.aqiLabel && <span style={{ whiteSpace: 'nowrap', color: '#cbd5e1' }}>Air: {citizenSummary.aqiLabel}</span>}
+          {citizenSummary.wx && <span data-testid="citizen-wx" style={{ whiteSpace: 'nowrap', color: '#cbd5e1' }}>{citizenSummary.wx}</span>}
           {citizenSummary.tip && <span style={{ color: '#94a3b8', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>💡 {citizenSummary.tip}</span>}
         </>
       ) : (
@@ -3020,6 +3043,11 @@ function App({ user }) {
     return out
   }, [liveCityCache])
 
+  // Citizen strip: the selected city's state-level weather condition (rain / dust / cloud)
+  // shown as words, instead of the national overlay layer.
+  const WX_WORDS = { dust: '🌫️ Dusty air (high PM10)', rain: '🌧️ Rain likely', cloud: '☁️ Heavy cloud' }
+  const citizenWx = selectedState ? (WX_WORDS[liveStateWeatherCondition?.[selectedState]?.type] || null) : null
+
   // INDIA_DATA with the live heat index merged in. heatIndexLive marks whether a state's
   // value is genuinely live (mean of N live city temps) or still the hardcoded avgLST
   // fallback — consumers must label the fallback "(estimated)", never present it silently
@@ -3610,7 +3638,7 @@ function App({ user }) {
           onViewModeChange={setViewMode}
           audience={audience}
           onAudienceChange={setAudience}
-          citizenSummary={citizenSummary}
+          citizenSummary={{ ...citizenSummary, wx: citizenWx }}
         />
 
         {/* Main content — updated height calculation. On phone widths .map-layout
@@ -3797,6 +3825,7 @@ function App({ user }) {
                           cacheStatus={liveCacheStatus}
                           cacheStale={isCacheStale(cacheLastUpdated)}
                           cacheAgeLabel={formatAgo(cacheLastUpdated)}
+                          audience={audience}
                         />
                       </AppErrorBoundary>
                     </div>
