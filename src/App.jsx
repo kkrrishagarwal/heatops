@@ -2707,7 +2707,9 @@ function App({ user }) {
   }, [])
   const [activeTab, setActiveTab] = useState('Overview')
   useEffect(() => {
+    // Keep the active tab valid when the audience changes in either direction.
     if (!citizen && activeTab === 'What to do') setActiveTab('Overview')
+    if (citizen && ['Analysis', 'Interventions', 'AI + Export'].includes(activeTab)) setActiveTab('Overview')
   }, [citizen, activeTab])
   // Dashboard tab bar overflow-fade hints (mobile: OVERVIEW/ANALYSIS/COMPARE/
   // INTERVENTIONS/AI+EXPORT don't all fit under ~500px). Measured via ref rather
@@ -2861,7 +2863,7 @@ function App({ user }) {
     return () => { cancelled = true; clearTimeout(timer) }
   }, [lulcAttempt])
 
-  // Precise per-city coordinates (1,908/1,956 cities, state-validated) — used both by the live weather
+  // Precise per-city coordinates (1,932/1,956 cities, state-validated) — used both by the live weather
   // resolver (weatherAPI.js) and to find the nearest real LULC data point for a city that
   // doesn't have its own classification (getLulcWithFallback).
   const [cityCoordsData, setCityCoordsData] = useState(null)
@@ -4091,7 +4093,10 @@ function App({ user }) {
     const realLulcEntry = lulcReal?.cities?.[selectedCity]
 
     // Citizens get two plain tabs; the full technical set is authority-only.
-    const TABS = citizen ? ['Overview', 'What to do'] : ['Overview', 'Analysis', 'Compare', 'Interventions', 'AI + Export']
+    // Citizens get Compare too — "is my city hotter than my parents' city?" is exactly the
+    // question residents ask; the technical tabs (Analysis, Interventions, AI + Export) stay
+    // Authority-only. AGNI is still reachable for citizens via the floating button.
+    const TABS = citizen ? ['Overview', 'What to do', 'Compare'] : ['Overview', 'Analysis', 'Compare', 'Interventions', 'AI + Export']
     const TAB_LABELS = {
       'What to do': t('tabs.whatToDo', 'WHAT TO DO'),
       'Overview': t('tabs.overview', 'OVERVIEW'),
