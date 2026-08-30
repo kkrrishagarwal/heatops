@@ -1309,119 +1309,14 @@ const DistrictsLayer = React.memo(function DistrictsLayer({ DATA }) {
   )
 })
 
-// LAYER 1.5: weather-condition overlay — a subtle secondary TINT painted over the
-// heat-index colors from DistrictsLayer above, never replacing them. Driven by each
-// state's `weatherCondition` (computed in liveStateWeatherCondition/liveIndiaData from
-// the existing live-weather cache — no new fetch). State-level only for now, per the
-// perf note this was scoped with — this walks the same ~36-feature STATES_URL/JK_URL
-// geometries the interactive layers already load, not the large districts GeoJSON.
-// Memoized on DATA only (same reasoning as DistrictsLayer) so hovering elsewhere on the
-// map never forces this to recompute its projection.
-const WEATHER_OVERLAY_TINTS = {
-  dust: 'rgba(180,140,80,0.30)',   // hazy/dusty — high PM10
-  rain: 'rgba(40,130,255,0.24)',   // active precipitation
-  // 0.18 read as just another shade of the heat-index olive/green rather than a distinct
-  // overlay layer — bumped to 0.32 (closer to rain/dust) so cloud reads as its own signal
-  // instead of blending into "this state happens to be a slightly different heat color."
-  cloud: 'rgba(190,196,210,0.32)', // heavy cloud cover — softens/desaturates the base color
-  clear: null                      // no overlay — base heat color shows as-is
-}
-// Overlay fills are SVG PATTERNS (stripes / dashes / dots), not flat colour washes: a flat
-// tint blended into the heat colour and read as "a slightly different heat shade"; a
-// pattern reads unmistakably as a separate layer on top of the base colour.
-const WEATHER_OVERLAY_PATTERNS = { dust: 'url(#wx-dust)', rain: 'url(#wx-rain)', cloud: 'url(#wx-cloud)', clear: null }
-const WeatherOverlayPatternDefs = () => (
-  <defs>
-    <pattern id="wx-dust" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
-      <rect width="8" height="8" fill="rgba(120,80,30,0.18)" />
-      <rect width="3" height="8" fill="rgba(217,150,60,0.85)" />
-    </pattern>
-    <pattern id="wx-rain" patternUnits="userSpaceOnUse" width="7" height="9">
-      <rect width="7" height="9" fill="rgba(30,90,200,0.18)" />
-      <rect x="3" y="1" width="1.6" height="5" rx="0.8" fill="rgba(96,165,250,0.95)" />
-    </pattern>
-    <pattern id="wx-cloud" patternUnits="userSpaceOnUse" width="8" height="8">
-      <rect width="8" height="8" fill="rgba(200,205,220,0.12)" />
-      <circle cx="4" cy="4" r="1.6" fill="rgba(226,232,240,0.85)" />
-    </pattern>
-  </defs>
-)
-const WeatherOverlayLayer = React.memo(function WeatherOverlayLayer({ DATA }) {
-  return (
-    <>
-      <ComposableMap
-        projection='geoMercator'
-        projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
-        style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
-      >
-        <WeatherOverlayPatternDefs />
-        <GeographiesLayer
-          url={STATES_URL}
-          render={(geographies) =>
-            geographies.map((geo) => {
-              const raw = getRawName(geo)
-              const name = fixStateName(raw, DATA)
-              if (/jammu|kashmir|ladakh/i.test(name || raw)) return null
-              const condType = DATA?.[name]?.weatherCondition?.type
-              const fill = WEATHER_OVERLAY_PATTERNS[condType]
-              if (!fill) return null
-              return (
-                <Geography
-                  key={geo.rsmKey + '_wx'}
-                  geography={geo}
-                  style={{
-                    default: { fill, stroke: 'none', outline: 'none', pointerEvents: 'none' },
-                    hover: { fill, stroke: 'none', outline: 'none', pointerEvents: 'none' },
-                    pressed: { fill, stroke: 'none', outline: 'none', pointerEvents: 'none' }
-                  }}
-                />
-              )
-            })
-          }
-        />
-      </ComposableMap>
-      <ComposableMap
-        projection='geoMercator'
-        projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
-        style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
-      >
-        <GeographiesLayer
-          url={JK_URL}
-          render={(geographies) =>
-            geographies
-              .filter((geo) => /jammu|kashmir|ladakh/i.test(getRawName(geo)))
-              .map((geo) => {
-                const p = geo.properties
-                const rawState = p.NAME_1 || p.ST_NM || p.STATE || p.st_nm || ''
-                const stateName = fixStateName(rawState, DATA)
-                const condType = DATA?.[stateName]?.weatherCondition?.type
-                const fill = WEATHER_OVERLAY_PATTERNS[condType]
-                if (!fill) return null
-                return (
-                  <Geography
-                    key={geo.rsmKey + '_wx_jk'}
-                    geography={smoothGeoFeature(geo)}
-                    style={{
-                      default: { fill, stroke: 'none', outline: 'none', pointerEvents: 'none' },
-                      hover: { fill, stroke: 'none', outline: 'none', pointerEvents: 'none' },
-                      pressed: { fill, stroke: 'none', outline: 'none', pointerEvents: 'none' }
-                    }}
-                  />
-                )
-              })
-          }
-        />
-      </ComposableMap>
-    </>
-  )
-})
-
-// LAYER 1.6: weather-overlay icon markers — ☁️/🌧️/🌫️ pinned at each state's true geometric
-// centroid (computed in IndiaMap via d3-geo's geoCentroid, passed in as `centroids`). Even
-// at a bumped-up tint opacity, cloud's gray/blue-gray fill can still read as "just this
-// state's heat color" rather than a distinct overlay signal — the icon removes that
-// ambiguity the same way rain/dust's icons already do. Memoized on DATA + centroids only,
-// same reasoning as the layers above.
+// LAYER 4: weather-condition BADGES. Each state whose live readings cross a threshold
+// (dust: avg PM10 ≥ 400 · rain: avg rain chance ≥ 60% · heavy cloud: avg cloud cover ≥ 80%,
+// computed in liveStateWeatherCondition from the existing cache — no new fetch) gets ONE
+// small icon on a dark disc at its centroid. States with no active condition get nothing:
+// clean, solid heat-index colour. Earlier versions painted the whole state (first a
+// translucent tint, then stripes/dashes/dots); both hid the heat colour, and in the
+// monsoon 26 of 36 states cross the cloud/rain threshold on an ordinary day, so most of
+// India ended up textured. A badge carries the same information without the clutter.
 const WEATHER_OVERLAY_ICONS = { dust: '🌫️', rain: '🌧️', cloud: '☁️', clear: null }
 const WeatherOverlayIcons = React.memo(function WeatherOverlayIcons({ DATA, centroids }) {
   return (
@@ -1664,7 +1559,7 @@ const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorder
 // forwardRef exposes the internal zoom/pan transform div so the parent can mutate its
 // style.transform directly via ref during a drag gesture (bypassing React state entirely
 // for that high-frequency path) — see the onMouseMove handler at the call site for why.
-const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority' }, transformRef) => {
+const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null }, transformRef) => {
   // Legend is collapsed by default so the map itself stays fully visible (it covered ~60% of the map on phones).
   const [legendOpen, setLegendOpen] = useState(false)
   const { t } = useTranslation()
@@ -1835,15 +1730,18 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
             this large GeoJSON layer to recompute its projection on every hover. */}
         <DistrictsLayer DATA={DATA} />
 
-      {/* LAYER 1.5: weather-condition tint overlay (rain/dust/cloud) — see WeatherOverlayLayer
-          above. Sits directly above the heat-index districts layer, below the interactive/
-          border layers, so it never intercepts clicks/hover and never alters the heat color. */}
-      {/* Pattern fills are Authority-only; citizens get the icons + their own city's condition in the top strip */}
-      {audience !== 'citizen' && <WeatherOverlayLayer DATA={DATA} />}
+      {/* Weather conditions: no full-state fill here any more — the icon badges (LAYER 4, WeatherOverlayIcons) carry it. */}
 
       {/* LAYER 1.6: weather-overlay icon markers (rain/dust) — see WeatherOverlayIcons above. */}
       {/* Condition icons show in BOTH views — small, unambiguous, no blending with heat colours */}
-      <WeatherOverlayIcons DATA={DATA} centroids={stateCentroids} />
+      {/* Citizen view: only the selected city's state gets a badge (its condition is also
+          spelled out in the citizen strip); Authority view: every affected state. */}
+      <WeatherOverlayIcons
+        DATA={DATA}
+        centroids={audience === 'citizen'
+          ? (selectedState && stateCentroids?.[selectedState] ? { [selectedState]: stateCentroids[selectedState] } : {})
+          : stateCentroids}
+      />
 
       {/* LAYER 2 + 2.5: extracted + memoized above (StatesInteractiveLayer/JKInteractiveLayer)
           — click/hover detection no longer forces a recompute of these GeoJSON layers on
@@ -2055,22 +1953,22 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           }} />
           <span>{t('heatLegend.activeHeatwave', 'Active heatwave (major states)')}</span>
         </div>
-        {/* Weather-overlay legend — explains the WeatherOverlayLayer tints above. Always
+        {/* Weather-overlay legend — explains the WeatherOverlayIcons badges above. Always
             shown (like the heatwave row above it) so it reads the same whether or not any
             state currently has an active overlay, rather than the legend shifting/appearing
             as conditions change. */}
         <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
             <span>🌧️</span>
-            <span>{t('heatLegend.activeRain', 'Active rain (blue dashes overlay)')}</span>
+            <span>{t('heatLegend.activeRain', 'Active rain — 🌧️ badge at the state centre')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
             <span>🌫️</span>
-            <span>{t('heatLegend.dustStorm', 'Dust storm — high PM10 (orange stripes overlay)')}</span>
+            <span>{t('heatLegend.dustStorm', 'Dust storm, high PM10 — 🌫️ badge at the state centre')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span>☁️</span>
-            <span>{t('heatLegend.heavyCloud', 'Heavy cloud cover (grey dots overlay)')}</span>
+            <span>{t('heatLegend.heavyCloud', 'Heavy cloud cover — ☁️ badge at the state centre')}</span>
           </div>
         </div>
         {dataAgeLabel && (
