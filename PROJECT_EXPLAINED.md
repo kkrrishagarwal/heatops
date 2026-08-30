@@ -142,9 +142,9 @@ Here's what happens, step by step, when a user opens the app:
 
 | Looking for this feature | File |
 |---|---|
-| **India map (colors, layers, zoom/pan)** | `src/App.jsx` — search for `IndiaMap`, `DistrictsLayer`, `WeatherOverlayLayer` |
+| **India map (colors, layers, zoom/pan)** | `src/App.jsx` — search for `IndiaMap`, `DistrictsLayer`, `WeatherOverlayIcons` |
 | **Heat-index color logic (which state gets which color)** | `src/App.jsx` — search for `getHeatIndexColor` |
-| **Weather-condition overlay (rain/dust/cloud pattern fills + icons)** | `src/App.jsx` — search for `WEATHER_OVERLAY_PATTERNS`, `WeatherOverlayPatternDefs`, `WeatherOverlayLayer`, `WeatherOverlayIcons`, `liveStateWeatherCondition` |
+| **Weather-condition badges on the map (rain/dust/cloud icon at the state centre)** | `src/App.jsx` — search for `WeatherOverlayIcons`, `WEATHER_OVERLAY_ICONS`, `liveStateWeatherCondition` |
 | **Heat-reactive theme colour (red/orange/yellow/green from the selected city's live temperature)** | `src/App.jsx` — search for `UI_THEME_BUCKETS`, `getThemeVars`, `getThemeAccent`; the Heat Risk Gauge readout uses the same four tiers |
 | **City list "NO LIVE DATA" (no fabricated temperatures)** | `src/App.jsx` — search for `no-live-data` inside `CityPanel`; global search fallback right below the `Search any city` input |
 | **Map fit / zoom floor (1× = fit to card)** | `src/App.jsx` — `INDIA_MAP_PROJECTION_CONFIG` (scale 1120, centre 23.2°N) and `setMapScale` (wheel + the +/−/↺ buttons) |
@@ -269,11 +269,7 @@ Plus, on the server: the AGNI chat endpoint now allows **10 questions per minute
 
 For each state, the app averages the bulk cache's PM10, rain-chance and cloud-cover across that state's cities, then picks **one** condition in priority order: dust if average PM10 ≥ 400, else rain if average rain chance ≥ 60%, else cloud if average cloud cover ≥ 80%, else clear.
 
-**Updated 29 Aug:** the old translucent tints were too subtle to notice over the heat colours, so the overlay is now two things you can actually see:
-- a **pattern fill** on the state — orange diagonal stripes for dust, blue dashes for rain, grey dots for heavy cloud (`WEATHER_OVERLAY_PATTERNS`, `WeatherOverlayPatternDefs` — SVG `<pattern>`s, so they scale with the map), and
-- a **condition icon** (🌫️ / 🌧️ / ☁️) on a dark backing disc at the state's centroid, so it stays readable over green *and* red states.
-
-The legend rows say "(orange stripes overlay)" etc. so the pattern is explained where you look for it. **Citizen view** hides the state-wide pattern layer — citizens see the icon for their own selected city's state only, plus a one-line "🌧️ Rain likely" / "🌫️ Dusty air (high PM10)" / "☁️ Heavy cloud" note in the citizen strip — while **Authority view** keeps the full overlay system. (`src/App.jsx` — `WeatherOverlayLayer`, `WeatherOverlayIcons`, `IndiaMap` prop `audience`, `WX_WORDS`.)
+**Updated 29 Aug (twice):** the original translucent tints were too subtle to notice, so they were first replaced by pattern fills over the whole state (stripes / dashes / dots). That was accurate but cluttered: in the monsoon, 26 of 36 states cross the heavy-cloud or rain threshold on an ordinary day, so most of India ended up textured and the heat colours underneath were hard to read. The overlay is now **one small icon badge per affected state** — 🌫️ dust / 🌧️ rain / ☁️ heavy cloud on a dark backing disc at the state's centroid — and states with no active condition show clean, solid heat-index colour with nothing on them. The legend rows describe the badge. **Citizen view** shows only the badge for the selected city's state plus a one-line "🌧️ Rain likely" / "🌫️ Dusty air (high PM10)" / "☁️ Heavy cloud" note in the citizen strip; **Authority view** shows badges for every affected state. (`src/App.jsx` — `WeatherOverlayIcons`, `WEATHER_OVERLAY_ICONS`, `liveStateWeatherCondition`, `WX_WORDS`.)
 
 ### 8.5 City-level weather fallback — live → cached → error
 

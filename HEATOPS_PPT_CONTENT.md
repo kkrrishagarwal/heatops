@@ -52,7 +52,7 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 - **Heat Index color legend** — always-visible panel key mapping 6 heat tiers (Low → Extreme) to colors, plus a white pulsing-dot entry that explains the heatwave-state markers on the map
 - **Floating AGNI button** — AI assistant accessible from every tab, not locked behind the AI+Export tab
 - **📤 Share with family (WhatsApp)** — one tap in Citizen view opens WhatsApp with the city's temperature, risk level, air quality and safety tip pre-filled
-- **Weather-condition map overlays** — pattern fills (orange stripes = dust, blue dashes = rain, grey dots = heavy cloud) plus a condition icon on a backing disc per state; citizens see only their own city's condition
+- **Weather-condition map badges** — a single 🌫️ dust / 🌧️ rain / ☁️ heavy-cloud icon at the centre of each state whose readings cross the threshold (PM10 ≥ 400, rain ≥ 60 %, cloud ≥ 80 %); unaffected states stay clean solid heat colour; citizens see only their own city's condition
 - **Map fit + sane zoom** — India fills 93 % of the map card; zoom-out stops at "fit" instead of shrinking the map into empty space
 - **PDF export** — full city report downloadable as PDF
 - **CSV export** — raw data download for planners who need it in a spreadsheet
@@ -133,7 +133,7 @@ Indian cities are experiencing intensifying urban heat islands — built-up, low
 - **AI + Export tab** — AGNI (AI Analyst) chat + report/CSV/WhatsApp export
 - **Floating AGNI Assistant** — accessible from any screen, not just one tab
 - **Citizen view (Overview + What to do)** — the same live data in plain language, plus Safe hours, Share with family and the neighbourhood help card
-- **Authority extras** — Heatwave Action Checklist (HAP steps), full weather-overlay system on the map, exports
+- **Authority extras** — Heatwave Action Checklist (HAP steps), weather-condition badges for every affected state on the map, exports
 - **Historic data** — `/history.html` viewer + CSV export of every day's readings since 22 June 2026
 
 ## Data Sources (credibility slide)
