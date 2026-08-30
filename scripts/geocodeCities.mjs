@@ -13,7 +13,8 @@
 // absent from the file and the UI shows "NO LIVE DATA" for them — never a guess.
 //
 // Sources, in order: Open-Meteo geocoding (fast, concurrent) → Nominatim/OSM with
-// "City, State, India" (1 request/second per usage policy).
+// "City, State, India", then the bare name (1 request/second per usage policy). Names the
+// geocoders spell differently go through CITY_QUERY_ALIASES below.
 //
 // Usage: node scripts/geocodeCities.mjs            resolve missing + invalid entries
 //        node scripts/geocodeCities.mjs --all      re-resolve every city from scratch
@@ -45,6 +46,51 @@ const STATE_ALIASES = {
   'Jammu and Kashmir': ['jammu and kashmir', 'jammu & kashmir'],
   'Ladakh': ['ladakh']
 }
+
+// Spellings the geocoders know, for names STATE_DATA has in a local/legacy form.
+// Keyed "City|State" (the app's spelling stays as the key in the output file).
+const CITY_QUERY_ALIASES = {
+  'Tinsukhia|Assam': 'Tinsukia',
+  'Tumkuru|Karnataka': 'Tumakuru',
+  'Mohindergarh|Haryana': 'Mahendragarh',
+  'Lunawada|Gujarat': 'Lunavada',
+  'Pakhanjore|Chhattisgarh': 'Pakhanjur',
+  'Ghansour|Madhya Pradesh': 'Ghansor',
+  'Kibithoo|Arunachal Pradesh': 'Kibithu',
+  'Margherita|Arunachal Pradesh': 'Margherita, Tinsukia',
+  'Chhimtuipui|Mizoram': 'Siaha',
+  'Hee Bermoik|Sikkim': 'Hee Bermiok',
+  'Pemayangste|Sikkim': 'Pemayangtse',
+  'Zuluk|Sikkim': 'Dzuluk',
+  'Chujachen|Sikkim': 'Chujachen, Rongli',
+  'Sholingur|Tamil Nadu': 'Sholinghur',
+  'Bagbasa|Tripura': 'Bagbassa',
+  'Jubarajnagar|Tripura': 'Jubarajnagar, Dharmanagar',
+  'Majlishpur|Tripura': 'Majlishpur, Agartala',
+  'Agastyamuni|Uttarakhand': 'Agastmuni',
+  'Champdany|West Bengal': 'Champdani',
+  'Thannamandi|Jammu and Kashmir': 'Thanamandi',
+  'Manjakote|Jammu and Kashmir': 'Manjakot',
+  'Chalunkha|Ladakh': 'Chalunka',
+  'Panamic|Ladakh': 'Panamik',
+  'Mhe|Ladakh': 'Mahe, Leh',
+  'Tri Nagar|Delhi': 'Trinagar',
+  'Mithapur|Delhi': 'Mithapur, Badarpur',
+  'Vasant Gaon|Delhi': 'Vasant Gaon, Vasant Vihar',
+  'Bapu Dham|Chandigarh': 'Bapu Dham Colony',
+  'IT Park|Chandigarh': 'Rajiv Gandhi Chandigarh Technology Park',
+  'Wimberlygunj|Andaman and Nicobar Islands': 'Wimberly Gunj',
+  'Chidiyatapu|Andaman and Nicobar Islands': 'Chidiya Tapu',
+  'Masat|Dadra and Nagar Haveli and Daman and Diu': 'Masat, Silvassa',
+  'Athal|Dadra and Nagar Haveli and Daman and Diu': 'Athal, Silvassa',
+  'Zari|Dadra and Nagar Haveli and Daman and Diu': 'Zari, Silvassa',
+  'Rajabala|Meghalaya': 'Rajabala, West Garo Hills',
+  'Pallel|Manipur': 'Pallel, Kakching',
+  'Seithekema|Nagaland': 'Seithekema, Dimapur',
+  'Sheogarh|Rajasthan': 'Sheoganj',
+  'Nakkalammapeta|Andhra Pradesh': 'Nakkapalle'
+}
+const queryName = (city, state) => CITY_QUERY_ALIASES[`${city}|${state}`] || city
 
 function extractStateData() {
   const src = fs.readFileSync(APP_JSX_PATH, 'utf8')
@@ -122,11 +168,11 @@ async function openMeteoCandidates(city) {
 // ---------- Nominatim (OSM) ----------
 const SETTLEMENT_TYPES = new Set(['city', 'town', 'village', 'hamlet', 'suburb', 'municipality', 'administrative', 'locality', 'neighbourhood', 'quarter', 'island', 'archipelago', 'county', 'district', 'state_district'])
 let lastNominatimAt = 0
-async function nominatimCandidates(city, state) {
+async function nominatimCandidates(city, state, withState = true) {
   const wait = 1100 - (Date.now() - lastNominatimAt)
   if (wait > 0) await new Promise(r => setTimeout(r, wait))
   lastNominatimAt = Date.now()
-  const q = `${city}, ${state}, India`
+  const q = withState ? `${city}, ${state}, India` : `${city}, India`
   const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&countrycodes=in&addressdetails=1&q=${encodeURIComponent(q)}`
   const res = await fetch(url, { headers: { 'User-Agent': NOMINATIM_UA, 'Accept-Language': 'en' } })
   if (!res.ok) throw new Error(`nominatim ${res.status}`)
@@ -190,7 +236,7 @@ async function main() {
     const batch = todo.slice(i, i + CONCURRENCY)
     await Promise.all(batch.map(async (item) => {
       try {
-        const hit = pick(item.state, await openMeteoCandidates(item.city), bbox)
+        const hit = pick(item.state, await openMeteoCandidates(queryName(item.city, item.state)), bbox)
         if (hit) {
           out[`${item.city}|${item.state}`] = { city: item.city, state: item.state, lat: hit.lat, lon: hit.lon, resolvedName: hit.resolvedName, resolvedState: hit.resolvedState, source: hit.source, accepted: hit.accepted }
           if (hit.accepted === 'state') bbox.add(item.state, hit.lat, hit.lon)
@@ -208,7 +254,11 @@ async function main() {
   for (const item of remaining) {
     n++
     try {
-      const hit = pick(item.state, await nominatimCandidates(item.city, item.state), bbox)
+      const q = queryName(item.city, item.state)
+      // with the state first; then the bare name (still validated by state / bbox) — this
+      // is what catches places filed under a neighbouring state or an old district name
+      const hit = pick(item.state, await nominatimCandidates(q, item.state), bbox)
+        || pick(item.state, await nominatimCandidates(q, item.state, false), bbox)
       if (hit) {
         out[`${item.city}|${item.state}`] = { city: item.city, state: item.state, lat: hit.lat, lon: hit.lon, resolvedName: hit.resolvedName, resolvedState: hit.resolvedState, source: hit.source, accepted: hit.accepted, kind: hit.kind }
         if (hit.accepted === 'state') bbox.add(item.state, hit.lat, hit.lon)

@@ -62,7 +62,7 @@ export function getWindDirection(degrees) {
 }
 
 // Step 1: Resolve a city to lat/lon — tiered, in order of precision:
-//   1. Exact (city, state) match in the bundled cityCoordinates.json (1,908/1,956 cities,
+//   1. Exact (city, state) match in the bundled cityCoordinates.json (1,932/1,956 cities,
 //      every one validated to lie in its own state — see scripts/geocodeCities.mjs) —
 //      precise, deterministic, zero ambiguity, no network round-trip.
 //   2. Live Open-Meteo geocoding by name, preferring whichever India result's admin1 (state)
@@ -72,7 +72,7 @@ export function getWindDirection(degrees) {
 //      the right city's name. Same disambiguation approach already used by
 //      scripts/geocodeCities.mjs when building cityCoordinates.json offline.
 //   3. State-representative-city fallback — for towns Open-Meteo's geocoder has no listing
-//      for at all (48 small towns after the Nominatim pass), fall back to that state's designated real-data city (same one already used for
+//      for at all (24 hamlet/colony names after the Nominatim + alias pass), fall back to that state's designated real-data city (same one already used for
 //      LULC — see cityCoordinateResolver.js) and mark the result as a fallback location so the
 //      UI can label it honestly rather than silently passing off another city's weather as the
 //      requested one's.
