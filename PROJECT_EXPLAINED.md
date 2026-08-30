@@ -60,7 +60,7 @@ heatops/
 │   │   ├── exportUtils.js         — CSV/PDF/WhatsApp export functions — ⚠️ **currently not used anywhere** (dead code)
 │   │   └── 3d-effects.js          — Visual polish effects (card tilt, particles) — for App3D/Card3D
 │   ├── data/
-│   │   └── cityCoordinates.json   — Real lat/lon lookup for 1,908 cities (geocoded offline, each validated to lie in its own state)
+│   │   └── cityCoordinates.json   — Real lat/lon lookup for 1,932 cities (geocoded offline, each validated to lie in its own state)
 │   └── i18n/                      — Translation files for 11 languages (react-i18next setup)
 │
 ├── api/                           — Vercel serverless functions (production backend)
@@ -85,7 +85,7 @@ heatops/
 │   ├── data/                      — All REAL data files the browser fetches (geojson maps, ML model output, LULC output, city coords)
 │   │   └── history/               — One compact snapshot per day of the bulk weather cache + index.json (historic data, tier 1)
 │   ├── history.html               — Standalone viewer for the historic weather data (pick a city, see its daily series; carried-forward days drawn hollow/dashed)
-│   └── live-weather-cache.json    — Daily-refreshed bulk weather cache (1,908 cities, powers the map/ticker/city list)
+│   └── live-weather-cache.json    — Daily-refreshed bulk weather cache (1,932 cities, powers the map/ticker/city list)
 │
 ├── app.py, static/, templates/, requirements.txt, .venv/  — ⚠️ LEGACY Flask prototype, not used in production
 ├── vercel.json                    — Deploy config + daily cron schedule
@@ -101,7 +101,7 @@ Here's what happens, step by step, when a user opens the app:
 
 1. **The sign-in screen appears** (`LaunchScreen.jsx`) — with a 3D globe. Login/register happens purely in `localStorage` (there's no real database — this is demo-level auth, not real user accounts).
 
-2. **After sign-in, the map screen appears** (the `IndiaMap` component inside `App.jsx`). At this point, `public/live-weather-cache.json` gets fetched in the background — a file that already has the current temperature, rain-chance, AQI, cloud-cover, and PM10 stored for all 1,908 cities (because fetching all 2,050 cities live would be far too slow).
+2. **After sign-in, the map screen appears** (the `IndiaMap` component inside `App.jsx`). At this point, `public/live-weather-cache.json` gets fetched in the background — a file that already has the current temperature, rain-chance, AQI, cloud-cover, and PM10 stored for all 1,932 cities (because fetching all 2,050 cities live would be far too slow).
 
 3. **Where does this cache come from?** Every night, a Vercel cron job (`"0 0 * * *"` in `vercel.json`) triggers `api/refresh-weather-cache.js`. This function fetches fresh data for every city from Open-Meteo, and — since serverless functions can't save files persistently — commits the result straight to GitHub via `githubCommit.js`, which automatically triggers a new deploy. That's why the map shows "Heat data loaded X min ago."
 
@@ -212,19 +212,19 @@ Here's what happens, step by step, when a user opens the app:
 
 ### ✅ Real / Live (comes from an actual source)
 - **Live weather, humidity, wind, forecast, AQI (per-city)** — Open-Meteo API (`src/utils/weatherAPI.js`)
-- **Bulk cache (temp/rain/AQI/cloud/PM10 for 1,908 cities)** — Open-Meteo, refreshed daily (`public/live-weather-cache.json`)
+- **Bulk cache (temp/rain/AQI/cloud/PM10 for 1,932 cities)** — Open-Meteo, refreshed daily (`public/live-weather-cache.json`)
 - **Land cover % (vegetation/built-up/water)** — ESA WorldCover 10m satellite data (`public/data/lulc_real.json`), direct for representative cities only; other cities use a "nearest real city" fallback (honestly labeled)
 - **Building density** — a live OpenStreetMap Overpass API call (`src/utils/osmUtils.js`)
 - **ML model metrics (R², feature importance)** — a genuinely trained Random Forest, on real MODIS satellite training data — **but ⚠️ the training data is from non-Indian cities (20 global cities)**, and this is disclosed in the UI too
 - **Map boundaries** — real GeoJSON state/district shapefiles
 - **AGNI's answers** — a real, live Gemini API call (if it's offline, a clearly-labeled canned fallback shows instead)
-- **City coordinates** — real geocoded lat/lon (1,908 cities, each validated to lie in its own state), from Open-Meteo + OSM Nominatim geocoding
+- **City coordinates** — real geocoded lat/lon (1,932 cities, each validated to lie in its own state), from Open-Meteo + OSM Nominatim geocoding
 
 ### ⚠️ Estimated / Fallback (derived from a real source, but not a direct measurement)
 - **Land-cover for non-representative cities** — borrows the nearest real city's data, labeled as an estimate/with the distance shown
 - **Building density when Overpass fails** — shows "unavailable," never fakes a number
 - **Carried-forward bulk-cache values** — when the nightly refresh can't reach Open-Meteo for a batch of cities, their previous values are kept but flagged (`isCarriedForward`), and the history viewer/CSV show them as “carried forward”, never as fresh readings
-- **Cities with no live reading** — the map-screen city list and global search show an explicit "NO LIVE DATA" badge (search may show the state's *live* average, labelled "(state avg)"). Nothing is estimated: the earlier "~21.8°C"-style guesses (state avgLST ± a hash of the city name) were removed on 29 Aug 2026 after they were caught 7°C from reality. City coordinates are validated to lie in their own state (`scripts/geocodeCities.mjs`, Open-Meteo + OSM Nominatim); 48 of 1,956 cities remain unresolved and stay honestly blank.
+- **Cities with no live reading** — the map-screen city list and global search show an explicit "NO LIVE DATA" badge (search may show the state's *live* average, labelled "(state avg)"). Nothing is estimated: the earlier "~21.8°C"-style guesses (state avgLST ± a hash of the city name) were removed on 29 Aug 2026 after they were caught 7°C from reality. City coordinates are validated to lie in their own state (`scripts/geocodeCities.mjs`, Open-Meteo + OSM Nominatim); 24 of 1,956 cities remain unresolved and stay honestly blank.
 - **ML model applied to any Indian city** — the model itself is real, but since it's trained on non-Indian data, its predictions for Indian cities should be treated as a "generalization estimate"
 
 ### ❌ Static / Illustrative (fabricated, not a real measurement)
@@ -277,7 +277,7 @@ When you open a city, the app asks Open-Meteo for fresh weather. Open-Meteo is f
 
 1. **Live API** (fresh, most accurate) — with retries and backoff if rate-limited.
 2. **Cached reading** — if live fails, the hook checks this browser's last successful reading for that city *and* the daily bulk cache, and shows whichever is fresher, labelled **"Showing cached data from X ago — live data temporarily unavailable."** with a Force Refresh button. If the slow path takes more than 10s, the cached reading is shown immediately while the live call keeps trying.
-3. **Error** — only if neither exists (rare, since the cache covers 1,908 cities).
+3. **Error** — only if neither exists (rare, since the cache covers 1,932 cities).
 
 The bulk cache only has temperature, AQI, PM10, rain chance and cloud cover, so the cached card is a shorter version (no forecast, no humidity) and says so in its footer. Example: with Open-Meteo blocked and **Delhi** chosen, the card shows New Delhi's cached 32°C / AQI 152 instead of "Failed to fetch". (`src/hooks/useWeather.js` → `resolveFallback`; `src/utils/bulkWeatherCache.js`; `src/components/WeatherCard.jsx`.)
 
@@ -323,7 +323,8 @@ How the two tabs share state: all three slider values are ordinary React state a
 Separate from the 📱 Mobile / 💻 Laptop toggle (that's *density*; this is *audience*), so any combination works — "Citizen + Mobile", "Authority + Laptop", etc.
 
 - **First sign-in:** a one-time screen asks **"Who are you?"** with two big choices — **🧑‍🤝‍🧑 Citizen** and **🏛️ Government / Planner** — and a "Skip, show me everything →" link (Skip = Authority). The choice is saved in the browser (`localStorage` key `heatops_audience`) and never asked again. A direct link works too: `?view=citizen` or `?view=authority` sets it without the question.
-- **Citizen view:** top bar shows only the essentials — 📍 city, 🌡️ temperature, a plain-language **risk badge** (Low / Medium / High / Extreme, from the same rules as the Health & Safety panel), the air-quality category and one 💡 safety tip; the system badges (HEAT HIGH, EL NIÑO, SYSTEM OPS, SAT ACTIVE) and the ticker are hidden. The dashboard has just two tabs: **Overview** (weather card with AQI shown as a category only, heat-risk gauge, alerts) and **What to do** (the Health & Safety precautions plus a simple AGNI box with resident-friendly suggestions). AGNI is told the audience is a resident and answers without jargon.
+- **Citizen view:** top bar shows only the essentials — 📍 city, 🌡️ temperature, a plain-language **risk badge** (Low / Medium / High / Extreme, from the same rules as the Health & Safety panel), the air-quality category and one 💡 safety tip; the system badges (HEAT HIGH, EL NIÑO, SYSTEM OPS, SAT ACTIVE) and the ticker are hidden. The dashboard has three tabs: **Overview** (weather card with AQI shown as a category only, heat-risk gauge, alerts) and **What to do** (the Health & Safety precautions plus a simple AGNI box with resident-friendly suggestions). AGNI is told the audience is a resident and answers without jargon.
+- **Compare for citizens (added 30 Aug):** the Compare tab (radar chart vs up to 4 other cities) is in the citizen tab set too — "is my city hotter than my parents' city?" is a resident's question; Analysis, Interventions and AI + Export stay Authority-only (AGNI is still one tap away via the floating button).
 - **Citizen extras:** a **📤 Share with family** button (WhatsApp `wa.me` link pre-filled with the city's temperature, risk level, air quality and safety tip), a **Safe hours today** section — one clean bar for the day (🔴 avoid ≥ 40 °C feels-like, 🟡 only if necessary 35–39 °C, 🟢 safe), a prominent "Right now: …" status line and the time windows written out on one wrapping line underneath (no truncated labels at 375 px), and a **How you can help your neighbourhood** card on *What to do* (five concrete actions; on High/Extreme days the "check on elderly neighbours NOW" step moves first in red).
 - **Authority view:** everything as before — every badge, all five tabs, ML model, comparisons, intervention calculators, exports — plus a **Heatwave Action Checklist** on the Overview tab: five Heat Action Plan steps (cooling centres, health-department alert, public advisory, water tankers, prioritise Cool Roof/green-cover interventions with a link to the Interventions tab). It shows STANDBY until the city's risk reaches High/Extreme, then ACTIVE; ticks are saved in the browser per city with a timestamp, so it works as a live operational aid in a demo (`src/components/HeatActionChecklist.jsx`).
 - **Switching later** is deliberately *not* in the header: it's the "👁️ View: Citizen ⚙️ · switch to Authority" item in the avatar menu (map screen), the "View" row in the mobile ☰ drawer, and a "Switch to … view" button on the My Profile page.
@@ -357,7 +358,7 @@ The dashboard's accent/glow/background tint used to come from the *state's* illu
 
 **The fix, in three parts:**
 - **UI (honesty):** the city list shows an explicit **"NO LIVE DATA"** badge (tooltip: nothing is estimated); global search falls back to the *live* state average labelled "(state avg)", then blank; the live-fetch geocoder only accepts a hit whose state matches, otherwise it uses the labelled state-representative fallback — and that fallback reading is no longer shown as the selected city's own temperature in the list.
-- **Data (`scripts/geocodeCities.mjs`):** every result must be in India *and* either carry the requested state as its admin1/address.state or lie inside the padded bounding box of that state's already-trusted cities (~35 km — this keeps Delhi-NCR entries like Gurugram/Noida, which are legitimately in Haryana/UP). Open-Meteo first, then **OSM Nominatim** with "City, State, India" (1 request/second). Result: **1,908 / 1,956 cities validated** (1,486 Open-Meteo state-matched, 35 bbox, 385 Nominatim), none outside India's bounding box; 48 tiny places remain unresolved and stay honestly blank.
+- **Data (`scripts/geocodeCities.mjs`):** every result must be in India *and* either carry the requested state as its admin1/address.state or lie inside the padded bounding box of that state's already-trusted cities (~35 km — this keeps Delhi-NCR entries like Gurugram/Noida, which are legitimately in Haryana/UP). Open-Meteo first, then **OSM Nominatim** with "City, State, India" (1 request/second). Result: **1,932 / 1,956 cities validated** (1,500 Open-Meteo state-matched, 392 Nominatim, 40 accepted by bounding box), none outside India's bounding box. A spelling-alias table (Tinsukhia→Tinsukia, Tumkuru→Tumakuru, Mohindergarh→Mahendragarh, Zuluk→Dzuluk…) plus a bare-name second attempt resolved 24 more on 30 Aug; 24 tiny places (colony names, hamlets) remain unresolved and stay honestly blank.
 - **Refresh (`api/_lib/refreshWeatherData.js`, `scripts/refreshWeatherCache.mjs`):** both used to carry forward *every* previously cached key, so a removed wrong-place city would have lived on as a "carried forward" reading. They now only carry forward cities still in the coordinate list. The cache was refreshed with the corrected coordinates (1,908 fresh readings; e.g. Sundernagar 25 °C at 21:40 IST, Tawang 9 °C, Suheli Par 28 °C).
 
 ### 8.14 Map fills its card; zoom-out stops at "fit"

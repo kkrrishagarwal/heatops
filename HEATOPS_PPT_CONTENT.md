@@ -43,7 +43,7 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 ### Micro / UI & UX
 - **Civic-tech dark theme** — dark slate base with a single amber accent and desaturated risk colours (no neon); readable in a government meeting room, not just a demo
 - **Heat-reactive theme colour** — the dashboard's accent/glow follows the *selected city's live temperature* in four tiers (≥45 °C red · 35–44 orange · 25–34 yellow · <25 green); the Heat Risk Gauge label uses the same tiers
-- **🧑 Citizen / 🏛️ Authority view** — a one-time "Who are you?" screen after sign-in; Citizen = essentials in plain language (city, temperature, risk badge, air-quality category, one tip, two tabs), Authority = the full technical dashboard; switchable later from the profile menu / ☰ drawer / laptop navbar, or via `?view=citizen`
+- **🧑 Citizen / 🏛️ Authority view** — a one-time "Who are you?" screen after sign-in; Citizen = essentials in plain language (city, temperature, risk badge, air-quality category, one tip; Overview · What to do · Compare), Authority = the full technical dashboard; switchable later from the profile menu / ☰ drawer / laptop navbar, or via `?view=citizen`
 - **📱 Mobile / 💻 Laptop layout toggle** — independent of the audience choice; auto-picks by screen width on first visit, remembered afterwards
 - **Mobile header with ☰ drawer** — stacked rows and a drawer for language / view switches / profile; nothing scrolls sideways at 375 px
 - **3D rotating globe login screen** — Three.js / react-globe.gl animated globe before sign-in, sets the tone immediately
@@ -84,10 +84,10 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 - **Interventions tab** — interactive sliders for cooling measures (green cover %, reflective roof %, water body area) with a projected °C temperature reduction calculated from the ML model; designed for planners, not just viewers
 - **AGNI AI Analyst** — Google Gemini (gemini-2.5-flash) behind a Vercel serverless proxy (API key never reaches the browser); 7 structured response templates triggered by question intent: Heatwave Early Warning · Heat Vulnerability Index · UHI Carbon Footprint · Cooling Degree Days · Night UHI Analysis · Intervention ROI Calculator · Multi-City Comparison; every figure without a live source is tagged "(estimated)" rather than passed off as real data; answers in whichever of the 11 UI languages is active
 - **11 Indian languages** — English + Hindi · Bengali · Tamil · Telugu · Marathi · Gujarati · Urdu · Kannada · Odia · Punjabi; 278 translation keys covering every label, placeholder, status message, and button across all panels; proper nouns (AGNI, NDVI, MODIS, etc.) intentionally left in their standard form
-- **Daily auto-refresh Cron pipeline** — Vercel Cron runs every day at 00:00 UTC, re-fetches live weather/AQI for all 1,908 tracked cities from Open-Meteo in batches, and commits the refreshed `live-weather-cache.json` **plus a compact snapshot of the day** (`public/data/history/YYYY-MM-DD.json`) back to GitHub in one commit via the Git Data API — the push triggers an automatic Vercel redeploy, so the live site is never more than ~24 hours stale with no manual intervention
+- **Daily auto-refresh Cron pipeline** — Vercel Cron runs every day at 00:00 UTC, re-fetches live weather/AQI for all 1,932 tracked cities from Open-Meteo in batches, and commits the refreshed `live-weather-cache.json` **plus a compact snapshot of the day** (`public/data/history/YYYY-MM-DD.json`) back to GitHub in one commit via the Git Data API — the push triggers an automatic Vercel redeploy, so the live site is never more than ~24 hours stale with no manual intervention
 - **Historic weather data** — every cron run is kept (64+ days of daily snapshots, backfilled from git history), served by `GET /api/weather-history?city=…&state=…&days=30`, browsable at `/history.html` and exportable to CSV; carried-forward days are flagged in the data and drawn hollow in the viewer; optional Postgres mirror (`DATABASE_URL`) — currently paused, the in-repo files are the source of truth
-- **Validated city coordinates** — 1,908 of 1,956 cities geocoded with a state check (Open-Meteo, then OSM Nominatim with "City, State, India"): an audit found 202 cities pointing at the wrong place (Tawang in Java, Kutch in Colorado…) and 267 unresolved; all fixed or honestly blank now
-- **Coverage: 1,956 cities across all 36 states/UTs** — pan-India scope including rural areas, not a single-metro demo (1,908 with live readings; the rest say so instead of guessing)
+- **Validated city coordinates** — 1,932 of 1,956 cities geocoded with a state check (Open-Meteo, then OSM Nominatim with "City, State, India"): an audit found 202 cities pointing at the wrong place (Tawang in Java, Kutch in Colorado…) and 267 unresolved; all fixed (spelling aliases + OSM fallback) or honestly blank now — 24 hamlet/colony names remain blank
+- **Coverage: 1,956 cities across all 36 states/UTs** — pan-India scope including rural areas, not a single-metro demo (1,932 with live readings; the rest say so instead of guessing)
 - **AGNI conversation memory + markdown** — the last 10 turns travel with each question ("aur uska AQI?" is understood), other cities/states named in a question get their real cached readings attached, and replies render as proper bold/lists instead of raw asterisks
 - **Graceful degradation** — error boundaries around the map and every panel ("Something went wrong — Try again"), 10-second timeouts on every fetch, cached fallbacks labelled as such
 
@@ -132,13 +132,13 @@ Indian cities are experiencing intensifying urban heat islands — built-up, low
 - **Interventions tab** — interactive sliders simulating cooling interventions and their projected impact
 - **AI + Export tab** — AGNI (AI Analyst) chat + report/CSV/WhatsApp export
 - **Floating AGNI Assistant** — accessible from any screen, not just one tab
-- **Citizen view (Overview + What to do)** — the same live data in plain language, plus Safe hours, Share with family and the neighbourhood help card
+- **Citizen view (Overview · What to do · Compare)** — the same live data in plain language, plus Safe hours, Share with family, the neighbourhood help card and the city-comparison radar
 - **Authority extras** — Heatwave Action Checklist (HAP steps), weather-condition badges for every affected state on the map, exports
 - **Historic data** — `/history.html` viewer + CSV export of every day's readings since 22 June 2026
 
 ## Data Sources (credibility slide)
 Every number shown is traceable to a real source, with honest "not available" fallbacks rather than fabricated placeholders:
-- **Open-Meteo** — live surface temperature, elevation (SRTM), air quality (CAMS); the daily bulk cache of all 1,908 cities is committed to the repo so every reading is auditable in git history
+- **Open-Meteo** — live surface temperature, elevation (SRTM), air quality (CAMS); the daily bulk cache of all 1,932 cities is committed to the repo so every reading is auditable in git history
 - **Open-Meteo geocoding + OSM Nominatim** — city coordinates, each validated to lie in its own state (wrong-place hits rejected, unresolved cities left blank rather than guessed)
 - **ESA WorldCover 10m (2021)** — real satellite land-cover classification (vegetation/built-up/water %) for 36 representative cities
 - **OpenStreetMap (Overpass API)** — live building density/urban morphology
@@ -163,7 +163,7 @@ Every number shown is traceable to a real source, with honest "not available" fa
 - **3D rotating globe** login screen (Three.js)
 - Export options: PDF report, CSV download, WhatsApp share
 - Fully responsive, dark-themed "mission control" aesthetic
-- **Self-refreshing live data, judging-day-ready**: a Vercel Cron job runs daily, re-fetching live weather/AQI for all 1,908 tracked cities from Open-Meteo and committing the refreshed snapshot back to the repo (triggering an automatic redeploy) — so the National Heat Summary, hottest-cities leaderboard and navbar ticker are never more than ~24 h stale even with nobody touching the deployment; every run is also kept as a daily history file, so the archive grows on its own
+- **Self-refreshing live data, judging-day-ready**: a Vercel Cron job runs daily, re-fetching live weather/AQI for all 1,932 tracked cities from Open-Meteo and committing the refreshed snapshot back to the repo (triggering an automatic redeploy) — so the National Heat Summary, hottest-cities leaderboard and navbar ticker are never more than ~24 h stale even with nobody touching the deployment; every run is also kept as a daily history file, so the archive grows on its own
 - **Radical honesty, enforced in code**: carried-forward readings are flagged with their real observation time; cities without a reading say "NO LIVE DATA"; the ML model's weak unseen-city score is shown next to the good one; AGNI tags every non-live figure "(estimated)"
 - **Two independent switches**: audience (Citizen / Authority) × layout (Mobile / Laptop) — any combination works, both remembered per browser
 - **Profiled and fixed a real cursor-lag bug**, not a guess: a CDP CPU profile (sign-in → map screen → 15s of cursor movement) showed react-simple-maps' own path-projection math — not any app feature — consuming 37.7% of all CPU time in one ~45-second synchronous block right after the map mounted (594 districts + 35 states being projected to SVG paths all at once). Fixed by rendering that geometry in small chunks across animation frames instead of one block; confirmed via before/after profiling that the cursor-movement phase of the same test dropped from 69.5s to 15.9s.
@@ -185,7 +185,7 @@ BhaskarOps is built to avoid both:
 - **It closes the loop**: monitoring (Overview/Analysis) → comparison (Compare) → action (Interventions, with quantified projected impact) → communication (AGNI explains it in plain language, Export shares it with stakeholders).
 - **Honest ML reporting**: the prediction model's accuracy is shown two ways — a flattering same-city metric (R²=0.95) and a much harder unseen-city metric (R²=-0.39). Disclosing both signals the model's real limitations rather than hiding them.
 - **Built for India's actual linguistic diversity** (11 languages), not just English.
-- **Stays fresh without anyone babysitting it**: a daily Vercel Cron job re-fetches live data for all 1,908 cities and auto-redeploys — so a judge checking the live site weeks after submission still sees data that's at most ~24h old, not a frozen demo snapshot.
+- **Stays fresh without anyone babysitting it**: a daily Vercel Cron job re-fetches live data for all 1,932 cities and auto-redeploys — so a judge checking the live site weeks after submission still sees data that's at most ~24h old, not a frozen demo snapshot.
 
 ## How will it solve the problem?
 
@@ -238,7 +238,7 @@ Concretely: (1) genuine multi-source real-data fusion with honest gaps disclosed
   +-----------------------------+    |   (gemini-2.5-flash)        |
   | VERCEL CRON (daily, 00:00 UTC)|   +-----------------------------+
   | -> api/refresh-weather-cache.js|
-  | -> fetches all 1,908 cities    |
+  | -> fetches all 1,932 cities    |
   |    from Open-Meteo (batched)   |
   | -> flags any city it could not |
   |    refresh as carried-forward  |
