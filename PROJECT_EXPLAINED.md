@@ -66,7 +66,8 @@ heatops/
 │
 ├── api/                           — Vercel serverless functions (production backend)
 │   ├── ask-ai.js                  — Backend proxy for AGNI chat (the Gemini API key lives here)
-│   ├── refresh-weather-cache.js   — The daily cron hits this — refreshes weather for all cities AND saves the day's history (see 8.9)
+│   ├── refresh-weather-cache.js   — The daily cron hits this (14:30 IST) — refreshes weather for all cities AND saves the day's history (see 8.9)
+│   ├── refresh-weather-cache-retry.js — Second cron (16:00 IST): refetches only the cities the full run had to carry forward (see 8.15)
 │   ├── weather-history.js         — GET /api/weather-history — a city's past readings (Postgres if configured, else the snapshot files)
 │   └── _lib/                      — Shared logic: askAI.js, refreshWeatherData.js, githubCommit.js (now commits several files at once), weatherHistory.js (daily snapshots), weatherHistoryDb.js (Postgres), weatherHistoryApi.js
 │
@@ -89,7 +90,8 @@ heatops/
 │   └── live-weather-cache.json    — Daily-refreshed bulk weather cache (1,932 cities, powers the map/ticker/city list)
 │
 ├── app.py, static/, templates/, requirements.txt, .venv/  — ⚠️ LEGACY Flask prototype, not used in production
-├── vercel.json                    — Deploy config + daily cron schedule
+├── .github/workflows/refresh-weather.yml — PRIMARY weather refresh: every 3 hours on GitHub Actions (paced, no time limit), commits cache + history (see 8.15)
+├── vercel.json                    — Deploy config + fallback cron schedules (14:30 IST full run, 16:00 IST retry)
 ├── netlify.toml                   — Netlify deploy config
 └── package.json                   — Dependencies + build scripts (npm run dev/build)
 ```
@@ -372,6 +374,10 @@ Two reasons the Authority map could look like a small India floating in an empty
 
 1. **Cron moved to 09:00 UTC = 14:30 IST** (peak heat). The daily history snapshot is therefore an afternoon reading from 31 Aug 2026 onwards (earlier days in `public/data/history/` are dawn readings — the CSV/viewer show the `lastUpdated` time of each day).
 2. **Live refresh of the opened state** (`src/utils/stateLiveRefresh.js`): when you click a state, its cities' current temperature / cloud / rain chance are fetched in **one batched Open-Meteo call** (≤ 100 cities per call; 10-minute memory per state) and merged into the same cache every panel reads. So the city list, the state's average (→ map colour and side-panel badge), the ticker and the selected city all agree. Fresh rows carry a small green dot (tooltip "Live reading from the last few minutes"); the panel note reads "Live temps · Rajasthan refreshed just now (daily cache from 9h ago for the rest of India)". AQI keeps its cached value (different endpoint, changes slowly). If the call fails, nothing changes and the cached values stay labelled with their own age.
+
+3. **A retry cron for rate-limited batches** (added the same day, after the first 14:30 IST run came back with 432 of 1,932 cities carried forward): Open-Meteo weights a multi-location request by its location count against the 600/min budget, and Vercel's egress IPs are shared, so a 1,932-city burst sometimes gets 429s. The full run now uses two lanes (weather, then AQI) with 5 s / 10 s back-off, and a second cron — `GET /api/refresh-weather-cache-retry` at **10:30 UTC = 16:00 IST** — refetches *only* the cities flagged `isCarriedForward` (a few hundred at most, which fits the budget), rewrites the cache and today's snapshot, and commits nothing if there was nothing to retry. (`api/_lib/runRefresh.js` is the shared body of both endpoints; `refreshWeatherData(…, { onlyCarried: true })`.)
+
+4. **The refresh itself moved to GitHub Actions** (`.github/workflows/refresh-weather.yml`, **every 3 hours**, plus a manual "Run workflow" button). Probing Open-Meteo showed the real limit: it weights a multi-location request by its location count, so the *first* 300-city batch succeeds and every later one is rejected for the rest of that minute — a 1,932-city refresh needs several minutes of pacing, which a 60-second Vercel Hobby function can never have. The Actions job runs the paced local script (`scripts/refreshWeatherCache.mjs`: 100-city batches, 25 s apart, 65 s back-off, 6 attempts), then commits cache + snapshot + index authored as the repository owner (Vercel Hobby only deploys team members' commits). The Vercel crons stay as a fallback. Net effect: the map is never more than ~3 hours old, and carried-forward counts should be 0 on a normal run.
 
 Not changed: the 6-tier map colour scale (LOW < 25 · LOW-MODERATE 25–30 · MODERATE 30–35 · HIGH 35–40 · VERY HIGH 40–45 · EXTREME 45+). With afternoon data the same scale now paints Rajasthan/MP in the moderate/high yellows and oranges it should.
 

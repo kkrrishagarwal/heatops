@@ -7,12 +7,20 @@
     },
     "api/weather-history.js": {
       "includeFiles": "public/data/history/**"
+    },
+    "api/refresh-weather-cache-retry.js": {
+      "maxDuration": 60,
+      "includeFiles": "src/data/cityCoordinates.json"
     }
   },
   "crons": [
     {
       "path": "/api/refresh-weather-cache",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/refresh-weather-cache-retry",
+      "schedule": "30 10 * * *"
     }
   ],
   "rewrites": [

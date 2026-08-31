@@ -30,7 +30,11 @@ function chunk(arr, size) {
   return out
 }
 
-async function fetchWithRetry(url, label, attempts = 3) {
+// 6 attempts × 65 s: Open-Meteo weights a 100-city request as ~100 calls against its 600/min
+// budget, so a throttled run may need several minutes before a batch gets through. This
+// script runs unattended in GitHub Actions (.github/workflows/refresh-weather.yml), where
+// waiting is free; it is not on a serverless time budget.
+async function fetchWithRetry(url, label, attempts = 6) {
   for (let i = 0; i < attempts; i++) {
     const res = await fetch(url)
     if (res.ok) return res.json()

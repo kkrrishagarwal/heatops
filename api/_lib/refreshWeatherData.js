@@ -14,9 +14,15 @@ import fs from 'fs'
 import path from 'path'
 
 const BATCH_SIZE = 300
-const CONCURRENCY = 3
+// Open-Meteo weights a multi-location request by its location count against the 600/min
+// budget, and Vercel's egress IPs are shared — a 1,932-city burst (7 weather + 7 AQI
+// batches) at concurrency 3 got 429s on 31 Aug 2026 and 432 cities came back stale.
+// Two lanes, weather then AQI (not interleaved), and 5s/10s back-off keep the run inside
+// the 60s budget while giving the per-minute bucket room to drain. What still fails is
+// picked up by the retry cron (onlyCarried) an hour later.
+const CONCURRENCY = 2
 const MAX_ATTEMPTS = 3
-const BACKOFF_BASE_MS = 3000 // 3s, 6s between retries
+const BACKOFF_BASE_MS = 5000 // 5s, 10s between retries
 
 function chunk(arr, size) {
   const out = []
@@ -96,13 +102,20 @@ function loadCoordinates() {
 // them — same safety behavior as the local daemon script.
 // previousLastUpdated: the timestamp of the cache this run started from — becomes the
 // observedAt of any city we could NOT refresh this run.
-export async function refreshWeatherData(existingCities = {}, previousLastUpdated = null) {
-  const entries = loadCoordinates()
+// onlyCarried: refetch just the cities the previous run could not refresh (flagged
+// isCarriedForward) or that have no entry yet — the retry cron's mode. Everything else is
+// kept exactly as it is, with its own observedAt.
+export async function refreshWeatherData(existingCities = {}, previousLastUpdated = null, { onlyCarried = false } = {}) {
+  const allEntries = loadCoordinates()
+  const entries = onlyCarried
+    ? allEntries.filter(e => { const prev = existingCities?.[`${e.city}|${e.state}`]; return !prev || prev.isCarriedForward })
+    : allEntries
+  if (onlyCarried && entries.length === 0) return { nothingToDo: true }
   const batches = chunk(entries, BATCH_SIZE)
   // Seed from the previous cache, but only for cities that are STILL in the coordinate
   // list. A city dropped from cityCoordinates.json (e.g. one whose coordinates turned out
   // to point at the wrong place) must not live on as a carried-forward reading.
-  const knownKeys = new Set(entries.map(e => `${e.city}|${e.state}`))
+  const knownKeys = new Set(allEntries.map(e => `${e.city}|${e.state}`))
   const result = {}
   let dropped = 0
   for (const [key, city] of Object.entries(existingCities || {})) {
@@ -145,8 +158,11 @@ export async function refreshWeatherData(existingCities = {}, previousLastUpdate
   // never blanks out, but that reading is explicitly flagged as carried forward, with the
   // timestamp it was actually observed at, so nothing downstream can mistake it for fresh.
   let carriedForward = 0
+  const attemptedKeys = new Set(entries.map(e => `${e.city}|${e.state}`))
   for (const [key, city] of Object.entries(result)) {
     if (freshKeys.has(key)) continue
+    // retry mode: cities we did not attempt keep their fresh flag and timestamp untouched
+    if (onlyCarried && !attemptedKeys.has(key)) { if (city.isCarriedForward) carriedForward++; continue }
     result[key] = {
       ...city,
       isCarriedForward: true,
@@ -163,6 +179,8 @@ export async function refreshWeatherData(existingCities = {}, previousLastUpdate
       cities: result
     },
     carriedForward,
+    attempted: entries.length,
+    refreshed: freshKeys.size,
     batchCount: batches.length,
     failedBatches
   }
