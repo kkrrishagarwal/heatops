@@ -12,7 +12,7 @@
   "crons": [
     {
       "path": "/api/refresh-weather-cache",
-      "schedule": "0 0 * * *"
+      "schedule": "0 9 * * *"
     }
   ],
   "rewrites": [
