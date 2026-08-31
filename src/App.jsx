@@ -25,7 +25,8 @@ import {
 import { geoCentroid } from 'd3'
 import './App.css'
 import { fetchJson, describeFetchError } from './utils/fetchJson'
-import { setBulkWeatherCache } from './utils/bulkWeatherCache'
+import { setBulkWeatherCache, getBulkWeatherLastUpdated } from './utils/bulkWeatherCache'
+import { refreshStateLive, getStateRefreshedAt } from './utils/stateLiveRefresh'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
@@ -580,7 +581,7 @@ function CacheStatusNote({ status, lastUpdated, isStale, formatAgo, onRetry, liv
   )
 }
 
-function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze, liveCache, liveSelectedTemp, cacheLastUpdated, cacheStatus, onRetryCache, formatAgo, isCacheStale }) {
+function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze, liveCache, liveSelectedTemp, cacheLastUpdated, stateRefreshedAt = null, cacheStatus, onRetryCache, formatAgo, isCacheStale }) {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   
@@ -617,12 +618,12 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
 
       <CacheStatusNote
         status={cacheStatus}
-        lastUpdated={cacheLastUpdated}
-        isStale={isCacheStale}
+        lastUpdated={stateRefreshedAt || cacheLastUpdated}
+        isStale={stateRefreshedAt ? () => false : isCacheStale}
         formatAgo={formatAgo}
         onRetry={onRetryCache}
-        liveText="Live temps"
-        suffix={' · "NO LIVE DATA" = city not in the weather cache yet (nothing is estimated)'}
+        liveText={stateRefreshedAt ? `Live temps · ${stateName} refreshed` : 'Live temps'}
+        suffix={(stateRefreshedAt ? ` (daily cache from ${formatAgo(cacheLastUpdated)} for the rest of India)` : '') + ' · "NO LIVE DATA" = city not in the weather cache yet (nothing is estimated)'}
       />
 
       <div style={{
@@ -719,6 +720,9 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
               ? liveSelectedTemp
               : liveEntry?.temp
             const isLive = typeof liveTemp === 'number'
+            // Fresh = refreshed for this state in the last 15 min (or the selected city's own live fetch)
+            const observedMs = liveEntry?.observedAt ? new Date(liveEntry.observedAt).getTime() : 0
+            const isFresh = (isSelected && typeof liveSelectedTemp === 'number') || (Date.now() - observedMs < 15 * 60 * 1000)
             // No fabricated fallback. The old "~estimate" (state avgLST ± a hash of the
             // city name) was a made-up number that could sit 7°C off reality, e.g.
             // Sundernagar showing ~21.8°C on a 29°C day. A city that is not in the live
@@ -781,12 +785,17 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
                   gap: 6
                 }}>
                   {isLive ? (
-                    <span style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: getThemeAccent(liveTemp),
-                      transition: 'color 0.4s ease'
-                    }}>
+                    <span
+                      title={isFresh ? t('cityList.freshTitle', 'Live reading from the last few minutes') : t('cityList.cachedTitle', 'From the daily cache — opens live when refreshed')}
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: getThemeAccent(liveTemp),
+                        transition: 'color 0.4s ease',
+                        display: 'inline-flex', alignItems: 'center', gap: 5
+                      }}
+                    >
+                      {isFresh && <span data-testid="fresh-dot" style={{ width: 6, height: 6, borderRadius: 3, background: '#22c55e', boxShadow: '0 0 6px #22c55e', display: 'inline-block' }} />}
                       {lst}°C
                     </span>
                   ) : (
@@ -2895,6 +2904,29 @@ function App({ user }) {
 
   const getLiveCity = (city, state) => liveCityCache[`${city}|${state}`] || null
 
+  // When a state is opened, refresh ITS cities' current temperatures in one batched call
+  // and merge them into the same cache everything reads from (city list, state average →
+  // map colour, ticker). The bulk cache is a once-a-day snapshot; without this the list
+  // showed the dawn value (Udaipur 23 °C) next to the selected city's live value (28 °C).
+  const [stateRefreshedAt, setStateRefreshedAt] = useState({})
+  useEffect(() => {
+    if (!selectedState || liveCacheStatus !== 'ready') return
+    let cancelled = false
+    const cities = STATE_DATA[selectedState]?.cities || []
+    refreshStateLive(selectedState, cities).then(res => {
+      if (cancelled || !res) return
+      setLiveCityCache(prev => {
+        const next = { ...prev }
+        for (const [key, fresh] of Object.entries(res.entries)) next[key] = { ...(prev[key] || {}), ...fresh }
+        // keep useWeather's offline fallback in step (outside the updater — updaters must stay pure)
+        queueMicrotask(() => setBulkWeatherCache(next, getBulkWeatherLastUpdated()))
+        return next
+      })
+      setStateRefreshedAt(prev => ({ ...prev, [selectedState]: res.fetchedAt }))
+    })
+    return () => { cancelled = true }
+  }, [selectedState, liveCacheStatus])
+
   const liveLeaderBase = useMemo(() => {
     const all = Object.values(liveCityCache).filter(c => typeof c.temp === 'number')
     if (all.length === 0) return leaderBase // seed list shown only until the cache first loads
@@ -3867,9 +3899,12 @@ function App({ user }) {
             paddingRight: 4,
             scrollbarWidth: 'thin',
             scrollbarColor: '#1a2a4a #0a0e1a',
-            // Theme follows the selected city's LIVE temperature (not the state aggregate); the
-            // state's adjusted LST is only the fallback while no live reading exists.
-            ...(selectedState ? getThemeVars(typeof liveWeather?.current?.temp === 'number' ? liveWeather.current.temp : getAdjustedLST(selectedState)) : {})
+            // Theme follows the selected city's LIVE temperature; while no city reading exists,
+            // the state's LIVE average; only then the illustrative seed (colour only — the seed
+            // is never displayed as a number).
+            ...(selectedState ? getThemeVars(typeof liveWeather?.current?.temp === 'number'
+              ? liveWeather.current.temp
+              : (liveIndiaData[selectedState]?.heatIndexLive ? liveIndiaData[selectedState].heatIndex : getAdjustedLST(selectedState))) : {})
           }}>
             {selectedState ? (
               <>
@@ -3891,16 +3926,24 @@ function App({ user }) {
                 </div>
 
                 <div className="metrics-grid">
-                  <div className="metric-card">
-                    <span className="metric-label">LST</span>
-                    <span className="metric-value">{getAdjustedLST(selectedState).toFixed(1)}°C</span>
+                  {/* Live state average of the cached/refreshed city temperatures — the same number
+                      that colours the state on the map and drives the badge above. The old tile
+                      printed STATE_DATA.avgLST (an illustrative seed: "Rajasthan 48.0°C") next to
+                      a live-derived LOW-MODERATE badge. */}
+                  <div className="metric-card" title={liveIndiaData[selectedState]?.heatIndexLive
+                    ? t('statePanel.avgTempTitle', 'Average of the live current temperatures of {{n}} cities in this state', { n: liveIndiaData[selectedState].liveCityCount })
+                    : t('statePanel.avgTempNoLive', 'No live readings for this state yet')}>
+                    <span className="metric-label">{t('statePanel.avgTemp', 'AVG TEMP')}{liveIndiaData[selectedState]?.heatIndexLive ? ` · ${liveIndiaData[selectedState].liveCityCount} ${t('statePanel.cities', 'cities')}` : ''}</span>
+                    <span className="metric-value" data-testid="state-avg-temp">
+                      {liveIndiaData[selectedState]?.heatIndexLive ? `${liveIndiaData[selectedState].heatIndex.toFixed(1)}°C` : t('cityList.noLiveData', 'NO LIVE DATA')}
+                    </span>
                   </div>
-                  <div className="metric-card">
-                    <span className="metric-label">NDVI</span>
+                  <div className="metric-card" title={t('statePanel.baselineTitle', 'Illustrative state baseline (not a live satellite reading) — see the Analysis tab for real land-cover data')}>
+                    <span className="metric-label">NDVI · {t('statePanel.baseline', 'baseline')}</span>
                     <span className="metric-value">{STATE_DATA[selectedState]?.ndvi?.toFixed(2) ?? '—'}</span>
                   </div>
-                  <div className="metric-card">
-                    <span className="metric-label">NDBI</span>
+                  <div className="metric-card" title={t('statePanel.baselineTitle', 'Illustrative state baseline (not a live satellite reading) — see the Analysis tab for real land-cover data')}>
+                    <span className="metric-label">NDBI · {t('statePanel.baseline', 'baseline')}</span>
                     <span className="metric-value">{STATE_DATA[selectedState]?.ndbi?.toFixed(2) ?? '—'}</span>
                   </div>
                   <div className="metric-card">
@@ -3917,6 +3960,7 @@ function App({ user }) {
                   liveCache={liveCityCache}
                   liveSelectedTemp={liveWeather?.isFallbackLocation ? undefined : liveWeather?.current?.temp}
                   cacheLastUpdated={cacheLastUpdated}
+                  stateRefreshedAt={stateRefreshedAt[selectedState] || getStateRefreshedAt(selectedState) || null}
                   cacheStatus={liveCacheStatus}
                   onRetryCache={retryLiveCache}
                   formatAgo={formatAgo}
