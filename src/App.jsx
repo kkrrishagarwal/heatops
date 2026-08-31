@@ -1326,7 +1326,39 @@ const DistrictsLayer = React.memo(function DistrictsLayer({ DATA }) {
 // translucent tint, then stripes/dashes/dots); both hid the heat colour, and in the
 // monsoon 26 of 36 states cross the cloud/rain threshold on an ordinary day, so most of
 // India ended up textured. A badge carries the same information without the clutter.
-const WEATHER_OVERLAY_ICONS = { dust: '🌫️', rain: '🌧️', cloud: '☁️', clear: null }
+const WEATHER_OVERLAY_ICONS = { dust: 'dust', rain: 'rain', cloud: 'cloud', clear: null }
+// Vector glyphs, not emoji: an emoji inside SVG <text> depends on the OS having a colour
+// emoji font that the browser is willing to use within SVG — on machines without one the
+// backing disc rendered but the glyph did not ("white rings, no icon"). Paths render the
+// same everywhere. Drawn in a 16×16 box centred on the marker (translate(-8,-8)).
+const CLOUD_PATH = 'M4.6 12.6a3 3 0 0 1-.5-5.95A4.6 4.6 0 0 1 13 6.1a3.3 3.3 0 0 1-.6 6.5H4.6z'
+function WeatherGlyph({ kind }) {
+  if (kind === 'cloud') {
+    return <path d={CLOUD_PATH} fill='#e2e8f0' transform='translate(-8,-8)' />
+  }
+  if (kind === 'rain') {
+    return (
+      <g transform='translate(-8,-8)'>
+        <path d={CLOUD_PATH} fill='#cbd5e1' transform='translate(1.2,-2.2) scale(0.82)' />
+        <g stroke='#60a5fa' strokeWidth={1.5} strokeLinecap='round'>
+          <line x1={5.5} y1={11.2} x2={4.5} y2={14.2} />
+          <line x1={8.5} y1={11.2} x2={7.5} y2={14.2} />
+          <line x1={11.5} y1={11.2} x2={10.5} y2={14.2} />
+        </g>
+      </g>
+    )
+  }
+  if (kind === 'dust') {
+    return (
+      <g transform='translate(-8,-8)' fill='none' stroke='#f59e0b' strokeWidth={1.5} strokeLinecap='round'>
+        <path d='M2.5 5.2c2-1.6 3.8-1.6 5.5 0s3.5 1.6 5.5 0' />
+        <path d='M2.5 8.5c2-1.6 3.8-1.6 5.5 0s3.5 1.6 5.5 0' />
+        <path d='M2.5 11.8c2-1.6 3.8-1.6 5.5 0s3.5 1.6 5.5 0' />
+      </g>
+    )
+  }
+  return null
+}
 const WeatherOverlayIcons = React.memo(function WeatherOverlayIcons({ DATA, centroids }) {
   return (
     <ComposableMap
@@ -1335,17 +1367,14 @@ const WeatherOverlayIcons = React.memo(function WeatherOverlayIcons({ DATA, cent
       style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
     >
       {Object.entries(centroids || {}).map(([name, coords]) => {
-        const icon = WEATHER_OVERLAY_ICONS[DATA?.[name]?.weatherCondition?.type]
-        if (!icon || !coords) return null
+        const kind = WEATHER_OVERLAY_ICONS[DATA?.[name]?.weatherCondition?.type]
+        if (!kind || !coords) return null
         return (
           <Marker key={name + '_wxicon'} coordinates={coords}>
-            {/* fontFamily explicitly overrides the app-wide Indic-language font stack
-                (Inter, Noto Sans Devanagari, ...) this <text> would otherwise inherit —
-                that stack has no emoji glyphs and, inside an <svg>, blocks the normal
-                OS emoji-font fallback that HTML text elsewhere on this page relies on
-                (confirmed via DOM inspection: the glyph was present but invisible). */}
-            <circle r={9} fill='rgba(15,23,42,0.78)' stroke='rgba(226,232,240,0.55)' strokeWidth={0.8} />
-            <text textAnchor='middle' dominantBaseline='central' fontSize={12} fontFamily='"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif' style={{ pointerEvents: 'none' }}>{icon}</text>
+            <g data-wx-badge={kind} style={{ pointerEvents: 'none' }}>
+              <circle r={10} fill='rgba(15,23,42,0.82)' stroke='rgba(226,232,240,0.6)' strokeWidth={0.8} />
+              <WeatherGlyph kind={kind} />
+            </g>
           </Marker>
         )
       })}
@@ -2817,10 +2846,17 @@ function App({ user }) {
       fetchJson('/live-weather-cache.json', { timeoutMs: 20000 })
         .then(data => {
           if (cancelled) return
-          setLiveCityCache(data?.cities || {})
+          // Every entry carries its own city/state (the leaderboard, ticker and summary read
+          // them); derive from the "City|State" key if a writer left them out.
+          const cities = Object.fromEntries(Object.entries(data?.cities || {}).map(([key, v]) => {
+            if (v?.city && v?.state) return [key, v]
+            const [city, state] = key.split('|')
+            return [key, { city, state, ...v }]
+          }))
+          setLiveCityCache(cities)
           setCacheLastUpdated(data?.lastUpdated || null)
           // Also register it for useWeather's live-API fallback (see utils/bulkWeatherCache.js)
-          setBulkWeatherCache(data?.cities || {}, data?.lastUpdated || null)
+          setBulkWeatherCache(cities, data?.lastUpdated || null)
           setLiveCacheStatus('ready')
         })
         .catch(err => {
