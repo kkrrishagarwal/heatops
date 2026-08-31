@@ -1887,7 +1887,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
             🌡️ Heat Index: <strong>{activeData.heatIndex}°C</strong>
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)' }}>
               {activeData.heatIndexLive
-                ? `live avg of ${activeData.liveCityCount} cities' current temps`
+                ? `live median of ${activeData.liveCityCount} cities' current temps (half are hotter, half cooler)`
                 : '(estimated — no live city data for this state yet)'}
             </div>
           </div>
@@ -2987,17 +2987,25 @@ function App({ user }) {
   // (same bulk Open-Meteo cache that powers the ticker/leader lists; entries carry their
   // own .state field, so this self-extends as the cache gains cities). Replaces
   // STATE_DATA's hardcoded per-state avgLST as the map-coloring source.
+  // State heat index = the MEDIAN of its cities' live temperatures, not the mean. Rule
+  // requested for the map: if half of a state's cities are at ≥ 30 °C the state is
+  // MODERATE (yellow) even when a few cold hill stations drag the average under 30 — and
+  // symmetrically it only turns HIGH (orange) once half its cities are ≥ 35 °C. The median
+  // is exactly "the temperature that half the state's cities reach".
   const liveStateHeatIndex = useMemo(() => {
-    const sums = {}
+    const temps = {}
     for (const c of Object.values(liveCityCache)) {
       if (typeof c.temp !== 'number' || !c.state) continue
-      const s = sums[c.state] || (sums[c.state] = { total: 0, n: 0 })
-      s.total += c.temp
-      s.n += 1
+      ;(temps[c.state] || (temps[c.state] = [])).push(c.temp)
     }
     const out = {}
-    for (const [state, { total, n }] of Object.entries(sums)) {
-      out[state] = { heatIndex: Math.round((total / n) * 10) / 10, cityCount: n }
+    for (const [state, arr] of Object.entries(temps)) {
+      arr.sort((a, b) => a - b)
+      const n = arr.length
+      // upper median for even counts: with exactly half the cities at ≥ 30 the state reads 30
+      const median = arr[Math.floor(n / 2)]
+      const mean = arr.reduce((a, b) => a + b, 0) / n
+      out[state] = { heatIndex: Math.round(median * 10) / 10, meanTemp: Math.round(mean * 10) / 10, cityCount: n }
     }
     return out
   }, [liveCityCache])
@@ -3051,7 +3059,7 @@ function App({ user }) {
       const live = liveStateHeatIndex[state]
       const weatherCondition = liveStateWeatherCondition[state] || { type: 'clear' }
       return [state, live
-        ? { ...data, heatIndex: live.heatIndex, heatIndexLive: true, liveCityCount: live.cityCount, weatherCondition }
+        ? { ...data, heatIndex: live.heatIndex, meanTemp: live.meanTemp, heatIndexLive: true, liveCityCount: live.cityCount, weatherCondition }
         : { ...data, heatIndexLive: false, weatherCondition }]
     }))
   }, [liveStateHeatIndex, liveStateWeatherCondition])
@@ -3738,7 +3746,7 @@ function App({ user }) {
                                 const label = getRiskLabel(temp)
                                 return (
                                   <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: getRiskText(label) }}>{temp}°C{cityLive ? '' : ' (state avg)'}</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: getRiskText(label) }}>{temp}°C{cityLive ? '' : ' (state median)'}</div>
                                     <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{label}</div>
                                   </div>
                                 )
@@ -3967,9 +3975,9 @@ function App({ user }) {
                       printed STATE_DATA.avgLST (an illustrative seed: "Rajasthan 48.0°C") next to
                       a live-derived LOW-MODERATE badge. */}
                   <div className="metric-card" title={liveIndiaData[selectedState]?.heatIndexLive
-                    ? t('statePanel.avgTempTitle', 'Average of the live current temperatures of {{n}} cities in this state', { n: liveIndiaData[selectedState].liveCityCount })
+                    ? t('statePanel.medianTempTitle', 'Median of the live current temperatures of {{n}} cities in this state — half of them are hotter than this, half cooler. This is the value that colours the state on the map.', { n: liveIndiaData[selectedState].liveCityCount })
                     : t('statePanel.avgTempNoLive', 'No live readings for this state yet')}>
-                    <span className="metric-label">{t('statePanel.avgTemp', 'AVG TEMP')}{liveIndiaData[selectedState]?.heatIndexLive ? ` · ${liveIndiaData[selectedState].liveCityCount} ${t('statePanel.cities', 'cities')}` : ''}</span>
+                    <span className="metric-label">{t('statePanel.medianTemp', 'MEDIAN TEMP')}{liveIndiaData[selectedState]?.heatIndexLive ? ` · ${liveIndiaData[selectedState].liveCityCount} ${t('statePanel.cities', 'cities')}` : ''}</span>
                     <span className="metric-value" data-testid="state-avg-temp">
                       {liveIndiaData[selectedState]?.heatIndexLive ? `${liveIndiaData[selectedState].heatIndex.toFixed(1)}°C` : t('cityList.noLiveData', 'NO LIVE DATA')}
                     </span>
@@ -4594,7 +4602,7 @@ function App({ user }) {
                           {icon} {label} · {gaugeVal}°C
                           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.45)', fontWeight: 400, marginTop: 2 }}>
                             {isCityLive ? 'live current temp (Open-Meteo)'
-                              : isLive ? `live state avg of ${sd.liveCityCount} cities`
+                              : isLive ? `live state median of ${sd.liveCityCount} cities`
                               : '(estimated)'}
                           </div>
                         </div>
