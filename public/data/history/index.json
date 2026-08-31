@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-30T00:04:39.205Z",
+  "updatedAt": "2026-08-31T09:51:41.359Z",
   "fields": [
     "temp",
     "rainChance",
@@ -398,6 +398,12 @@
       "file": "2026-08-30.json",
       "lastUpdated": "2026-08-30T00:04:04.181Z",
       "cityCount": 1908
+    },
+    {
+      "date": "2026-08-31",
+      "file": "2026-08-31.json",
+      "lastUpdated": "2026-08-31T09:51:06.571Z",
+      "cityCount": 1932
     }
   ]
 }
