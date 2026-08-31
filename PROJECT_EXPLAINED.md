@@ -54,6 +54,7 @@ heatops/
 │   │   ├── realData.js            — ⚠️ ILLUSTRATIVE/SEEDED data (not real) — details in Section 7
 │   │   ├── dashboardUtils.js      — Map math + login/auth localStorage helpers + heatmap-grid buckets & intervention-impact preview
 │   │   ├── cityCoordinateResolver.js — Finds a city's lat/lon (exact match or fallback)
+│   │   ├── stateLiveRefresh.js    — One batched Open-Meteo call for the opened state's cities (see 8.15)
 │   │   ├── lulcFallback.js        — "Nearest real city" fallback logic for land-cover data
 │   │   ├── osmUtils.js            — Fetches live building-density from OpenStreetMap
 │   │   ├── istClock.js            — An always-correct India time clock
@@ -103,7 +104,7 @@ Here's what happens, step by step, when a user opens the app:
 
 2. **After sign-in, the map screen appears** (the `IndiaMap` component inside `App.jsx`). At this point, `public/live-weather-cache.json` gets fetched in the background — a file that already has the current temperature, rain-chance, AQI, cloud-cover, and PM10 stored for all 1,932 cities (because fetching all 2,050 cities live would be far too slow).
 
-3. **Where does this cache come from?** Every night, a Vercel cron job (`"0 0 * * *"` in `vercel.json`) triggers `api/refresh-weather-cache.js`. This function fetches fresh data for every city from Open-Meteo, and — since serverless functions can't save files persistently — commits the result straight to GitHub via `githubCommit.js`, which automatically triggers a new deploy. That's why the map shows "Heat data loaded X min ago."
+3. **Where does this cache come from?** Every afternoon at **14:30 IST** (`"0 9 * * *"` UTC in `vercel.json` — peak-heat hours; it used to run at 05:34 IST, the coolest moment of the day, which coloured the map from pre-dawn temperatures all day), a Vercel cron job triggers `api/refresh-weather-cache.js`. This function fetches fresh data for every city from Open-Meteo, and — since serverless functions can't save files persistently — commits the result straight to GitHub via `githubCommit.js`, which automatically triggers a new deploy. That's why the map shows "Heat data loaded X min ago."
 
 4. **When a user clicks a state/city**, `App.jsx` does two things for that city in parallel:
    - Fetches **real-time live weather** via the `useWeather()` hook (directly from Open-Meteo, just for this one city — fresher than the bulk cache). **If that live call fails** (timeout, rate limit, outage), the hook automatically shows the city's reading from the bulk cache instead, clearly labelled "Showing cached data from X ago" — it only shows an error if the cache has nothing for that city either (see Section 8.5).
@@ -364,6 +365,15 @@ The dashboard's accent/glow/background tint used to come from the *state's* illu
 ### 8.14 Map fills its card; zoom-out stops at "fit"
 
 Two reasons the Authority map could look like a small India floating in an empty card: zoom-out went down to 0.5× although 1× was already fit-to-card (each "−" only shrank the map into empty space), and the projection left ~17 % of the box unused under Kanyakumari. Now the zoom floor is **1×** for the button and the scroll wheel (the "−" button is disabled at fit and returning to 1× re-centres the pan), and the projection is `scale 1120, centre 23.2°N`, so India fills **93 %** of the box. Verified with screenshots at 1920×1080, 1366×768, 1280×860, 1024×600, 900×420 and 375×812 — nothing clips at Kashmir, Arunachal or the A&N / Lakshadweep labels. Very short windows remain height-bound (India is roughly square, so a 200 px-tall card can only show a ~190 px India).
+
+### 8.15 The map was coloured from pre-dawn temperatures — fixed at the source and on open
+
+**What you saw:** Udaipur listed at 23 °C, then 28 °C the moment it was selected; Rajasthan, MP and the south coloured green on a hot afternoon. **Why:** the nightly cron ran at 00:00 UTC = **05:34 IST**, the coolest minute of the day, and the whole map, city list and state averages are coloured from that snapshot until the next run — while a selected city's WeatherCard is fetched live. Two fixes:
+
+1. **Cron moved to 09:00 UTC = 14:30 IST** (peak heat). The daily history snapshot is therefore an afternoon reading from 31 Aug 2026 onwards (earlier days in `public/data/history/` are dawn readings — the CSV/viewer show the `lastUpdated` time of each day).
+2. **Live refresh of the opened state** (`src/utils/stateLiveRefresh.js`): when you click a state, its cities' current temperature / cloud / rain chance are fetched in **one batched Open-Meteo call** (≤ 100 cities per call; 10-minute memory per state) and merged into the same cache every panel reads. So the city list, the state's average (→ map colour and side-panel badge), the ticker and the selected city all agree. Fresh rows carry a small green dot (tooltip "Live reading from the last few minutes"); the panel note reads "Live temps · Rajasthan refreshed just now (daily cache from 9h ago for the rest of India)". AQI keeps its cached value (different endpoint, changes slowly). If the call fails, nothing changes and the cached values stay labelled with their own age.
+
+Not changed: the 6-tier map colour scale (LOW < 25 · LOW-MODERATE 25–30 · MODERATE 30–35 · HIGH 35–40 · VERY HIGH 40–45 · EXTREME 45+). With afternoon data the same scale now paints Rajasthan/MP in the moderate/high yellows and oranges it should.
 
 ---
 

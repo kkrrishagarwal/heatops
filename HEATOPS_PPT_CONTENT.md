@@ -84,11 +84,12 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 - **Interventions tab** — interactive sliders for cooling measures (green cover %, reflective roof %, water body area) with a projected °C temperature reduction calculated from the ML model; designed for planners, not just viewers
 - **AGNI AI Analyst** — Google Gemini (gemini-2.5-flash) behind a Vercel serverless proxy (API key never reaches the browser); 7 structured response templates triggered by question intent: Heatwave Early Warning · Heat Vulnerability Index · UHI Carbon Footprint · Cooling Degree Days · Night UHI Analysis · Intervention ROI Calculator · Multi-City Comparison; every figure without a live source is tagged "(estimated)" rather than passed off as real data; answers in whichever of the 11 UI languages is active
 - **11 Indian languages** — English + Hindi · Bengali · Tamil · Telugu · Marathi · Gujarati · Urdu · Kannada · Odia · Punjabi; 278 translation keys covering every label, placeholder, status message, and button across all panels; proper nouns (AGNI, NDVI, MODIS, etc.) intentionally left in their standard form
-- **Daily auto-refresh Cron pipeline** — Vercel Cron runs every day at 00:00 UTC, re-fetches live weather/AQI for all 1,932 tracked cities from Open-Meteo in batches, and commits the refreshed `live-weather-cache.json` **plus a compact snapshot of the day** (`public/data/history/YYYY-MM-DD.json`) back to GitHub in one commit via the Git Data API — the push triggers an automatic Vercel redeploy, so the live site is never more than ~24 hours stale with no manual intervention
+- **Daily auto-refresh Cron pipeline** — Vercel Cron runs every day at 09:00 UTC (14:30 IST, peak heat), re-fetches live weather/AQI for all 1,932 tracked cities from Open-Meteo in batches, and commits the refreshed `live-weather-cache.json` **plus a compact snapshot of the day** (`public/data/history/YYYY-MM-DD.json`) back to GitHub in one commit via the Git Data API — the push triggers an automatic Vercel redeploy, so the live site is never more than ~24 hours stale with no manual intervention
 - **Historic weather data** — every cron run is kept (64+ days of daily snapshots, backfilled from git history), served by `GET /api/weather-history?city=…&state=…&days=30`, browsable at `/history.html` and exportable to CSV; carried-forward days are flagged in the data and drawn hollow in the viewer; optional Postgres mirror (`DATABASE_URL`) — currently paused, the in-repo files are the source of truth
 - **Validated city coordinates** — 1,932 of 1,956 cities geocoded with a state check (Open-Meteo, then OSM Nominatim with "City, State, India"): an audit found 202 cities pointing at the wrong place (Tawang in Java, Kutch in Colorado…) and 267 unresolved; all fixed (spelling aliases + OSM fallback) or honestly blank now — 24 hamlet/colony names remain blank
 - **Coverage: 1,956 cities across all 36 states/UTs** — pan-India scope including rural areas, not a single-metro demo (1,932 with live readings; the rest say so instead of guessing)
 - **AGNI conversation memory + markdown** — the last 10 turns travel with each question ("aur uska AQI?" is understood), other cities/states named in a question get their real cached readings attached, and replies render as proper bold/lists instead of raw asterisks
+- **Opened state refreshes live** — clicking a state fetches its cities' current temperatures in one batched call (10-min memory), so the city list, the state average / map colour and the selected city always agree; fresh rows show a green dot
 - **Graceful degradation** — error boundaries around the map and every panel ("Something went wrong — Try again"), 10-second timeouts on every fetch, cached fallbacks labelled as such
 
 ---
@@ -236,7 +237,7 @@ Concretely: (1) genuine multi-source real-data fusion with honest gaps disclosed
                  | reads daily-      +-----------------------------+
                  | refreshed file    |   Google Gemini API         |
   +-----------------------------+    |   (gemini-2.5-flash)        |
-  | VERCEL CRON (daily, 00:00 UTC)|   +-----------------------------+
+  | VERCEL CRON (daily, 09:00 UTC)|   +-----------------------------+
   | -> api/refresh-weather-cache.js|
   | -> fetches all 1,932 cities    |
   |    from Open-Meteo (batched)   |
