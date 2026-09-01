@@ -1,6 +1,5 @@
-// Lite mode — for low-end phones and slow connections. Auto-detected conservatively
-// (≤ 3 GB device memory, ≤ 2 CPU cores, browser "Save-Data", or a 2G/3G connection) and
-// switchable by hand (avatar menu / ☰ drawer); the choice is remembered per browser.
+// Lite mode — for low-end phones and slow connections. Opt-in from the avatar menu / ☰
+// drawer (remembered per browser); auto-on only for Save-Data or a 2G connection.
 //
 // What it changes: no 3D globe on the sign-in screen (skips the three.js bundle), the map
 // draws state shapes only (no 594-district layer — the single biggest CPU cost on first
@@ -10,14 +9,15 @@ import { useState, useEffect, useCallback } from 'react'
 
 export const LITE_KEY = 'heatops_lite'
 
+// Auto-on ONLY when the browser itself asks for less (Save-Data) or reports a 2G link.
+// Memory/core heuristics were tried and removed: they switched Lite on for ordinary
+// laptops and silently changed the map's look. Everyone else opts in from the menu.
 export function detectLowEnd() {
   try {
     const n = navigator
     const conn = n.connection || n.mozConnection || n.webkitConnection
     if (conn?.saveData) return true
-    if (/(^|[^a-z])(slow-2g|2g|3g)$/.test(String(conn?.effectiveType || ''))) return true
-    if (typeof n.deviceMemory === 'number' && n.deviceMemory <= 3) return true
-    if (typeof n.hardwareConcurrency === 'number' && n.hardwareConcurrency <= 2) return true
+    if (/(^|[^a-z])(slow-2g|2g)$/.test(String(conn?.effectiveType || ''))) return true
   } catch { /* no navigator hints — assume a normal device */ }
   return false
 }

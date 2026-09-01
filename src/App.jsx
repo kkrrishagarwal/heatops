@@ -1390,7 +1390,7 @@ const WeatherOverlayIcons = React.memo(function WeatherOverlayIcons({ DATA, cent
 // showing, hoveredState===name is already guaranteed true. Dropping that redundant read
 // removes the need for this layer to depend on hoveredState at all — onHoverEnter/Leave
 // are stable callbacks (useCallback, empty deps) so this never re-renders on hover.
-const StatesInteractiveLayer = React.memo(function StatesInteractiveLayer({ DATA, onStateClick, onHoverEnter, onHoverLeave }) {
+const StatesInteractiveLayer = React.memo(function StatesInteractiveLayer({ DATA, onStateClick, onHoverEnter, onHoverLeave, solidFill = false }) {
   return (
     <ComposableMap
       projection='geoMercator'
@@ -1411,7 +1411,9 @@ const StatesInteractiveLayer = React.memo(function StatesInteractiveLayer({ DATA
 
             const heat = DATA?.[name]?.heatIndex || 30
             const color = getHeatIndexColor(heat)
-            const baseFill = 'rgba(0,0,0,0)'
+            // Normally transparent — the district layer underneath carries the heat colour.
+            // In Lite mode that layer is skipped, so this one paints the state itself.
+            const baseFill = solidFill ? color : 'rgba(0,0,0,0)'
             return (
               <Geography
                 key={geo.rsmKey + '_state'}
@@ -1787,7 +1789,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
       {/* LAYER 2 + 2.5: extracted + memoized above (StatesInteractiveLayer/JKInteractiveLayer)
           — click/hover detection no longer forces a recompute of these GeoJSON layers on
           every hover; only the small tooltip panel and border-highlight layers update. */}
-      <StatesInteractiveLayer DATA={DATA} onStateClick={onStateClick} onHoverEnter={handleHoverEnter} onHoverLeave={handleHoverLeave} />
+      <StatesInteractiveLayer DATA={DATA} onStateClick={onStateClick} onHoverEnter={handleHoverEnter} onHoverLeave={handleHoverLeave} solidFill={lite} />
       <JKInteractiveLayer DATA={DATA} onStateClick={onStateClick} onHoverEnter={handleHoverEnter} onHoverLeave={handleHoverLeave} />
 
       {/* LAYER 3 + 3.5: extracted + memoized (StateBordersLayer/JKBordersLayer below).
