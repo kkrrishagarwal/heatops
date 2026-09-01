@@ -6,6 +6,11 @@ import AudienceChooser from './components/AudienceChooser'
 import { readStoredAudience, storeAudience } from './hooks/useAudienceMode'
 import { createLoadingScreen } from './utils/3d-effects'
 import '../src/3d-styles.css'
+import { readLite, applyLiteAttr } from './utils/liteMode'
+
+// Stamp html[data-lite] before anything renders, so the sign-in screen and the map both
+// get the low-end CSS (no blur/shadows/animations) from the first paint.
+applyLiteAttr(readLite())
 
 // Lazy-loaded so the react-globe.gl/three.js bundle (only used on the login
 // screen) doesn't get pulled into the same chunk as the dashboard/map code —

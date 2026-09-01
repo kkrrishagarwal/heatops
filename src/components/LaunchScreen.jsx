@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState, Component } from 'react'
 import Globe from 'react-globe.gl'
 import { AmbientLight, DirectionalLight } from 'three'
 import IntroGlobe from './IntroGlobe'
+import { readLite } from '../utils/liteMode'
+
+// Lite mode (low-end devices): no WebGL globe at all — the sign-in card stands on its own.
+const LITE_AT_LOAD = readLite()
 
 // Texture copied from three-globe's bundled examples into public/textures —
 // three-globe's package.json "exports" map blocks importing it directly via
@@ -199,7 +203,8 @@ const LaunchScreen = ({ onSignIn }) => {
       }
 
       frame += 1
-      animId = requestAnimationFrame(draw)
+      // Lite mode: draw the stars once; no per-frame loop on low-end devices
+      if (!LITE_AT_LOAD) animId = requestAnimationFrame(draw)
       // expose the current animation id so parent handlers (sign-in) can cancel
       // the starfield loop immediately when transitioning screens.
       starAnimRef.current = animId
@@ -342,7 +347,7 @@ const LaunchScreen = ({ onSignIn }) => {
           onClick={() => setSkipIntro(true)}
         >
           <GlobeErrorBoundary fallback={null}>
-            <IntroGlobe
+            {LITE_AT_LOAD ? null : <IntroGlobe
               active={!isLoading}
               introTriggered={introTriggered}
               skipIntro={skipIntro}
@@ -352,7 +357,7 @@ const LaunchScreen = ({ onSignIn }) => {
               onZoomComplete={() => {
                 if (skipIntro) return
               }}
-            />
+            />}
           </GlobeErrorBoundary>
           <button
             type="button"

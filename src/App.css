@@ -1934,3 +1934,16 @@ html[data-view-mode="compact"] .avatar {
 .dashboard-content[data-citizen-tab="What to do"] [data-panel="K"],
 .dashboard-content[data-citizen-tab="What to do"] [data-panel="J"] { display: none; }
 
+
+/* ── Lite mode (low-end devices / slow connections) — see src/utils/liteMode.js ──
+   Drops the expensive paint effects everywhere. Data and layout are untouched. */
+html[data-lite] *, html[data-lite] *::before, html[data-lite] *::after {
+  animation: none !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+html[data-lite] .navbar { background: #0f172a; }
