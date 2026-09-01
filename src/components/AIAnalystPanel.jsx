@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { buildLocationContext } from '../utils/agniLocationContext'
+import { ensureBulkWeatherCache } from '../utils/bulkWeatherCache'
 
 const LANGUAGE_NAMES = { en: 'English', hi: 'Hindi', bn: 'Bengali', mr: 'Marathi', te: 'Telugu', ta: 'Tamil', gu: 'Gujarati', ur: 'Urdu', kn: 'Kannada', or: 'Odia', pa: 'Punjabi' }
 
@@ -145,6 +146,10 @@ export function AIAnalystPanel({
     // Detect locations in the question AND the last few user turns, so a follow-up that
     // only says "uska" still gets the earlier city's data attached.
     const recentUserText = history.filter(h => h.role === 'user').slice(-3).map(h => h.text).join(' ')
+    // Make sure the India-wide city cache is in memory before building context — AGNI on
+    // the dashboard could otherwise run with an empty cache (map-screen load failed or not
+    // finished) and believe the selected city was the whole dataset.
+    await ensureBulkWeatherCache()
     const location = buildLocationContext(`${question} ${recentUserText}`, city)
     // The app's UI language is the tie-breaker for messages with no language signal ("hi").
     const uiLang = LANGUAGE_NAMES[(i18n?.language || 'en').split('-')[0]] || 'English'

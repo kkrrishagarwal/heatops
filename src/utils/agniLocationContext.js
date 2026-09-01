@@ -104,12 +104,41 @@ function summariseState(name, entries) {
   const hottest = [...withTemp].sort((a, b) => b.temp - a.temp)
   const coolest = [...withTemp].sort((a, b) => a.temp - b.temp)
   const worstAqi = [...withAqi].sort((a, b) => b.aqi - a.aqi)
+  const bestAqi = [...withAqi].sort((a, b) => a.aqi - b.aqi)
   const avg = withTemp.length ? (withTemp.reduce((s, e) => s + e.temp, 0) / withTemp.length).toFixed(1) : null
   const lines = [`State: ${name} — ${entries.length} cities in the cache`]
   if (avg != null) lines.push(`  average temp ${avg}°C`)
   if (hottest.length) lines.push(`  hottest: ${hottest.slice(0, 5).map(e => `${e.city} ${e.temp}°C`).join(', ')}`)
   if (coolest.length) lines.push(`  coolest: ${coolest.slice(0, 3).map(e => `${e.city} ${e.temp}°C`).join(', ')}`)
   if (worstAqi.length) lines.push(`  worst AQI: ${worstAqi.slice(0, 3).map(e => `${e.city} ${e.aqi} (${getAQICategory(Math.min(500, e.aqi)).label})`).join(', ')}`)
+  if (bestAqi.length) lines.push(`  best (cleanest) AQI: ${bestAqi.slice(0, 3).map(e => `${e.city} ${e.aqi} (${getAQICategory(Math.min(500, e.aqi)).label})`).join(', ')}`)
+  return lines.join('\n')
+}
+
+// "Which city has the best AQI / is the hottest / most polluted…" — a ranking question
+// names no city, so nothing above would match and the model was left to guess (it once
+// answered "Delhi has the best AQI in the entire world"). Detect the intent and hand the
+// model the real India-wide ranking from the cache; the system prompt forbids any global
+// claim, so the answer can only be "in India, from BhaskarOps' data: …".
+const SUPERLATIVE_RE = /\b(best|worst|highest|lowest|cleanest|dirtiest|most polluted|least polluted|hottest|coolest|coldest|warmest|top|rank|ranking|number one|no\.? ?1)\b/i
+const GLOBAL_RE = /\b(world|globe|global|globally|planet|earth|international|asia|country|countries|outside india)\b/i
+
+function nationalRanking(cities, lastUpdated) {
+  const all = Object.values(cities).filter(e => e?.city && e?.state)
+  const withTemp = all.filter(e => typeof e.temp === 'number')
+  const withAqi = all.filter(e => typeof e.aqi === 'number')
+  if (!withTemp.length && !withAqi.length) return ''
+  const fmt = (e, v) => `${e.city} (${e.state}) ${v}`
+  const byAqiAsc = [...withAqi].sort((a, b) => a.aqi - b.aqi)
+  const byAqiDesc = [...withAqi].sort((a, b) => b.aqi - a.aqi)
+  const byTempDesc = [...withTemp].sort((a, b) => b.temp - a.temp)
+  const byTempAsc = [...withTemp].sort((a, b) => a.temp - b.temp)
+  const lines = [`\nINDIA-WIDE RANKING from BhaskarOps' cache (${all.length} Indian cities, ${ageLabel(lastUpdated)}). This is the ONLY ranking you have; it covers India only — nothing outside India:`]
+  if (byAqiAsc.length) lines.push(`  best (cleanest) AQI: ${byAqiAsc.slice(0, 5).map(e => fmt(e, `AQI ${e.aqi} (${getAQICategory(Math.min(500, e.aqi)).label})`)).join('; ')}`)
+  if (byAqiDesc.length) lines.push(`  worst AQI: ${byAqiDesc.slice(0, 5).map(e => fmt(e, `AQI ${e.aqi} (${getAQICategory(Math.min(500, e.aqi)).label})`)).join('; ')}`)
+  if (byTempDesc.length) lines.push(`  hottest: ${byTempDesc.slice(0, 5).map(e => fmt(e, `${e.temp}°C`)).join('; ')}`)
+  if (byTempAsc.length) lines.push(`  coolest: ${byTempAsc.slice(0, 5).map(e => fmt(e, `${e.temp}°C`)).join('; ')}`)
+  lines.push(`  Several cities can share the same value — say "among the best in BhaskarOps' data" rather than a unique winner when values tie.`)
   return lines.join('\n')
 }
 
@@ -122,8 +151,17 @@ export function buildLocationContext(question, currentCity) {
   const cities = getBulkWeatherCities()
   const lastUpdated = getBulkWeatherLastUpdated()
   const q = String(question || '')
-  if (!q.trim() || !cities || !Object.keys(cities).length) {
-    return { text: '', cities: [], states: [] }
+  if (!q.trim()) return { text: '', cities: [], states: [] }
+  if (!cities || !Object.keys(cities).length) {
+    // The bulk cache is not loaded in this session (fetch failed or not finished). Say so
+    // explicitly — an absent block used to leave the model free to assume the selected city
+    // was the whole dataset ("the cache only includes cities in Delhi").
+    return {
+      text: '\nCITY CACHE NOT LOADED in this session: you have data ONLY for the selected city above. You cannot rank, compare or name any other city or state; if asked, say BhaskarOps\' city data has not loaded yet and suggest trying again in a moment. Never guess.',
+      cities: [],
+      states: [],
+      cacheLoaded: false
+    }
   }
   const { byCity, byState } = indexCache(cities)
   const current = String(currentCity || '').toLowerCase()
@@ -160,15 +198,19 @@ export function buildLocationContext(question, currentCity) {
 
   const cityList = [...cityHits.values()].slice(0, MAX_CITIES)
   const stateList = stateHits.slice(0, MAX_STATES)
+  const wantsRanking = SUPERLATIVE_RE.test(q) || GLOBAL_RE.test(q)
+  const ranking = wantsRanking ? nationalRanking(cities, lastUpdated) : ''
   if (!cityList.length && !stateList.length) {
     return {
-      text: `\nOTHER LOCATIONS: none of the other Indian cities/states in BhaskarOps' data were recognised in this question. If the user asks about a specific city or state that is not listed above, say that BhaskarOps does not have data for it right now — do not guess or invent numbers.`,
+      text: ranking + `\nOTHER LOCATIONS: none of the other Indian cities/states in BhaskarOps' data were recognised in this question. If the user asks about a specific city or state that is not listed above, say that BhaskarOps does not have data for it right now — do not guess or invent numbers.`,
       cities: [],
-      states: []
+      states: [],
+      ranking: !!ranking
     }
   }
 
   const lines = []
+  if (ranking) lines.push(ranking)
   lines.push(`\nADDITIONAL REAL DATA from BhaskarOps' daily weather cache (${ageLabel(lastUpdated)}; these are cached readings, not live):`)
   for (const entry of cityList) lines.push(`- ${fmtCity(entry)}`)
   for (const st of stateList) lines.push(summariseState(st.name, st.entries))
@@ -179,5 +221,5 @@ export function buildLocationContext(question, currentCity) {
 
   let text = lines.join('\n')
   if (text.length > MAX_CONTEXT_CHARS) text = text.slice(0, MAX_CONTEXT_CHARS - 1) + '…'
-  return { text, cities: cityList.map(e => e.city), states: stateList.map(s => s.name) }
+  return { text, cities: cityList.map(e => e.city), states: stateList.map(s => s.name), ranking: !!ranking }
 }

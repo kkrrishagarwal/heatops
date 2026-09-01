@@ -25,7 +25,7 @@ import {
 import { geoCentroid } from 'd3'
 import './App.css'
 import { fetchJson, describeFetchError } from './utils/fetchJson'
-import { setBulkWeatherCache, getBulkWeatherLastUpdated } from './utils/bulkWeatherCache'
+import { setBulkWeatherCache, getBulkWeatherLastUpdated, normaliseBulkCities } from './utils/bulkWeatherCache'
 import { refreshStateLive, getStateRefreshedAt } from './utils/stateLiveRefresh'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
@@ -2848,11 +2848,7 @@ function App({ user }) {
           if (cancelled) return
           // Every entry carries its own city/state (the leaderboard, ticker and summary read
           // them); derive from the "City|State" key if a writer left them out.
-          const cities = Object.fromEntries(Object.entries(data?.cities || {}).map(([key, v]) => {
-            if (v?.city && v?.state) return [key, v]
-            const [city, state] = key.split('|')
-            return [key, { city, state, ...v }]
-          }))
+          const cities = normaliseBulkCities(data?.cities)
           setLiveCityCache(cities)
           setCacheLastUpdated(data?.lastUpdated || null)
           // Also register it for useWeather's live-API fallback (see utils/bulkWeatherCache.js)

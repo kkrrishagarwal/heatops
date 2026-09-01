@@ -10,8 +10,46 @@
 
 import { getAQICategory } from './weatherAPI'
 import { loadCityCoordinates, getExactCoordinates } from './cityCoordinateResolver'
+import { fetchJson } from './fetchJson'
 
 let registry = { cities: {}, lastUpdated: null }
+let loadingPromise = null
+
+// Every entry must carry its own city/state (AGNI's context builder, the leaderboard and
+// the ticker read them); derive from the "City|State" key if a writer left them out.
+export function normaliseBulkCities(cities) {
+  return Object.fromEntries(Object.entries(cities || {}).map(([key, v]) => {
+    if (v?.city && v?.state) return [key, v]
+    const [city, state] = key.split('|')
+    return [key, { city, state, ...v }]
+  }))
+}
+
+// Lazy loader for consumers that need the cache but may run before — or after a failed —
+// App-level load (AGNI on the dashboard, most importantly: without the cache it thought
+// the selected city was the whole dataset). Resolves to true when the registry has data.
+export async function ensureBulkWeatherCache({ timeoutMs = 15000 } = {}) {
+  if (Object.keys(registry.cities).length) return true
+  if (!loadingPromise) {
+    loadingPromise = (async () => {
+      let lastErr = null
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const data = await fetchJson('/live-weather-cache.json', { timeoutMs })
+          const cities = normaliseBulkCities(data?.cities)
+          if (Object.keys(cities).length) {
+            if (!Object.keys(registry.cities).length) registry = { cities, lastUpdated: data?.lastUpdated || null }
+            return true
+          }
+        } catch (err) { lastErr = err }
+        await new Promise(r => setTimeout(r, 800 * (attempt + 1)))
+      }
+      console.warn('[bulkWeatherCache] could not load the city cache:', lastErr?.message || 'empty file')
+      return false
+    })().finally(() => { loadingPromise = null })
+  }
+  return loadingPromise
+}
 
 export function setBulkWeatherCache(cities, lastUpdated) {
   registry = { cities: cities || {}, lastUpdated: lastUpdated || null }
