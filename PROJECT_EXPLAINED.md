@@ -397,6 +397,13 @@ The identical repeated answer was not a canned reply (the only template is the l
 
 **Quota finding — important for the demo:** the Gemini free tier allows **20 requests per day** on `gemini-2.5-flash` (`generate_content_free_tier_requests, limit: 20`). AGNI now tries a **model chain** — `gemini-3.5-flash-lite → gemini-3.1-flash-lite → gemini-2.5-flash → gemini-3.5-flash → gemini-flash-lite-latest` — moving to the next model on a 429 (quota/rate), 503 (overload) or 404 (retired model), each with its own free-tier budget. Override with the server env var `GEMINI_MODELS="a,b,c"`. For judging day a paid-tier key is still the safe choice.
 
+### 8.16 One-hour pass (1 Sept 2026): live grid, recommended plan, Lite mode, cache retry
+
+- **Analysis heatmap grid + Interventions preview run on the live temperature.** Base = the selected city's live current temperature → else the state's live median → only then the illustrative seed; a line under the grid heading says which (`grid-base`) and that the ±2 °C cell-to-cell variation is an illustrative intra-city pattern, not measured. Verified: Anand Vihar Overview 28 °C → grid average 27.9 °C (was a 44 °C grid under a 27 °C Overview).
+- **Recommended plan (Interventions tab):** the city's vegetation share from ESA WorldCover (own point, or the nearest classified city — labelled with the distance) against the **30 % canopy target of the 3-30-300 urban-forestry rule** (Konijnendijk, 2021); shows the percentage points to add, a cool-roof share sized to the built-up fraction, the projected cooling from the same illustrative slider model, and an **Apply recommended plan** button that sets the sliders. Caveat printed on the card: WorldCover's "vegetation" lumps trees, grass and cropland over a ~10 km box, while the rule is about neighbourhood tree canopy — so the gap shown is a minimum. (Anand Vihar reads 47 % because its nearest classified point is central Delhi's box; a local tree survey would show far less.)
+- **Lite mode** (`src/utils/liteMode.js`, `html[data-lite]`): auto-on for ≤ 3 GB memory, ≤ 2 cores, Save-Data or 2G/3G; switchable from the avatar menu / ☰ drawer, remembered per browser. No WebGL globe on sign-in, states-only map (the 594-district layer is skipped — SVG paths drop from ~630 to ~170), and CSS drops blur / shadows / animations. Data and labels unchanged.
+- **Cache load retries** 3× with backoff before the map is declared cache-less.
+
 ---
 
 ## Bonus: Things that are built but not currently used (orphaned code)

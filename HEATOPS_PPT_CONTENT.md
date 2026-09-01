@@ -90,6 +90,8 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 - **Coverage: 1,956 cities across all 36 states/UTs** — pan-India scope including rural areas, not a single-metro demo (1,932 with live readings; the rest say so instead of guessing)
 - **AGNI conversation memory + markdown** — the last 10 turns travel with each question ("aur uska AQI?" is understood), other cities/states named in a question get their real cached readings attached, and replies render as proper bold/lists instead of raw asterisks
 - **Opened state refreshes live** — clicking a state fetches its cities' current temperatures in one batched call (10-min memory), so the city list, the state average / map colour and the selected city always agree; fresh rows show a green dot
+- **Recommended plan per city** — vegetation share (ESA WorldCover) vs the 30 % canopy target of the 3-30-300 urban-forestry rule, cool-roof share sized to built-up density, one-click apply to the intervention sliders; caveats printed on the card
+- **Lite mode for low-end phones** — auto-detected (memory/cores/Save-Data/2G-3G) or manual: no 3D globe, states-only map, no blur/animations; same data
 - **Graceful degradation** — error boundaries around the map and every panel ("Something went wrong — Try again"), 10-second timeouts on every fetch, cached fallbacks labelled as such
 
 ---
