@@ -27,6 +27,7 @@ import './App.css'
 import { fetchJson, describeFetchError } from './utils/fetchJson'
 import { setBulkWeatherCache, getBulkWeatherLastUpdated, normaliseBulkCities } from './utils/bulkWeatherCache'
 import { refreshStateLive, getStateRefreshedAt } from './utils/stateLiveRefresh'
+import { useLiteMode } from './utils/liteMode'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
@@ -1597,7 +1598,7 @@ const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorder
 // forwardRef exposes the internal zoom/pan transform div so the parent can mutate its
 // style.transform directly via ref during a drag gesture (bypassing React state entirely
 // for that high-frequency path) — see the onMouseMove handler at the call site for why.
-const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null }, transformRef) => {
+const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null, lite = false }, transformRef) => {
   // Legend is collapsed by default so the map itself stays fully visible (it covered ~60% of the map on phones).
   const [legendOpen, setLegendOpen] = useState(false)
   const { t } = useTranslation()
@@ -1766,7 +1767,9 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
         {/* LAYER 1: District texture colored by parent-state heat — extracted + memoized
             above (DistrictsLayer) so hover-state changes elsewhere on the map don't force
             this large GeoJSON layer to recompute its projection on every hover. */}
-        <DistrictsLayer DATA={DATA} />
+        {/* Lite mode: skip the 594-district texture (the heaviest projection on first paint);
+            the state layer below still carries the heat colour. */}
+        {!lite && <DistrictsLayer DATA={DATA} />}
 
       {/* Weather conditions: no full-state fill here any more — the icon badges (LAYER 4, WeatherOverlayIcons) carry it. */}
 
@@ -2107,7 +2110,7 @@ function GeographiesLayer({ url, render }) {
 
 // ════════ COMPACT NAVBAR COMPONENTS ════════
 
-const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout, audience = 'authority', onAudienceChange }) => {
+const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout, audience = 'authority', onAudienceChange, lite = false, onLiteChange }) => {
   const [open, setOpen] = useState(false)
 
   return (
@@ -2163,6 +2166,7 @@ const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout, audience = 
               { icon: '🏆', label: 'My Badges', fn: () => { setScreen?.('profile'); setOpen(false) } },
               // Discreet audience switch — deliberately here, not in the header
               { icon: '👁️', label: `View: ${audience === 'citizen' ? 'Citizen' : 'Authority'} ⚙️ · switch to ${audience === 'citizen' ? 'Authority' : 'Citizen'}`, fn: () => { onAudienceChange?.(audience === 'citizen' ? 'authority' : 'citizen'); setOpen(false) } },
+              { icon: '⚡', label: `Lite mode: ${lite ? 'On' : 'Off'} · ${lite ? 'switch off' : 'for slower phones / connections'}`, fn: () => { onLiteChange?.(!lite); setOpen(false) } },
               ...(isAdmin ? [{ icon: '🛡️', label: 'Admin Panel', fn: () => { setScreen?.('admin'); setOpen(false) } }] : [])
             ].map(item => (
               <div
@@ -2363,7 +2367,7 @@ const LiveClock = () => {
   )
 }
 
-const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, cacheStatus, cacheStale, viewMode, onViewModeChange, audience = 'authority', onAudienceChange, citizenSummary }) => {
+const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBase, liveAqiAlert, liveStormWatch, liveMumbai, liveShimla, cacheStatus, cacheStale, viewMode, onViewModeChange, audience = 'authority', onAudienceChange, lite = false, onLiteChange, citizenSummary }) => {
   const citizen = audience === 'citizen'
   const otherAudience = citizen ? 'authority' : 'citizen'
   const { t, i18n } = useTranslation()
@@ -2425,6 +2429,15 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
       <span style={{ fontSize: 11, color: '#94a3b8' }}>View: <strong style={{ color: '#e2e8f0' }}>{citizen ? 'Citizen' : 'Authority'}</strong> ⚙️</span>
       <button type="button" onClick={() => { onAudienceChange?.(otherAudience); setMenuOpen(false) }} style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, background: 'transparent', border: '1px solid rgba(217,119,6,0.45)', color: '#d97706', borderRadius: 6, cursor: 'pointer' }}>
         Switch to {citizen ? 'Authority' : 'Citizen'}
+      </button>
+    </div>
+  )
+
+  const liteSwitchRow = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+      <span style={{ fontSize: 11, color: '#94a3b8' }}>⚡ Lite mode: <strong style={{ color: '#e2e8f0' }}>{lite ? 'On' : 'Off'}</strong></span>
+      <button type="button" onClick={() => { onLiteChange?.(!lite); setMenuOpen(false) }} style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, background: 'transparent', color: '#e2e8f0', border: '1px solid rgba(148,163,184,0.4)', borderRadius: 6, cursor: 'pointer' }}>
+        {lite ? 'Switch off' : 'Turn on (slower phones)'}
       </button>
     </div>
   )
@@ -2493,6 +2506,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
                 <LanguageDropdown />
               </div>
               {audienceSwitchRow}
+              {liteSwitchRow}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                 <span style={{ fontSize: 11, color: '#94a3b8' }}>Signed in as</span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0' }}>{currentUser?.name || 'User'} <span style={{ fontSize: 9, color: '#22c55e', marginLeft: 6 }}>🤖 AGENT ONLINE</span></span>
@@ -2616,6 +2630,8 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
             currentUser={currentUser}
             isAdmin={isAdmin}
             audience={audience}
+            lite={lite}
+            onLiteChange={onLiteChange}
             onAudienceChange={onAudienceChange}
             setScreen={setScreen}
             onLogout={() => { setScreen('signin'); onLogout?.() }}
@@ -2843,7 +2859,14 @@ function App({ user }) {
     let cancelled = false
     setLiveCacheStatus('loading')
     const timer = setTimeout(() => {
-      fetchJson('/live-weather-cache.json', { timeoutMs: 20000 })
+      // Up to 3 attempts with backoff before the map is declared cache-less: on a slow
+      // link the 40 KB cache competes with the map GeoJSON and can time out once.
+      const attempt = (n) => fetchJson('/live-weather-cache.json', { timeoutMs: 20000 })
+        .catch(err => {
+          if (cancelled || n >= 3) throw err
+          return new Promise(r => setTimeout(r, n * 2500)).then(() => attempt(n + 1))
+        })
+      attempt(1)
         .then(data => {
           if (cancelled) return
           // Every entry carries its own city/state (the leaderboard, ticker and summary read
@@ -2941,6 +2964,7 @@ function App({ user }) {
   // map colour, ticker). The bulk cache is a once-a-day snapshot; without this the list
   // showed the dawn value (Udaipur 23 °C) next to the selected city's live value (28 °C).
   const [stateRefreshedAt, setStateRefreshedAt] = useState({})
+  const { lite, setLite } = useLiteMode()
   useEffect(() => {
     if (!selectedState || liveCacheStatus !== 'ready') return
     let cancelled = false
@@ -3598,6 +3622,8 @@ function App({ user }) {
             is selected. */}
         <FloatingAIAssistant
           audience={audience}
+          lite={lite}
+          onLiteChange={setLite}
           cityName={selectedCity}
           ensoPhase={ensoPhase}
           lst={liveWeather?.current?.temp}
@@ -3634,6 +3660,8 @@ function App({ user }) {
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           audience={audience}
+          lite={lite}
+          onLiteChange={setLite}
           onAudienceChange={setAudience}
           citizenSummary={{ ...citizenSummary, wx: citizenWx }}
         />
@@ -3828,6 +3856,7 @@ function App({ user }) {
                           ref={mapTransformRef}
                           INDIA_DATA={liveIndiaData}
                           selectedState={selectedState}
+                          lite={lite}
                           onStateClick={handleStateClick}
                           scale={mapScale}
                           pos={mapPos}
@@ -4171,6 +4200,19 @@ function App({ user }) {
     // Get real city data
     const cityData = getCityData(selectedCity, selectedState)
     const lst = cityData.lst
+    // Base temperature for the Analysis heatmap grid and the Interventions preview: the
+    // selected city's LIVE current temperature; else the state's live median; only then the
+    // illustrative seed. The old grid ran off the seed alone — Udaipur showed a 44 °C grid
+    // under a 27 °C Overview.
+    const liveCityTemp = typeof liveWeather?.current?.temp === 'number' ? liveWeather.current.temp : null
+    const liveStateMedian = liveIndiaData[selectedState]?.heatIndexLive ? liveIndiaData[selectedState].heatIndex : null
+    const gridBase = liveCityTemp ?? liveStateMedian ?? cityData.lst
+    const gridBaseSource = liveCityTemp != null ? 'live' : liveStateMedian != null ? 'median' : 'seed'
+    const gridBaseLabel = gridBaseSource === 'live'
+      ? t('grid.baseLive', 'Base {{t}}°C = live current temperature of {{city}}', { t: gridBase.toFixed(1), city: selectedCity })
+      : gridBaseSource === 'median'
+        ? t('grid.baseMedian', 'Base {{t}}°C = live median of {{state}} (no live reading for {{city}} yet)', { t: gridBase.toFixed(1), state: selectedState, city: selectedCity })
+        : t('grid.baseSeed', 'Base {{t}}°C = illustrative seed — no live reading available', { t: gridBase.toFixed(1) })
     // Real values for anything cited as data (AI context, exports) — separate from the
     // illustrative `lst`/`state` values still used for theming and the what-if simulator below.
     const realSurfaceTemp = liveWeather?.current?.surfaceTemp
@@ -4207,6 +4249,8 @@ function App({ user }) {
         {activeTab !== 'AI + Export' && (
           <FloatingAIAssistant
           audience={audience}
+          lite={lite}
+          onLiteChange={setLite}
             cityName={selectedCity}
             ensoPhase={ensoPhase}
             lst={realSurfaceTemp}
@@ -4816,6 +4860,9 @@ function App({ user }) {
                       ✨ {t('interventions.gridUpdated', 'Updated based on your intervention settings')}
                     </div>
                   )}
+                  <div data-testid="grid-base" style={{ marginBottom: 8, fontSize: 11, color: gridBaseSource === 'seed' ? '#f59e0b' : '#94a3b8' }}>
+                    📡 {gridBaseLabel} · {t('grid.patternNote', 'the ±2 °C cell-to-cell variation is an illustrative intra-city pattern, not measured')}
+                  </div>
                   <div style={{marginBottom: "12px", fontSize: "11px", color: "rgba(255,255,255,0.6)"}}>
                     🌳 {t('physics.items.urbanGreening', 'Urban Greening')}: <strong>{(treeSlider*18).toFixed(1)}°C</strong> | 🏠 {t('physics.items.coolRoofs', 'Cool Roofs')}: <strong>{(roofSlider*14).toFixed(1)}°C</strong> | 💧 {t('physics.items.waterBodies', 'Water Bodies')}: <strong>{(waterSlider*12).toFixed(1)}°C</strong>
                   </div>
@@ -4824,7 +4871,7 @@ function App({ user }) {
                       {Array.from({length:100}).map((_, i) => {
                         const row = Math.floor(i / 10)
                         const col = i % 10
-                        const cellTemp = getCellTemp(cityData.lst, row, col, treeSlider, roofSlider, waterSlider)
+                        const cellTemp = getCellTemp(gridBase, row, col, treeSlider, roofSlider, waterSlider)
                         // Same thresholds/colours as computeInterventionImpact() on the Interventions tab
                         const color = getGridBucket(cellTemp).color
 
@@ -4958,6 +5005,64 @@ function App({ user }) {
           {activeTab === 'Interventions' && (
             <div className="dashboard-content">
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+                {/* Recommended plan: how far this city's green cover is from the 30 % canopy
+                    target of the 3-30-300 urban-forestry rule (Konijnendijk, 2021 — adopted by
+                    WHO-Europe / UNECE guidance), and a one-click way to set the sliders to it.
+                    Green cover comes from ESA WorldCover (own city or nearest classified city,
+                    labelled); the projected cooling is the same illustrative slider model as the
+                    grid, and says so. */}
+                {(() => {
+                  const lulc = getLulcWithFallback(selectedCity, selectedState, lulcReal, cityCoordsData)
+                  const green = typeof lulc?.vegetation === 'number' ? lulc.vegetation : null
+                  const built = typeof lulc?.builtUp === 'number' ? lulc.builtUp : (typeof lulc?.built_up === 'number' ? lulc.built_up : null)
+                  const TARGET = 30
+                  const gap = green == null ? null : Math.max(0, TARGET - green)
+                  const recTree = gap == null ? 0 : Math.min(0.3, Math.round(gap) / 100)
+                  const recRoof = built == null ? 0.1 : built >= 40 ? 0.2 : built >= 25 ? 0.15 : 0.1
+                  const recCooling = recTree * 18 + recRoof * 14
+                  const source = lulc ? (lulc.isFallback
+                    ? t('plan.sourceFallback', 'ESA WorldCover — nearest classified city {{fb}}, {{km}} km away', { fb: lulc.fallbackCity, km: lulc.distanceKm })
+                    : t('plan.sourceOwn', 'ESA WorldCover 10 m, {{city}}', { city: selectedCity })) : null
+                  const applied = gap != null && Math.abs(treeSlider - recTree) < 0.005 && Math.abs(roofSlider - recRoof) < 0.005
+                  return (
+                    <section className="panel" data-testid="recommended-plan" style={{ borderLeft: `4px solid ${gap === 0 ? '#22c55e' : '#d97706'}` }}>
+                      <h3>🎯 {t('plan.title', 'RECOMMENDED PLAN FOR {{city}}', { city: (selectedCity || '').toUpperCase() })}</h3>
+                      {green == null ? (
+                        <div style={{ fontSize: 12, color: '#94a3b8' }}>{t('plan.noLulc', 'No land-cover classification available for this city yet, so no target can be computed.')}</div>
+                      ) : (
+                        <>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 10 }}>
+                            <div className="metric-card"><span className="metric-label">{t('plan.greenNow', 'VEGETATION NOW (trees + grass + crops)')}</span><span className="metric-value" data-testid="plan-green-now">{green}%</span></div>
+                            <div className="metric-card"><span className="metric-label">{t('plan.target', 'CANOPY TARGET (3-30-300 RULE)')}</span><span className="metric-value">{TARGET}%</span></div>
+                            <div className="metric-card"><span className="metric-label">{t('plan.gap', 'TO ADD')}</span><span className="metric-value" data-testid="plan-gap" style={{ color: gap === 0 ? '#22c55e' : '#d97706' }}>{gap === 0 ? '✓ met' : `+${gap.toFixed(0)} pp`}</span></div>
+                            <div className="metric-card"><span className="metric-label">{t('plan.cooling', 'PROJECTED COOLING')}</span><span className="metric-value">−{recCooling.toFixed(1)}°C</span></div>
+                          </div>
+                          <div style={{ fontSize: 12, lineHeight: 1.6, color: '#e2e8f0' }}>
+                            {gap === 0
+                              ? t('plan.met', 'On paper {{city}} is above the 30 % target — ESA reads {{green}}% vegetation for the ~10 km box around {{point}}, but that counts grass and cropland too. In a dense locality the street-level tree canopy is usually far lower, so the plan here is: protect existing trees, add street trees where footpaths allow, and put cool roofs on the built-up share to cut heat now.', { city: selectedCity, green, point: lulc?.isFallback ? lulc.fallbackCity : selectedCity })
+                              : t('plan.text', 'To bring {{city}} to the 30 % canopy that the 3-30-300 rule sets for heat-safe neighbourhoods, green cover needs to rise from {{green}}% to 30% (+{{gap}} percentage points), and reflective cool roofs should cover about {{roof}}% of the {{built}} built-up area. On this model that cools the grid by about {{cool}} °C — the difference between a High and a Moderate afternoon for outdoor workers and the elderly.', { city: selectedCity, green, gap: gap.toFixed(0), roof: Math.round(recRoof * 100), built: built != null ? `${built}%` : '', cool: recCooling.toFixed(1) })}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+                            <button
+                              type="button"
+                              data-testid="apply-plan"
+                              disabled={applied}
+                              onClick={() => { setTreeSlider(recTree); setRoofSlider(recRoof); setInterventionTouchedAt(Date.now()) }}
+                              style={{ background: applied ? 'rgba(34,197,94,0.15)' : '#d97706', color: applied ? '#22c55e' : '#0f172a', border: applied ? '1px solid rgba(34,197,94,0.5)' : 'none', borderRadius: 6, padding: '7px 14px', fontSize: 12, fontWeight: 800, cursor: applied ? 'default' : 'pointer' }}
+                            >
+                              {applied ? t('plan.applied', '✓ Plan applied to the sliders') : t('plan.apply', 'Apply recommended plan →')}
+                            </button>
+                            <span style={{ fontSize: 10, color: '#64748b' }}>{source} · {t('plan.modelNote', 'cooling from the same illustrative slider model as the grid')}</span>
+                          </div>
+                          <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 8, lineHeight: 1.5 }}>
+                            ⚠️ {t('plan.canopyCaveat', 'ESA WorldCover\'s vegetation figure counts trees, grass and cropland together for a ~10 km box around the classified point; the 3-30-300 rule is about tree canopy in the neighbourhood itself. In a dense locality the real canopy is usually far below this figure, so treat the gap shown here as a minimum — a local tree survey gives the true number.')}
+                          </div>
+                        </>
+                      )}
+                    </section>
+                  )
+                })()}
+
                 {/* PANEL F: Intervention Sliders (kept — duplicate "Cooling Interventions" panel removed) */}
                 <section className="panel">
                   <h3>🎛️ {t('panels.interventionSliders', 'UHI INTERVENTIONS (Real-time cooling)')}</h3>
@@ -5004,7 +5109,7 @@ function App({ user }) {
                       same getCellTemp() + bucket thresholds the grid renders with, so the user
                       doesn't have to switch tabs to confirm the effect. */}
                   {(() => {
-                    const impact = computeInterventionImpact(cityData.lst, treeSlider, roofSlider, waterSlider)
+                    const impact = computeInterventionImpact(gridBase, treeSlider, roofSlider, waterSlider)
                     const active = impact.totalCooling > 0
                     return (
                       <div
