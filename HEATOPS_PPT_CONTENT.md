@@ -155,6 +155,8 @@ Every number shown is traceable to a real source, with honest "not available" fa
   5. Night UHI Analysis (day vs. night surface temp, why nighttime heat is more dangerous)
   6. Intervention ROI Calculator (investment vs. energy/healthcare/productivity returns, payback period)
   7. Multi-City Comparison (up to 5 cities side by side)
+- **India-only by design**: AGNI never makes a global or international claim ("best AQI in the world" → "I only have data for Indian cities…"); ranking questions are answered from a real India-wide ranking computed from the 1,932-city cache, ties acknowledged; the selected city is never a default answer
+- **Model chain for resilience**: five Gemini models tried in order on quota/overload errors, so one exhausted free-tier budget doesn't take the analyst down
 - **Honesty by design**: AGNI only has real live data for City, Surface Temp (LST), Vegetation Fraction (NDVI), Built-up Fraction (NDBI), and AQI. Every other figure these templates ask for (population, CO₂/energy costs, historical CDD, night LST, ROI costs) is explicitly tagged "(estimated)" in the response rather than presented as a live reading — the same "real data with honest gaps disclosed" principle the rest of the platform follows (see Data Sources above), now applied to the AI layer too.
 - Supports all 11 platform languages — ask AGNI a question in Hindi, Tamil, Bengali, etc. and it replies in that language.
 - Backend proxy architecture — Gemini API key never exposed to the browser.

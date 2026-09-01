@@ -383,6 +383,20 @@ Two reasons the Authority map could look like a small India floating in an empty
 
 Not changed: the 6-tier map colour scale (LOW < 25 · LOW-MODERATE 25–30 · MODERATE 30–35 · HIGH 35–40 · VERY HIGH 40–45 · EXTREME 45+). With afternoon data the same scale now paints Rajasthan/MP in the moderate/high yellows and oranges it should.
 
+### 8.16 AGNI: India-only scope, real rankings, and a model chain (1 Sep 2026)
+
+**The bug (user test):** "which city has the best AQI in the entire world?" → "The city of Delhi has the best AQI in the entire world" (twice); and "BhaskarOps' current cache only includes cities in Delhi". Three causes, three fixes:
+
+1. **Ranking questions had no data.** The context builder only attached cities/states *named* in the question; "which city has the best AQI" names none, so the model was left with the selected city as its only data point and crowned it. Now any superlative/ranking or world/global question gets an **INDIA-WIDE RANKING** block computed from the cache (best/worst AQI, hottest/coolest — top 5 each, with a note about ties), and state summaries gained a "best (cleanest) AQI" line. (`src/utils/agniLocationContext.js`)
+2. **An empty cache was silent.** If the bulk city cache was not in memory (map-screen load failed, or AGNI opened before it finished) the builder returned nothing, and the prompt implied the selected city was the whole dataset. The AGNI panel now awaits a lazy, retrying loader (`ensureBulkWeatherCache()` in `src/utils/bulkWeatherCache.js`) before building context, and if the cache is still empty the context says **CITY CACHE NOT LOADED** explicitly.
+3. **No geographic-scope rule.** New non-negotiable section in the system prompt (`api/_lib/askAI.js`): India-only data; never a global/international claim or India-vs-world comparison; superlatives only when the ranking/state summary says so; the selected city is never a default answer; repeating a question doesn't change grounding.
+
+The identical repeated answer was not a canned reply (the only template is the labelled offline "why is it hot" fallback) — same prompt, same missing data, same guess. With the ranking in context the answers are data-grounded and vary in wording.
+
+**Verified with real conversations (local key, same prompt as production):** from Delhi, Mumbai, Chennai, Jaipur, Bengaluru and Kolkata starts — "best AQI in the entire world" → "I only have data for Indian cities, so I can't compare globally… within India the cleanest air is tied: Noklak, Munsiari (AQI 17)…"; "which Indian city currently has the best AQI" → the same five, tie acknowledged; "AQI in Gujarat" → worst Lunawada 68 / cleanest Savarkundla 40; "hottest city on earth" → declined globally, Musiri 39 °C within India; repeat question → different wording, same grounded content.
+
+**Quota finding — important for the demo:** the Gemini free tier allows **20 requests per day** on `gemini-2.5-flash` (`generate_content_free_tier_requests, limit: 20`). AGNI now tries a **model chain** — `gemini-3.5-flash-lite → gemini-3.1-flash-lite → gemini-2.5-flash → gemini-3.5-flash → gemini-flash-lite-latest` — moving to the next model on a 429 (quota/rate), 503 (overload) or 404 (retired model), each with its own free-tier budget. Override with the server env var `GEMINI_MODELS="a,b,c"`. For judging day a paid-tier key is still the safe choice.
+
 ---
 
 ## Bonus: Things that are built but not currently used (orphaned code)

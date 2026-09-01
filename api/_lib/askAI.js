@@ -7,8 +7,17 @@
 // env var with no VITE_ prefix, so Vite never inlines it into the client bundle
 // and it never reaches the browser.
 
-const GEMINI_MODEL = 'gemini-2.5-flash'
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
+// Model chain. The free tier caps each model separately — observed 2026-09-01:
+// "generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash" — i.e. twenty
+// questions a day for the whole app on the old primary. Probed the same day with the real
+// prompt: gemini-3.5-flash-lite (3.0 s), gemini-3.1-flash-lite (2.8 s), gemini-3.5-flash
+// (5.0 s) and gemini-flash-lite-latest (2.2 s) all answered correctly from the ranking
+// block; gemini-2.5-flash-lite is retired for new keys (404). On a 429 / 503 / 404 the next
+// model in the chain is tried, so one exhausted budget does not take AGNI down. Override
+// with GEMINI_MODELS="model-a,model-b" (server env var) without a code change.
+const GEMINI_MODELS = (process.env.GEMINI_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash,gemini-3.5-flash,gemini-flash-lite-latest')
+  .split(',').map(m => m.trim()).filter(Boolean)
+const geminiUrl = model => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
 // 400 was enough for the old "a few sentences" prompt, but AGNI's structured templates
 // (HVI breakdown, ROI calculator, multi-city comparison) run much longer and were getting
 // cut off mid-section at that budget.
@@ -450,52 +459,73 @@ ALWAYS REMEMBER
 ✅ Keep responses structured with clear sections, but skip sections that don't apply
 ✅ Keep answers concise unless the question genuinely calls for the full template`
 
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS)
+  const body = (model) => ({
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    contents: [
+      ...history.map(turn => ({ role: turn.role, parts: [{ text: turn.text }] })),
+      { role: 'user', parts: [{ text: question }] }
+    ],
+    // 2.5 models spend output tokens on internal "thinking" by default, which was eating
+    // the whole maxOutputTokens budget and truncating every answer (finishReason:
+    // MAX_TOKENS). Disable it for these short Q&A calls; 2.0 models reject the field.
+    generationConfig: model.startsWith('gemini-2.5')
+      ? { maxOutputTokens: MAX_TOKENS, thinkingConfig: { thinkingBudget: 0 } }
+      : { maxOutputTokens: MAX_TOKENS }
+  })
 
-  let response
-  try {
-    response = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey
-      },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: [
-          ...history.map(turn => ({ role: turn.role, parts: [{ text: turn.text }] })),
-          { role: 'user', parts: [{ text: question }] }
-        ],
-        // gemini-2.5-flash spends output tokens on internal "thinking" by default,
-        // which was eating the whole maxOutputTokens budget and truncating every
-        // answer (finishReason: MAX_TOKENS). Disabling it for these short Q&A calls.
-        generationConfig: { maxOutputTokens: MAX_TOKENS, thinkingConfig: { thinkingBudget: 0 } }
-      }),
-      signal: controller.signal
-    })
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      throw new AskAIError(504, `Gemini API did not respond within ${GEMINI_TIMEOUT_MS / 1000}s (timed out).`)
+  // Try each model in the chain; move on when THIS model is out of quota / rate-limited
+  // (429) or overloaded (503). Any other failure is final. If every model fails, the
+  // first model's error (with its retry hint) is what the user sees.
+  let data = null
+  let firstError = null
+  let usedModel = null
+  for (const model of GEMINI_MODELS) {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS)
+    let response
+    try {
+      response = await fetch(geminiUrl(model), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify(body(model)),
+        signal: controller.signal
+      })
+    } catch (err) {
+      clearTimeout(timeout)
+      const e = err.name === 'AbortError'
+        ? new AskAIError(504, `Gemini API did not respond within ${GEMINI_TIMEOUT_MS / 1000}s (timed out).`)
+        : new AskAIError(502, `Could not reach Gemini API: ${err.message}`)
+      if (!firstError) firstError = e
+      continue
     }
-    throw new AskAIError(502, `Could not reach Gemini API: ${err.message}`)
-  } finally {
     clearTimeout(timeout)
-  }
 
-  let data
-  try {
-    data = await response.json()
-  } catch {
-    // Non-JSON body (HTML error page, truncated reply, etc.) — surface a clean
-    // upstream error instead of letting the JSON parse error escape as a 500.
-    throw new AskAIError(response.ok ? 502 : response.status, `Gemini API returned an unreadable response (HTTP ${response.status}).`)
-  }
+    let parsed
+    try {
+      parsed = await response.json()
+    } catch {
+      // Non-JSON body (HTML error page, truncated reply, etc.) — surface a clean
+      // upstream error instead of letting the JSON parse error escape as a 500.
+      const e = new AskAIError(response.ok ? 502 : response.status, `Gemini API returned an unreadable response (HTTP ${response.status}).`)
+      if (!firstError) firstError = e
+      continue
+    }
 
-  if (!response.ok) {
-    const retryAfterSeconds = response.status === 429 ? parseRetryAfterSeconds(data) : null
-    throw new AskAIError(response.status, data?.error?.message || 'Gemini API request failed.', retryAfterSeconds)
+    if (response.ok) { data = parsed; usedModel = model; break }
+
+    const retryAfterSeconds = response.status === 429 ? parseRetryAfterSeconds(parsed) : null
+    const e = new AskAIError(response.status, parsed?.error?.message || 'Gemini API request failed.', retryAfterSeconds)
+    if (!firstError) firstError = e
+    // 404 = this model name is retired/unavailable for this key ("no longer available to new
+    // users — use gemini-3.5-flash-lite"): also a reason to move on, not to fail the user.
+    if (response.status === 429 || response.status === 503 || response.status === 404) {
+      console.warn(`[askAI] ${model}: HTTP ${response.status} — trying next model`)
+      continue
+    }
+    throw e
   }
+  if (!data) throw firstError || new AskAIError(502, 'Gemini API request failed.')
+  if (usedModel !== GEMINI_MODELS[0]) console.warn(`[askAI] answered by fallback model ${usedModel}`)
 
   const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response'
   return { answer }
