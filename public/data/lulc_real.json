@@ -11,6 +11,7 @@
     "Visakhapatnam": {
       "builtUp": 33.3,
       "vegetation": 60.1,
+      "treeCover": 46.1,
       "water": 3.4,
       "bareOther": 3.2,
       "state": "Andhra Pradesh",
@@ -20,6 +21,7 @@
     "Itanagar": {
       "builtUp": 8.8,
       "vegetation": 90.2,
+      "treeCover": 87.0,
       "water": 0.1,
       "bareOther": 1.0,
       "state": "Arunachal Pradesh",
@@ -29,6 +31,7 @@
     "Guwahati": {
       "builtUp": 35.6,
       "vegetation": 40.4,
+      "treeCover": 30.7,
       "water": 22.8,
       "bareOther": 1.2,
       "state": "Assam",
@@ -38,6 +41,7 @@
     "Patna": {
       "builtUp": 57.1,
       "vegetation": 37.7,
+      "treeCover": 9.8,
       "water": 3.8,
       "bareOther": 1.4,
       "state": "Bihar",
@@ -47,6 +51,7 @@
     "Raipur": {
       "builtUp": 57.8,
       "vegetation": 38.6,
+      "treeCover": 13.1,
       "water": 2.3,
       "bareOther": 1.4,
       "state": "Chhattisgarh",
@@ -56,6 +61,7 @@
     "Panaji": {
       "builtUp": 1.5,
       "vegetation": 98.5,
+      "treeCover": 10.5,
       "water": 0.0,
       "bareOther": 0.0,
       "state": "Goa",
@@ -65,6 +71,7 @@
     "Ahmedabad": {
       "builtUp": 80.2,
       "vegetation": 14.4,
+      "treeCover": 8.2,
       "water": 3.8,
       "bareOther": 1.6,
       "state": "Gujarat",
@@ -74,6 +81,7 @@
     "Faridabad": {
       "builtUp": 60.2,
       "vegetation": 37.4,
+      "treeCover": 14.0,
       "water": 0.5,
       "bareOther": 1.9,
       "state": "Haryana",
@@ -83,6 +91,7 @@
     "Shimla": {
       "builtUp": 7.0,
       "vegetation": 92.3,
+      "treeCover": 76.6,
       "water": 0.0,
       "bareOther": 0.7,
       "state": "Himachal Pradesh",
@@ -92,6 +101,7 @@
     "Ranchi": {
       "builtUp": 43.7,
       "vegetation": 55.2,
+      "treeCover": 19.0,
       "water": 0.4,
       "bareOther": 0.7,
       "state": "Jharkhand",
@@ -101,6 +111,7 @@
     "Bengaluru": {
       "builtUp": 71.4,
       "vegetation": 27.1,
+      "treeCover": 23.4,
       "water": 0.8,
       "bareOther": 0.7,
       "state": "Karnataka",
@@ -109,7 +120,8 @@
     },
     "Thiruvananthapuram": {
       "builtUp": 45.5,
-      "vegetation": 41.9,
+      "vegetation": 41.8,
+      "treeCover": 38.6,
       "water": 12.2,
       "bareOther": 0.5,
       "state": "Kerala",
@@ -119,6 +131,7 @@
     "Bhopal": {
       "builtUp": 49.8,
       "vegetation": 40.5,
+      "treeCover": 22.1,
       "water": 9.2,
       "bareOther": 0.6,
       "state": "Madhya Pradesh",
@@ -128,6 +141,7 @@
     "Mumbai": {
       "builtUp": 61.6,
       "vegetation": 34.0,
+      "treeCover": 26.4,
       "water": 1.9,
       "bareOther": 2.6,
       "state": "Maharashtra",
@@ -137,6 +151,7 @@
     "Imphal": {
       "builtUp": 46.9,
       "vegetation": 52.0,
+      "treeCover": 17.9,
       "water": 0.4,
       "bareOther": 0.6,
       "state": "Manipur",
@@ -146,6 +161,7 @@
     "Shillong": {
       "builtUp": 21.1,
       "vegetation": 77.9,
+      "treeCover": 48.5,
       "water": 0.1,
       "bareOther": 0.8,
       "state": "Meghalaya",
@@ -155,6 +171,7 @@
     "Aizawl": {
       "builtUp": 11.0,
       "vegetation": 88.9,
+      "treeCover": 76.3,
       "water": 0.0,
       "bareOther": 0.1,
       "state": "Mizoram",
@@ -164,6 +181,7 @@
     "Kohima": {
       "builtUp": 11.8,
       "vegetation": 87.9,
+      "treeCover": 79.4,
       "water": 0.0,
       "bareOther": 0.3,
       "state": "Nagaland",
@@ -173,6 +191,7 @@
     "Bhubaneswar": {
       "builtUp": 47.0,
       "vegetation": 51.1,
+      "treeCover": 33.9,
       "water": 1.3,
       "bareOther": 0.6,
       "state": "Odisha",
@@ -182,6 +201,7 @@
     "Ludhiana": {
       "builtUp": 81.0,
       "vegetation": 17.5,
+      "treeCover": 10.2,
       "water": 0.1,
       "bareOther": 1.4,
       "state": "Punjab",
@@ -191,6 +211,7 @@
     "Jaipur": {
       "builtUp": 75.3,
       "vegetation": 23.8,
+      "treeCover": 9.7,
       "water": 0.1,
       "bareOther": 0.9,
       "state": "Rajasthan",
@@ -200,6 +221,7 @@
     "Gangtok": {
       "builtUp": 4.8,
       "vegetation": 95.1,
+      "treeCover": 92.5,
       "water": 0.0,
       "bareOther": 0.1,
       "state": "Sikkim",
@@ -209,6 +231,7 @@
     "Chennai": {
       "builtUp": 51.2,
       "vegetation": 14.2,
+      "treeCover": 11.9,
       "water": 32.7,
       "bareOther": 2.0,
       "state": "Tamil Nadu",
@@ -218,7 +241,8 @@
     "Hyderabad": {
       "builtUp": 77.8,
       "vegetation": 18.2,
-      "water": 3.5,
+      "treeCover": 12.9,
+      "water": 3.4,
       "bareOther": 0.6,
       "state": "Telangana",
       "lat": 17.384,
@@ -227,6 +251,7 @@
     "Agartala": {
       "builtUp": 29.0,
       "vegetation": 70.4,
+      "treeCover": 53.0,
       "water": 0.1,
       "bareOther": 0.5,
       "state": "Tripura",
@@ -235,7 +260,8 @@
     },
     "Lucknow": {
       "builtUp": 65.3,
-      "vegetation": 32.9,
+      "vegetation": 32.8,
+      "treeCover": 25.7,
       "water": 0.9,
       "bareOther": 0.9,
       "state": "Uttar Pradesh",
@@ -245,6 +271,7 @@
     "Dehradun": {
       "builtUp": 57.6,
       "vegetation": 41.8,
+      "treeCover": 32.7,
       "water": 0.0,
       "bareOther": 0.6,
       "state": "Uttarakhand",
@@ -253,7 +280,8 @@
     },
     "Kolkata": {
       "builtUp": 72.5,
-      "vegetation": 20.5,
+      "vegetation": 20.6,
+      "treeCover": 17.7,
       "water": 6.5,
       "bareOther": 0.4,
       "state": "West Bengal",
@@ -261,8 +289,9 @@
       "lon": 88.363
     },
     "Jammu": {
-      "builtUp": 44.9,
+      "builtUp": 44.8,
       "vegetation": 48.4,
+      "treeCover": 34.4,
       "water": 2.0,
       "bareOther": 4.8,
       "state": "Jammu and Kashmir",
@@ -272,6 +301,7 @@
     "Leh": {
       "builtUp": 5.5,
       "vegetation": 8.9,
+      "treeCover": 0.1,
       "water": 0.0,
       "bareOther": 85.6,
       "state": "Ladakh",
@@ -281,6 +311,7 @@
     "New Delhi": {
       "builtUp": 50.8,
       "vegetation": 47.0,
+      "treeCover": 42.8,
       "water": 1.6,
       "bareOther": 0.6,
       "state": "Delhi",
@@ -290,6 +321,7 @@
     "Chandigarh": {
       "builtUp": 42.0,
       "vegetation": 56.3,
+      "treeCover": 46.1,
       "water": 1.3,
       "bareOther": 0.4,
       "state": "Chandigarh",
@@ -298,8 +330,9 @@
     },
     "Puducherry": {
       "builtUp": 29.3,
-      "vegetation": 26.4,
-      "water": 43.6,
+      "vegetation": 26.3,
+      "treeCover": 17.8,
+      "water": 43.7,
       "bareOther": 0.7,
       "state": "Puducherry",
       "lat": 11.9338,
@@ -307,7 +340,8 @@
     },
     "Port Blair": {
       "builtUp": 7.9,
-      "vegetation": 28.3,
+      "vegetation": 28.2,
+      "treeCover": 25.3,
       "water": 63.5,
       "bareOther": 0.3,
       "state": "Andaman and Nicobar Islands",
@@ -317,6 +351,7 @@
     "Kavaratti": {
       "builtUp": 0.0,
       "vegetation": 0.0,
+      "treeCover": 0.0,
       "water": 100.0,
       "bareOther": 0.0,
       "state": "Lakshadweep",
@@ -326,6 +361,7 @@
     "Silvassa": {
       "builtUp": 12.3,
       "vegetation": 84.9,
+      "treeCover": 58.1,
       "water": 2.2,
       "bareOther": 0.6,
       "state": "Dadra and Nagar Haveli and Daman and Diu",
@@ -335,6 +371,7 @@
     "Vijayawada": {
       "builtUp": 45.6,
       "vegetation": 42.5,
+      "treeCover": 16.4,
       "water": 7.0,
       "bareOther": 4.9,
       "state": "Andhra Pradesh",
@@ -342,8 +379,9 @@
       "lon": 80.6466
     },
     "Guntur": {
-      "builtUp": 39.7,
-      "vegetation": 59.6,
+      "builtUp": 39.6,
+      "vegetation": 59.7,
+      "treeCover": 9.0,
       "water": 0.3,
       "bareOther": 0.4,
       "state": "Andhra Pradesh",
@@ -353,6 +391,7 @@
     "Tirupati": {
       "builtUp": 25.1,
       "vegetation": 74.2,
+      "treeCover": 47.6,
       "water": 0.2,
       "bareOther": 0.6,
       "state": "Andhra Pradesh",
@@ -362,6 +401,7 @@
     "Kurnool": {
       "builtUp": 30.0,
       "vegetation": 63.4,
+      "treeCover": 6.2,
       "water": 4.0,
       "bareOther": 2.6,
       "state": "Andhra Pradesh",
@@ -371,6 +411,7 @@
     "Naharlagun": {
       "builtUp": 8.0,
       "vegetation": 88.6,
+      "treeCover": 82.3,
       "water": 0.1,
       "bareOther": 3.3,
       "state": "Arunachal Pradesh",
@@ -380,6 +421,7 @@
     "Pasighat": {
       "builtUp": 6.0,
       "vegetation": 75.1,
+      "treeCover": 58.7,
       "water": 8.0,
       "bareOther": 11.0,
       "state": "Arunachal Pradesh",
@@ -389,6 +431,7 @@
     "Ziro": {
       "builtUp": 2.0,
       "vegetation": 97.5,
+      "treeCover": 78.2,
       "water": 0.1,
       "bareOther": 0.4,
       "state": "Arunachal Pradesh",
@@ -398,6 +441,7 @@
     "Silchar": {
       "builtUp": 15.5,
       "vegetation": 76.6,
+      "treeCover": 34.7,
       "water": 6.7,
       "bareOther": 1.2,
       "state": "Assam",
@@ -407,6 +451,7 @@
     "Dibrugarh": {
       "builtUp": 17.6,
       "vegetation": 50.1,
+      "treeCover": 27.2,
       "water": 30.3,
       "bareOther": 2.1,
       "state": "Assam",
@@ -416,6 +461,7 @@
     "Jorhat": {
       "builtUp": 19.8,
       "vegetation": 79.8,
+      "treeCover": 46.3,
       "water": 0.1,
       "bareOther": 0.3,
       "state": "Assam",
@@ -425,6 +471,7 @@
     "Nagaon": {
       "builtUp": 16.4,
       "vegetation": 82.4,
+      "treeCover": 34.8,
       "water": 0.4,
       "bareOther": 0.7,
       "state": "Assam",
@@ -434,6 +481,7 @@
     "Gaya": {
       "builtUp": 28.1,
       "vegetation": 66.2,
+      "treeCover": 15.2,
       "water": 3.6,
       "bareOther": 2.1,
       "state": "Bihar",
@@ -443,6 +491,7 @@
     "Muzaffarpur": {
       "builtUp": 41.5,
       "vegetation": 55.9,
+      "treeCover": 27.5,
       "water": 1.7,
       "bareOther": 0.8,
       "state": "Bihar",
@@ -452,6 +501,7 @@
     "Bhagalpur": {
       "builtUp": 25.0,
       "vegetation": 68.3,
+      "treeCover": 19.9,
       "water": 6.4,
       "bareOther": 0.4,
       "state": "Bihar",
@@ -461,6 +511,7 @@
     "Darbhanga": {
       "builtUp": 25.6,
       "vegetation": 72.6,
+      "treeCover": 31.0,
       "water": 1.0,
       "bareOther": 0.8,
       "state": "Bihar",
@@ -470,6 +521,7 @@
     "Bhilai": {
       "builtUp": 27.8,
       "vegetation": 67.7,
+      "treeCover": 14.1,
       "water": 1.9,
       "bareOther": 2.6,
       "state": "Chhattisgarh",
@@ -477,8 +529,9 @@
       "lon": 81.4285
     },
     "Bilaspur": {
-      "builtUp": 37.5,
+      "builtUp": 37.6,
       "vegetation": 60.0,
+      "treeCover": 22.2,
       "water": 1.6,
       "bareOther": 0.9,
       "state": "Chhattisgarh",
@@ -488,6 +541,7 @@
     "Korba": {
       "builtUp": 17.6,
       "vegetation": 68.3,
+      "treeCover": 27.5,
       "water": 3.6,
       "bareOther": 10.5,
       "state": "Chhattisgarh",
@@ -497,6 +551,7 @@
     "Durg": {
       "builtUp": 26.9,
       "vegetation": 68.3,
+      "treeCover": 16.3,
       "water": 3.9,
       "bareOther": 0.9,
       "state": "Chhattisgarh",
@@ -506,7 +561,8 @@
     "Margao": {
       "builtUp": 10.7,
       "vegetation": 84.5,
-      "water": 4.4,
+      "treeCover": 59.9,
+      "water": 4.3,
       "bareOther": 0.5,
       "state": "Goa",
       "lat": 15.275,
@@ -515,6 +571,7 @@
     "Vasco da Gama": {
       "builtUp": 8.8,
       "vegetation": 19.2,
+      "treeCover": 12.3,
       "water": 71.3,
       "bareOther": 0.6,
       "state": "Goa",
@@ -524,6 +581,7 @@
     "Mapusa": {
       "builtUp": 7.0,
       "vegetation": 92.1,
+      "treeCover": 61.8,
       "water": 0.9,
       "bareOther": 0.1,
       "state": "Goa",
@@ -533,6 +591,7 @@
     "Ponda": {
       "builtUp": 5.1,
       "vegetation": 91.5,
+      "treeCover": 80.6,
       "water": 3.2,
       "bareOther": 0.1,
       "state": "Goa",
@@ -540,8 +599,9 @@
       "lon": 74.0152
     },
     "Surat": {
-      "builtUp": 71.0,
+      "builtUp": 71.1,
       "vegetation": 17.7,
+      "treeCover": 11.2,
       "water": 7.0,
       "bareOther": 4.2,
       "state": "Gujarat",
@@ -551,6 +611,7 @@
     "Vadodara": {
       "builtUp": 59.6,
       "vegetation": 38.1,
+      "treeCover": 17.9,
       "water": 0.4,
       "bareOther": 1.9,
       "state": "Gujarat",
@@ -560,6 +621,7 @@
     "Rajkot": {
       "builtUp": 66.1,
       "vegetation": 29.0,
+      "treeCover": 5.4,
       "water": 0.9,
       "bareOther": 4.0,
       "state": "Gujarat",
@@ -568,9 +630,10 @@
     },
     "Bhavnagar": {
       "builtUp": 35.1,
-      "vegetation": 33.3,
+      "vegetation": 33.2,
+      "treeCover": 7.1,
       "water": 20.0,
-      "bareOther": 11.6,
+      "bareOther": 11.7,
       "state": "Gujarat",
       "lat": 21.7629,
       "lon": 72.1533
@@ -578,6 +641,7 @@
     "Panipat": {
       "builtUp": 50.2,
       "vegetation": 47.5,
+      "treeCover": 5.6,
       "water": 0.2,
       "bareOther": 2.1,
       "state": "Haryana",
@@ -587,6 +651,7 @@
     "Ambala": {
       "builtUp": 34.2,
       "vegetation": 64.6,
+      "treeCover": 23.0,
       "water": 0.2,
       "bareOther": 0.9,
       "state": "Haryana",
@@ -596,6 +661,7 @@
     "Yamunanagar": {
       "builtUp": 38.9,
       "vegetation": 59.0,
+      "treeCover": 18.8,
       "water": 1.0,
       "bareOther": 1.1,
       "state": "Haryana",
@@ -605,6 +671,7 @@
     "Dharamshala": {
       "builtUp": 7.3,
       "vegetation": 92.6,
+      "treeCover": 2.6,
       "water": 0.1,
       "bareOther": 0.1,
       "state": "Himachal Pradesh",
@@ -614,6 +681,7 @@
     "Manali": {
       "builtUp": 42.7,
       "vegetation": 47.5,
+      "treeCover": 23.2,
       "water": 7.4,
       "bareOther": 2.5,
       "state": "Himachal Pradesh",
@@ -623,6 +691,7 @@
     "Solan": {
       "builtUp": 5.2,
       "vegetation": 94.1,
+      "treeCover": 78.9,
       "water": 0.0,
       "bareOther": 0.6,
       "state": "Himachal Pradesh",
@@ -632,6 +701,7 @@
     "Mandi": {
       "builtUp": 3.7,
       "vegetation": 95.0,
+      "treeCover": 76.2,
       "water": 0.8,
       "bareOther": 0.5,
       "state": "Himachal Pradesh",
@@ -641,6 +711,7 @@
     "Jamshedpur": {
       "builtUp": 45.8,
       "vegetation": 47.8,
+      "treeCover": 30.5,
       "water": 4.8,
       "bareOther": 1.5,
       "state": "Jharkhand",
@@ -650,6 +721,7 @@
     "Dhanbad": {
       "builtUp": 34.1,
       "vegetation": 58.1,
+      "treeCover": 26.2,
       "water": 0.9,
       "bareOther": 6.9,
       "state": "Jharkhand",
@@ -659,6 +731,7 @@
     "Bokaro": {
       "builtUp": 27.5,
       "vegetation": 69.9,
+      "treeCover": 33.0,
       "water": 2.3,
       "bareOther": 0.3,
       "state": "Jharkhand",
@@ -668,6 +741,7 @@
     "Deoghar": {
       "builtUp": 18.9,
       "vegetation": 79.6,
+      "treeCover": 16.6,
       "water": 0.6,
       "bareOther": 1.0,
       "state": "Jharkhand",
@@ -677,6 +751,7 @@
     "Mysuru": {
       "builtUp": 52.5,
       "vegetation": 46.5,
+      "treeCover": 25.0,
       "water": 0.7,
       "bareOther": 0.4,
       "state": "Karnataka",
@@ -686,6 +761,7 @@
     "Mangaluru": {
       "builtUp": 25.6,
       "vegetation": 65.2,
+      "treeCover": 52.2,
       "water": 8.3,
       "bareOther": 0.9,
       "state": "Karnataka",
@@ -695,6 +771,7 @@
     "Hubli": {
       "builtUp": 1.2,
       "vegetation": 97.9,
+      "treeCover": 1.8,
       "water": 0.9,
       "bareOther": 0.0,
       "state": "Karnataka",
@@ -704,6 +781,7 @@
     "Belagavi": {
       "builtUp": 29.2,
       "vegetation": 69.6,
+      "treeCover": 19.3,
       "water": 0.3,
       "bareOther": 0.9,
       "state": "Karnataka",
@@ -712,8 +790,9 @@
     },
     "Kochi": {
       "builtUp": 29.2,
-      "vegetation": 17.2,
-      "water": 53.3,
+      "vegetation": 17.1,
+      "treeCover": 11.3,
+      "water": 53.4,
       "bareOther": 0.3,
       "state": "Kerala",
       "lat": 9.9399,
@@ -722,6 +801,7 @@
     "Kozhikode": {
       "builtUp": 17.2,
       "vegetation": 41.1,
+      "treeCover": 40.0,
       "water": 41.4,
       "bareOther": 0.2,
       "state": "Kerala",
@@ -731,6 +811,7 @@
     "Thrissur": {
       "builtUp": 29.5,
       "vegetation": 70.0,
+      "treeCover": 47.7,
       "water": 0.4,
       "bareOther": 0.1,
       "state": "Kerala",
@@ -739,8 +820,9 @@
     },
     "Kollam": {
       "builtUp": 21.4,
-      "vegetation": 27.1,
-      "water": 51.1,
+      "vegetation": 27.0,
+      "treeCover": 26.0,
+      "water": 51.2,
       "bareOther": 0.4,
       "state": "Kerala",
       "lat": 8.8811,
@@ -749,6 +831,7 @@
     "Indore": {
       "builtUp": 57.5,
       "vegetation": 40.5,
+      "treeCover": 11.6,
       "water": 1.0,
       "bareOther": 1.0,
       "state": "Madhya Pradesh",
@@ -758,6 +841,7 @@
     "Gwalior": {
       "builtUp": 49.2,
       "vegetation": 49.1,
+      "treeCover": 17.1,
       "water": 0.2,
       "bareOther": 1.6,
       "state": "Madhya Pradesh",
@@ -767,6 +851,7 @@
     "Jabalpur": {
       "builtUp": 44.1,
       "vegetation": 54.1,
+      "treeCover": 34.3,
       "water": 1.4,
       "bareOther": 0.5,
       "state": "Madhya Pradesh",
@@ -776,6 +861,7 @@
     "Ujjain": {
       "builtUp": 28.7,
       "vegetation": 68.3,
+      "treeCover": 12.2,
       "water": 1.6,
       "bareOther": 1.4,
       "state": "Madhya Pradesh",
@@ -785,6 +871,7 @@
     "Pune": {
       "builtUp": 45.8,
       "vegetation": 52.4,
+      "treeCover": 37.4,
       "water": 1.0,
       "bareOther": 0.8,
       "state": "Maharashtra",
@@ -794,6 +881,7 @@
     "Nagpur": {
       "builtUp": 73.5,
       "vegetation": 24.7,
+      "treeCover": 18.4,
       "water": 1.2,
       "bareOther": 0.6,
       "state": "Maharashtra",
@@ -803,6 +891,7 @@
     "Nashik": {
       "builtUp": 48.9,
       "vegetation": 49.5,
+      "treeCover": 16.0,
       "water": 0.3,
       "bareOther": 1.3,
       "state": "Maharashtra",
@@ -810,8 +899,9 @@
       "lon": 73.791
     },
     "Aurangabad": {
-      "builtUp": 54.9,
+      "builtUp": 55.0,
       "vegetation": 43.1,
+      "treeCover": 7.4,
       "water": 0.0,
       "bareOther": 1.9,
       "state": "Maharashtra",
@@ -821,6 +911,7 @@
     "Thoubal": {
       "builtUp": 15.4,
       "vegetation": 83.1,
+      "treeCover": 13.3,
       "water": 1.0,
       "bareOther": 0.5,
       "state": "Manipur",
@@ -830,6 +921,7 @@
     "Bishnupur": {
       "builtUp": 4.3,
       "vegetation": 92.3,
+      "treeCover": 40.7,
       "water": 3.1,
       "bareOther": 0.3,
       "state": "Manipur",
@@ -839,6 +931,7 @@
     "Churachandpur": {
       "builtUp": 12.7,
       "vegetation": 87.1,
+      "treeCover": 42.3,
       "water": 0.0,
       "bareOther": 0.3,
       "state": "Manipur",
@@ -848,6 +941,7 @@
     "Senapati": {
       "builtUp": 2.2,
       "vegetation": 90.7,
+      "treeCover": 19.0,
       "water": 1.4,
       "bareOther": 5.7,
       "state": "Manipur",
@@ -857,6 +951,7 @@
     "Tura": {
       "builtUp": 1.5,
       "vegetation": 98.4,
+      "treeCover": 96.8,
       "water": 0.0,
       "bareOther": 0.1,
       "state": "Meghalaya",
@@ -866,6 +961,7 @@
     "Jowai": {
       "builtUp": 4.2,
       "vegetation": 95.3,
+      "treeCover": 40.5,
       "water": 0.1,
       "bareOther": 0.4,
       "state": "Meghalaya",
@@ -875,6 +971,7 @@
     "Nongstoin": {
       "builtUp": 1.5,
       "vegetation": 98.0,
+      "treeCover": 41.8,
       "water": 0.1,
       "bareOther": 0.4,
       "state": "Meghalaya",
@@ -884,6 +981,7 @@
     "Lunglei": {
       "builtUp": 2.6,
       "vegetation": 97.4,
+      "treeCover": 92.5,
       "water": 0.0,
       "bareOther": 0.0,
       "state": "Mizoram",
@@ -893,6 +991,7 @@
     "Serchhip": {
       "builtUp": 0.8,
       "vegetation": 99.1,
+      "treeCover": 88.4,
       "water": 0.0,
       "bareOther": 0.0,
       "state": "Mizoram",
@@ -902,6 +1001,7 @@
     "Kolasib": {
       "builtUp": 1.7,
       "vegetation": 98.2,
+      "treeCover": 95.5,
       "water": 0.0,
       "bareOther": 0.0,
       "state": "Mizoram",
@@ -911,6 +1011,7 @@
     "Dimapur": {
       "builtUp": 29.7,
       "vegetation": 68.8,
+      "treeCover": 49.3,
       "water": 0.2,
       "bareOther": 1.3,
       "state": "Nagaland",
@@ -920,6 +1021,7 @@
     "Mokokchung": {
       "builtUp": 5.4,
       "vegetation": 94.6,
+      "treeCover": 90.8,
       "water": 0.0,
       "bareOther": 0.1,
       "state": "Nagaland",
@@ -929,6 +1031,7 @@
     "Wokha": {
       "builtUp": 3.4,
       "vegetation": 96.6,
+      "treeCover": 86.5,
       "water": 0.0,
       "bareOther": 0.1,
       "state": "Nagaland",
@@ -938,6 +1041,7 @@
     "Zunheboto": {
       "builtUp": 1.2,
       "vegetation": 98.8,
+      "treeCover": 89.2,
       "water": 0.0,
       "bareOther": 0.0,
       "state": "Nagaland",
@@ -947,6 +1051,7 @@
     "Cuttack": {
       "builtUp": 28.4,
       "vegetation": 35.9,
+      "treeCover": 18.4,
       "water": 24.7,
       "bareOther": 11.0,
       "state": "Odisha",
@@ -956,6 +1061,7 @@
     "Rourkela": {
       "builtUp": 29.0,
       "vegetation": 67.0,
+      "treeCover": 44.2,
       "water": 2.5,
       "bareOther": 1.5,
       "state": "Odisha",
@@ -965,6 +1071,7 @@
     "Berhampur": {
       "builtUp": 0.3,
       "vegetation": 99.1,
+      "treeCover": 29.3,
       "water": 0.3,
       "bareOther": 0.3,
       "state": "Odisha",
@@ -973,7 +1080,8 @@
     },
     "Sambalpur": {
       "builtUp": 17.8,
-      "vegetation": 70.9,
+      "vegetation": 71.0,
+      "treeCover": 30.8,
       "water": 10.9,
       "bareOther": 0.4,
       "state": "Odisha",
@@ -983,6 +1091,7 @@
     "Amritsar": {
       "builtUp": 59.4,
       "vegetation": 40.0,
+      "treeCover": 11.7,
       "water": 0.0,
       "bareOther": 0.5,
       "state": "Punjab",
@@ -992,6 +1101,7 @@
     "Jalandhar": {
       "builtUp": 68.7,
       "vegetation": 30.8,
+      "treeCover": 13.0,
       "water": 0.0,
       "bareOther": 0.5,
       "state": "Punjab",
@@ -1001,6 +1111,7 @@
     "Patiala": {
       "builtUp": 47.9,
       "vegetation": 50.8,
+      "treeCover": 20.0,
       "water": 0.1,
       "bareOther": 1.2,
       "state": "Punjab",
@@ -1010,6 +1121,7 @@
     "Bathinda": {
       "builtUp": 37.8,
       "vegetation": 59.1,
+      "treeCover": 16.7,
       "water": 1.1,
       "bareOther": 2.0,
       "state": "Punjab",
@@ -1019,6 +1131,7 @@
     "Jodhpur": {
       "builtUp": 61.6,
       "vegetation": 32.0,
+      "treeCover": 9.1,
       "water": 1.4,
       "bareOther": 5.0,
       "state": "Rajasthan",
@@ -1028,6 +1141,7 @@
     "Kota": {
       "builtUp": 45.4,
       "vegetation": 48.4,
+      "treeCover": 19.9,
       "water": 4.9,
       "bareOther": 1.3,
       "state": "Rajasthan",
@@ -1037,6 +1151,7 @@
     "Bikaner": {
       "builtUp": 60.7,
       "vegetation": 20.1,
+      "treeCover": 5.9,
       "water": 0.8,
       "bareOther": 18.3,
       "state": "Rajasthan",
@@ -1046,6 +1161,7 @@
     "Namchi": {
       "builtUp": 1.3,
       "vegetation": 98.4,
+      "treeCover": 93.3,
       "water": 0.2,
       "bareOther": 0.1,
       "state": "Sikkim",
@@ -1055,6 +1171,7 @@
     "Mangan": {
       "builtUp": 0.2,
       "vegetation": 98.7,
+      "treeCover": 96.8,
       "water": 0.6,
       "bareOther": 0.4,
       "state": "Sikkim",
@@ -1064,6 +1181,7 @@
     "Gyalshing": {
       "builtUp": 0.7,
       "vegetation": 98.6,
+      "treeCover": 91.4,
       "water": 0.3,
       "bareOther": 0.3,
       "state": "Sikkim",
@@ -1073,6 +1191,7 @@
     "Ravangla": {
       "builtUp": 0.5,
       "vegetation": 99.5,
+      "treeCover": 96.3,
       "water": 0.0,
       "bareOther": 0.0,
       "state": "Sikkim",
@@ -1082,6 +1201,7 @@
     "Coimbatore": {
       "builtUp": 63.0,
       "vegetation": 33.0,
+      "treeCover": 19.3,
       "water": 3.5,
       "bareOther": 0.5,
       "state": "Tamil Nadu",
@@ -1091,6 +1211,7 @@
     "Madurai": {
       "builtUp": 53.8,
       "vegetation": 44.1,
+      "treeCover": 26.2,
       "water": 1.5,
       "bareOther": 0.6,
       "state": "Tamil Nadu",
@@ -1100,6 +1221,7 @@
     "Tiruchirappalli": {
       "builtUp": 38.3,
       "vegetation": 56.8,
+      "treeCover": 34.6,
       "water": 2.2,
       "bareOther": 2.8,
       "state": "Tamil Nadu",
@@ -1109,6 +1231,7 @@
     "Salem": {
       "builtUp": 47.6,
       "vegetation": 51.4,
+      "treeCover": 33.5,
       "water": 0.3,
       "bareOther": 0.7,
       "state": "Tamil Nadu",
@@ -1118,6 +1241,7 @@
     "Warangal": {
       "builtUp": 31.8,
       "vegetation": 66.2,
+      "treeCover": 22.6,
       "water": 1.7,
       "bareOther": 0.4,
       "state": "Telangana",
@@ -1127,6 +1251,7 @@
     "Nizamabad": {
       "builtUp": 24.5,
       "vegetation": 73.9,
+      "treeCover": 7.2,
       "water": 0.9,
       "bareOther": 0.7,
       "state": "Telangana",
@@ -1136,6 +1261,7 @@
     "Karimnagar": {
       "builtUp": 29.5,
       "vegetation": 53.0,
+      "treeCover": 7.9,
       "water": 15.9,
       "bareOther": 1.5,
       "state": "Telangana",
@@ -1145,6 +1271,7 @@
     "Khammam": {
       "builtUp": 27.0,
       "vegetation": 69.4,
+      "treeCover": 23.0,
       "water": 2.7,
       "bareOther": 0.9,
       "state": "Telangana",
@@ -1154,6 +1281,7 @@
     "Dharmanagar": {
       "builtUp": 4.4,
       "vegetation": 95.3,
+      "treeCover": 67.1,
       "water": 0.0,
       "bareOther": 0.2,
       "state": "Tripura",
@@ -1163,6 +1291,7 @@
     "Kailashahar": {
       "builtUp": 2.0,
       "vegetation": 95.9,
+      "treeCover": 56.8,
       "water": 1.6,
       "bareOther": 0.5,
       "state": "Tripura",
@@ -1172,6 +1301,7 @@
     "Belonia": {
       "builtUp": 2.5,
       "vegetation": 96.9,
+      "treeCover": 65.3,
       "water": 0.3,
       "bareOther": 0.2,
       "state": "Tripura",
@@ -1180,7 +1310,8 @@
     },
     "Kanpur": {
       "builtUp": 47.0,
-      "vegetation": 47.3,
+      "vegetation": 47.2,
+      "treeCover": 24.3,
       "water": 4.6,
       "bareOther": 1.1,
       "state": "Uttar Pradesh",
@@ -1190,6 +1321,7 @@
     "Agra": {
       "builtUp": 63.5,
       "vegetation": 31.3,
+      "treeCover": 17.4,
       "water": 3.5,
       "bareOther": 1.7,
       "state": "Uttar Pradesh",
@@ -1199,6 +1331,7 @@
     "Varanasi": {
       "builtUp": 60.4,
       "vegetation": 30.6,
+      "treeCover": 14.6,
       "water": 6.7,
       "bareOther": 2.4,
       "state": "Uttar Pradesh",
@@ -1208,6 +1341,7 @@
     "Prayagraj": {
       "builtUp": 45.1,
       "vegetation": 45.7,
+      "treeCover": 21.3,
       "water": 7.9,
       "bareOther": 1.3,
       "state": "Uttar Pradesh",
@@ -1217,8 +1351,9 @@
     "Haridwar": {
       "builtUp": 14.1,
       "vegetation": 76.2,
+      "treeCover": 63.3,
       "water": 5.8,
-      "bareOther": 3.8,
+      "bareOther": 3.9,
       "state": "Uttarakhand",
       "lat": 29.9479,
       "lon": 78.1603
@@ -1226,6 +1361,7 @@
     "Rishikesh": {
       "builtUp": 12.6,
       "vegetation": 81.7,
+      "treeCover": 75.0,
       "water": 3.5,
       "bareOther": 2.1,
       "state": "Uttarakhand",
@@ -1235,6 +1371,7 @@
     "Nainital": {
       "builtUp": 2.0,
       "vegetation": 96.8,
+      "treeCover": 88.2,
       "water": 0.5,
       "bareOther": 0.6,
       "state": "Uttarakhand",
@@ -1244,6 +1381,7 @@
     "Roorkee": {
       "builtUp": 23.3,
       "vegetation": 75.3,
+      "treeCover": 29.3,
       "water": 0.7,
       "bareOther": 0.7,
       "state": "Uttarakhand",
@@ -1253,6 +1391,7 @@
     "Howrah": {
       "builtUp": 62.4,
       "vegetation": 27.3,
+      "treeCover": 24.4,
       "water": 9.7,
       "bareOther": 0.6,
       "state": "West Bengal",
@@ -1262,6 +1401,7 @@
     "Asansol": {
       "builtUp": 36.9,
       "vegetation": 61.3,
+      "treeCover": 22.1,
       "water": 0.8,
       "bareOther": 0.9,
       "state": "West Bengal",
@@ -1271,6 +1411,7 @@
     "Siliguri": {
       "builtUp": 47.2,
       "vegetation": 50.3,
+      "treeCover": 25.9,
       "water": 1.5,
       "bareOther": 1.0,
       "state": "West Bengal",
@@ -1280,6 +1421,7 @@
     "Durgapur": {
       "builtUp": 30.5,
       "vegetation": 63.1,
+      "treeCover": 43.6,
       "water": 5.4,
       "bareOther": 0.9,
       "state": "West Bengal",
@@ -1289,6 +1431,7 @@
     "Kathua": {
       "builtUp": 13.4,
       "vegetation": 81.5,
+      "treeCover": 18.5,
       "water": 2.7,
       "bareOther": 2.5,
       "state": "Jammu and Kashmir",
@@ -1298,6 +1441,7 @@
     "Udhampur": {
       "builtUp": 12.1,
       "vegetation": 85.8,
+      "treeCover": 52.9,
       "water": 0.4,
       "bareOther": 1.8,
       "state": "Jammu and Kashmir",
@@ -1307,6 +1451,7 @@
     "Rajouri": {
       "builtUp": 4.6,
       "vegetation": 93.7,
+      "treeCover": 41.8,
       "water": 0.1,
       "bareOther": 1.6,
       "state": "Jammu and Kashmir",
@@ -1316,6 +1461,7 @@
     "Poonch": {
       "builtUp": 3.2,
       "vegetation": 93.7,
+      "treeCover": 51.5,
       "water": 0.9,
       "bareOther": 2.2,
       "state": "Jammu and Kashmir",
@@ -1325,6 +1471,7 @@
     "Kargil": {
       "builtUp": 2.2,
       "vegetation": 22.2,
+      "treeCover": 2.2,
       "water": 1.4,
       "bareOther": 74.2,
       "state": "Ladakh",
@@ -1333,7 +1480,8 @@
     },
     "Dwarka": {
       "builtUp": 4.9,
-      "vegetation": 29.1,
+      "vegetation": 29.2,
+      "treeCover": 3.3,
       "water": 60.8,
       "bareOther": 5.2,
       "state": "Delhi",
@@ -1341,8 +1489,9 @@
       "lon": 68.9678
     },
     "Rohini": {
-      "builtUp": 47.2,
-      "vegetation": 50.3,
+      "builtUp": 47.3,
+      "vegetation": 50.2,
+      "treeCover": 7.1,
       "water": 1.0,
       "bareOther": 1.5,
       "state": "Delhi",
@@ -1352,6 +1501,7 @@
     "Noida": {
       "builtUp": 65.7,
       "vegetation": 28.3,
+      "treeCover": 17.7,
       "water": 4.5,
       "bareOther": 1.4,
       "state": "Delhi",
@@ -1361,6 +1511,7 @@
     "Burail": {
       "builtUp": 50.9,
       "vegetation": 47.7,
+      "treeCover": 34.3,
       "water": 0.1,
       "bareOther": 1.3,
       "state": "Chandigarh",
@@ -1370,6 +1521,7 @@
     "Dhanas": {
       "builtUp": 31.2,
       "vegetation": 67.9,
+      "treeCover": 31.7,
       "water": 0.1,
       "bareOther": 0.7,
       "state": "Chandigarh",
@@ -1379,6 +1531,7 @@
     "Mauli Jagran": {
       "builtUp": 50.4,
       "vegetation": 48.1,
+      "treeCover": 33.2,
       "water": 0.1,
       "bareOther": 1.4,
       "state": "Chandigarh",
@@ -1388,6 +1541,7 @@
     "Karaikal": {
       "builtUp": 9.3,
       "vegetation": 58.3,
+      "treeCover": 17.1,
       "water": 30.4,
       "bareOther": 2.0,
       "state": "Puducherry",
@@ -1396,8 +1550,9 @@
     },
     "Mahe": {
       "builtUp": 3.8,
-      "vegetation": 53.2,
-      "water": 42.7,
+      "vegetation": 53.1,
+      "treeCover": 52.1,
+      "water": 42.9,
       "bareOther": 0.2,
       "state": "Puducherry",
       "lat": 11.7017,
@@ -1406,6 +1561,7 @@
     "Yanam": {
       "builtUp": 3.8,
       "vegetation": 76.0,
+      "treeCover": 30.6,
       "water": 19.2,
       "bareOther": 0.9,
       "state": "Puducherry",
@@ -1415,6 +1571,7 @@
     "Ozhukarai": {
       "builtUp": 35.0,
       "vegetation": 52.1,
+      "treeCover": 35.6,
       "water": 12.1,
       "bareOther": 0.7,
       "state": "Puducherry",
@@ -1424,6 +1581,7 @@
     "Diglipur": {
       "builtUp": 0.2,
       "vegetation": 74.1,
+      "treeCover": 59.1,
       "water": 25.7,
       "bareOther": 0.0,
       "state": "Andaman and Nicobar Islands",
@@ -1433,6 +1591,7 @@
     "Neil Island": {
       "builtUp": 0.1,
       "vegetation": 13.8,
+      "treeCover": 11.8,
       "water": 86.1,
       "bareOther": 0.0,
       "state": "Andaman and Nicobar Islands",
@@ -1442,6 +1601,7 @@
     "Havelock Island": {
       "builtUp": 0.0,
       "vegetation": 57.5,
+      "treeCover": 41.3,
       "water": 42.5,
       "bareOther": 0.0,
       "state": "Andaman and Nicobar Islands",
@@ -1451,6 +1611,7 @@
     "Mayabunder": {
       "builtUp": 0.3,
       "vegetation": 36.7,
+      "treeCover": 25.8,
       "water": 63.0,
       "bareOther": 0.0,
       "state": "Andaman and Nicobar Islands",
@@ -1460,6 +1621,7 @@
     "Agatti": {
       "builtUp": 0.0,
       "vegetation": 0.0,
+      "treeCover": 0.0,
       "water": 100.0,
       "bareOther": 0.0,
       "state": "Lakshadweep",
@@ -1469,6 +1631,7 @@
     "Amini": {
       "builtUp": 0.0,
       "vegetation": 0.0,
+      "treeCover": 0.0,
       "water": 100.0,
       "bareOther": 0.0,
       "state": "Lakshadweep",
@@ -1478,6 +1641,7 @@
     "Androth": {
       "builtUp": 0.0,
       "vegetation": 4.8,
+      "treeCover": 4.3,
       "water": 95.2,
       "bareOther": 0.0,
       "state": "Lakshadweep",
@@ -1487,6 +1651,7 @@
     "Minicoy": {
       "builtUp": 0.0,
       "vegetation": 0.0,
+      "treeCover": 0.0,
       "water": 100.0,
       "bareOther": 0.0,
       "state": "Lakshadweep",
@@ -1496,7 +1661,8 @@
     "Daman": {
       "builtUp": 9.5,
       "vegetation": 40.3,
-      "water": 49.1,
+      "treeCover": 27.8,
+      "water": 49.0,
       "bareOther": 1.2,
       "state": "Dadra and Nagar Haveli and Daman and Diu",
       "lat": 20.4143,
@@ -1505,6 +1671,7 @@
     "Diu": {
       "builtUp": 3.6,
       "vegetation": 31.3,
+      "treeCover": 5.7,
       "water": 64.0,
       "bareOther": 1.1,
       "state": "Dadra and Nagar Haveli and Daman and Diu",
@@ -1514,6 +1681,7 @@
     "Amli": {
       "builtUp": 10.1,
       "vegetation": 88.0,
+      "treeCover": 55.5,
       "water": 1.5,
       "bareOther": 0.4,
       "state": "Dadra and Nagar Haveli and Daman and Diu",
@@ -1523,6 +1691,7 @@
     "Naroli": {
       "builtUp": 6.2,
       "vegetation": 91.4,
+      "treeCover": 63.9,
       "water": 1.8,
       "bareOther": 0.6,
       "state": "Dadra and Nagar Haveli and Daman and Diu",
@@ -1532,6 +1701,7 @@
     "Gurugram": {
       "builtUp": 72.7,
       "vegetation": 25.3,
+      "treeCover": 8.6,
       "water": 0.1,
       "bareOther": 1.8,
       "state": "Haryana",
@@ -1541,6 +1711,7 @@
     "Udaipur": {
       "builtUp": 44.4,
       "vegetation": 49.9,
+      "treeCover": 28.3,
       "water": 5.1,
       "bareOther": 0.5,
       "state": "Rajasthan",

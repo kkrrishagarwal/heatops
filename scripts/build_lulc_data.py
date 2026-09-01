@@ -75,6 +75,7 @@ def extract_top_cities_per_state(n):
 
 # ESA WorldCover class codes -> grouped buckets for the panel
 BUILT_UP = {50}
+TREE_COVER = {10}  # ESA class 10 = tree cover only — what the 3-30-300 canopy target is about
 VEGETATION = {10, 20, 30, 40, 90, 95, 100}  # tree, shrub, grass, cropland, wetland, mangrove, moss/lichen
 WATER = {80}
 # everything else (60 bare/sparse, 70 snow/ice, or anything unexpected) -> bare/other
@@ -123,9 +124,11 @@ def classify(lat, lon):
         data = src.read(1, window=window)
     vals, counts = np.unique(data, return_counts=True)
     total = int(counts.sum())
-    built = veg = water = other = 0
+    built = veg = water = other = tree = 0
     for v, c in zip(vals, counts):
         v = int(v)
+        if v in TREE_COVER:
+            tree += c
         if v in BUILT_UP:
             built += c
         elif v in VEGETATION:
@@ -137,6 +140,7 @@ def classify(lat, lon):
     return {
         "builtUp": round(100 * built / total, 1),
         "vegetation": round(100 * veg / total, 1),
+        "treeCover": round(100 * tree / total, 1),
         "water": round(100 * water / total, 1),
         "bareOther": round(100 * other / total, 1),
     }
@@ -160,11 +164,17 @@ fail_count = 0
 skip_count = 0
 
 for state, city in state_city_pairs:
-    if city in results and results[city].get("state") == state:
+    # Reuse a previous classification only if it already carries every field we compute
+    # today (treeCover was added later) — otherwise re-read the tile window for it.
+    if city in results and results[city].get("state") == state and "treeCover" in results[city]:
         skip_count += 1
         continue
+    if city in results and results[city].get("state") == state:
+        # keep the stored coordinates; skip the geocoder round-trip
+        pass
     try:
-        lat, lon = geocode(city, state)
+        prev = results.get(city) if results.get(city, {}).get("state") == state else None
+        lat, lon = (prev["lat"], prev["lon"]) if prev and "lat" in prev and "lon" in prev else geocode(city, state)
         breakdown = classify(lat, lon)
         results[city] = {**breakdown, "state": state, "lat": round(lat, 4), "lon": round(lon, 4)}
         ok_count += 1

@@ -5015,7 +5015,13 @@ function App({ user }) {
                     grid, and says so. */}
                 {(() => {
                   const lulc = getLulcWithFallback(selectedCity, selectedState, lulcReal, cityCoordsData)
-                  const green = typeof lulc?.vegetation === 'number' ? lulc.vegetation : null
+                  // Tree canopy (ESA class 10 only) is what the 3-30-300 rule measures; use it when
+                  // the classification has it, and fall back to total vegetation (trees + grass +
+                  // crops) only for entries classified before treeCover was added.
+                  const canopy = typeof lulc?.treeCover === 'number' ? lulc.treeCover : null
+                  const veg = typeof lulc?.vegetation === 'number' ? lulc.vegetation : null
+                  const green = canopy ?? veg
+                  const usingCanopy = canopy != null
                   const built = typeof lulc?.builtUp === 'number' ? lulc.builtUp : (typeof lulc?.built_up === 'number' ? lulc.built_up : null)
                   const TARGET = 30
                   const gap = green == null ? null : Math.max(0, TARGET - green)
@@ -5034,15 +5040,17 @@ function App({ user }) {
                       ) : (
                         <>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 10 }}>
-                            <div className="metric-card"><span className="metric-label">{t('plan.greenNow', 'VEGETATION NOW (trees + grass + crops)')}</span><span className="metric-value" data-testid="plan-green-now">{green}%</span></div>
+                            <div className="metric-card"><span className="metric-label">{usingCanopy ? t('plan.canopyNow', 'TREE CANOPY NOW (ESA class 10)') : t('plan.greenNow', 'VEGETATION NOW (trees + grass + crops)')}</span><span className="metric-value" data-testid="plan-green-now">{green}%</span></div>
                             <div className="metric-card"><span className="metric-label">{t('plan.target', 'CANOPY TARGET (3-30-300 RULE)')}</span><span className="metric-value">{TARGET}%</span></div>
                             <div className="metric-card"><span className="metric-label">{t('plan.gap', 'TO ADD')}</span><span className="metric-value" data-testid="plan-gap" style={{ color: gap === 0 ? '#22c55e' : '#d97706' }}>{gap === 0 ? '✓ met' : `+${gap.toFixed(0)} pp`}</span></div>
                             <div className="metric-card"><span className="metric-label">{t('plan.cooling', 'PROJECTED COOLING')}</span><span className="metric-value">−{recCooling.toFixed(1)}°C</span></div>
                           </div>
                           <div style={{ fontSize: 12, lineHeight: 1.6, color: '#e2e8f0' }}>
-                            {gap === 0
+                            {gap === 0 && usingCanopy
+                              ? t('plan.metCanopy', '{{city}} already has {{green}}% tree canopy in the ~10 km box around {{point}} — at or above the 30 % target. Protect it: the plan here is to keep existing trees and put cool roofs on the built-up share.', { city: selectedCity, green, point: lulc?.isFallback ? lulc.fallbackCity : selectedCity })
+                              : gap === 0
                               ? t('plan.met', 'On paper {{city}} is above the 30 % target — ESA reads {{green}}% vegetation for the ~10 km box around {{point}}, but that counts grass and cropland too. In a dense locality the street-level tree canopy is usually far lower, so the plan here is: protect existing trees, add street trees where footpaths allow, and put cool roofs on the built-up share to cut heat now.', { city: selectedCity, green, point: lulc?.isFallback ? lulc.fallbackCity : selectedCity })
-                              : t('plan.text', 'To bring {{city}} to the 30 % canopy that the 3-30-300 rule sets for heat-safe neighbourhoods, green cover needs to rise from {{green}}% to 30% (+{{gap}} percentage points), and reflective cool roofs should cover about {{roof}}% of the {{built}} built-up area. On this model that cools the grid by about {{cool}} °C — the difference between a High and a Moderate afternoon for outdoor workers and the elderly.', { city: selectedCity, green, gap: gap.toFixed(0), roof: Math.round(recRoof * 100), built: built != null ? `${built}%` : '', cool: recCooling.toFixed(1) })}
+                              : t('plan.text', 'To bring {{city}} to the 30 % canopy that the 3-30-300 rule sets for heat-safe neighbourhoods, {{what}} needs to rise from {{green}}% to 30% (+{{gap}} percentage points), and reflective cool roofs should cover about {{roof}}% of the {{built}} built-up area. On this model that cools the grid by about {{cool}} °C — the difference between a High and a Moderate afternoon for outdoor workers and the elderly.', { city: selectedCity, what: usingCanopy ? 'tree canopy' : 'green cover', green, gap: gap.toFixed(0), roof: Math.round(recRoof * 100), built: built != null ? `${built}%` : '', cool: recCooling.toFixed(1) })}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
                             <button
@@ -5057,7 +5065,9 @@ function App({ user }) {
                             <span style={{ fontSize: 10, color: '#64748b' }}>{source} · {t('plan.modelNote', 'cooling from the same illustrative slider model as the grid')}</span>
                           </div>
                           <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 8, lineHeight: 1.5 }}>
-                            ⚠️ {t('plan.canopyCaveat', 'ESA WorldCover\'s vegetation figure counts trees, grass and cropland together for a ~10 km box around the classified point; the 3-30-300 rule is about tree canopy in the neighbourhood itself. In a dense locality the real canopy is usually far below this figure, so treat the gap shown here as a minimum — a local tree survey gives the true number.')}
+                            {usingCanopy
+                              ? <>📐 {t('plan.canopyNote', 'Tree canopy = ESA WorldCover 10 m class 10 ("tree cover") over a ~10 km box around the classified point (2021). The 30 % target is the "30" of the 3-30-300 rule (Konijnendijk, J. Forestry Research 2023) — neighbourhood tree canopy for health and heat; a 2024 Nature Communications audit of 8 global cities found fewer than 20 % of buildings meet it outside Singapore and Seattle. India\'s own planning norm is different in kind: URDPFI 2014 asks for 10–12 m² of open space per person.')}</>
+                              : <>⚠️ {t('plan.canopyCaveat', 'ESA WorldCover\'s vegetation figure counts trees, grass and cropland together for a ~10 km box around the classified point; the 3-30-300 rule is about tree canopy in the neighbourhood itself. In a dense locality the real canopy is usually far below this figure, so treat the gap shown here as a minimum — a local tree survey gives the true number.')}</>}
                           </div>
                         </>
                       )}
