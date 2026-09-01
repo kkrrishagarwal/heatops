@@ -71,10 +71,11 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 
 ## 7. Functional Requirements
 ### 7.1 Map and Discovery
-- Show a national India heat map with state and district-level geographic structure.
-- Allow drill-down from state to city level.
-- Use color-coded heat severity categories.
-- Support quick-pick city navigation.
+- Show a national India heat map with state and district-level geographic structure (1,956 cities, 36 states/UTs; 1,932 with live readings).
+- Colour each state by the median of its cities' live temperatures (half the cities at ≥ 30 °C → Moderate); show one weather-condition badge per affected state.
+- Allow drill-down from state to city level; opening a state refreshes its cities live.
+- Support quick-pick city navigation and a global city search.
+- Never show a fabricated temperature: cities without a reading say "NO LIVE DATA".
 
 ### 7.2 City Dashboard
 - Display live weather data including temperature, humidity, wind, pressure, and AQI.
@@ -83,25 +84,29 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 - Show city comparison and historical context.
 
 ### 7.3 Decision Support
-- Provide city-to-city comparisons.
-- Simulate cooling interventions.
-- Estimate how changes may reduce heat exposure.
+- Provide city-to-city comparisons (radar vs up to 4 cities; available to citizens too).
+- Simulate cooling interventions on a heatmap grid based on the city's live temperature.
+- Recommend a plan per city: tree canopy (ESA WorldCover class 10) vs the 30 % target of the 3-30-300 rule, cool-roof share by built-up density, one-click apply.
+- Authority view: a Heatwave Action Checklist (HAP steps) that activates at High risk, weather overlays, historic data (65+ daily snapshots, viewer + CSV).
+- Citizen view: plain-language risk badge, Safe hours today, WhatsApp share, "how you can help your neighbourhood".
 
 ### 7.4 AI Analyst
-- Support natural-language questions about city heat conditions.
+- Support natural-language questions about city heat conditions, with conversation memory.
 - Return structured explanations for heatwave risk, vulnerability, intervention impact, and multi-city comparisons.
+- India-only by design: never make global/international claims; answer ranking questions from a real India-wide ranking of the cache; the selected city is never a default answer.
 - Clearly label estimated or missing values instead of presenting them as exact measurements.
+- Stay available: five Gemini models tried in order when one's quota is exhausted.
 
 ### 7.5 Localization
 - Support 11 Indian languages in the UI.
 - Maintain the same product behavior across languages.
 
 ## 8. Non-Functional Requirements
-- The interface should feel responsive and interactive on standard desktop browsers.
+- The interface should feel responsive and interactive on standard desktop browsers, and usable on low-end phones via Lite mode (no WebGL, states-only map, no blur/animations).
 - The map rendering should remain smooth even when large geographic datasets are loaded.
 - Data sources and limitations should be visible to users.
 - The app should remain understandable to a non-technical audience.
-- Daily refresh mechanisms should minimize stale information.
+- Refresh every 3 hours (GitHub Actions) with a daily cron fallback; readings that could not be refreshed are carried forward and flagged, never shown as fresh.
 
 ## 9. Success Metrics
 - Users can discover a city and view relevant heat data within seconds.
@@ -111,7 +116,7 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 - The platform is used across multiple Indian-language experiences.
 
 ## 10. Risks and Constraints
-- External API availability and rate limits.
+- External API availability and rate limits (Open-Meteo weighted quota; Gemini free tier ≈ 20 requests/day per model — a paid key is recommended for judging).
 - Incomplete or inconsistent geo data for some local areas.
 - Model uncertainty for unseen cities or sparse contexts.
 - Need to balance simplicity with technical transparency.

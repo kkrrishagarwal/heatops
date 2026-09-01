@@ -92,6 +92,15 @@ Prepare the app for public use and releasable live operations.
 ### Outcome
 The platform remains credible, fresh, and production-like in a public deployment environment.
 
+### Status (1 Sept 2026) — delivered
+- Automated refresh (GitHub Actions 3-hourly written; Vercel Cron 14:30 IST + 16:00 IST retry live), daily history snapshots (65+ days), history viewer + CSV, carried-forward flagging
+- Validated geocoding for 1,932 cities; "NO LIVE DATA" instead of fabricated numbers; state colour by live median; live refresh of the opened state
+- Citizen / Authority views with Safe hours, WhatsApp share, neighbourhood help card, Heatwave Action Checklist; Compare for citizens
+- Analysis grid on live temperature; Recommended plan (tree canopy vs the 3-30-300 rule's 30 %)
+- AGNI: India-only scope, national ranking answers, conversation memory, markdown, 5-model fallback chain
+- Map: weather badges, fit-to-card projection, zoom floor; Lite mode for low-end devices; cache auto-retry
+- Verified with Playwright screenshots on production after every change
+
 ---
 
 ## Phase 6: Product Maturity and Expansion
@@ -99,6 +108,9 @@ The platform remains credible, fresh, and production-like in a public deployment
 Extend the product beyond the first release while keeping the focus on heat-risk actionability.
 
 ### Possible next steps
+- Compare radar on live values instead of seeded indices; wire or drop the PDF/CSV export claim
+- 30-day trend chart on the city Overview from the history archive; IMD-rule heat alerts
+- ISRO INSAT-3D LST via MOSDAC (pipeline written, pending approval); retrain the ML model on Indian cities
 - Expand to more geographies and more local datasets
 - Add more intervention models and forecast scenarios
 - Improve decision dashboards for municipal workflows

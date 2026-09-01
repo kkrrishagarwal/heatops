@@ -1,45 +1,38 @@
-# Manual data refresh + deploy — run this right before judging
+# Data freshness before judging — what runs by itself, and the manual fallback
 
-The live Vercel site only updates `live-weather-cache.json` when you push a
-new commit (it's a static file, not a live database). Run this once, a few
-hours before your demo slot, so judging shows fresh "updated Xm ago" data
-instead of stale numbers.
+**Updated 1 Sept 2026.** The live site now refreshes itself; this page is the checklist to confirm it, plus the manual fallback if something is down.
 
+## What runs automatically
+- **Vercel Cron** — full refresh of all 1,932 cities at 09:00 UTC (14:30 IST, peak heat), and a **retry pass** at 10:30 UTC (16:00 IST) for any batch Open-Meteo rate-limited. Each run commits `public/live-weather-cache.json` + `public/data/history/YYYY-MM-DD.json` + `index.json` in one commit, which redeploys the site.
+- **GitHub Actions every 3 hours** (`.github/workflows/`) — written and tested locally, but it needs a token with the `workflow` scope to be pushed:
+  ```bash
+  gh auth refresh -h github.com -s workflow
+  git add .github && git commit -m "ci: 3-hourly weather refresh" && git push origin main
+  ```
+  Until that's pushed, the cron alone keeps the data ≤ 24 h old.
+- Readings a run could not refresh are **carried forward and flagged** (`isCarriedForward`, real `observedAt`) — the UI shows their real age, never "fresh".
+- Opening any state on the map refreshes that state's cities live (one batched call), so the demo state is always current regardless of the cron.
+
+## Confirm it, the morning of judging
+```bash
+# last cron commits (expect one per day at ~09:00–10:00 UTC)
+gh api "repos/kkrrishagarwal/heatops/commits?path=public/live-weather-cache.json&per_page=3" --jq '.[] | "\(.commit.author.date)  \(.commit.message | split("\n")[0])"'
+# what the live site serves right now
+curl -s https://heatops.vercel.app/live-weather-cache.json | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const j=JSON.parse(d);console.log('lastUpdated',j.lastUpdated,'cities',Object.keys(j.cities).length,'carriedForward',j.carriedForwardCount)})"
+```
+`carriedForwardCount` should be small (0–50). A few hundred means Open-Meteo rate-limited the run — the 16:00 IST retry or the next 3-hourly job fixes it.
+
+## Manual fallback (only if the automation is down)
 ```bash
 cd ~/Desktop/heatops
-
-# 1. Pull fresh weather/AQI data for all ~1,690 cities (~8 minutes, no API key needed)
-node scripts/refreshWeatherCache.mjs
-
-# 2. Confirm it actually wrote a fresh timestamp (should print today's date/time)
-python3 -c "import json; print(json.load(open('public/live-weather-cache.json'))['lastUpdated'])"
-
-# 3. Commit + push (Vercel auto-deploys on push to main, ~2 min build)
-git add public/live-weather-cache.json
+node scripts/refreshWeatherCache.mjs        # ~2 min; backs off on 429s, may take longer
+git add public/live-weather-cache.json public/data/history
 git commit -m "Refresh live weather cache before judging"
-git push origin main
-
-# 4. Wait ~2 minutes, then confirm the LIVE site picked it up:
-curl -s https://heatops.vercel.app/live-weather-cache.json | python3 -c "import json,sys; print(json.load(sys.stdin)['lastUpdated'])"
+git push origin main                        # Vercel redeploys in ~2 min
 ```
+If it hangs in rate-limit backoff for more than 10 minutes, stop it — the last committed cache stays live and is labelled with its age.
 
-The last command's timestamp should be within the last few minutes. If you
-do this 1–2 hours before your slot, the "updated Xh ago" labels on the live
-site will stay well under the 24h staleness warning throughout judging.
-
-## If you have more time and want it to self-refresh locally
-
-Keep this running in a spare terminal during local dev/demo — it refreshes
-the file automatically every 20 minutes (does NOT touch the deployed site,
-only your local `npm run dev`):
-
-```bash
-node scripts/weatherCacheDaemon.mjs
-```
-
-## Why this is manual, not automatic
-
-Vercel's free/Hobby plan caps Cron jobs at once per day, and a sub-daily
-auto-refresh would need either a paid Pro plan or a new GitHub token wired
-into a serverless function. Per your call, we're skipping that
-infrastructure for now and doing one manual refresh before judging instead.
+## Also before judging
+- **Gemini key:** the free tier allows ≈ 20 requests/day per model. AGNI walks a 5-model chain, but a paid-tier key (`GEMINI_API_KEY` in Vercel) is the safe choice for a live demo.
+- **Lite mode** is opt-in (avatar menu / ☰ drawer) for low-end phones; leave it off on the demo laptop.
+- Hard-refresh the demo browser once after the last deploy (Ctrl + Shift + R).

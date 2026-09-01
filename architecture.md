@@ -7,16 +7,20 @@ BhaskarOps is a multi-layer application designed to collect, process, visualize,
 
 ```mermaid
 flowchart LR
-    U[User Browser] --> FE[React + Vite Frontend]
-    FE --> API[API Layer / App Server]
-    FE --> EXT[Open-Meteo, OSM, GeoJSON, Live Cache]
-    FE --> AI[AI Proxy /api/ask-ai]
-    AI --> GEMINI[Google Gemini API]
-    CRON[Scheduled Refresh Job] --> CACHE[public/live-weather-cache.json]
-    CACHE --> FE
-    API --> DATA[GeoJSON + Python utilities]
-    SCRIPTS[Python / Node Data Scripts] --> DATA
+    U[User Browser] --> FE[React 18 + Vite SPA]
+    FE -->|direct fetch| EXT[Open-Meteo weather · AQI · geocoding\nOSM Overpass]
+    FE -->|static| CACHE[public/live-weather-cache.json\n1,932 cities]
+    FE -->|static| GEO[GeoJSON 36 states / 594 districts\nlulc_real.json · ml_model_real.json]
+    FE -->|POST| AI[/api/ask-ai · Gemini proxy\n5-model fallback chain]
+    AI --> GEMINI[Google Gemini]
+    JOB[GitHub Actions every 3 h\n+ Vercel Cron 14:30 IST + 16:00 retry] --> REFRESH[refreshWeatherData]
+    REFRESH --> COMMIT[Git Data API commit:\ncache + data/history/DATE.json + index]
+    COMMIT --> DEPLOY[Vercel auto-redeploy] --> CACHE
+    COMMIT --> HIST[/api/weather-history · history.html · CSV]
+    SCRIPTS[Offline scripts: geocodeCities · build_lulc_data · train_lst_model] --> GEO
 ```
+
+Status (1 Sept 2026): everything in this diagram is deployed at https://heatops.vercel.app except the GitHub Actions job, which is written (`.github/workflows/`) and waiting for a token with the `workflow` scope to be pushed. Full plain-language detail lives in `PROJECT_EXPLAINED.md` (§8 is the change log).
 
 ## 3. Frontend Layer
 ### Stack
@@ -28,7 +32,8 @@ flowchart LR
 - Three.js / react-globe.gl
 
 ### Responsibilities
-- Render India map and state/city drill-down interactions
+- Render India map and state/city drill-down interactions (state colour = median of its cities' live temperatures; weather-condition badges per state; opening a state refreshes its cities live in one batched call)
+- Two independent modes: audience (Citizen / Authority) × layout (Mobile / Laptop); opt-in Lite mode for low-end devices (no WebGL globe, states-only map, no blur/animations)
 - Display live weather, AQI, and forecast cards
 - Surface heat-risk categories and visual scores
 - Run comparison and intervention planning workflows
@@ -42,34 +47,31 @@ flowchart LR
 - UI components such as `WeatherCard.jsx`, `AIAnalystPanel.jsx`, `MLModelPanel.jsx`, and `SpatialRecommendation.jsx`
 
 ## 4. Backend and API Layer
-### Flask application
-The Flask server in `app.py` provides server-side processing for geospatial and weather data. It handles:
-- GeoJSON district loading
-- Feature centroid calculations
-- Weather fetch and caching
-- Heat-point construction for map and data workflows
+### Flask application (legacy — not deployed)
+`app.py`, `templates/` and `static/` are the original prototype and are not part of the production deployment. Everything the browser needs is static files plus the serverless functions below.
 
 ### Serverless / proxy layer
-The project also includes serverless functions under `api/` and `netlify/functions/` for:
-- AI requests through the secure proxy
-- Weather cache refresh tasks
-- GitHub automation and data commit workflows
+Serverless functions under `api/` (Vercel) and `netlify/functions/` (mirror):
+- `api/ask-ai.js` — AGNI proxy: Gemini key server-side, rate limit per client, system prompt with grounding rule, India-only geographic scope, "(estimated)" tagging, conversation memory; five Gemini models tried in order on quota/overload
+- `api/refresh-weather-cache.js` — the daily full refresh (14:30 IST); `api/refresh-weather-retry.js` — the 16:00 IST retry pass for rate-limited batches
+- `api/weather-history.js` — `GET /api/weather-history?city=&state=&days=` from the bundled daily snapshots
+- `api/_lib/githubCommit.js` — multi-file commits through GitHub's Git Data API
 
 ## 5. Data Flow
 ### 5.1 Weather and AQI data
-- Open-Meteo provides current weather and air-quality data.
-- Results are cached to reduce repeated calls and support stale-aware UI behavior.
-- Data may be refreshed via scheduled jobs and live cache files.
+- Open-Meteo provides current weather and air-quality data for 1,932 geocoded cities (coordinates validated to lie in their own state; Open-Meteo → OSM Nominatim → spelling aliases; 24 hamlet names honestly blank).
+- The bulk cache is refreshed by the scheduled jobs and committed to the repo together with a compact daily history snapshot; readings a batch could not refresh are carried forward and flagged (`isCarriedForward`, real `observedAt`).
+- The selected city is always fetched live; opening a state refreshes all its cities in one batched call (10-minute memory) so list, state median and map colour agree.
 
 ### 5.2 Geo and land data
 - India district/state GeoJSON files under `public/data/`
 - Geo features are used for map rendering and city-localization logic.
-- Land-cover and urban morphological metrics are loaded from project assets and derived data products.
+- Land-cover metrics come from ESA WorldCover 10 m (2021) classified offline for 171 cities (`build_lulc_data.py`: built-up, vegetation, water, and tree canopy = class 10 alone); other cities borrow the nearest classified city, labelled with the distance. Building density is a live OSM Overpass query.
 
 ### 5.3 AI analysis
 - Client sends natural-language queries to the serverless proxy.
 - Proxy reads the secure Gemini API key on the server side.
-- AI responses are grounded in available metrics and return clear label behavior for estimated values.
+- The browser attaches real cached readings for any city/state named in the question, plus an India-wide ranking block (best/worst AQI, hottest/coolest) for superlative questions; the prompt forbids global/international claims and any figure not in context is tagged "(estimated)".
 
 ## 6. Storage and Refresh
 ### Local project storage
@@ -77,12 +79,12 @@ The project also includes serverless functions under `api/` and `netlify/functio
 - `public/live-weather-cache.json` holds cached weather snapshots used by the app and refresh jobs.
 
 ### Refresh pipeline
-- Scheduled refresh scripts fetch weather records and update cached results.
-- The system commits updated data to the repository and triggers redeploys.
+- GitHub Actions every 3 hours (paced to Open-Meteo's weighted limit) plus Vercel Cron at 14:30 IST with a 16:00 IST retry pass; every run commits `live-weather-cache.json` + `public/data/history/YYYY-MM-DD.json` + `index.json` in one commit, which triggers the redeploy.
+- 65+ days of daily snapshots are kept in-repo (optional Postgres mirror coded, paused); `scripts/exportWeatherHistory.mjs` writes them to CSV.
 
 ## 7. Security and Trust Model
 - API keys are kept server-side and never exposed in the client bundle.
-- Synthetic or estimated values are clearly marked instead of being masqueraded as exact live metrics.
+- Synthetic or estimated values are clearly marked instead of being masqueraded as exact live metrics: cities without a reading say "NO LIVE DATA" (never a guessed number), carried-forward readings are flagged, the Analysis grid states its base temperature and that its cell pattern is illustrative, state-panel NDVI/NDBI are labelled "baseline", and the ML model shows its weak unseen-city R² next to the good one.
 - Data provenance is tied to underlying providers such as Open-Meteo, OSM, ESA WorldCover, and ML prediction outputs.
 
 ## 8. Scalability and Operation

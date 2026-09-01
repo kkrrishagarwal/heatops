@@ -1,3 +1,5 @@
+> **Historical document (June 2026).** Describes the early 3D mission-control UI phase. The product has since been redesigned (amber civic-tech palette, Citizen/Authority views, live-data pipeline) — see `PROJECT_EXPLAINED.md` for the current state.
+
 # BhaskarOps - Phase 1 Complete ✅
 ## 3D Mission Control Center UI - Status Report
 

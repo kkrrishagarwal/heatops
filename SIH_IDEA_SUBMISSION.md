@@ -35,7 +35,7 @@ Everything below is true of the live prototype at https://heatops.vercel.app as 
 **Innovation and uniqueness**
 - **Radical honesty in code:** every number is traceable to a named source; gaps say "NO LIVE DATA", stale values are flagged "carried forward", AI figures without live data are tagged "(estimated)"
 - **AGNI, India-only by design:** answers rankings from a real 1,932-city cache, refuses global claims, remembers the conversation, replies in 11 languages
-- **Intervention simulator + Cool Roof ROI**, not just a viewer
+- **Intervention simulator + Recommended plan + Cool Roof ROI**, not just a viewer — each city's tree canopy (ESA WorldCover) vs the 30 % target of the 3-30-300 urban-forestry rule, one click to apply
 - **Self-refreshing:** every 3 hours the platform re-fetches all cities, commits the data to GitHub and redeploys itself; 65+ days of daily history kept
 
 ---
@@ -80,7 +80,7 @@ weather badges) ──► click state (its cities refreshed live in one call) �
 - Third-party rate limits (Open-Meteo weighted quota; Gemini free tier ≈ 20 requests/day per model)
 - Data gaps: 24 hamlet/colony names unresolvable; time-of-day bias if snapshots are taken at dawn
 - ML model trained on non-Indian megacities (validation R² 0.95, unseen-city R² −0.39)
-- Slow networks: ~4 MB first load (map GeoJSON + app)
+- Slow networks / low-end phones: ~4 MB first load (map GeoJSON + app)
 - Dependence on free external APIs for a public-service tool
 
 **Strategies to overcome them**
@@ -88,7 +88,7 @@ weather badges) ──► click state (its cities refreshed live in one call) �
 - 5-model Gemini chain; paid key for production; India-only ranking answers computed from our own cache
 - Validated geocoding (Open-Meteo → OSM Nominatim → spelling aliases); honest "NO LIVE DATA"; peak-hour (14:30 IST) snapshots
 - Both R² scores disclosed on screen; roadmap: retrain on ISRO INSAT-3D LST via MOSDAC
-- Chunked map rendering, cached fallbacks, error boundaries; scale path: Postgres history mirror (already coded, paused)
+- Chunked map rendering, cached fallbacks, error boundaries; Lite mode for low-end phones (no 3D globe, states-only map); scale path: Postgres history mirror (already coded, paused)
 
 ---
 
@@ -113,6 +113,8 @@ weather badges) ──► click state (its cities refreshed live in one call) �
 - **ESA WorldCover 10 m (2021)** — satellite land-cover classification: https://esa-worldcover.org/en
 - **OpenStreetMap** — Overpass API (building density): https://wiki.openstreetmap.org/wiki/Overpass_API · Nominatim (geocoding): https://nominatim.org
 - **MODIS land-surface-temperature dataset** — "Time-series dataset on land surface temperature, vegetation, built up areas and other climatic factors in top 20 global cities (2000–2018)", *Data in Brief*, Elsevier: https://doi.org/10.1016/j.dib.2019.103803
+- **3-30-300 rule** — Konijnendijk, C. C. (2023). Evidence-based guidelines for greener, healthier, more resilient neighbourhoods: introducing the 3-30-300 rule. *Journal of Forestry Research* 34(3): https://doi.org/10.1007/s11676-022-01523-z · canopy-deficit audit: *Nature Communications* (2024) https://doi.org/10.1038/s41467-024-53402-2
+- **URDPFI Guidelines 2014** (MoHUA) — 10–12 m² open space per person: https://mohua.gov.in/upload/uploadfiles/files/URDPFI%20Guidelines%20Vol%20I(2).pdf
 - **NDMA** — Guidelines for preparation of Action Plan: Prevention and Management of Heat Wave: https://ndma.gov.in/Natural-Hazards/Heat-Wave
 - **Ahmedabad Heat Action Plan** (AMC / NRDC / IIPH-G) — basis of the Heatwave Action Checklist
 - **Telangana Cool Roof Policy 2023–28** (MA&UD, Govt. of Telangana) — cool-roof cost/benefit coefficients
