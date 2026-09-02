@@ -405,6 +405,19 @@ The identical repeated answer was not a canned reply (the only template is the l
 - **Lite mode** (`src/utils/liteMode.js`, `html[data-lite]`): **opt-in** from the avatar menu / ☰ drawer (remembered per browser); auto-on only when the browser itself asks for Save-Data or reports a 2G link. (A first version auto-enabled it from memory/core counts — that switched it on for ordinary laptops and, because the district layer paints the heat colours, the map went blank. Reverted the same evening; in Lite the state layer now paints the colours itself, so the map is never blank.) No WebGL globe on sign-in, states-only map (the 594-district layer is skipped — SVG paths drop from ~630 to ~170), and CSS drops blur / shadows / animations. Data and labels unchanged.
 - **Cache load retries** 3× with backoff before the map is declared cache-less.
 
+### 8.17 Severity-adaptive checklists (2 Sept 2026)
+
+The Authority **Heatwave Action Checklist** and the Citizen **"How you can help"** card no longer show the same five items regardless of conditions — both follow the selected city's live risk bucket (same buckets as everywhere else), plus a cold case:
+
+| Live conditions | Authority checklist | Citizen help card |
+|---|---|---|
+| Extreme / High (≥ 38 °C) | full 5-step HAP activation list (ACTIVE pill) | full 5-item urgent list, elderly-check first in red |
+| Moderate (32–38 °C) | 3 pre-emptive steps — monitor & pre-position advisories, cooling centres ready-not-activated, tanker contracts verified (PREPAREDNESS pill) | 3 items — hydrate, watch elderly at peak hours, plants |
+| Low | one line: "Routine monitoring — no activation needed" (no checklist) | positive all-clear: "Great weather today — safe to be outdoors…" |
+| Cold (< 10 °C) | distinct cold list — night shelters, cold-exposure advisory for outdoor workers, hypothermia/CO health alert, livestock shelter (COLD pill, 🧊) | cold list — dress in layers, connect homeless neighbours to night shelters, elderly/CO check, protect plants & pipes from frost |
+
+Ticks are stored per city **and per tier** so a heat tick never shows as done on the cold list. Verified with forced temperatures (46 / 33 / 22 / 5 °C) on one city — each tier renders the right content in both views. (`src/components/HeatActionChecklist.jsx`, the HELP block in `src/App.jsx`.)
+
 ---
 
 ## Bonus: Things that are built but not currently used (orphaned code)

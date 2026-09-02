@@ -96,7 +96,7 @@ weather badges) ──► click state (its cities refreshed live in one call) �
 
 **Potential impact on the target audience**
 - **Citizens:** know today's risk in their own language, the safe hours to go out, and how to protect neighbours — shareable on WhatsApp in one tap
-- **Municipal officials / planners:** a Heat Action Plan checklist that activates when a city crosses High risk; compare cities; simulate green cover / cool roofs / water bodies before spending; download history as evidence
+- **Municipal officials / planners:** a severity-adaptive Heat Action Plan checklist (activation at High risk, preparedness at Moderate, a cold-weather list below 10 °C); compare cities; simulate green cover / cool roofs / water bodies before spending; download history as evidence
 - **Decision-makers:** ask AGNI "why is this city hot?" and get an answer grounded in the same numbers the map shows
 
 **Benefits**
