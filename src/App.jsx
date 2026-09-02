@@ -4750,43 +4750,72 @@ function App({ user }) {
                   )
                 })()}
 
-                {/* CITIZEN ONLY — "How you can help your neighbourhood". Mostly static, but the
-                    order and emphasis follow today's risk word (Extreme/High put the
-                    elderly-neighbours check first and in red). */}
+                {/* CITIZEN ONLY — "How you can help your neighbourhood". SEVERITY-ADAPTIVE:
+                    the list follows today's live risk bucket — full urgent list on Extreme/High,
+                    a short list on Moderate, a positive all-clear on Low, and a distinct
+                    cold-weather list below 10 °C (hill stations in winter). */}
                 {citizen && activeTab === 'What to do' && (() => {
                   const risk = citizenSummary?.risk || 'Low'
-                  const urgent = risk === 'Extreme' || risk === 'High'
-                  const items = [
-                    { icon: '🧓', urgent: true, text: urgent
-                        ? t('citizen.help.elderlyNow', 'Check on elderly and vulnerable neighbours NOW — a phone call or a knock during 12–4 pm can prevent heat stroke.')
-                        : t('citizen.help.elderly', 'Check on elderly and vulnerable neighbours during the hottest hours (12–4 pm).') },
-                    { icon: '💧', text: t('citizen.help.water', 'Identify and help maintain a public water point or a shaded resting spot in your locality.') },
-                    { icon: '🏠', text: t('citizen.help.coolRoof', 'Spread the word about cool roofs and green cover in your building or society.') },
-                    { icon: '📣', text: t('citizen.help.rwa', "Ask your local RWA / ward office about the city's Heat Action Plan and share it in your group.") },
-                    { icon: '🪴', text: t('citizen.help.plants', 'Grow heat-resistant plants at home — Aloe Vera, Snake Plant, Money Plant or Neem saplings help cool your surroundings and are easy to maintain.') }
-                  ]
-                  const ordered = urgent ? items : [...items.slice(1), items[0]]
+                  const temp = citizenSummary?.temp
+                  const tier = (typeof temp === 'number' && temp < 10) ? 'cold'
+                    : (risk === 'Extreme' || risk === 'High') ? 'urgent'
+                    : risk === 'Medium' ? 'moderate' : 'calm'
+                  const urgent = tier === 'urgent'
+                  const ITEM_SETS = {
+                    urgent: [
+                      { icon: '🧓', urgent: true, text: t('citizen.help.elderlyNow', 'Check on elderly and vulnerable neighbours NOW — a phone call or a knock during 12–4 pm can prevent heat stroke.') },
+                      { icon: '💧', text: t('citizen.help.water', 'Identify and help maintain a public water point or a shaded resting spot in your locality.') },
+                      { icon: '🏠', text: t('citizen.help.coolRoof', 'Spread the word about cool roofs and green cover in your building or society.') },
+                      { icon: '📣', text: t('citizen.help.rwa', "Ask your local RWA / ward office about the city's Heat Action Plan and share it in your group.") },
+                      { icon: '🪴', text: t('citizen.help.plants', 'Grow heat-resistant plants at home — Aloe Vera, Snake Plant, Money Plant or Neem saplings help cool your surroundings and are easy to maintain.') }
+                    ],
+                    moderate: [
+                      { icon: '💧', text: t('citizen.help.hydrate', 'Stay hydrated through the day — carry water if you are out around midday.') },
+                      { icon: '🧓', text: t('citizen.help.elderly', 'Keep an eye on elderly neighbours if they go out in the peak hours (12–4 pm).') },
+                      { icon: '🪴', text: t('citizen.help.plants', 'Grow heat-resistant plants at home — Aloe Vera, Snake Plant, Money Plant or Neem saplings help cool your surroundings and are easy to maintain.') }
+                    ],
+                    cold: [
+                      { icon: '🧥', urgent: true, text: t('citizen.help.coldDress', 'Dress warmly in layers, especially early morning and at night — cover hands, ears and head.') },
+                      { icon: '🏠', text: t('citizen.help.coldHomeless', 'Check on homeless neighbours — help connect them to a night shelter if possible.') },
+                      { icon: '🧓', text: t('citizen.help.coldElderly', 'Look in on elderly neighbours: unventilated heaters carry a carbon-monoxide risk.') },
+                      { icon: '🪴', text: t('citizen.help.coldPlants', 'Protect outdoor plants and exposed water pipes from frost overnight.') }
+                    ],
+                    calm: []
+                  }
+                  const list = ITEM_SETS[tier]
+                  const accent = tier === 'urgent' ? '#dc2626' : tier === 'cold' ? '#2563eb' : null
                   return (
-                    <section className="panel" data-panel="HELP" style={urgent ? { borderLeft: '4px solid #dc2626' } : undefined}>
-                      <h3>🤝 {t('citizen.help.title', 'How you can help your neighbourhood')}</h3>
+                    <section className="panel" data-panel="HELP" data-help-tier={tier} style={accent ? { borderLeft: `4px solid ${accent}` } : undefined}>
+                      <h3>{tier === 'cold' ? '🧣' : '🤝'} {t('citizen.help.title', 'How you can help your neighbourhood')}</h3>
                       {urgent && (
                         <div style={{ fontSize: 12, color: '#dc2626', fontWeight: 700, marginBottom: 8 }}>
                           {t('citizen.help.urgentNote', '{{risk}} heat risk today — the first step matters most.', { risk })}
                         </div>
                       )}
-                      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {ordered.map((it, i) => (
-                          <li key={i} style={{
-                            display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 12, lineHeight: 1.5, padding: '8px 10px', borderRadius: 8,
-                            background: it.urgent && urgent ? 'rgba(185,28,28,0.12)' : 'rgba(148,163,184,0.06)',
-                            border: `1px solid ${it.urgent && urgent ? 'rgba(185,28,28,0.5)' : 'rgba(148,163,184,0.15)'}`,
-                            color: it.urgent && urgent ? '#fecaca' : '#e2e8f0', fontWeight: it.urgent && urgent ? 700 : 400
-                          }}>
-                            <span style={{ fontSize: 16 }}>{it.icon}</span>
-                            <span>{it.text}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      {tier === 'cold' && (
+                        <div style={{ fontSize: 12, color: '#60a5fa', fontWeight: 700, marginBottom: 8 }}>
+                          {t('citizen.help.coldNote', 'Cold conditions today ({{temp}}°C) — the risks flip: warmth, not shade.', { temp })}
+                        </div>
+                      )}
+                      {tier === 'calm' ? (
+                        <div data-testid="help-calm" style={{ fontSize: 13, color: '#86efac', lineHeight: 1.6, padding: '10px 12px', background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.35)', borderRadius: 8 }}>
+                          🌤️ {t('citizen.help.calm', 'Great weather today — safe to be outdoors, no special precautions needed. A good day to plant a sapling or check that your building\'s water point works.')}
+                        </div>
+                      ) : (
+                        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {list.map((it, i) => (
+                            <li key={i} style={{
+                              display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 12, lineHeight: 1.5, padding: '8px 10px', borderRadius: 8,
+                              background: it.urgent && urgent ? 'rgba(185,28,28,0.12)' : it.urgent && tier === 'cold' ? 'rgba(37,99,235,0.12)' : 'rgba(148,163,184,0.06)',
+                              border: `1px solid ${it.urgent && urgent ? 'rgba(185,28,28,0.5)' : it.urgent && tier === 'cold' ? 'rgba(37,99,235,0.5)' : 'rgba(148,163,184,0.15)'}`,
+                              color: it.urgent && urgent ? '#fecaca' : it.urgent && tier === 'cold' ? '#bfdbfe' : '#e2e8f0', fontWeight: it.urgent && (urgent || tier === 'cold') ? 700 : 400
+                            }}>
+                              <span style={{ fontSize: 16 }}>{it.icon}</span>
+                              <span>{it.text}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </section>
                   )
                 })()}
