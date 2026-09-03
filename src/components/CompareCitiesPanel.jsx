@@ -164,7 +164,9 @@ export function CompareCitiesPanel({ selectedCity, selectedState, liveWeather, a
   const radarData = useMemo(() => {
     if (!baseData) return []
     const metrics = [
-      { key: 'LST', get: d => d.lst, min: 22, max: 52 },
+      // LST axis: the city's LIVE current temperature when the fetch has it; the seeded
+      // baseline only as a fallback (the note under the chart says which axes are live).
+      { key: 'LST', getBoth: (d, w) => (typeof w?.current?.temp === 'number' ? w.current.temp : d.lst), min: 22, max: 52 },
       { key: 'NDVI', get: d => d.ndvi, min: -0.1, max: 0.7 },
       { key: 'NDBI', get: d => d.ndbi, min: -0.2, max: 0.6 },
       { key: 'AQI', getWeather: w => w?.aqi?.usAQI ?? 0, min: 30, max: 400 },
@@ -173,9 +175,9 @@ export function CompareCitiesPanel({ selectedCity, selectedState, liveWeather, a
     ]
     return metrics.map(m => {
       const row = { metric: m.key }
-      row[selectedCity] = normalize(m.get ? m.get(baseData) : m.getWeather(liveWeather), m.min, m.max)
+      row[selectedCity] = normalize(m.getBoth ? m.getBoth(baseData, liveWeather) : m.get ? m.get(baseData) : m.getWeather(liveWeather), m.min, m.max)
       compareEntries.forEach(({ city, data, weather }) => {
-        row[city] = normalize(m.get ? m.get(data) : m.getWeather(weather), m.min, m.max)
+        row[city] = normalize(m.getBoth ? m.getBoth(data, weather) : m.get ? m.get(data) : m.getWeather(weather), m.min, m.max)
       })
       return row
     })
@@ -183,9 +185,12 @@ export function CompareCitiesPanel({ selectedCity, selectedState, liveWeather, a
 
   const coolest = useMemo(() => {
     if (!baseData || compareEntries.length === 0) return null
-    const all = [{ city: selectedCity, lst: baseData.lst }, ...compareEntries.map(e => ({ city: e.city, lst: e.data.lst }))]
+    const all = [
+      { city: selectedCity, lst: typeof liveWeather?.current?.temp === 'number' ? liveWeather.current.temp : baseData.lst },
+      ...compareEntries.map(e => ({ city: e.city, lst: typeof e.weather?.current?.temp === 'number' ? e.weather.current.temp : e.data.lst }))
+    ]
     return all.reduce((min, cur) => (cur.lst < min.lst ? cur : min), all[0])
-  }, [baseData, compareEntries, selectedCity])
+  }, [baseData, compareEntries, selectedCity, liveWeather])
 
   return (
     <section className="panel">
@@ -194,6 +199,9 @@ export function CompareCitiesPanel({ selectedCity, selectedState, liveWeather, a
         {t('compareCities.subtitle', `Comparing against ${selectedCity || 'the selected city'} — search and add up to ${MAX_COMPARE} more cities.`, { city: selectedCity || t('compareCities.theSelectedCity', 'the selected city'), max: MAX_COMPARE })}
       </p>
 
+      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: -8, marginBottom: 10 }}>
+        {t('compareCities.axesNote', 'LST (current temp), AQI and Wind are live readings; NDVI / NDBI / NDWI are illustrative baselines, not measurements.')}
+      </div>
       <div style={{ position: 'relative' }}>
         <input
           ref={inputRef}
