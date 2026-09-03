@@ -418,6 +418,12 @@ The Authority **Heatwave Action Checklist** and the Citizen **"How you can help"
 
 Ticks are stored per city **and per tier** so a heat tick never shows as done on the cold list. Verified with forced temperatures (46 / 33 / 22 / 5 °C) on one city — each tier renders the right content in both views. (`src/components/HeatActionChecklist.jsx`, the HELP block in `src/App.jsx`.)
 
+### 8.18 Demo override, live Compare axis, PDF report (2 Sept 2026)
+
+- **`?demoTemp=46`** — opening the site with this URL parameter forces the selected city's current temperature in that browser tab only, with a fixed "🧪 DEMO — not real data" banner while active. Exists so the severity-adaptive UI (checklist tiers, citizen card, theme, gauge) can be demonstrated on demand — e.g. a Tamil Nadu city at 46 °C — without writing a fake reading anywhere. (`applyDemoOverride` in `src/hooks/useWeather.js`.)
+- **Compare radar** — the LST axis and the "coolest city" callout now use each city's live current temperature (the panel already fetched it) with the seed only as fallback, and a note under the title says which axes are live (LST/AQI/Wind) vs illustrative baselines (NDVI/NDBI/NDWI).
+- **PDF Report button** wired into EXPORT & SHARE (the print-ready report `generatePDF` in `exportUtils.js` had been built but never mounted) — real values or "N/A", per that file's own rule.
+
 ---
 
 ## Bonus: Things that are built but not currently used (orphaned code)
@@ -426,6 +432,5 @@ While exploring the codebase, these 4 files turned up fully written but not impo
 - `src/components/Card3D.jsx` — a generic 3D-tilt card wrapper
 - `src/components/SkeletonLoader.jsx` — loading shimmer placeholders
 - `src/components/RuralBaselinePanel.jsx` — rural-vs-urban heat comparison (uses live data, looks fully functional — likely already built for a future feature)
-- `src/utils/exportUtils.js` — CSV/PDF/WhatsApp export functions
 
 These aren't "bugs" — they just haven't been wired into any tab/component yet. If you want to activate any of them later, it's just a matter of importing them in `App.jsx` and rendering them in the right place.

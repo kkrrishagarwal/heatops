@@ -167,7 +167,7 @@ Every number shown is traceable to a real source, with honest "not available" fa
 ## Other Notable Details
 - **11 languages** supported (English + Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, Urdu, Kannada, Odia, Punjabi)
 - **3D rotating globe** login screen (Three.js)
-- Export options: PDF report, CSV download, WhatsApp share
+- Export options: PDF report (print-ready, real values or N/A), CSV download, copyable summary, WhatsApp share
 - Fully responsive, dark-themed "mission control" aesthetic
 - **Self-refreshing live data, judging-day-ready**: a GitHub Actions job runs every 3 hours (with a daily Vercel Cron fallback), re-fetching live weather/AQI for all 1,932 tracked cities from Open-Meteo and committing the refreshed snapshot back to the repo (triggering an automatic redeploy) — so the National Heat Summary, hottest-cities leaderboard and navbar ticker are never more than ~24 h stale even with nobody touching the deployment; every run is also kept as a daily history file, so the archive grows on its own
 - **Radical honesty, enforced in code**: carried-forward readings are flagged with their real observation time; cities without a reading say "NO LIVE DATA"; the ML model's weak unseen-city score is shown next to the good one; AGNI tags every non-live figure "(estimated)"

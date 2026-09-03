@@ -32,6 +32,9 @@ git push origin main                        # Vercel redeploys in ~2 min
 ```
 If it hangs in rate-limit backoff for more than 10 minutes, stop it — the last committed cache stays live and is labelled with its age.
 
+## Showing the Extreme state on demand
+Judges may visit on a mild day. Open the site as `https://heatops.vercel.app/?demoTemp=46` and pick any city — that browser tab treats it as 46 °C (checklist goes ACTIVE, citizen card urgent, theme red) with a visible "🧪 DEMO — not real data" banner. `?demoTemp=5` shows the cold-weather tier. Remove the parameter to return to live readings; nothing is ever written to the real data.
+
 ## Also before judging
 - **Gemini key:** the free tier allows ≈ 20 requests/day per model. AGNI walks a 5-model chain, but a paid-tier key (`GEMINI_API_KEY` in Vercel) is the safe choice for a live demo.
 - **Lite mode** is opt-in (avatar menu / ☰ drawer) for low-end phones; leave it off on the demo laptop.
