@@ -44,6 +44,7 @@ import { getAQICategory } from './utils/weatherAPI'
 import { useWeather } from './hooks/useWeather'
 import { loadCityCoordinates } from './utils/cityCoordinateResolver'
 import { getLulcWithFallback } from './utils/lulcFallback'
+import { generatePDF } from './utils/exportUtils'
 import { useTranslation } from 'react-i18next'
 import { SUPPORTED_LANGUAGES, changeLanguage } from './i18n'
 import { AIAnalystPanel } from './components/AIAnalystPanel'
@@ -4240,6 +4241,15 @@ function App({ user }) {
           the fallback before the live reading arrives (it was the cause of e.g. Lucknow at 28°C
           showing a red theme because the seed followed the state's bucket). */}
       <div className="dashboard-container" style={getThemeVars(typeof liveWeather?.current?.temp === 'number' ? liveWeather.current.temp : lst)}>
+        {liveWeather?.demoOverride != null && (
+          <div data-testid="demo-banner" style={{
+            position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 4000,
+            background: 'rgba(124,45,18,0.95)', border: '1px solid #f59e0b', color: '#fde68a',
+            borderRadius: 999, padding: '6px 16px', fontSize: 12, fontWeight: 700, boxShadow: '0 4px 14px rgba(0,0,0,0.4)'
+          }}>
+            🧪 DEMO — temperature forced to {liveWeather.demoOverride}°C via ?demoTemp (this browser only, not real data). Remove the URL parameter to return to live readings.
+          </div>
+        )}
         {/* Floating AI Assistant — quick access from any dashboard tab without
             switching to AI+Export, reuses the same AIAnalystPanel/state.
             Suppressed on the AI+Export tab itself: that tab already renders
@@ -5322,6 +5332,23 @@ function App({ user }) {
                       a.download = `${selectedCity}-analysis.csv`
                       a.click()
                     }}>📊 {t('buttons.csvDownload', 'CSV Download')}</button>
+                    <button onClick={() => {
+                      const lulcEntry = getLulcWithFallback(selectedCity, selectedState, lulcReal, cityCoordsData)
+                      generatePDF(selectedCity, selectedState, {
+                        surfaceTemp: liveWeather?.current?.surfaceTemp,
+                        elevation: liveWeather?.current?.elevation,
+                        aqi: liveWeather?.aqi?.usAQI,
+                        humidity: liveWeather?.current?.humidity,
+                        windSpeed: liveWeather?.current?.windSpeed,
+                        vegetationPct: lulcEntry?.vegetation,
+                        builtUpPct: lulcEntry?.builtUp,
+                        waterPct: lulcEntry?.water,
+                        lulcAvailable: !!lulcEntry,
+                        mlR2: mlModelReal?.metrics?.r2 ?? mlModelReal?.r2,
+                        mlMae: mlModelReal?.metrics?.mae ?? mlModelReal?.mae,
+                        mlAlgorithm: mlModelReal?.model?.algorithm ?? mlModelReal?.algorithm
+                      })
+                    }}>📄 {t('buttons.pdfReport', 'PDF Report')}</button>
                   </div>
                 </section>
 

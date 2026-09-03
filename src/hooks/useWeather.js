@@ -88,8 +88,29 @@ function getEntry(city, state, callerTag) {
   return entry
 }
 
+// DEMO OVERRIDE (?demoTemp=46): forces the CURRENT temperature of whatever city is
+// selected, in this browser tab only — nothing is written anywhere and the UI shows a
+// "DEMO" banner whenever it is active (App reads data.demoOverride). Exists so the
+// severity-adaptive UI (checklist tiers, theme, gauge, citizen strip) can be demonstrated
+// on demand without faking data for anyone else. Clamped to a plausible range.
+const DEMO_TEMP = (() => {
+  try {
+    const v = parseFloat(new URLSearchParams(window.location.search).get('demoTemp'))
+    return Number.isFinite(v) ? Math.max(-25, Math.min(60, v)) : null
+  } catch { return null }
+})()
+
+function applyDemoOverride(data) {
+  if (DEMO_TEMP == null || !data?.current) return data
+  return {
+    ...data,
+    demoOverride: DEMO_TEMP,
+    current: { ...data.current, temp: DEMO_TEMP, feelsLike: DEMO_TEMP }
+  }
+}
+
 function buildState({ data, loading, error, isStale, cachedAt, timedOut, fallbackSource = null }) {
-  return { data, loading, error, isStale, cachedAt, timedOut, fallbackSource }
+  return { data: applyDemoOverride(data), loading, error, isStale, cachedAt, timedOut, fallbackSource }
 }
 
 // When the live fetch has failed (after the 429 backoff), pick the best cached reading:
