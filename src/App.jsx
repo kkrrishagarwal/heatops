@@ -2981,7 +2981,7 @@ function App({ user }) {
     if (liveCacheStatus !== 'ready') return
     let cancelled = false
     const stateCities = Object.fromEntries(Object.entries(STATE_DATA).map(([st, d]) => [st, d.cities || []]))
-    refreshAllStatesSample(stateCities).then(res => {
+    const run = (force) => refreshAllStatesSample(stateCities, { force }).then(res => {
       if (cancelled || !res) return
       setLiveCityCache(prev => {
         const next = { ...prev }
@@ -2990,7 +2990,13 @@ function App({ user }) {
         return next
       })
     })
-    return () => { cancelled = true }
+    run(false)
+    // Keep the vintage alive: without this, the sampled readings aged past the freshness
+    // window after a while and the map silently reverted to the stale cache colours.
+    const id = setInterval(() => run(true), 10 * 60 * 1000)
+    const onVisible = () => { if (document.visibilityState === 'visible') run(false) }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => { cancelled = true; clearInterval(id); document.removeEventListener('visibilitychange', onVisible) }
   }, [liveCacheStatus])
   useEffect(() => {
     if (!selectedState || liveCacheStatus !== 'ready') return
@@ -3045,7 +3051,10 @@ function App({ user }) {
     // its median uses ONLY those — mixing 8 fresh readings into 70 day-old ones would let
     // the stale majority swamp the live signal. States with no fresh readings fall back to
     // the daily cache, and the tooltip says which vintage it is.
-    const FRESH_MS = 15 * 60 * 1000
+    // 45 min window vs the 10-min re-sample interval: several sample cycles can fail
+    // before anything reverts to cache colours (and then it reverts honestly, with the
+    // tooltip saying "from the daily cache").
+    const FRESH_MS = 45 * 60 * 1000
     const now = Date.now()
     const all = {}
     const fresh = {}
