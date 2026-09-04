@@ -16,7 +16,9 @@ This project is not simply a weather dashboard. It is a planning and decision-su
 - Frontend: React 18 + Vite, deployed on Vercel at https://heatops.vercel.app; the Flask app is a legacy prototype, not deployed
 - Coverage: 1,956 cities / 36 states-UTs; 1,932 with validated coordinates and live readings; 24 hamlet names honestly blank
 - Data: Open-Meteo (weather, AQI, geocoding), ESA WorldCover 10 m (171 cities, incl. tree canopy = class 10), OSM Overpass + Nominatim, a published MODIS dataset for the ML model
-- Refresh: GitHub Actions every 3 h (pending `workflow` scope) + Vercel Cron 14:30 IST + 16:00 IST retry; every run commits the cache and a daily history snapshot (65+ days kept)
+- Refresh: GitHub Actions every 3 h (pending `workflow` scope) + laptop cron stopgap every 3 h + Vercel Cron 14:30 IST + 16:00 IST retry (silent 2–4 Sept); every run commits the cache and a daily history snapshot (69+ days kept)
+- Satellite: NASA MODIS MOD11A1 LST requested via AppEEARS (2026 all cities; 2016–2026 for 171) — integration pending arrival; MOSDAC still pending
+- UI: lucide icon set, overline headings, Archivo numerals (4 Sept redesign) — no emoji chrome, no fabricated panels (wind is live; pollen removed)
 - Map colour: median of a state's cities' live temperatures; opening a state refreshes its cities live
 - Modes: Citizen / Authority × Mobile / Laptop; opt-in Lite mode for low-end devices
 - AGNI: Gemini behind a serverless proxy, India-only scope, "(estimated)" tagging, 5-model fallback chain; free tier ≈ 20 requests/day per model

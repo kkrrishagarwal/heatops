@@ -46,7 +46,7 @@ Everything below is true of the live prototype at https://heatops.vercel.app as 
 - **Frontend:** React 18 + Vite · react-simple-maps (GeoJSON: 36 states, 594 districts, chunked render) · Recharts · Three.js globe · i18next (11 languages)
 - **Backend:** Node.js serverless functions on Vercel — Gemini proxy (key never reaches the browser), cron refresh; **GitHub Actions** job every 3 h; GitHub Git Data API commits data back to the repo
 - **AI:** Google Gemini via AGNI persona; 5-model fallback chain; system prompt enforces grounding, India-only scope, "(estimated)" tagging
-- **Data / ML:** Open-Meteo (live weather, AQI, geocoding) · ESA WorldCover 10 m (land cover) · OpenStreetMap Overpass + Nominatim (building density, validated coordinates) · scikit-learn RandomForest trained offline on a published MODIS dataset (20 cities, 2000–2018)
+- **Data / ML:** Open-Meteo (live weather, AQI, geocoding) · ESA WorldCover 10 m (land cover incl. tree canopy) · NASA MODIS MOD11A1 satellite surface temperature via Earthdata/AppEEARS (integration in progress) · OpenStreetMap Overpass + Nominatim (building density, validated coordinates) · scikit-learn RandomForest trained offline on a published MODIS dataset (20 cities, 2000–2018)
 - **Hosting/CI:** Vercel (static + serverless + cron) · GitHub (version control, data commits, Actions)
 - No hardware required
 
@@ -110,6 +110,7 @@ weather badges) ──► click state (its cities refreshed live in one call) �
 ## Slide 6 — Research and references (Template 6)
 
 - **Open-Meteo** — live weather, air quality (CAMS), geocoding: https://open-meteo.com/en/docs
+- **NASA MODIS MOD11A1 v6.1** — Terra land-surface temperature, daily 1 km (LP DAAC), retrieved via AppEEARS: https://lpdaac.usgs.gov/products/mod11a1v061/ · https://appeears.earthdatacloud.nasa.gov
 - **ESA WorldCover 10 m (2021)** — satellite land-cover classification: https://esa-worldcover.org/en
 - **OpenStreetMap** — Overpass API (building density): https://wiki.openstreetmap.org/wiki/Overpass_API · Nominatim (geocoding): https://nominatim.org
 - **MODIS land-surface-temperature dataset** — "Time-series dataset on land surface temperature, vegetation, built up areas and other climatic factors in top 20 global cities (2000–2018)", *Data in Brief*, Elsevier: https://doi.org/10.1016/j.dib.2019.103803

@@ -66,6 +66,7 @@ Serverless functions under `api/` (Vercel) and `netlify/functions/` (mirror):
 ### 5.2 Geo and land data
 - India district/state GeoJSON files under `public/data/`
 - Geo features are used for map rendering and city-localization logic.
+- NASA MODIS MOD11A1 satellite land-surface temperature (daily, 1 km) is being integrated via Earthdata/AppEEARS as a labelled satellite layer beside the live air reading.
 - Land-cover metrics come from ESA WorldCover 10 m (2021) classified offline for 171 cities (`build_lulc_data.py`: built-up, vegetation, water, and tree canopy = class 10 alone); other cities borrow the nearest classified city, labelled with the distance. Building density is a live OSM Overpass query.
 
 ### 5.3 AI analysis
@@ -79,7 +80,7 @@ Serverless functions under `api/` (Vercel) and `netlify/functions/` (mirror):
 - `public/live-weather-cache.json` holds cached weather snapshots used by the app and refresh jobs.
 
 ### Refresh pipeline
-- GitHub Actions every 3 hours (paced to Open-Meteo's weighted limit) plus Vercel Cron at 14:30 IST with a 16:00 IST retry pass; every run commits `live-weather-cache.json` + `public/data/history/YYYY-MM-DD.json` + `index.json` in one commit, which triggers the redeploy.
+- GitHub Actions every 3 hours (written; pending the owner's `workflow` scope), a laptop-cron stopgap (`scripts/localAutoRefresh.sh`, every 3 h while the dev machine is on), plus Vercel Cron at 14:30 IST with a 16:00 IST retry pass (silent 2–4 Sept); every run commits `live-weather-cache.json` + `public/data/history/YYYY-MM-DD.json` + `index.json` in one commit, which triggers the redeploy.
 - 65+ days of daily snapshots are kept in-repo (optional Postgres mirror coded, paused); `scripts/exportWeatherHistory.mjs` writes them to CSV.
 
 ## 7. Security and Trust Model

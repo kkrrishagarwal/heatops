@@ -38,7 +38,8 @@ heatops/
 │   ├── App.css / index.css / 3d-styles.css — Styling
 │   ├── components/                — Reusable UI pieces — each one a small, focused component (Section 5/6 has a file-by-file breakdown)
 │   ├── components/AppErrorBoundary.jsx — Safety net: if a section crashes, shows "Something went wrong — Try again" instead of a blank page (root + map-level)
-│   ├── components/ViewModeToggle.jsx   — The 📱 Mobile / 💻 Laptop layout switch in every navbar
+│   ├── components/ViewModeToggle.jsx   — The Mobile / Laptop layout switch in every navbar
+│   ├── components/PanelIcon.jsx        — The single lucide icon set used in every heading/button (see 8.19)
 │   ├── components/AudienceToggle.jsx   — The 🧑 Citizen / 🏛️ Authority switch (laptop navbars; the mobile drawer has its own row)
 │   ├── components/AudienceChooser.jsx  — The one-time "Who are you?" screen after sign-in (see 8.10)
 │   ├── components/HeatActionChecklist.jsx — Authority-only Heatwave Action Checklist (5 HAP steps, ticks saved per city in the browser)
@@ -74,7 +75,8 @@ heatops/
 ├── netlify/functions/             — Same AGNI proxy, for Netlify deploys (if Netlify is used instead of Vercel)
 │
 ├── scripts/                       — Standalone Node/Python scripts — run manually or via cron, the app itself never runs these
-│   ├── refreshWeatherCache.mjs    — Bulk weather refresh (local/manual run)
+│   ├── refreshWeatherCache.mjs    — Bulk weather refresh (local/manual run; retries throttled batches in halves)
+│   ├── localAutoRefresh.sh        — Laptop-cron stopgap: refresh → commit → push every 3 h (see 8.20)
 │   ├── weatherCacheDaemon.mjs     — Runs the one above in a loop every 20 min (for local dev)
 │   ├── backfillWeatherHistory.mjs — One-off: rebuilds public/data/history/ from every past cron commit (add --db to load Postgres too)
 │   ├── geocodeCities.mjs          — Builds src/data/cityCoordinates.json — Open-Meteo + OSM Nominatim, every result validated to lie in its own state (see 8.13)
@@ -425,6 +427,27 @@ Ticks are stored per city **and per tier** so a heat tick never shows as done on
 - **`?demoTemp=46`** — opening the site with this URL parameter forces the selected city's current temperature in that browser tab only, with a fixed "🧪 DEMO — not real data" banner while active. Exists so the severity-adaptive UI (checklist tiers, citizen card, theme, gauge) can be demonstrated on demand — e.g. a Tamil Nadu city at 46 °C — without writing a fake reading anywhere. (`applyDemoOverride` in `src/hooks/useWeather.js`.)
 - **Compare radar** — the LST axis and the "coolest city" callout now use each city's live current temperature (the panel already fetched it) with the seed only as fallback, and a note under the title says which axes are live (LST/AQI/Wind) vs illustrative baselines (NDVI/NDBI/NDWI).
 - **PDF Report button** wired into EXPORT & SHARE (the print-ready report `generatePDF` in `exportUtils.js` had been built but never mounted) — real values or "N/A", per that file's own rule.
+
+### 8.19 UI redesign — the "looks AI-built" pass (4 Sept 2026)
+
+Users (and, we assumed, judges) read the old frontend as AI-generated. The tells were specific, so the fix was too:
+
+- **One icon language.** Every emoji used as chrome — 33 panel headings, the weather card's metric tiles/clock/AQI/coordinates, the export buttons, national-summary labels, the legend button, the floating AGNI button — is now a **lucide** stroke icon via `src/components/PanelIcon.jsx` (tree-shaken `lucide-react`). Emoji that were hiding *inside the translation strings* (Physics/ML/pipeline/land-cover titles, slider labels, progress checkmarks, spatial rows, admin headings) were swept from all 11 locale files. Emoji remain only where they are content: weather words, checklist step pictograms, help-card bullets, the ticker.
+- **Typography.** Panel titles became small tracked **overlines** in muted slate (the icon carries the accent) instead of 16 px amber ALL-CAPS with an accent bar on every card. **Archivo** (Google Fonts) carries display-size numbers; **IBM Plex Mono** replaces Courier New in the AGNI terminal; `tabular-nums` body-wide so digit columns align. Body text stays Inter + Indic fallbacks — all 11 languages unchanged.
+- **Two fabricated-data leftovers the sweep exposed, fixed:** the "Wind & Atmosphere" panel printed hard-coded values (12 km/h, NE 45°, 1013 mb) beside the real reading — it now uses the live Open-Meteo direction/speed/gust/pressure; the "Pollen & Air Quality" panel was **deleted** — no source we use provides pollen data for India.
+
+Verified with an automated audit (zero emoji left in any h3/h4) and screenshots of every screen. Not done: the density/de-boxing pass and framer-motion touches (installed, unused) — optional polish.
+
+### 8.20 Freshness operations — what actually keeps the data current (4 Sept 2026)
+
+- **Vercel cron went silent** on 2, 3 and 4 Sept (no commits) after working on 30–31 Aug and 1 Sept; the cause is only visible in the Vercel dashboard logs. `maxDuration: 60` is now declared explicitly for both refresh functions in `vercel.json` in case a duration timeout was the culprit.
+- **Laptop cron stopgap** — `scripts/localAutoRefresh.sh`, installed in the dev laptop's crontab (`17 */3 * * *`): paced refresh → commit as the repo owner → push with rebase retries → Vercel redeploys. Skips when offline, when a refresh is already running, or when nothing changed; logs to `~/.heatops-autorefresh.log`. Only runs while the laptop is on — the GitHub Actions workflow (`.github/workflows/refresh-weather.yml`, written, waiting for the owner's `workflow` token scope) is the permanent replacement.
+- **Refresh script hardening** — after the main pass, throttled batches are retried in halves after a 70 s cool-down (a run that lost 8/40 batches to 429s had carried 732 cities forward).
+- **Single-vintage map** (see 8.15 addendum) got a second fix the same evening: the load-time sample now **re-runs every 10 minutes** and on tab-visibility, with a 45-minute freshness window — the first version's one-shot sample aged out after 15 minutes and the map silently fell back to cache colours.
+
+### 8.21 NASA MODIS satellite temperature — in progress (4 Sept 2026)
+
+MOSDAC (ISRO) access is still pending, so a NASA Earthdata account (`kkrrishagarwal`) was registered and three **AppEEARS point-sample requests** submitted for **MOD11A1.061** (Terra MODIS daily 1 km land-surface temperature): two covering all 1,932 cities for March 2026 → present, one covering the 171 ESA-classified cities for 2016 → present; layers `LST_Day_1km`, `LST_Night_1km`, `QC_Day`. Point files were generated from `cityCoordinates.json` (AppEEARS caps a request at 1,000 points). NASA's queue was slow on the day (~1–3 %/hour). When the results land (`scripts/data/`), the plan is: Kelvin → °C, keep only QC-clean readings, and add a **satellite surface temperature** (day/night, with date) to the Analysis tab beside the live air reading, plus a per-city multi-year trend for the 171 — each labelled with source and date. Surface (MODIS) and air (Open-Meteo) are different quantities and are shown as such; neither is meant to match Google Weather's number.
 
 ---
 

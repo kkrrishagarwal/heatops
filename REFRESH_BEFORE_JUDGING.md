@@ -13,6 +13,8 @@
 - Readings a run could not refresh are **carried forward and flagged** (`isCarriedForward`, real `observedAt`) — the UI shows their real age, never "fresh".
 - Opening any state on the map refreshes that state's cities live (one batched call), so the demo state is always current regardless of the cron.
 
+- **Laptop cron stopgap (4 Sept):** `scripts/localAutoRefresh.sh` runs from this laptop's crontab at :17 past every 3rd hour — paced refresh, commit, push, redeploy. It only works while the laptop is **on and online**; check `tail ~/.heatops-autorefresh.log`. The Vercel cron produced no commits on 2–4 Sept, so until the GitHub Actions workflow is pushed, this is what keeps the site fresh.
+
 ## Confirm it, the morning of judging
 ```bash
 # last cron commits (expect one per day at ~09:00–10:00 UTC)

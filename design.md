@@ -105,9 +105,13 @@ The citizen top strip carries only: city, temperature, a plain-language risk bad
 - Low < 25 °C: green · Low-Moderate 25–30: olive · Moderate 30–35: yellow · High 35–40: amber-brown · Very High 40–45: orange · Extreme 45+: red
 - Semantic colours never double as the accent; the amber accent is reserved for actions
 
-### Typography
-- Use a modern dashboard style with emphasis on numeric clarity
+### Typography (4 Sept 2026)
+- Panel titles are small tracked overlines in muted slate; the icon carries the accent
+- Archivo for display-size numbers, Inter + Indic fallbacks for body, IBM Plex Mono for the AGNI terminal; `tabular-nums` everywhere digits line up
 - Keep labels concise and readable on dark backgrounds
+
+### Icons
+- One lucide stroke-icon set (`PanelIcon`) for every heading and button — no emoji as chrome; emoji only where they are content (weather words, checklist pictograms)
 
 ### Motion
 - Use subtle motion to reinforce status changes and user actions

@@ -41,7 +41,7 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 ## All Features (Small → Big)
 
 ### Micro / UI & UX
-- **Civic-tech dark theme** — dark slate base with a single amber accent and desaturated risk colours (no neon); readable in a government meeting room, not just a demo
+- **Civic-tech dark theme** — dark slate base with a single amber accent and desaturated risk colours (no neon); one consistent lucide stroke-icon set (no emoji chrome), overline panel labels, Archivo display numerals, aligned digits — reads as a designed product, not a template
 - **Heat-reactive theme colour** — the dashboard's accent/glow follows the *selected city's live temperature* in four tiers (≥45 °C red · 35–44 orange · 25–34 yellow · <25 green); the Heat Risk Gauge label uses the same tiers
 - **🧑 Citizen / 🏛️ Authority view** — a one-time "Who are you?" screen after sign-in; Citizen = essentials in plain language (city, temperature, risk badge, air-quality category, one tip; Overview · What to do · Compare), Authority = the full technical dashboard; switchable later from the profile menu / ☰ drawer / laptop navbar, or via `?view=citizen`
 - **📱 Mobile / 💻 Laptop layout toggle** — independent of the audience choice; auto-picks by screen width on first visit, remembered afterwards
@@ -89,7 +89,7 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 - **Validated city coordinates** — 1,932 of 1,956 cities geocoded with a state check (Open-Meteo, then OSM Nominatim with "City, State, India"): an audit found 202 cities pointing at the wrong place (Tawang in Java, Kutch in Colorado…) and 267 unresolved; all fixed (spelling aliases + OSM fallback) or honestly blank now — 24 hamlet/colony names remain blank
 - **Coverage: 1,956 cities across all 36 states/UTs** — pan-India scope including rural areas, not a single-metro demo (1,932 with live readings; the rest say so instead of guessing)
 - **AGNI conversation memory + markdown** — the last 10 turns travel with each question ("aur uska AQI?" is understood), other cities/states named in a question get their real cached readings attached, and replies render as proper bold/lists instead of raw asterisks
-- **Opened state refreshes live** — clicking a state fetches its cities' current temperatures in one batched call (10-min memory), so the city list, the state average / map colour and the selected city always agree; fresh rows show a green dot
+- **One colour vintage on the map** — on load, one batched call samples ~8 cities per state so every state is coloured from the same current readings (re-sampled every 10 min); opening a state reads all its cities live, so the list, the state median / map colour and the selected city always agree; fresh rows show a green dot
 - **Recommended plan per city** — the city's **tree canopy** (ESA WorldCover 10 m, class 10 only) vs the 30 % canopy target of the 3-30-300 urban-forestry rule (Konijnendijk, J. Forestry Research 2023); cool-roof share sized to built-up density; one-click apply to the intervention sliders; sources and caveats printed on the card. Tree canopy is far below "vegetation" in most Indian cities (e.g. Rajkot: 29 % vegetation, 5 % canopy) — which is exactly why the rule is hard to meet
 - **Analysis heatmap grid on live data** — the grid and the intervention preview use the city's live temperature (else the state's live median), with the ±2 °C cell pattern labelled illustrative
 - **Lite mode for low-end phones** — opt-in from the menu (auto only for Save-Data / 2G): no 3D globe, states-only map that keeps its heat colours, no blur/animations; same data
@@ -142,7 +142,8 @@ Indian cities are experiencing intensifying urban heat islands — built-up, low
 
 ## Data Sources (credibility slide)
 Every number shown is traceable to a real source, with honest "not available" fallbacks rather than fabricated placeholders:
-- **Open-Meteo** — live surface temperature, elevation (SRTM), air quality (CAMS); the daily bulk cache of all 1,932 cities is committed to the repo so every reading is auditable in git history
+- **Open-Meteo** — live air/surface temperature, elevation (SRTM), air quality (CAMS); the bulk cache of all 1,932 cities is committed to the repo so every reading is auditable in git history
+- **NASA MODIS (MOD11A1, Terra)** — daily 1 km satellite land-surface temperature via NASA Earthdata/AppEEARS: all 1,932 cities for 2026 and a 2016–2026 history for 171 cities (integration in progress); ISRO INSAT-3D via MOSDAC requested as the next source
 - **Open-Meteo geocoding + OSM Nominatim** — city coordinates, each validated to lie in its own state (wrong-place hits rejected, unresolved cities left blank rather than guessed)
 - **ESA WorldCover 10m (2021)** — real satellite land-cover classification (vegetation/built-up/water %) for 36 representative cities
 - **OpenStreetMap (Overpass API)** — live building density/urban morphology
