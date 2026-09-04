@@ -87,6 +87,16 @@ STEP 6: Act → Tick the Heat Action Plan checklist; export the report
 
 ---
 
+## Compare — One Chart, Two Jobs
+- Radar of live temperature, air quality, wind and land cover for up to five cities
+- **Officials:** rank cities to decide where cooling budgets go first; justify activations
+- **Citizens:** "Is my city hotter than my parents' city?" — and share the answer on WhatsApp
+- Same data, different decisions
+
+[Suggested visual: radar chart comparing four cities, with two caption boxes — Official / Citizen]
+
+---
+
 ## The Heat Action Plan Checklist Adapts to the Weather
 - **Extreme / High:** full activation — cooling centres, hospital alert, advisory, tankers, cool-roof priority
 - **Moderate:** preparedness — monitor, pre-position advisories, centres ready

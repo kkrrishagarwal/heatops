@@ -25,6 +25,7 @@ Everything below is true of the live prototype at https://heatops.vercel.app as 
 - 1,956 cities across all 36 states/UTs; 1,932 with live readings (the rest say "NO LIVE DATA", never a guess)
 - City dashboard: Overview (live weather/AQI) · Analysis (satellite indices, land cover, ML) · Compare (radar vs 4 cities) · Interventions (cooling sliders → projected °C) · AGNI + Export
 - Two audiences, one product: **Citizen view** (plain-language risk badge, safe hours today, WhatsApp share, how to help the neighbourhood) and **Authority view** (full dashboard + Heatwave Action Checklist)
+- **Compare tab serves both:** officials rank cities by live heat, air and canopy to decide where cooling money goes first; citizens see "is my city hotter than my parents' city?" and share it — one chart, allocation for one audience, awareness for the other
 - 11 Indian languages; Mobile / Laptop layouts
 
 **How it addresses the problem**
@@ -95,8 +96,8 @@ weather badges) ──► click state (its cities refreshed live in one call) �
 ## Slide 5 — Impact and benefits (Template 5)
 
 **Potential impact on the target audience**
-- **Citizens:** know today's risk in their own language, the safe hours to go out, and how to protect neighbours — shareable on WhatsApp in one tap
-- **Municipal officials / planners:** a severity-adaptive Heat Action Plan checklist (activation at High risk, preparedness at Moderate, a cold-weather list below 10 °C); compare cities; simulate green cover / cool roofs / water bodies before spending; download history as evidence
+- **Citizens:** know today's risk in their own language, the safe hours to go out, and how to protect neighbours — shareable on WhatsApp in one tap; compare their city with family's or a travel destination
+- **Municipal officials / planners:** a severity-adaptive Heat Action Plan checklist (activation at High risk, preparedness at Moderate, a cold-weather list below 10 °C); compare cities on live heat, air quality and canopy to prioritise budgets and justify activations; simulate green cover / cool roofs / water bodies before spending; download history as evidence
 - **Decision-makers:** ask AGNI "why is this city hot?" and get an answer grounded in the same numbers the map shows
 
 **Benefits**
