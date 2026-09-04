@@ -26,7 +26,7 @@ import { geoCentroid } from 'd3'
 import './App.css'
 import { fetchJson, describeFetchError } from './utils/fetchJson'
 import { setBulkWeatherCache, getBulkWeatherLastUpdated, normaliseBulkCities } from './utils/bulkWeatherCache'
-import { refreshStateLive, getStateRefreshedAt } from './utils/stateLiveRefresh'
+import { refreshStateLive, getStateRefreshedAt, refreshAllStatesSample } from './utils/stateLiveRefresh'
 import { useLiteMode } from './utils/liteMode'
 import PanelIcon from './components/PanelIcon'
 import AppErrorBoundary from './components/AppErrorBoundary'
@@ -1894,7 +1894,11 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
             🌡️ Heat Index: <strong>{activeData.heatIndex}°C</strong>
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)' }}>
               {activeData.heatIndexLive
-                ? `live median of ${activeData.liveCityCount} cities' current temps (half are hotter, half cooler)`
+                ? (activeData.heatIndexVintage === 'sample'
+                    ? `live median of ${activeData.liveCityCount} sampled cities (refreshed minutes ago; opening the state reads all of them)`
+                    : activeData.heatIndexVintage === 'live'
+                      ? `live median of ${activeData.liveCityCount} cities' current temps (half are hotter, half cooler)`
+                      : `median of ${activeData.liveCityCount} cities from the daily cache`)
                 : '(estimated — no live city data for this state yet)'}
             </div>
           </div>
@@ -2969,6 +2973,25 @@ function App({ user }) {
   // showed the dawn value (Udaipur 23 °C) next to the selected city's live value (28 °C).
   const [stateRefreshedAt, setStateRefreshedAt] = useState({})
   const { lite, setLite } = useLiteMode()
+
+  // Whole-map live sample (one batched call, ~8 cities/state): every state's colour comes
+  // from the same CURRENT vintage right after the cache loads, so clicking a state no
+  // longer flips it to a different colour era than its neighbours.
+  useEffect(() => {
+    if (liveCacheStatus !== 'ready') return
+    let cancelled = false
+    const stateCities = Object.fromEntries(Object.entries(STATE_DATA).map(([st, d]) => [st, d.cities || []]))
+    refreshAllStatesSample(stateCities).then(res => {
+      if (cancelled || !res) return
+      setLiveCityCache(prev => {
+        const next = { ...prev }
+        for (const [key, fresh] of Object.entries(res.entries)) next[key] = { ...(prev[key] || {}), ...fresh }
+        queueMicrotask(() => setBulkWeatherCache(next, getBulkWeatherLastUpdated()))
+        return next
+      })
+    })
+    return () => { cancelled = true }
+  }, [liveCacheStatus])
   useEffect(() => {
     if (!selectedState || liveCacheStatus !== 'ready') return
     let cancelled = false
@@ -3017,19 +3040,37 @@ function App({ user }) {
   // symmetrically it only turns HIGH (orange) once half its cities are ≥ 35 °C. The median
   // is exactly "the temperature that half the state's cities reach".
   const liveStateHeatIndex = useMemo(() => {
-    const temps = {}
+    // Prefer the freshest vintage per state: when a state has enough readings observed in
+    // the last 15 minutes (the map-load sample, or the full refresh a selection triggers),
+    // its median uses ONLY those — mixing 8 fresh readings into 70 day-old ones would let
+    // the stale majority swamp the live signal. States with no fresh readings fall back to
+    // the daily cache, and the tooltip says which vintage it is.
+    const FRESH_MS = 15 * 60 * 1000
+    const now = Date.now()
+    const all = {}
+    const fresh = {}
     for (const c of Object.values(liveCityCache)) {
       if (typeof c.temp !== 'number' || !c.state) continue
-      ;(temps[c.state] || (temps[c.state] = [])).push(c.temp)
+      ;(all[c.state] || (all[c.state] = [])).push(c.temp)
+      if (c.observedAt && now - new Date(c.observedAt).getTime() < FRESH_MS) {
+        ;(fresh[c.state] || (fresh[c.state] = [])).push(c.temp)
+      }
     }
     const out = {}
-    for (const [state, arr] of Object.entries(temps)) {
-      arr.sort((a, b) => a - b)
+    for (const [state, arrAll] of Object.entries(all)) {
+      const arrFresh = fresh[state] || []
+      const useFresh = arrFresh.length >= Math.min(5, arrAll.length)
+      const arr = (useFresh ? arrFresh : arrAll).slice().sort((a, b) => a - b)
       const n = arr.length
       // upper median for even counts: with exactly half the cities at ≥ 30 the state reads 30
       const median = arr[Math.floor(n / 2)]
       const mean = arr.reduce((a, b) => a + b, 0) / n
-      out[state] = { heatIndex: Math.round(median * 10) / 10, meanTemp: Math.round(mean * 10) / 10, cityCount: n }
+      out[state] = {
+        heatIndex: Math.round(median * 10) / 10,
+        meanTemp: Math.round(mean * 10) / 10,
+        cityCount: n,
+        vintage: useFresh ? (arrFresh.length >= arrAll.length ? 'live' : 'sample') : 'cache'
+      }
     }
     return out
   }, [liveCityCache])
@@ -3083,7 +3124,7 @@ function App({ user }) {
       const live = liveStateHeatIndex[state]
       const weatherCondition = liveStateWeatherCondition[state] || { type: 'clear' }
       return [state, live
-        ? { ...data, heatIndex: live.heatIndex, meanTemp: live.meanTemp, heatIndexLive: true, liveCityCount: live.cityCount, weatherCondition }
+        ? { ...data, heatIndex: live.heatIndex, meanTemp: live.meanTemp, heatIndexLive: true, liveCityCount: live.cityCount, heatIndexVintage: live.vintage, weatherCondition }
         : { ...data, heatIndexLive: false, weatherCondition }]
     }))
   }, [liveStateHeatIndex, liveStateWeatherCondition])

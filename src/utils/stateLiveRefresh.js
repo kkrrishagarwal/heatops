@@ -25,6 +25,68 @@ export function getStateRefreshedAt(state) {
   return refreshedAt.get(state) || null
 }
 
+// ---- Whole-map sample refresh ----
+// One batched call for ~8 prominent cities per state (~270 points) so every state's colour
+// can come from the SAME current vintage on map load, instead of the daily snapshot for 35
+// states and a fresh reading for the one you clicked. Real readings only, and the state
+// tooltip says "sampled". TTL keeps it to one call per 10 minutes per browser.
+let sampleRefreshedAt = 0
+let sampleInFlight = null
+export const SAMPLE_PER_STATE = 8
+
+export function getSampleRefreshedAt() { return sampleRefreshedAt || null }
+
+export async function refreshAllStatesSample(stateCities, { force = false } = {}) {
+  if (!stateCities || typeof stateCities !== 'object') return null
+  if (!force && sampleRefreshedAt && Date.now() - sampleRefreshedAt < STATE_REFRESH_TTL_MS) return null
+  if (sampleInFlight) return sampleInFlight
+  sampleInFlight = (async () => {
+    try {
+      const coords = await loadCityCoordinates()
+      const located = []
+      for (const [state, cityNames] of Object.entries(stateCities)) {
+        let taken = 0
+        for (const city of cityNames || []) {
+          if (taken >= SAMPLE_PER_STATE) break
+          const c = getExactCoordinates(coords, city, state)
+          if (c && typeof c.lat === 'number' && typeof c.lon === 'number') { located.push({ city, state, c }); taken++ }
+        }
+      }
+      if (located.length === 0) return null
+      const entries = {}
+      const nowIso = new Date().toISOString()
+      for (const batch of chunk(located, MAX_PER_CALL)) {
+        const lats = batch.map(x => x.c.lat).join(',')
+        const lons = batch.map(x => x.c.lon).join(',')
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}` +
+          `&current=temperature_2m,cloud_cover&hourly=precipitation_probability&timezone=Asia/Kolkata&forecast_days=1`
+        const data = await fetchJson(url, { timeoutMs: 15000 })
+        const arr = Array.isArray(data) ? data : [data]
+        batch.forEach((x, i) => {
+          const d = arr[i]
+          if (!d?.current || typeof d.current.temperature_2m !== 'number') return
+          entries[`${x.city}|${x.state}`] = {
+            city: x.city, state: x.state,
+            temp: Math.round(d.current.temperature_2m),
+            cloudCover: typeof d.current.cloud_cover === 'number' ? Math.round(d.current.cloud_cover) : null,
+            rainChance: d.hourly?.precipitation_probability?.[0] ?? null,
+            observedAt: nowIso, isCarriedForward: false, liveRefreshed: true
+          }
+        })
+      }
+      if (Object.keys(entries).length === 0) return null
+      sampleRefreshedAt = Date.now()
+      return { entries, fetchedAt: nowIso }
+    } catch (err) {
+      console.warn(`[stateLiveRefresh] sample: ${err?.message || err}`)
+      return null
+    } finally {
+      sampleInFlight = null
+    }
+  })()
+  return sampleInFlight
+}
+
 function chunk(arr, size) {
   const out = []
   for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
