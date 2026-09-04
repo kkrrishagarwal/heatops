@@ -1,4 +1,5 @@
 import React from 'react'
+import PanelIcon from './PanelIcon'
 import { useTranslation } from 'react-i18next'
 
 // SECTION 9 - SPATIAL RECOMMENDATION
@@ -28,7 +29,7 @@ export function SpatialRecommendation({
         color:"#d97706",
         marginBottom:10
       }}>
-        {t('spatial.panelTitle', '📍 WHERE to Intervene in {{cityName}}', { cityName })}
+        <PanelIcon name="map-pin" /> {t('spatial.panelTitle', 'WHERE to Intervene in {{cityName}}', { cityName })}
       </div>
 
       <div style={{

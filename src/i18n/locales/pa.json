@@ -246,7 +246,7 @@
     }
   },
   "spatial": {
-    "panelTitle": "📍 {{cityName}} ਵਿੱਚ ਕਿੱਥੇ ਦਖਲ ਦੇਣਾ ਹੈ",
+    "panelTitle": "{{cityName}} ਵਿੱਚ ਕਿੱਥੇ ਦਖਲ ਦੇਣਾ ਹੈ",
     "hottestZones": "🔴 ਸਭ ਤੋਂ ਗਰਮ ਖੇਤਰ:",
     "greenPriority": "🌳 ਹਰਿਆਲੀ ਤਰਜੀਹ:",
     "waterPriority": "💧 ਪਾਣੀ ਤਰਜੀਹ:",

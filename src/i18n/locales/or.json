@@ -246,7 +246,7 @@
     }
   },
   "spatial": {
-    "panelTitle": "📍 {{cityName}} ରେ କେଉଁଠାରେ ହସ୍ତକ୍ଷେପ କରିବେ",
+    "panelTitle": "{{cityName}} ରେ କେଉଁଠାରେ ହସ୍ତକ୍ଷେପ କରିବେ",
     "hottestZones": "🔴 ସବୁଠାରୁ ଗରମ ଅଞ୍ଚଳ:",
     "greenPriority": "🌳 ହରିତ ଅଗ୍ରାଧିକାର:",
     "waterPriority": "💧 ଜଳ ଅଗ୍ରାଧିକାର:",

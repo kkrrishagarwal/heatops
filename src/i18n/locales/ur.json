@@ -246,7 +246,7 @@
     }
   },
   "spatial": {
-    "panelTitle": "📍 {{cityName}} میں کہاں مداخلت کریں",
+    "panelTitle": "{{cityName}} میں کہاں مداخلت کریں",
     "hottestZones": "🔴 گرم ترین علاقے:",
     "greenPriority": "🌳 سرسبزی کی ترجیح:",
     "waterPriority": "💧 پانی کی ترجیح:",

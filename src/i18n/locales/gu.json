@@ -246,7 +246,7 @@
     }
   },
   "spatial": {
-    "panelTitle": "📍 {{cityName}} માં ક્યાં હસ્તક્ષેપ કરવો",
+    "panelTitle": "{{cityName}} માં ક્યાં હસ્તક્ષેપ કરવો",
     "hottestZones": "🔴 સૌથી ગરમ ઝોન:",
     "greenPriority": "🌳 હરિયાળી પ્રાધાન્યતા:",
     "waterPriority": "💧 પાણીની પ્રાધાન્યતા:",

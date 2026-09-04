@@ -246,7 +246,7 @@
     }
   },
   "spatial": {
-    "panelTitle": "📍 WHERE to Intervene in {{cityName}}",
+    "panelTitle": "WHERE to Intervene in {{cityName}}",
     "hottestZones": "🔴 Hottest Zones:",
     "greenPriority": "🌳 Green Priority:",
     "waterPriority": "💧 Water Priority:",

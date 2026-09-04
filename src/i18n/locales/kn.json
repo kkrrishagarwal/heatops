@@ -246,7 +246,7 @@
     }
   },
   "spatial": {
-    "panelTitle": "📍 {{cityName}} ನಲ್ಲಿ ಎಲ್ಲಿ ಮಧ್ಯಸ್ಥಿಕೆ ವಹಿಸಬೇಕು",
+    "panelTitle": "{{cityName}} ನಲ್ಲಿ ಎಲ್ಲಿ ಮಧ್ಯಸ್ಥಿಕೆ ವಹಿಸಬೇಕು",
     "hottestZones": "🔴 ಅತ್ಯಂತ ಬಿಸಿಯಾದ ವಲಯಗಳು:",
     "greenPriority": "🌳 ಹಸಿರು ಆದ್ಯತೆ:",
     "waterPriority": "💧 ನೀರಿನ ಆದ್ಯತೆ:",

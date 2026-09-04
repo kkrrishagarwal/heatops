@@ -246,7 +246,7 @@
     }
   },
   "spatial": {
-    "panelTitle": "📍 {{cityName}}లో ఎక్కడ జోక్యం చేసుకోవాలి",
+    "panelTitle": "{{cityName}}లో ఎక్కడ జోక్యం చేసుకోవాలి",
     "hottestZones": "🔴 అత్యంత వేడి ప్రాంతాలు:",
     "greenPriority": "🌳 హరిత ప్రాధాన్యత:",
     "waterPriority": "💧 నీటి ప్రాధాన్యత:",

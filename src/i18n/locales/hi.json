@@ -246,7 +246,7 @@
     }
   },
   "spatial": {
-    "panelTitle": "📍 {{cityName}} में कहां हस्तक्षेप करें",
+    "panelTitle": "{{cityName}} में कहां हस्तक्षेप करें",
     "hottestZones": "🔴 सबसे गर्म क्षेत्र:",
     "greenPriority": "🌳 हरियाली प्राथमिकता:",
     "waterPriority": "💧 जल प्राथमिकता:",

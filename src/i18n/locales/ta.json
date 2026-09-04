@@ -246,7 +246,7 @@
     }
   },
   "spatial": {
-    "panelTitle": "📍 {{cityName}} இல் எங்கே தலையிட வேண்டும்",
+    "panelTitle": "{{cityName}} இல் எங்கே தலையிட வேண்டும்",
     "hottestZones": "🔴 மிகவும் வெப்பமான மண்டலங்கள்:",
     "greenPriority": "🌳 பசுமை முன்னுரிமை:",
     "waterPriority": "💧 நீர் முன்னுரிமை:",
