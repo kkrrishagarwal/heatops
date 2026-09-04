@@ -114,7 +114,10 @@ export async function refreshWeatherCache() {
   const freshKeys = new Set()
   let failedBatches = 0
 
-  for (const batch of batches) {
+  // One batch = one weather call + one AQI call for its cities; on success every city in it
+  // becomes a fresh reading. Returns false when Open-Meteo refused it (usually a 429 after
+  // the retries inside fetchWithRetry) so the caller can try again more gently.
+  const processBatch = async (batch) => {
     try {
       // weather and AQI hit different Open-Meteo subdomains, so they don't share the same
       // per-IP bucket — but stagger them slightly anyway to avoid bursting either one
@@ -136,14 +139,36 @@ export async function refreshWeatherCache() {
           isCarriedForward: false
         }
       })
+      return true
     } catch (err) {
-      failedBatches++
       console.warn(`  batch failed (${batch.length} cities): ${err.message}`)
+      return false
     }
+  }
+
+  const failedBatchList = []
+  for (const batch of batches) {
+    if (!(await processBatch(batch))) failedBatchList.push(batch)
     // pacing gap between batch-rounds: each round is ~2*BATCH_SIZE "location units" against
     // Open-Meteo's 600/min budget (weighted per-location, not per-request), so for
     // BATCH_SIZE=100 a round is ~200 units — pace rounds ~25s apart to stay safely under 600/min
     await new Promise(r => setTimeout(r, 25000))
+  }
+
+  // Gentle second pass for whatever got throttled: cool down a full minute, then retry the
+  // failed batches split in half (50 cities → ~100 units a round) with wider spacing. A run
+  // that lost 8 of 40 batches to 429s used to carry 700+ cities forward; this usually
+  // recovers most of them within the same run. Anything still failing stays carried forward.
+  if (failedBatchList.length) {
+    console.warn(`  ${failedBatchList.length} batches throttled — cooling down 70s, then retrying in halves`)
+    await new Promise(r => setTimeout(r, 70000))
+    for (const batch of failedBatchList) {
+      const halves = [batch.slice(0, Math.ceil(batch.length / 2)), batch.slice(Math.ceil(batch.length / 2))].filter(b => b.length)
+      for (const half of halves) {
+        if (!(await processBatch(half))) failedBatches++
+        await new Promise(r => setTimeout(r, 30000))
+      }
+    }
   }
 
   // Same honesty rule as the production cron (api/_lib/refreshWeatherData.js): cities a
