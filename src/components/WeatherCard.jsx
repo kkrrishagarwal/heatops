@@ -404,6 +404,8 @@ const styles = {
   },
 
   tempBig: {
+    fontFamily: "'Archivo', 'Inter', sans-serif",
+    letterSpacing: '-0.02em',
     fontSize: '32px',
     fontWeight: '700',
     color: '#22c55e',

@@ -24,7 +24,7 @@ const ICONS = {
   'cloud-rain': CloudRain, sun: Sun, moon: Moon
 }
 
-export default function PanelIcon({ name, size = 15, color, style }) {
+export default function PanelIcon({ name, size = 13, color, style }) {
   const C = ICONS[name]
   if (!C) return null
   return (
