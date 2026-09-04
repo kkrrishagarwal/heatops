@@ -1,4 +1,5 @@
 import React from 'react'
+import PanelIcon from './PanelIcon'
 import { useTranslation } from 'react-i18next'
 
 // SECTION 12 - GEE REFERENCE PANEL
@@ -58,7 +59,7 @@ export function GEEPipelinePanel() {
   return (
     <div style={cardStyle}>
       <div style={titleStyle}>
-        {t('geePipeline.panelTitle', '📡 Data Pipeline — Real Sources → BhaskarOps')}
+        <PanelIcon name="satellite" /> {t('geePipeline.panelTitle', 'Data Pipeline — Real Sources → BhaskarOps')}
       </div>
       <div style={{
         display:"flex",

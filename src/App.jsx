@@ -878,7 +878,7 @@ function CityPanel({ stateName, stateData, onCitySelect, selectedCity, onAnalyze
           fontSize: 11,
           color: "rgba(255,255,255,0.3)"
         }}>
-          {t('tooltips.clickCityToAnalyze', '👆 Click any city above to analyze')}
+          {t('tooltips.clickCityToAnalyze', 'Click any city above to analyze')}
         </div>
       )}
     </div>
@@ -5121,7 +5121,7 @@ function App({ user }) {
                   <div style={{display: "grid", gap: "14px"}}>
                     <div>
                       <label style={{fontSize: "12px", color: "#22c55e", fontWeight: "700"}}>
-                        {t('sliders.urbanGreening', '🌳 Urban Greening (NDVI +0.3):')} {(treeSlider*100).toFixed(0)}%
+                        <PanelIcon name="leaf" size={12} color="currentColor" /> {t('sliders.urbanGreening', 'Urban Greening (NDVI +0.3):')} {(treeSlider*100).toFixed(0)}%
                       </label>
                       <input type="range" min="0" max="0.3" step="0.01" value={treeSlider}
                         onChange={e => { setTreeSlider(parseFloat(e.target.value)); setInterventionTouchedAt(Date.now()) }}
@@ -5133,7 +5133,7 @@ function App({ user }) {
                     </div>
                     <div>
                       <label style={{fontSize: "12px", color: "#d97706", fontWeight: "700"}}>
-                        {t('sliders.coolRoofs', '🏠 Cool Roofs (Albedo +0.2):')} {(roofSlider*100).toFixed(0)}%
+                        <PanelIcon name="home" size={12} color="currentColor" /> {t('sliders.coolRoofs', 'Cool Roofs (Albedo +0.2):')} {(roofSlider*100).toFixed(0)}%
                       </label>
                       <input type="range" min="0" max="0.2" step="0.01" value={roofSlider}
                         onChange={e => { setRoofSlider(parseFloat(e.target.value)); setInterventionTouchedAt(Date.now()) }}
@@ -5145,7 +5145,7 @@ function App({ user }) {
                     </div>
                     <div>
                       <label style={{fontSize: "12px", color: "#94a3b8", fontWeight: "700"}}>
-                        {t('sliders.waterBodies', '💧 Water Bodies (NDWI +0.1):')} {(waterSlider*100).toFixed(0)}%
+                        <PanelIcon name="droplets" size={12} color="currentColor" /> {t('sliders.waterBodies', 'Water Bodies (NDWI +0.1):')} {(waterSlider*100).toFixed(0)}%
                       </label>
                       <input type="range" min="0" max="0.1" step="0.01" value={waterSlider}
                         onChange={e => { setWaterSlider(parseFloat(e.target.value)); setInterventionTouchedAt(Date.now()) }}
@@ -5213,25 +5213,18 @@ function App({ user }) {
                 {/* PANEL J: Spatial Recommendation */}
                 <SpatialRecommendation cityData={cityData} cityName={selectedCity} />
 
-                {/* Wind & Atmosphere */}
+                {/* Wind & Atmosphere — LIVE values from the same Open-Meteo reading the
+                    WeatherCard shows. (This panel used to print hardcoded "12 km/h, NE 45°,
+                    1013 mb" next to a WeatherCard showing the real wind — fabricated numbers
+                    are gone. The old "Pollen & Air Quality" panel was removed entirely: none
+                    of our sources provide pollen data for India, so its levels were invented.) */}
                 <section className="panel">
                   <h3><PanelIcon name="wind" /> {t('panels.windAtmosphere', 'WIND & ATMOSPHERE')}</h3>
                   <div className="wind-stats">
-                    <div>🧭 {t('windAtmosphere.direction', 'Direction')}: NE 45°</div>
-                    <div>💨 {t('windAtmosphere.speed', 'Speed')}: 12 km/h</div>
-                    <div>🌪️ {t('windAtmosphere.gust', 'Gust')}: 22 km/h</div>
-                    <div>🔽 {t('windAtmosphere.pressure', 'Pressure')}: 1013 mb</div>
-                  </div>
-                </section>
-
-                {/* Pollen & Air Quality */}
-                <section className="panel">
-                  <h3><PanelIcon name="leaf" /> {t('panels.pollenAirQuality', 'POLLEN & AIR QUALITY')}</h3>
-                  <div className="pollen-grid">
-                    <div className="pollen-card">🌾 {t('pollen.grass', 'Grass')}: {t('pollen.moderate', 'MODERATE')}</div>
-                    <div className="pollen-card">🌳 {t('pollen.tree', 'Tree')}: {t('pollen.high', 'HIGH')}</div>
-                    <div className="pollen-card">🌿 {t('pollen.weed', 'Weed')}: {t('pollen.low', 'LOW')}</div>
-                    <div className="pollen-card">🍄 {t('pollen.mold', 'Mold')}: {t('pollen.moderate', 'MODERATE')}</div>
+                    <div><PanelIcon name="map-pin" size={11} color="currentColor" /> {t('windAtmosphere.direction', 'Direction')}: {liveWeather?.current?.windDirection ?? '—'}</div>
+                    <div><PanelIcon name="wind" size={11} color="currentColor" /> {t('windAtmosphere.speed', 'Speed')}: {typeof liveWeather?.current?.windSpeed === 'number' ? `${liveWeather.current.windSpeed} km/h` : t('cityList.noLiveData', 'NO LIVE DATA')}</div>
+                    <div><PanelIcon name="wind" size={11} color="currentColor" /> {t('windAtmosphere.gust', 'Gust')}: {typeof liveWeather?.current?.windGust === 'number' ? `${liveWeather.current.windGust} km/h` : '—'}</div>
+                    <div><PanelIcon name="gauge" size={11} color="currentColor" /> {t('windAtmosphere.pressure', 'Pressure')}: {typeof liveWeather?.current?.pressure === 'number' ? `${liveWeather.current.pressure} hPa` : '—'}</div>
                   </div>
                 </section>
               </div>
@@ -5357,14 +5350,14 @@ function App({ user }) {
                 <section className="panel">
                   <h3><PanelIcon name="clipboard-list" /> {t('panels.progressTracker', 'BhaskarOps 2026 PROGRESS')}</h3>
                   <div className="progress-list">
-                    <div>{t('progressTracker.dataCollection', '✅ Data Collection (Open-Meteo + ESA WorldCover)')}</div>
-                    <div>{t('progressTracker.lstCalculation', '✅ Live Surface Temperature')}</div>
-                    <div>{t('progressTracker.indexCalculation', '✅ Vegetation/Built-up Fractions (36 cities)')}</div>
-                    <div>{t('progressTracker.correlationAnalysis', '✅ Correlation Analysis')}</div>
-                    <div>{t('progressTracker.randomForestModel', '✅ Random Forest Model')}</div>
-                    <div>{t('progressTracker.interventionSimulation', '✅ Intervention Simulation')}</div>
-                    <div>{t('progressTracker.dashboardCreation', '✅ Dashboard Creation')}</div>
-                    <div>{t('progressTracker.reportSubmission', '🔲 Report Submission')}</div>
+                    <div><PanelIcon name="check-square" size={12} color="#22c55e" /> {t('progressTracker.dataCollection', 'Data Collection (Open-Meteo + ESA WorldCover)')}</div>
+                    <div><PanelIcon name="check-square" size={12} color="#22c55e" /> {t('progressTracker.lstCalculation', 'Live Surface Temperature')}</div>
+                    <div><PanelIcon name="check-square" size={12} color="#22c55e" /> {t('progressTracker.indexCalculation', 'Vegetation/Built-up Fractions (36 cities)')}</div>
+                    <div><PanelIcon name="check-square" size={12} color="#22c55e" /> {t('progressTracker.correlationAnalysis', 'Correlation Analysis')}</div>
+                    <div><PanelIcon name="check-square" size={12} color="#22c55e" /> {t('progressTracker.randomForestModel', 'Random Forest Model')}</div>
+                    <div><PanelIcon name="check-square" size={12} color="#22c55e" /> {t('progressTracker.interventionSimulation', 'Intervention Simulation')}</div>
+                    <div><PanelIcon name="check-square" size={12} color="#22c55e" /> {t('progressTracker.dashboardCreation', 'Dashboard Creation')}</div>
+                    <div><PanelIcon name="square" size={12} color="#64748b" /> {t('progressTracker.reportSubmission', 'Report Submission')}</div>
                   </div>
                   <div className="progress-bar-main">
                     <div className="progress" style={{width: '87.5%'}}/>

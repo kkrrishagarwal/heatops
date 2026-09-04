@@ -1,4 +1,5 @@
 import React from 'react'
+import PanelIcon from './PanelIcon'
 import { useTranslation } from 'react-i18next'
 import { SourceBadge } from './DataBadges'
 
@@ -56,7 +57,7 @@ export function PhysicsPanel({ cityData }) {
   return (
     <div style={cardStyle}>
       <div style={titleStyle}>
-        {t('physics.panelTitle', '⚛️ Physics of UHI Interventions')}
+        <PanelIcon name="atom" /> {t('physics.panelTitle', 'Physics of UHI Interventions')}
       </div>
 
       {items.map((item, idx) => (

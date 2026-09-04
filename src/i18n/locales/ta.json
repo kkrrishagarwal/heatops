@@ -133,7 +133,7 @@
   "tooltips": {
     "clickToExplore": "நகரங்களை ஆராய கிளிக் செய்யவும் →",
     "clickStateForDetails": "விவரங்களைப் பார்க்க வரைபடத்தில் ஒரு மாநிலத்தைக் கிளிக் செய்யவும்.",
-    "clickCityToAnalyze": "👆 பகுப்பாய்வு செய்ய மேலே உள்ள எந்த நகரத்தையும் கிளிக் செய்யவும்",
+    "clickCityToAnalyze": "பகுப்பாய்வு செய்ய மேலே உள்ள எந்த நகரத்தையும் கிளிக் செய்யவும்",
     "clickStateForDetailsSub": "நகரங்கள் மற்றும் வெப்ப தரவை ஆராய"
   },
   "dayNight": {
@@ -167,9 +167,9 @@
     "warmer": "அதிக வெப்பமானது"
   },
   "sliders": {
-    "urbanGreening": "🌳 நகர்ப்புற பசுமைமயமாக்கல் (NDVI +0.3):",
-    "coolRoofs": "🏠 குளிர் கூரைகள் (ஆல்பிடோ +0.2):",
-    "waterBodies": "💧 நீர்நிலைகள் (NDWI +0.1):"
+    "urbanGreening": "நகர்ப்புற பசுமைமயமாக்கல் (NDVI +0.3):",
+    "coolRoofs": "குளிர் கூரைகள் (ஆல்பிடோ +0.2):",
+    "waterBodies": "நீர்நிலைகள் (NDWI +0.1):"
   },
   "compareCities": {
     "selectPlaceholder": "ஒப்பிட நகரத்தைத் தேர்ந்தெடுக்கவும்...",
@@ -196,14 +196,14 @@
     "low": "குறைவு"
   },
   "progressTracker": {
-    "dataCollection": "✅ தரவு சேகரிப்பு (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ லைவ் மேற்பரப்பு வெப்பநிலை",
-    "indexCalculation": "✅ தாவரம்/கட்டப்பட்ட பகுதி அளவுகள் (36 நகரங்கள்)",
-    "correlationAnalysis": "✅ தொடர்பு பகுப்பாய்வு",
-    "randomForestModel": "✅ ரேண்டம் ஃபாரஸ்ட் மாடல்",
-    "interventionSimulation": "✅ தலையீடு உருவகப்படுத்துதல்",
-    "dashboardCreation": "✅ டாஷ்போர்டு உருவாக்கம்",
-    "reportSubmission": "🔲 அறிக்கை சமர்ப்பித்தல்",
+    "dataCollection": "தரவு சேகரிப்பு (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "லைவ் மேற்பரப்பு வெப்பநிலை",
+    "indexCalculation": "தாவரம்/கட்டப்பட்ட பகுதி அளவுகள் (36 நகரங்கள்)",
+    "correlationAnalysis": "தொடர்பு பகுப்பாய்வு",
+    "randomForestModel": "ரேண்டம் ஃபாரஸ்ட் மாடல்",
+    "interventionSimulation": "தலையீடு உருவகப்படுத்துதல்",
+    "dashboardCreation": "டாஷ்போர்டு உருவாக்கம்",
+    "reportSubmission": "அறிக்கை சமர்ப்பித்தல்",
     "stepsComplete": "{{done}}/{{total}} படிகள் முடிந்தன"
   },
   "cityList": {
@@ -225,10 +225,10 @@
     "totalLoginEvents": "மொத்த உள்நுழைவு நிகழ்வுகள்",
     "citiesAnalyzed": "பகுப்பாய்வு செய்யப்பட்ட நகரங்கள்",
     "successRate": "வெற்றி விகிதம்",
-    "hourlyLoginPattern": "📊 ஒவ்வொரு மணி நேர உள்நுழைவு முறை",
-    "dailyLoginTrend": "📈 தினசரி உள்நுழைவு போக்கு (30 நாட்கள்)",
-    "topCitiesAnalyzed": "🏙️ முதல் 10 பகுப்பாய்வு செய்யப்பட்ட நகரங்கள்",
-    "recentLoginActivity": "📝 சமீபத்திய உள்நுழைவு செயல்பாடு",
+    "hourlyLoginPattern": "ஒவ்வொரு மணி நேர உள்நுழைவு முறை",
+    "dailyLoginTrend": "தினசரி உள்நுழைவு போக்கு (30 நாட்கள்)",
+    "topCitiesAnalyzed": "முதல் 10 பகுப்பாய்வு செய்யப்பட்ட நகரங்கள்",
+    "recentLoginActivity": "சமீபத்திய உள்நுழைவு செயல்பாடு",
     "tableUser": "பயனர்",
     "tableEmail": "மின்னஞ்சல்",
     "tableTime": "நேரம்",
@@ -236,7 +236,7 @@
     "tableDuration": "கால அளவு"
   },
   "physics": {
-    "panelTitle": "⚛️ UHI தலையீடுகளின் இயற்பியல்",
+    "panelTitle": "UHI தலையீடுகளின் இயற்பியல்",
     "where": "எங்கே:",
     "cost": "செலவு:",
     "items": {
@@ -247,11 +247,11 @@
   },
   "spatial": {
     "panelTitle": "{{cityName}} இல் எங்கே தலையிட வேண்டும்",
-    "hottestZones": "🔴 மிகவும் வெப்பமான மண்டலங்கள்:",
-    "greenPriority": "🌳 பசுமை முன்னுரிமை:",
-    "waterPriority": "💧 நீர் முன்னுரிமை:",
-    "areaNeeded": "📏 தேவையான பரப்பளவு:",
-    "estimatedCost": "💰 மதிப்பிடப்பட்ட செலவு:",
+    "hottestZones": "மிகவும் வெப்பமான மண்டலங்கள்:",
+    "greenPriority": "பசுமை முன்னுரிமை:",
+    "waterPriority": "நீர் முன்னுரிமை:",
+    "areaNeeded": "தேவையான பரப்பளவு:",
+    "estimatedCost": "மதிப்பிடப்பட்ட செலவு:",
     "hotZonesCBD": "மத்திய வணிக மாவட்டம், தொழில்துறை மண்டலங்கள்",
     "hotZonesResidential": "அடர்த்தியான குடியிருப்பு பகுதிகள், வணிக பாதைகள்",
     "greenCritical": "மிக முக்கியமானது — 20% க்கும் குறைவான தாவரங்கள்",
@@ -262,7 +262,7 @@
     "costNote": "(@ ₹3 லட்சம்/ஹெக்டேர் சராசரி)"
   },
   "mlModel": {
-    "panelTitle": "🤖 ரேண்டம் ஃபாரஸ்ட் மாடல் — {{cityName}}",
+    "panelTitle": "ரேண்டம் ஃபாரஸ்ட் மாடல் — {{cityName}}",
     "r2Score": "R² மதிப்பெண்",
     "testSet": "டெஸ்ட் செட்",
     "mae": "MAE",
@@ -284,7 +284,7 @@
     "source": "மூலம்:"
   },
   "geePipeline": {
-    "panelTitle": "📡 தரவு பைப்லைன் — உண்மையான மூலங்கள் → BhaskarOps",
+    "panelTitle": "தரவு பைப்லைன் — உண்மையான மூலங்கள் → BhaskarOps",
     "steps": {
       "openMeteo": "லைவ் மேற்பரப்பு/தோல் வெப்பநிலை, உயரம் (SRTM), AQI (CAMS) — அங்கீகாரம் தேவையில்லை, இலவசம், நிகழ்நேரம்",
       "worldCover": "உண்மையான Sentinel-1/2 வகைப்பாடு, பொது AWS S3 — 36 பிரதிநிதி நகரங்களுக்கான தாவரம்/கட்டப்பட்ட பகுதி/நீர் பகுதிகள்",
@@ -331,7 +331,7 @@
   "landCover": {
     "bareOther": "வெற்று மண் / பிற",
     "builtUp": "கட்டப்பட்ட பகுதி",
-    "panelTitle": "🌍 நில பயன்பாடு / நில உறை — {{cityName}}",
+    "panelTitle": "நில பயன்பாடு / நில உறை — {{cityName}}",
     "vegetation": "தாவரம்",
     "water": "நீர்",
     "loading": "நில உறை தரவு ஏற்றப்படுகிறது…"

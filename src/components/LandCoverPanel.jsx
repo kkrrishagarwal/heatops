@@ -1,4 +1,5 @@
 import React from 'react'
+import PanelIcon from './PanelIcon'
 import { useTranslation } from 'react-i18next'
 import { SourceBadge } from './DataBadges'
 import { getLulcWithFallback } from '../utils/lulcFallback'
@@ -72,7 +73,7 @@ export function LandCoverPanel({ lulcData, cityName, stateName, coordsData, load
     return (
       <div style={cardStyle}>
         <div style={titleStyle}>
-          {t('landCover.panelTitle', '🌍 Land Use / Land Cover — {{cityName}}', { cityName })}
+          <PanelIcon name="globe" /> {t('landCover.panelTitle', 'Land Use / Land Cover — {{cityName}}', { cityName })}
         </div>
         <div style={{
           padding: "12px 14px",
@@ -103,7 +104,7 @@ export function LandCoverPanel({ lulcData, cityName, stateName, coordsData, load
   return (
     <div style={cardStyle}>
       <div style={titleStyle}>
-        {t('landCover.panelTitle', '🌍 Land Use / Land Cover — {{cityName}}', { cityName })}
+        <PanelIcon name="globe" /> {t('landCover.panelTitle', 'Land Use / Land Cover — {{cityName}}', { cityName })}
       </div>
 
       {entry.isFallback ? (

@@ -1,4 +1,5 @@
 import React from 'react'
+import PanelIcon from './PanelIcon'
 import { useTranslation } from 'react-i18next'
 import { SourceBadge } from './DataBadges'
 
@@ -99,7 +100,7 @@ export function MLModelPanel({ mlModel, cityName, loadError = null, onRetry }) {
   return (
     <div style={cardStyle}>
       <div style={titleStyle}>
-        {t('mlModel.panelTitle', '🤖 Random Forest Model — {{cityName}}', { cityName })}
+        <PanelIcon name="bot" /> {t('mlModel.panelTitle', 'Random Forest Model — {{cityName}}', { cityName })}
       </div>
 
       {/* Honest data source disclosure — not buried, shown right at the top */}

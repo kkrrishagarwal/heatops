@@ -133,7 +133,7 @@
   "tooltips": {
     "clickToExplore": "ସହରଗୁଡିକ ଦେଖିବାକୁ କ୍ଲିକ୍ କରନ୍ତୁ →",
     "clickStateForDetails": "ବିବରଣୀ ଦେଖିବାକୁ ମାନଚିତ୍ରରେ ଏକ ରାଜ୍ୟରେ କ୍ଲିକ୍ କରନ୍ତୁ।",
-    "clickCityToAnalyze": "👆 ବିଶ୍ଳେଷଣ ପାଇଁ ଉପରେ କୌଣସି ସହରରେ କ୍ଲିକ୍ କରନ୍ତୁ",
+    "clickCityToAnalyze": "ବିଶ୍ଳେଷଣ ପାଇଁ ଉପରେ କୌଣସି ସହରରେ କ୍ଲିକ୍ କରନ୍ତୁ",
     "clickStateForDetailsSub": "ସହର ଏବଂ ତାପ ତଥ୍ୟ ଅନୁସନ୍ଧାନ କରିବାକୁ"
   },
   "dayNight": {
@@ -167,9 +167,9 @@
     "warmer": "ଅଧିକ ଗରମ"
   },
   "sliders": {
-    "urbanGreening": "🌳 ସହର ହରିତୀକରଣ (NDVI +0.3):",
-    "coolRoofs": "🏠 କୁଲ୍ ରୁଫ୍ (ଆଲବେଡୋ +0.2):",
-    "waterBodies": "💧 ଜଳଭଣ୍ଡାର (NDWI +0.1):"
+    "urbanGreening": "ସହର ହରିତୀକରଣ (NDVI +0.3):",
+    "coolRoofs": "କୁଲ୍ ରୁଫ୍ (ଆଲବେଡୋ +0.2):",
+    "waterBodies": "ଜଳଭଣ୍ଡାର (NDWI +0.1):"
   },
   "compareCities": {
     "selectPlaceholder": "ତୁଳନା ପାଇଁ ସହର ବାଛନ୍ତୁ...",
@@ -196,14 +196,14 @@
     "low": "କମ"
   },
   "progressTracker": {
-    "dataCollection": "✅ ତଥ୍ୟ ସଂଗ୍ରହ (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ ଲାଇଭ୍ ପୃଷ୍ଠ ତାପମାତ୍ରା",
-    "indexCalculation": "✅ ଉଦ୍ଭିଦ/ନିର୍ମିତ ଅଞ୍ଚଳ ଅଂଶ (36 ସହର)",
-    "correlationAnalysis": "✅ ସମ୍ପର୍କ ବିଶ୍ଳେଷଣ",
-    "randomForestModel": "✅ ରାଣ୍ଡମ ଫରେଷ୍ଟ ମଡେଲ୍",
-    "interventionSimulation": "✅ ହସ୍ତକ୍ଷେପ ସିମୁଲେସନ୍",
-    "dashboardCreation": "✅ ଡାସବୋର୍ଡ ନିର୍ମାଣ",
-    "reportSubmission": "🔲 ରିପୋର୍ଟ ଦାଖଲ",
+    "dataCollection": "ତଥ୍ୟ ସଂଗ୍ରହ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "ଲାଇଭ୍ ପୃଷ୍ଠ ତାପମାତ୍ରା",
+    "indexCalculation": "ଉଦ୍ଭିଦ/ନିର୍ମିତ ଅଞ୍ଚଳ ଅଂଶ (36 ସହର)",
+    "correlationAnalysis": "ସମ୍ପର୍କ ବିଶ୍ଳେଷଣ",
+    "randomForestModel": "ରାଣ୍ଡମ ଫରେଷ୍ଟ ମଡେଲ୍",
+    "interventionSimulation": "ହସ୍ତକ୍ଷେପ ସିମୁଲେସନ୍",
+    "dashboardCreation": "ଡାସବୋର୍ଡ ନିର୍ମାଣ",
+    "reportSubmission": "ରିପୋର୍ଟ ଦାଖଲ",
     "stepsComplete": "{{done}}/{{total}} ପଦକ୍ଷେପ ସମ୍ପୂର୍ଣ୍ଣ"
   },
   "cityList": {
@@ -225,10 +225,10 @@
     "totalLoginEvents": "ସମୁଦାୟ ଲଗଇନ୍ ଘଟଣା",
     "citiesAnalyzed": "ବିଶ୍ଳେଷିତ ସହର",
     "successRate": "ସଫଳତା ହାର",
-    "hourlyLoginPattern": "📊 ପ୍ରତି ଘଣ୍ଟା ଲଗଇନ୍ ଢାଞ୍ଚା",
-    "dailyLoginTrend": "📈 ଦୈନିକ ଲଗଇନ୍ ଧାରା (30 ଦିନ)",
-    "topCitiesAnalyzed": "🏙️ ଶୀର୍ଷ 10 ବିଶ୍ଳେଷିତ ସହର",
-    "recentLoginActivity": "📝 ସାମ୍ପ୍ରତିକ ଲଗଇନ୍ କାର୍ଯ୍ୟକଳାପ",
+    "hourlyLoginPattern": "ପ୍ରତି ଘଣ୍ଟା ଲଗଇନ୍ ଢାଞ୍ଚା",
+    "dailyLoginTrend": "ଦୈନିକ ଲଗଇନ୍ ଧାରା (30 ଦିନ)",
+    "topCitiesAnalyzed": "ଶୀର୍ଷ 10 ବିଶ୍ଳେଷିତ ସହର",
+    "recentLoginActivity": "ସାମ୍ପ୍ରତିକ ଲଗଇନ୍ କାର୍ଯ୍ୟକଳାପ",
     "tableUser": "ଉପଭୋକ୍ତା",
     "tableEmail": "ଇମେଲ୍",
     "tableTime": "ସମୟ",
@@ -236,7 +236,7 @@
     "tableDuration": "ଅବଧି"
   },
   "physics": {
-    "panelTitle": "⚛️ UHI ହସ୍ତକ୍ଷେପର ପଦାର୍ଥ ବିଜ୍ଞାନ",
+    "panelTitle": "UHI ହସ୍ତକ୍ଷେପର ପଦାର୍ଥ ବିଜ୍ଞାନ",
     "where": "କେଉଁଠାରେ:",
     "cost": "ମୂଲ୍ୟ:",
     "items": {
@@ -247,11 +247,11 @@
   },
   "spatial": {
     "panelTitle": "{{cityName}} ରେ କେଉଁଠାରେ ହସ୍ତକ୍ଷେପ କରିବେ",
-    "hottestZones": "🔴 ସବୁଠାରୁ ଗରମ ଅଞ୍ଚଳ:",
-    "greenPriority": "🌳 ହରିତ ଅଗ୍ରାଧିକାର:",
-    "waterPriority": "💧 ଜଳ ଅଗ୍ରାଧିକାର:",
-    "areaNeeded": "📏 ଆବଶ୍ୟକ ଅଞ୍ଚଳ:",
-    "estimatedCost": "💰 ଆକଳିତ ମୂଲ୍ୟ:",
+    "hottestZones": "ସବୁଠାରୁ ଗରମ ଅଞ୍ଚଳ:",
+    "greenPriority": "ହରିତ ଅଗ୍ରାଧିକାର:",
+    "waterPriority": "ଜଳ ଅଗ୍ରାଧିକାର:",
+    "areaNeeded": "ଆବଶ୍ୟକ ଅଞ୍ଚଳ:",
+    "estimatedCost": "ଆକଳିତ ମୂଲ୍ୟ:",
     "hotZonesCBD": "କେନ୍ଦ୍ରୀୟ ବ୍ୟବସାୟ ଜିଲ୍ଲା, ଶିଳ୍ପ ଅଞ୍ଚଳ",
     "hotZonesResidential": "ଘନ ବାସଗୃହ ଅଞ୍ଚଳ, ବ୍ୟବସାୟିକ କରିଡର",
     "greenCritical": "ଗମ୍ଭୀର — 20% କୁ କମ ଉଦ୍ଭିଦ",
@@ -262,7 +262,7 @@
     "costNote": "(@ ₹3 ଲକ୍ଷ/ହେକ୍ଟର ହାରାହାରି)"
   },
   "mlModel": {
-    "panelTitle": "🤖 ରାଣ୍ଡମ ଫରେଷ୍ଟ ମଡେଲ୍ — {{cityName}}",
+    "panelTitle": "ରାଣ୍ଡମ ଫରେଷ୍ଟ ମଡେଲ୍ — {{cityName}}",
     "r2Score": "R² ସ୍କୋର",
     "testSet": "ଟେସ୍ଟ ସେଟ୍",
     "mae": "MAE",
@@ -284,7 +284,7 @@
     "source": "ସ୍ରୋତ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ଡାଟା ପାଇପଲାଇନ୍ — ବାସ୍ତବ ଉତ୍ସ → BhaskarOps",
+    "panelTitle": "ଡାଟା ପାଇପଲାଇନ୍ — ବାସ୍ତବ ଉତ୍ସ → BhaskarOps",
     "steps": {
       "openMeteo": "ଲାଇଭ୍ ପୃଷ୍ଠ/ଚର୍ମ ତାପମାତ୍ରା, ଉଚ୍ଚତା (SRTM), AQI (CAMS) — କୌଣସି ପ୍ରମାଣୀକରଣ ନାହିଁ, ମୁକ୍ତ, ରିଅଲ୍-ଟାଇମ୍",
       "worldCover": "ବାସ୍ତବ Sentinel-1/2 ବର୍ଗୀକରଣ, ସର୍ବସାଧାରଣ AWS S3 — 36 ପ୍ରତିନିଧି ସହର ପାଇଁ ଉଦ୍ଭିଦ/ନିର୍ମିତ ଅଞ୍ଚଳ/ପାଣି ଅଂଶ",
@@ -331,7 +331,7 @@
   "landCover": {
     "bareOther": "ଖାଲି ମାଟି / ଅନ୍ୟାନ୍ୟ",
     "builtUp": "ନିର୍ମିତ ଅଞ୍ଚଳ",
-    "panelTitle": "🌍 ଜମି ବ୍ୟବହାର / ଜମି ଆଚ୍ଛାଦନ — {{cityName}}",
+    "panelTitle": "ଜମି ବ୍ୟବହାର / ଜମି ଆଚ୍ଛାଦନ — {{cityName}}",
     "vegetation": "ଉଦ୍ଭିଦ",
     "water": "ପାଣି",
     "loading": "ଜମି ଆଚ୍ଛାଦନ ତଥ୍ୟ ଲୋଡ୍ ହେଉଛି…"

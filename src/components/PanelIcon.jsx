@@ -8,7 +8,7 @@ import {
   Flame, Bot, Star, Siren, Clock, Share2, BookOpen, ClipboardList, BarChart3, TrendingUp,
   Wind, Users, Building2, Target, SlidersHorizontal, Leaf, Thermometer, Globe, Stethoscope,
   Snowflake, HeartHandshake, FileText, MessageCircle, Copy, Download, Gauge, Satellite,
-  SunMoon, Zap, Palette, History, Droplets, Eye, Sunrise, Sunset, Cloud, Calendar, Activity, MapPin, CloudRain, Sun, Moon
+  SunMoon, Zap, Palette, History, Droplets, Eye, Sunrise, Sunset, Cloud, Calendar, Activity, MapPin, CloudRain, Sun, Moon, Atom, Ruler, Coins, CheckSquare, Square, Home
 } from 'lucide-react'
 
 const ICONS = {
@@ -21,7 +21,8 @@ const ICONS = {
   gauge: Gauge, satellite: Satellite, 'sun-moon': SunMoon, zap: Zap, palette: Palette,
   history: History, droplets: Droplets, eye: Eye, sunrise: Sunrise, sunset: Sunset,
   cloud: Cloud, calendar: Calendar, activity: Activity, 'map-pin': MapPin,
-  'cloud-rain': CloudRain, sun: Sun, moon: Moon
+  'cloud-rain': CloudRain, sun: Sun, moon: Moon, atom: Atom, ruler: Ruler, coins: Coins,
+  'check-square': CheckSquare, square: Square, home: Home
 }
 
 export default function PanelIcon({ name, size = 13, color, style }) {

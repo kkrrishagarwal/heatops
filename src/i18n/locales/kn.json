@@ -133,7 +133,7 @@
   "tooltips": {
     "clickToExplore": "ನಗರಗಳನ್ನು ಅನ್ವೇಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ →",
     "clickStateForDetails": "ವಿವರಗಳನ್ನು ನೋಡಲು ಮ್ಯಾಪ್‌ನಲ್ಲಿ ಒಂದು ರಾಜ್ಯವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.",
-    "clickCityToAnalyze": "👆 ವಿಶ್ಲೇಷಿಸಲು ಮೇಲಿನ ಯಾವುದೇ ನಗರವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ",
+    "clickCityToAnalyze": "ವಿಶ್ಲೇಷಿಸಲು ಮೇಲಿನ ಯಾವುದೇ ನಗರವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ",
     "clickStateForDetailsSub": "ನಗರಗಳು ಮತ್ತು ಶಾಖ ಡೇಟಾವನ್ನು ಅನ್ವೇಷಿಸಲು"
   },
   "dayNight": {
@@ -167,9 +167,9 @@
     "warmer": "ಹೆಚ್ಚು ಬೆಚ್ಚಗಿನ"
   },
   "sliders": {
-    "urbanGreening": "🌳 ನಗರ ಹಸಿರೀಕರಣ (NDVI +0.3):",
-    "coolRoofs": "🏠 ಕೂಲ್ ರೂಫ್‌ಗಳು (ಆಲ್ಬಿಡೋ +0.2):",
-    "waterBodies": "💧 ಜಲಮೂಲಗಳು (NDWI +0.1):"
+    "urbanGreening": "ನಗರ ಹಸಿರೀಕರಣ (NDVI +0.3):",
+    "coolRoofs": "ಕೂಲ್ ರೂಫ್‌ಗಳು (ಆಲ್ಬಿಡೋ +0.2):",
+    "waterBodies": "ಜಲಮೂಲಗಳು (NDWI +0.1):"
   },
   "compareCities": {
     "selectPlaceholder": "ಹೋಲಿಸಲು ನಗರವನ್ನು ಆಯ್ಕೆಮಾಡಿ...",
@@ -196,14 +196,14 @@
     "low": "ಕಡಿಮೆ"
   },
   "progressTracker": {
-    "dataCollection": "✅ ಡೇಟಾ ಸಂಗ್ರಹಣೆ (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ ಲೈವ್ ಮೇಲ್ಮೈ ತಾಪಮಾನ",
-    "indexCalculation": "✅ ಸಸ್ಯಸಂಪತ್ತು/ನಿರ್ಮಿತ ಪ್ರದೇಶ ಭಾಗಗಳು (36 ನಗರಗಳು)",
-    "correlationAnalysis": "✅ ಸಂಬಂಧ ವಿಶ್ಲೇಷಣೆ",
-    "randomForestModel": "✅ ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ಮಾಡೆಲ್",
-    "interventionSimulation": "✅ ಮಧ್ಯಸ್ಥಿಕೆ ಸಿಮ್ಯುಲೇಶನ್",
-    "dashboardCreation": "✅ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ರಚನೆ",
-    "reportSubmission": "🔲 ವರದಿ ಸಲ್ಲಿಕೆ",
+    "dataCollection": "ಡೇಟಾ ಸಂಗ್ರಹಣೆ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "ಲೈವ್ ಮೇಲ್ಮೈ ತಾಪಮಾನ",
+    "indexCalculation": "ಸಸ್ಯಸಂಪತ್ತು/ನಿರ್ಮಿತ ಪ್ರದೇಶ ಭಾಗಗಳು (36 ನಗರಗಳು)",
+    "correlationAnalysis": "ಸಂಬಂಧ ವಿಶ್ಲೇಷಣೆ",
+    "randomForestModel": "ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ಮಾಡೆಲ್",
+    "interventionSimulation": "ಮಧ್ಯಸ್ಥಿಕೆ ಸಿಮ್ಯುಲೇಶನ್",
+    "dashboardCreation": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ರಚನೆ",
+    "reportSubmission": "ವರದಿ ಸಲ್ಲಿಕೆ",
     "stepsComplete": "{{done}}/{{total}} ಹಂತಗಳು ಪೂರ್ಣಗೊಂಡಿವೆ"
   },
   "cityList": {
@@ -225,10 +225,10 @@
     "totalLoginEvents": "ಒಟ್ಟು ಲಾಗಿನ್ ಘಟನೆಗಳು",
     "citiesAnalyzed": "ವಿಶ್ಲೇಷಿಸಿದ ನಗರಗಳು",
     "successRate": "ಯಶಸ್ಸಿನ ಪ್ರಮಾಣ",
-    "hourlyLoginPattern": "📊 ಗಂಟೆಗೊಮ್ಮೆಯ ಲಾಗಿನ್ ಮಾದರಿ",
-    "dailyLoginTrend": "📈 ದೈನಂದಿನ ಲಾಗಿನ್ ಪ್ರವೃತ್ತಿ (30 ದಿನಗಳು)",
-    "topCitiesAnalyzed": "🏙️ ಟಾಪ್ 10 ವಿಶ್ಲೇಷಿಸಿದ ನಗರಗಳು",
-    "recentLoginActivity": "📝 ಇತ್ತೀಚಿನ ಲಾಗಿನ್ ಚಟುವಟಿಕೆ",
+    "hourlyLoginPattern": "ಗಂಟೆಗೊಮ್ಮೆಯ ಲಾಗಿನ್ ಮಾದರಿ",
+    "dailyLoginTrend": "ದೈನಂದಿನ ಲಾಗಿನ್ ಪ್ರವೃತ್ತಿ (30 ದಿನಗಳು)",
+    "topCitiesAnalyzed": "ಟಾಪ್ 10 ವಿಶ್ಲೇಷಿಸಿದ ನಗರಗಳು",
+    "recentLoginActivity": "ಇತ್ತೀಚಿನ ಲಾಗಿನ್ ಚಟುವಟಿಕೆ",
     "tableUser": "ಬಳಕೆದಾರ",
     "tableEmail": "ಇಮೇಲ್",
     "tableTime": "ಸಮಯ",
@@ -236,7 +236,7 @@
     "tableDuration": "ಅವಧಿ"
   },
   "physics": {
-    "panelTitle": "⚛️ UHI ಮಧ್ಯಸ್ಥಿಕೆಗಳ ಭೌತಶಾಸ್ತ್ರ",
+    "panelTitle": "UHI ಮಧ್ಯಸ್ಥಿಕೆಗಳ ಭೌತಶಾಸ್ತ್ರ",
     "where": "ಎಲ್ಲಿ:",
     "cost": "ವೆಚ್ಚ:",
     "items": {
@@ -247,11 +247,11 @@
   },
   "spatial": {
     "panelTitle": "{{cityName}} ನಲ್ಲಿ ಎಲ್ಲಿ ಮಧ್ಯಸ್ಥಿಕೆ ವಹಿಸಬೇಕು",
-    "hottestZones": "🔴 ಅತ್ಯಂತ ಬಿಸಿಯಾದ ವಲಯಗಳು:",
-    "greenPriority": "🌳 ಹಸಿರು ಆದ್ಯತೆ:",
-    "waterPriority": "💧 ನೀರಿನ ಆದ್ಯತೆ:",
-    "areaNeeded": "📏 ಅಗತ್ಯವಿರುವ ಪ್ರದೇಶ:",
-    "estimatedCost": "💰 ಅಂದಾಜು ವೆಚ್ಚ:",
+    "hottestZones": "ಅತ್ಯಂತ ಬಿಸಿಯಾದ ವಲಯಗಳು:",
+    "greenPriority": "ಹಸಿರು ಆದ್ಯತೆ:",
+    "waterPriority": "ನೀರಿನ ಆದ್ಯತೆ:",
+    "areaNeeded": "ಅಗತ್ಯವಿರುವ ಪ್ರದೇಶ:",
+    "estimatedCost": "ಅಂದಾಜು ವೆಚ್ಚ:",
     "hotZonesCBD": "ಕೇಂದ್ರ ವ್ಯಾಪಾರ ಜಿಲ್ಲೆ, ಕೈಗಾರಿಕಾ ವಲಯಗಳು",
     "hotZonesResidential": "ದಟ್ಟ ವಸತಿ ಪ್ರದೇಶಗಳು, ವಾಣಿಜ್ಯ ಕಾರಿಡಾರ್‌ಗಳು",
     "greenCritical": "ನಿರ್ಣಾಯಕ — 20% ಗಿಂತ ಕಡಿಮೆ ಸಸ್ಯವರ್ಗ",
@@ -262,7 +262,7 @@
     "costNote": "(@ ₹3 ಲಕ್ಷ/ಹೆಕ್ಟೇರ್ ಸರಾಸರಿ)"
   },
   "mlModel": {
-    "panelTitle": "🤖 ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ಮಾಡೆಲ್ — {{cityName}}",
+    "panelTitle": "ರಾಂಡಮ್ ಫಾರೆಸ್ಟ್ ಮಾಡೆಲ್ — {{cityName}}",
     "r2Score": "R² ಸ್ಕೋರ್",
     "testSet": "ಟೆಸ್ಟ್ ಸೆಟ್",
     "mae": "MAE",
@@ -284,7 +284,7 @@
     "source": "ಮೂಲ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ಡೇಟಾ ಪೈಪ್‌ಲೈನ್ — ನಿಜವಾದ ಮೂಲಗಳು → BhaskarOps",
+    "panelTitle": "ಡೇಟಾ ಪೈಪ್‌ಲೈನ್ — ನಿಜವಾದ ಮೂಲಗಳು → BhaskarOps",
     "steps": {
       "openMeteo": "ಲೈವ್ ಮೇಲ್ಮೈ/ಚರ್ಮ ತಾಪಮಾನ, ಎತ್ತರ (SRTM), AQI (CAMS) — ಯಾವುದೇ ದೃಢೀಕರಣ ಇಲ್ಲ, ಉಚಿತ, ರಿಯಲ್-ಟೈಮ್",
       "worldCover": "ನಿಜವಾದ Sentinel-1/2 ವರ್ಗೀಕರಣ, ಸಾರ್ವಜನಿಕ AWS S3 — 36 ಪ್ರತಿನಿಧಿ ನಗರಗಳಿಗೆ ಸಸ್ಯಸಂಪತ್ತು/ನಿರ್ಮಿತ ಪ್ರದೇಶ/ನೀರಿನ ಭಾಗಗಳು",
@@ -331,7 +331,7 @@
   "landCover": {
     "bareOther": "ಬರಿ ಮಣ್ಣು / ಇತರೆ",
     "builtUp": "ನಿರ್ಮಿತ ಪ್ರದೇಶ",
-    "panelTitle": "🌍 ಭೂ ಬಳಕೆ / ಭೂ ಹೊದಿಕೆ — {{cityName}}",
+    "panelTitle": "ಭೂ ಬಳಕೆ / ಭೂ ಹೊದಿಕೆ — {{cityName}}",
     "vegetation": "ಸಸ್ಯಸಂಪತ್ತು",
     "water": "ನೀರು",
     "loading": "ಭೂ ಹೊದಿಕೆ ಡೇಟಾ ಲೋಡ್ ಆಗುತ್ತಿದೆ…"

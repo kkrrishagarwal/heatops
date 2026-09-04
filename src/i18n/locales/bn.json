@@ -133,7 +133,7 @@
   "tooltips": {
     "clickToExplore": "শহরগুলি দেখতে ক্লিক করুন →",
     "clickStateForDetails": "বিস্তারিত দেখতে মানচিত্রে একটি রাজ্যে ক্লিক করুন।",
-    "clickCityToAnalyze": "👆 বিশ্লেষণের জন্য উপরের যেকোনো শহরে ক্লিক করুন",
+    "clickCityToAnalyze": "বিশ্লেষণের জন্য উপরের যেকোনো শহরে ক্লিক করুন",
     "clickStateForDetailsSub": "শহর এবং তাপ ডেটা অন্বেষণ করতে"
   },
   "dayNight": {
@@ -167,9 +167,9 @@
     "warmer": "অধিক উষ্ণ"
   },
   "sliders": {
-    "urbanGreening": "🌳 শহুরে সবুজায়ন (এনডিভিআই +০.৩):",
-    "coolRoofs": "🏠 কুল রুফ (অ্যালবেডো +০.২):",
-    "waterBodies": "💧 জলাশয় (এনডিডব্লিউআই +০.১):"
+    "urbanGreening": "শহুরে সবুজায়ন (এনডিভিআই +০.৩):",
+    "coolRoofs": "কুল রুফ (অ্যালবেডো +০.২):",
+    "waterBodies": "জলাশয় (এনডিডব্লিউআই +০.১):"
   },
   "compareCities": {
     "selectPlaceholder": "তুলনা করার জন্য শহর নির্বাচন করুন...",
@@ -196,14 +196,14 @@
     "low": "নিম্ন"
   },
   "progressTracker": {
-    "dataCollection": "✅ ডেটা সংগ্রহ (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ লাইভ সারফেস তাপমাত্রা",
-    "indexCalculation": "✅ উদ্ভিদ/নির্মিত এলাকা অংশ (৩৬টি শহর)",
-    "correlationAnalysis": "✅ সম্পর্ক বিশ্লেষণ",
-    "randomForestModel": "✅ র‍্যান্ডম ফরেস্ট মডেল",
-    "interventionSimulation": "✅ হস্তক্ষেপ সিমুলেশন",
-    "dashboardCreation": "✅ ড্যাশবোর্ড নির্মাণ",
-    "reportSubmission": "🔲 রিপোর্ট জমা",
+    "dataCollection": "ডেটা সংগ্রহ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "লাইভ সারফেস তাপমাত্রা",
+    "indexCalculation": "উদ্ভিদ/নির্মিত এলাকা অংশ (৩৬টি শহর)",
+    "correlationAnalysis": "সম্পর্ক বিশ্লেষণ",
+    "randomForestModel": "র‍্যান্ডম ফরেস্ট মডেল",
+    "interventionSimulation": "হস্তক্ষেপ সিমুলেশন",
+    "dashboardCreation": "ড্যাশবোর্ড নির্মাণ",
+    "reportSubmission": "রিপোর্ট জমা",
     "stepsComplete": "{{done}}/{{total}} পদক্ষেপ সম্পন্ন"
   },
   "cityList": {
@@ -225,10 +225,10 @@
     "totalLoginEvents": "মোট লগইন ইভেন্ট",
     "citiesAnalyzed": "বিশ্লেষিত শহর",
     "successRate": "সাফল্যের হার",
-    "hourlyLoginPattern": "📊 ঘণ্টাভিত্তিক লগইন প্যাটার্ন",
-    "dailyLoginTrend": "📈 দৈনিক লগইন প্রবণতা (৩০ দিন)",
-    "topCitiesAnalyzed": "🏙️ শীর্ষ ১০ বিশ্লেষিত শহর",
-    "recentLoginActivity": "📝 সাম্প্রতিক লগইন কার্যকলাপ",
+    "hourlyLoginPattern": "ঘণ্টাভিত্তিক লগইন প্যাটার্ন",
+    "dailyLoginTrend": "দৈনিক লগইন প্রবণতা (৩০ দিন)",
+    "topCitiesAnalyzed": "শীর্ষ ১০ বিশ্লেষিত শহর",
+    "recentLoginActivity": "সাম্প্রতিক লগইন কার্যকলাপ",
     "tableUser": "ব্যবহারকারী",
     "tableEmail": "ইমেল",
     "tableTime": "সময়",
@@ -236,7 +236,7 @@
     "tableDuration": "সময়কাল"
   },
   "physics": {
-    "panelTitle": "⚛️ ইউএইচআই হস্তক্ষেপের পদার্থবিজ্ঞান",
+    "panelTitle": "ইউএইচআই হস্তক্ষেপের পদার্থবিজ্ঞান",
     "where": "কোথায়:",
     "cost": "খরচ:",
     "items": {
@@ -247,11 +247,11 @@
   },
   "spatial": {
     "panelTitle": "{{cityName}} এ কোথায় হস্তক্ষেপ করবেন",
-    "hottestZones": "🔴 সবচেয়ে উষ্ণ অঞ্চল:",
-    "greenPriority": "🌳 সবুজ অগ্রাধিকার:",
-    "waterPriority": "💧 জল অগ্রাধিকার:",
-    "areaNeeded": "📏 প্রয়োজনীয় এলাকা:",
-    "estimatedCost": "💰 আনুমানিক খরচ:",
+    "hottestZones": "সবচেয়ে উষ্ণ অঞ্চল:",
+    "greenPriority": "সবুজ অগ্রাধিকার:",
+    "waterPriority": "জল অগ্রাধিকার:",
+    "areaNeeded": "প্রয়োজনীয় এলাকা:",
+    "estimatedCost": "আনুমানিক খরচ:",
     "hotZonesCBD": "কেন্দ্রীয় ব্যবসায়িক জেলা, শিল্প অঞ্চল",
     "hotZonesResidential": "ঘন আবাসিক এলাকা, বাণিজ্যিক করিডোর",
     "greenCritical": "সংকটজনক — ২০% এর কম গাছপালা",
@@ -262,7 +262,7 @@
     "costNote": "(@ ₹৩ লাখ/হেক্টর গড়)"
   },
   "mlModel": {
-    "panelTitle": "🤖 র‍্যান্ডম ফরেস্ট মডেল — {{cityName}}",
+    "panelTitle": "র‍্যান্ডম ফরেস্ট মডেল — {{cityName}}",
     "r2Score": "R² স্কোর",
     "testSet": "টেস্ট সেট",
     "mae": "এমএই",
@@ -284,7 +284,7 @@
     "source": "উৎস:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ডেটা পাইপলাইন — বাস্তব উৎস → BhaskarOps",
+    "panelTitle": "ডেটা পাইপলাইন — বাস্তব উৎস → BhaskarOps",
     "steps": {
       "openMeteo": "লাইভ সারফেস/স্কিন তাপমাত্রা, উচ্চতা (SRTM), AQI (CAMS) — কোনো প্রমাণীকরণ নেই, ফ্রি, রিয়েল-টাইম",
       "worldCover": "বাস্তব Sentinel-1/2 শ্রেণীবিভাগ, পাবলিক AWS S3 — ৩৬টি প্রতিনিধি শহরের জন্য উদ্ভিদ/নির্মিত এলাকা/জল অংশ",
@@ -331,7 +331,7 @@
   "landCover": {
     "bareOther": "খালি মাটি / অন্যান্য",
     "builtUp": "নির্মিত এলাকা",
-    "panelTitle": "🌍 ভূমি ব্যবহার / ভূমি আচ্ছাদন — {{cityName}}",
+    "panelTitle": "ভূমি ব্যবহার / ভূমি আচ্ছাদন — {{cityName}}",
     "vegetation": "উদ্ভিদ",
     "water": "জল",
     "loading": "ভূমি আচ্ছাদন ডেটা লোড হচ্ছে…"

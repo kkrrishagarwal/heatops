@@ -133,7 +133,7 @@
   "tooltips": {
     "clickToExplore": "నగరాలను అన్వేషించడానికి క్లిక్ చేయండి →",
     "clickStateForDetails": "వివరాలను చూడటానికి మ్యాప్‌లో ఒక రాష్ట్రాన్ని క్లిక్ చేయండి.",
-    "clickCityToAnalyze": "👆 విశ్లేషించడానికి పైన ఉన్న ఏదైనా నగరంపై క్లిక్ చేయండి",
+    "clickCityToAnalyze": "విశ్లేషించడానికి పైన ఉన్న ఏదైనా నగరంపై క్లిక్ చేయండి",
     "clickStateForDetailsSub": "నగరాలు మరియు హీట్ డేటాను అన్వేషించడానికి"
   },
   "dayNight": {
@@ -167,9 +167,9 @@
     "warmer": "వేడిగా"
   },
   "sliders": {
-    "urbanGreening": "🌳 పట్టణ హరితీకరణ (NDVI +0.3):",
-    "coolRoofs": "🏠 కూల్ రూఫ్‌లు (ఆల్బిడో +0.2):",
-    "waterBodies": "💧 నీటి వనరులు (NDWI +0.1):"
+    "urbanGreening": "పట్టణ హరితీకరణ (NDVI +0.3):",
+    "coolRoofs": "కూల్ రూఫ్‌లు (ఆల్బిడో +0.2):",
+    "waterBodies": "నీటి వనరులు (NDWI +0.1):"
   },
   "compareCities": {
     "selectPlaceholder": "పోల్చడానికి నగరాన్ని ఎంచుకోండి...",
@@ -196,14 +196,14 @@
     "low": "తక్కువ"
   },
   "progressTracker": {
-    "dataCollection": "✅ డేటా సేకరణ (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ లైవ్ ఉపరితల ఉష్ణోగ్రత",
-    "indexCalculation": "✅ వృక్షసంపద/నిర్మిత ప్రాంత భాగాలు (36 నగరాలు)",
-    "correlationAnalysis": "✅ సహసంబంధ విశ్లేషణ",
-    "randomForestModel": "✅ రాండమ్ ఫారెస్ట్ మోడల్",
-    "interventionSimulation": "✅ జోక్యం అనుకరణ",
-    "dashboardCreation": "✅ డాష్‌బోర్డ్ సృష్టి",
-    "reportSubmission": "🔲 నివేదిక సమర్పణ",
+    "dataCollection": "డేటా సేకరణ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "లైవ్ ఉపరితల ఉష్ణోగ్రత",
+    "indexCalculation": "వృక్షసంపద/నిర్మిత ప్రాంత భాగాలు (36 నగరాలు)",
+    "correlationAnalysis": "సహసంబంధ విశ్లేషణ",
+    "randomForestModel": "రాండమ్ ఫారెస్ట్ మోడల్",
+    "interventionSimulation": "జోక్యం అనుకరణ",
+    "dashboardCreation": "డాష్‌బోర్డ్ సృష్టి",
+    "reportSubmission": "నివేదిక సమర్పణ",
     "stepsComplete": "{{done}}/{{total}} దశలు పూర్తయ్యాయి"
   },
   "cityList": {
@@ -225,10 +225,10 @@
     "totalLoginEvents": "మొత్తం లాగిన్ ఈవెంట్‌లు",
     "citiesAnalyzed": "విశ్లేషించిన నగరాలు",
     "successRate": "విజయ రేటు",
-    "hourlyLoginPattern": "📊 గంట వారీ లాగిన్ నమూనా",
-    "dailyLoginTrend": "📈 రోజువారీ లాగిన్ ధోరణి (30 రోజులు)",
-    "topCitiesAnalyzed": "🏙️ టాప్ 10 విశ్లేషించిన నగరాలు",
-    "recentLoginActivity": "📝 ఇటీవలి లాగిన్ కార్యకలాపం",
+    "hourlyLoginPattern": "గంట వారీ లాగిన్ నమూనా",
+    "dailyLoginTrend": "రోజువారీ లాగిన్ ధోరణి (30 రోజులు)",
+    "topCitiesAnalyzed": "టాప్ 10 విశ్లేషించిన నగరాలు",
+    "recentLoginActivity": "ఇటీవలి లాగిన్ కార్యకలాపం",
     "tableUser": "వినియోగదారు",
     "tableEmail": "ఇమెయిల్",
     "tableTime": "సమయం",
@@ -236,7 +236,7 @@
     "tableDuration": "వ్యవధి"
   },
   "physics": {
-    "panelTitle": "⚛️ UHI జోక్యాల భౌతిక శాస్త్రం",
+    "panelTitle": "UHI జోక్యాల భౌతిక శాస్త్రం",
     "where": "ఎక్కడ:",
     "cost": "ఖర్చు:",
     "items": {
@@ -247,11 +247,11 @@
   },
   "spatial": {
     "panelTitle": "{{cityName}}లో ఎక్కడ జోక్యం చేసుకోవాలి",
-    "hottestZones": "🔴 అత్యంత వేడి ప్రాంతాలు:",
-    "greenPriority": "🌳 హరిత ప్రాధాన్యత:",
-    "waterPriority": "💧 నీటి ప్రాధాన్యత:",
-    "areaNeeded": "📏 అవసరమైన ప్రాంతం:",
-    "estimatedCost": "💰 అంచనా ఖర్చు:",
+    "hottestZones": "అత్యంత వేడి ప్రాంతాలు:",
+    "greenPriority": "హరిత ప్రాధాన్యత:",
+    "waterPriority": "నీటి ప్రాధాన్యత:",
+    "areaNeeded": "అవసరమైన ప్రాంతం:",
+    "estimatedCost": "అంచనా ఖర్చు:",
     "hotZonesCBD": "సెంట్రల్ బిజినెస్ డిస్ట్రిక్ట్, పారిశ్రామిక మండలాలు",
     "hotZonesResidential": "దట్టమైన నివాస ప్రాంతాలు, వాణిజ్య కారిడార్లు",
     "greenCritical": "క్రిటికల్ — 20% కంటే తక్కువ వృక్షసంపద",
@@ -262,7 +262,7 @@
     "costNote": "(@ ₹3 లక్షలు/హెక్టారు సగటు)"
   },
   "mlModel": {
-    "panelTitle": "🤖 రాండమ్ ఫారెస్ట్ మోడల్ — {{cityName}}",
+    "panelTitle": "రాండమ్ ఫారెస్ట్ మోడల్ — {{cityName}}",
     "r2Score": "R² స్కోర్",
     "testSet": "టెస్ట్ సెట్",
     "mae": "MAE",
@@ -284,7 +284,7 @@
     "source": "మూలం:"
   },
   "geePipeline": {
-    "panelTitle": "📡 డేటా పైప్‌లైన్ — నిజమైన మూలాలు → BhaskarOps",
+    "panelTitle": "డేటా పైప్‌లైన్ — నిజమైన మూలాలు → BhaskarOps",
     "steps": {
       "openMeteo": "లైవ్ ఉపరితల/చర్మ ఉష్ణోగ్రత, ఎత్తు (SRTM), AQI (CAMS) — ప్రామాణీకరణ లేదు, ఉచితం, రియల్-టైమ్",
       "worldCover": "నిజమైన Sentinel-1/2 వర్గీకరణ, పబ్లిక్ AWS S3 — 36 ప్రాతినిధ్య నగరాలకు వృక్షసంపద/నిర్మిత ప్రాంతం/నీటి భాగాలు",
@@ -331,7 +331,7 @@
   "landCover": {
     "bareOther": "ఖాళీ నేల / ఇతరం",
     "builtUp": "నిర్మిత ప్రాంతం",
-    "panelTitle": "🌍 భూ వినియోగం / భూ ఆవరణం — {{cityName}}",
+    "panelTitle": "భూ వినియోగం / భూ ఆవరణం — {{cityName}}",
     "vegetation": "వృక్షసంపద",
     "water": "నీరు",
     "loading": "భూ ఆవరణ డేటా లోడ్ అవుతోంది…"

@@ -38,29 +38,29 @@ export function SpatialRecommendation({
         lineHeight:1.7
       }}>
         <b style={{color:"#ea580c"}}>
-          {t('spatial.hottestZones', '🔴 Hottest Zones:')}
+          <PanelIcon name="flame" size={11} color="currentColor" /> {t('spatial.hottestZones', 'Hottest Zones:')}
         </b> {hotZones}
         <br/>
         <b style={{color:"#22c55e"}}>
-          {t('spatial.greenPriority', '🌳 Green Priority:')}
+          <PanelIcon name="leaf" size={11} color="currentColor" /> {t('spatial.greenPriority', 'Green Priority:')}
         </b> {greenPriority}
         <br/>
         <b style={{color:"#94a3b8"}}>
-          {t('spatial.waterPriority', '💧 Water Priority:')}
+          <PanelIcon name="droplets" size={11} color="currentColor" /> {t('spatial.waterPriority', 'Water Priority:')}
         </b>{" "}
         {cityData.water_body_pct < 5
           ? t('spatial.waterUrgent', 'Water body creation urgent')
           : t('spatial.waterMaintain', 'Maintain existing water bodies')}
         <br/>
         <b style={{color:"#eab308"}}>
-          {t('spatial.areaNeeded', '📏 Area needed:')}
+          <PanelIcon name="ruler" size={11} color="currentColor" /> {t('spatial.areaNeeded', 'Area needed:')}
         </b>{" "}
         {Math.round(
           cityData.area_sqkm * 0.15
         )} {t('spatial.areaDescription', 'km² of green cover for target NDVI ≥ 0.35')}
         <br/>
         <b style={{color:"#ea580c"}}>
-          {t('spatial.estimatedCost', '💰 Estimated cost:')}
+          <PanelIcon name="coins" size={11} color="currentColor" /> {t('spatial.estimatedCost', 'Estimated cost:')}
         </b>{" "}
         ₹{(
           cityData.area_sqkm *

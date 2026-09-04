@@ -133,7 +133,7 @@
   "tooltips": {
     "clickToExplore": "શહેરો જોવા માટે ક્લિક કરો →",
     "clickStateForDetails": "વિગતો જોવા માટે મેપ પર એક રાજ્ય પર ક્લિક કરો.",
-    "clickCityToAnalyze": "👆 વિશ્લેષણ માટે ઉપર કોઈપણ શહેર પર ક્લિક કરો",
+    "clickCityToAnalyze": "વિશ્લેષણ માટે ઉપર કોઈપણ શહેર પર ક્લિક કરો",
     "clickStateForDetailsSub": "શહેરો અને હીટ ડેટા શોધવા માટે"
   },
   "dayNight": {
@@ -167,9 +167,9 @@
     "warmer": "વધુ ગરમ"
   },
   "sliders": {
-    "urbanGreening": "🌳 શહેરી હરિયાળી (NDVI +0.3):",
-    "coolRoofs": "🏠 કૂલ રૂફ (આલ્બેડો +0.2):",
-    "waterBodies": "💧 જળાશયો (NDWI +0.1):"
+    "urbanGreening": "શહેરી હરિયાળી (NDVI +0.3):",
+    "coolRoofs": "કૂલ રૂફ (આલ્બેડો +0.2):",
+    "waterBodies": "જળાશયો (NDWI +0.1):"
   },
   "compareCities": {
     "selectPlaceholder": "તુલના માટે શહેર પસંદ કરો...",
@@ -196,14 +196,14 @@
     "low": "નીચું"
   },
   "progressTracker": {
-    "dataCollection": "✅ ડેટા સંગ્રહ (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ લાઇવ સપાટી તાપમાન",
-    "indexCalculation": "✅ વનસ્પતિ/બાંધેલ વિસ્તાર અંશ (36 શહેરો)",
-    "correlationAnalysis": "✅ સહસંબંધ વિશ્લેષણ",
-    "randomForestModel": "✅ રેન્ડમ ફોરેસ્ટ મોડેલ",
-    "interventionSimulation": "✅ હસ્તક્ષેપ સિમ્યુલેશન",
-    "dashboardCreation": "✅ ડેશબોર્ડ નિર્માણ",
-    "reportSubmission": "🔲 રિપોર્ટ સબમિશન",
+    "dataCollection": "ડેટા સંગ્રહ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "લાઇવ સપાટી તાપમાન",
+    "indexCalculation": "વનસ્પતિ/બાંધેલ વિસ્તાર અંશ (36 શહેરો)",
+    "correlationAnalysis": "સહસંબંધ વિશ્લેષણ",
+    "randomForestModel": "રેન્ડમ ફોરેસ્ટ મોડેલ",
+    "interventionSimulation": "હસ્તક્ષેપ સિમ્યુલેશન",
+    "dashboardCreation": "ડેશબોર્ડ નિર્માણ",
+    "reportSubmission": "રિપોર્ટ સબમિશન",
     "stepsComplete": "{{done}}/{{total}} પગલાં પૂર્ણ"
   },
   "cityList": {
@@ -225,10 +225,10 @@
     "totalLoginEvents": "કુલ લોગિન ઘટનાઓ",
     "citiesAnalyzed": "વિશ્લેષિત શહેરો",
     "successRate": "સફળતા દર",
-    "hourlyLoginPattern": "📊 કલાકદીઠ લોગિન પેટર્ન",
-    "dailyLoginTrend": "📈 દૈનિક લોગિન વલણ (30 દિવસ)",
-    "topCitiesAnalyzed": "🏙️ ટોચના 10 વિશ્લેષિત શહેરો",
-    "recentLoginActivity": "📝 તાજેતરની લોગિન પ્રવૃત્તિ",
+    "hourlyLoginPattern": "કલાકદીઠ લોગિન પેટર્ન",
+    "dailyLoginTrend": "દૈનિક લોગિન વલણ (30 દિવસ)",
+    "topCitiesAnalyzed": "ટોચના 10 વિશ્લેષિત શહેરો",
+    "recentLoginActivity": "તાજેતરની લોગિન પ્રવૃત્તિ",
     "tableUser": "વપરાશકર્તા",
     "tableEmail": "ઈમેલ",
     "tableTime": "સમય",
@@ -236,7 +236,7 @@
     "tableDuration": "અવધિ"
   },
   "physics": {
-    "panelTitle": "⚛️ UHI હસ્તક્ષેપોનું ભૌતિકશાસ્ત્ર",
+    "panelTitle": "UHI હસ્તક્ષેપોનું ભૌતિકશાસ્ત્ર",
     "where": "ક્યાં:",
     "cost": "ખર્ચ:",
     "items": {
@@ -247,11 +247,11 @@
   },
   "spatial": {
     "panelTitle": "{{cityName}} માં ક્યાં હસ્તક્ષેપ કરવો",
-    "hottestZones": "🔴 સૌથી ગરમ ઝોન:",
-    "greenPriority": "🌳 હરિયાળી પ્રાધાન્યતા:",
-    "waterPriority": "💧 પાણીની પ્રાધાન્યતા:",
-    "areaNeeded": "📏 જરૂરી વિસ્તાર:",
-    "estimatedCost": "💰 અંદાજિત ખર્ચ:",
+    "hottestZones": "સૌથી ગરમ ઝોન:",
+    "greenPriority": "હરિયાળી પ્રાધાન્યતા:",
+    "waterPriority": "પાણીની પ્રાધાન્યતા:",
+    "areaNeeded": "જરૂરી વિસ્તાર:",
+    "estimatedCost": "અંદાજિત ખર્ચ:",
     "hotZonesCBD": "કેન્દ્રીય વ્યાપાર જિલ્લો, ઔદ્યોગિક ઝોન",
     "hotZonesResidential": "ગીચ રહેણાંક વિસ્તારો, વ્યાપારી કોરિડોર",
     "greenCritical": "ગંભીર — 20% થી ઓછી વનસ્પતિ",
@@ -262,7 +262,7 @@
     "costNote": "(@ ₹3 લાખ/હેક્ટર સરેરાશ)"
   },
   "mlModel": {
-    "panelTitle": "🤖 રેન્ડમ ફોરેસ્ટ મોડેલ — {{cityName}}",
+    "panelTitle": "રેન્ડમ ફોરેસ્ટ મોડેલ — {{cityName}}",
     "r2Score": "R² સ્કોર",
     "testSet": "ટેસ્ટ સેટ",
     "mae": "MAE",
@@ -284,7 +284,7 @@
     "source": "સ્ત્રોત:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ડેટા પાઇપલાઇન — વાસ્તવિક સ્ત્રોતો → BhaskarOps",
+    "panelTitle": "ડેટા પાઇપલાઇન — વાસ્તવિક સ્ત્રોતો → BhaskarOps",
     "steps": {
       "openMeteo": "લાઇવ સપાટી/ત્વચા તાપમાન, ઊંચાઈ (SRTM), AQI (CAMS) — કોઈ પ્રમાણીકરણ નથી, મફત, રીઅલ-ટાઇમ",
       "worldCover": "વાસ્તવિક Sentinel-1/2 વર્ગીકરણ, જાહેર AWS S3 — 36 પ્રતિનિધિ શહેરો માટે વનસ્પતિ/બાંધેલ વિસ્તાર/પાણી અંશ",
@@ -331,7 +331,7 @@
   "landCover": {
     "bareOther": "ખુલ્લી માટી / અન્ય",
     "builtUp": "બાંધેલ વિસ્તાર",
-    "panelTitle": "🌍 જમીન ઉપયોગ / જમીન આવરણ — {{cityName}}",
+    "panelTitle": "જમીન ઉપયોગ / જમીન આવરણ — {{cityName}}",
     "vegetation": "વનસ્પતિ",
     "water": "પાણી",
     "loading": "જમીન આવરણ ડેટા લોડ થઈ રહ્યો છે…"

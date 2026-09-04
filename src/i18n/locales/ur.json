@@ -133,7 +133,7 @@
   "tooltips": {
     "clickToExplore": "شہروں کو دیکھنے کے لیے کلک کریں →",
     "clickStateForDetails": "تفصیلات دیکھنے کے لیے نقشے پر کسی ریاست پر کلک کریں۔",
-    "clickCityToAnalyze": "👆 تجزیہ کے لیے اوپر کسی بھی شہر پر کلک کریں",
+    "clickCityToAnalyze": "تجزیہ کے لیے اوپر کسی بھی شہر پر کلک کریں",
     "clickStateForDetailsSub": "شہروں اور حدت کے ڈیٹا کو دیکھنے کے لیے"
   },
   "dayNight": {
@@ -167,9 +167,9 @@
     "warmer": "زیادہ گرم"
   },
   "sliders": {
-    "urbanGreening": "🌳 شہری سرسبزی (NDVI +0.3):",
-    "coolRoofs": "🏠 کول روف (البیڈو +0.2):",
-    "waterBodies": "💧 آبی ذخائر (NDWI +0.1):"
+    "urbanGreening": "شہری سرسبزی (NDVI +0.3):",
+    "coolRoofs": "کول روف (البیڈو +0.2):",
+    "waterBodies": "آبی ذخائر (NDWI +0.1):"
   },
   "compareCities": {
     "selectPlaceholder": "موازنہ کے لیے شہر منتخب کریں...",
@@ -196,14 +196,14 @@
     "low": "کم"
   },
   "progressTracker": {
-    "dataCollection": "✅ ڈیٹا اکٹھا کرنا (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ لائیو سطحی درجہ حرارت",
-    "indexCalculation": "✅ نباتات/تعمیر شدہ علاقہ کے حصے (36 شہر)",
-    "correlationAnalysis": "✅ ارتباط کا تجزیہ",
-    "randomForestModel": "✅ رینڈم فاریسٹ ماڈل",
-    "interventionSimulation": "✅ مداخلت کی نقالی",
-    "dashboardCreation": "✅ ڈیش بورڈ کی تخلیق",
-    "reportSubmission": "🔲 رپورٹ جمع کروانا",
+    "dataCollection": "ڈیٹا اکٹھا کرنا (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "لائیو سطحی درجہ حرارت",
+    "indexCalculation": "نباتات/تعمیر شدہ علاقہ کے حصے (36 شہر)",
+    "correlationAnalysis": "ارتباط کا تجزیہ",
+    "randomForestModel": "رینڈم فاریسٹ ماڈل",
+    "interventionSimulation": "مداخلت کی نقالی",
+    "dashboardCreation": "ڈیش بورڈ کی تخلیق",
+    "reportSubmission": "رپورٹ جمع کروانا",
     "stepsComplete": "{{done}}/{{total}} مراحل مکمل"
   },
   "cityList": {
@@ -225,10 +225,10 @@
     "totalLoginEvents": "کل لاگ ان واقعات",
     "citiesAnalyzed": "تجزیہ شدہ شہر",
     "successRate": "کامیابی کی شرح",
-    "hourlyLoginPattern": "📊 فی گھنٹہ لاگ ان پیٹرن",
-    "dailyLoginTrend": "📈 روزانہ لاگ ان رجحان (30 دن)",
-    "topCitiesAnalyzed": "🏙️ ٹاپ 10 تجزیہ شدہ شہر",
-    "recentLoginActivity": "📝 حالیہ لاگ ان سرگرمی",
+    "hourlyLoginPattern": "فی گھنٹہ لاگ ان پیٹرن",
+    "dailyLoginTrend": "روزانہ لاگ ان رجحان (30 دن)",
+    "topCitiesAnalyzed": "ٹاپ 10 تجزیہ شدہ شہر",
+    "recentLoginActivity": "حالیہ لاگ ان سرگرمی",
     "tableUser": "صارف",
     "tableEmail": "ای میل",
     "tableTime": "وقت",
@@ -236,7 +236,7 @@
     "tableDuration": "مدت"
   },
   "physics": {
-    "panelTitle": "⚛️ UHI مداخلتوں کی طبیعیات",
+    "panelTitle": "UHI مداخلتوں کی طبیعیات",
     "where": "کہاں:",
     "cost": "لاگت:",
     "items": {
@@ -247,11 +247,11 @@
   },
   "spatial": {
     "panelTitle": "{{cityName}} میں کہاں مداخلت کریں",
-    "hottestZones": "🔴 گرم ترین علاقے:",
-    "greenPriority": "🌳 سرسبزی کی ترجیح:",
-    "waterPriority": "💧 پانی کی ترجیح:",
-    "areaNeeded": "📏 درکار رقبہ:",
-    "estimatedCost": "💰 تخمینی لاگت:",
+    "hottestZones": "گرم ترین علاقے:",
+    "greenPriority": "سرسبزی کی ترجیح:",
+    "waterPriority": "پانی کی ترجیح:",
+    "areaNeeded": "درکار رقبہ:",
+    "estimatedCost": "تخمینی لاگت:",
     "hotZonesCBD": "مرکزی کاروباری ضلع، صنعتی زونز",
     "hotZonesResidential": "گنجان رہائشی علاقے، تجارتی راستے",
     "greenCritical": "نازک — 20% سے کم نباتات",
@@ -262,7 +262,7 @@
     "costNote": "(@ ₹3 لاکھ/ہیکٹر اوسط)"
   },
   "mlModel": {
-    "panelTitle": "🤖 رینڈم فاریسٹ ماڈل — {{cityName}}",
+    "panelTitle": "رینڈم فاریسٹ ماڈل — {{cityName}}",
     "r2Score": "R² اسکور",
     "testSet": "ٹیسٹ سیٹ",
     "mae": "MAE",
@@ -284,7 +284,7 @@
     "source": "ماخذ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ڈیٹا پائپ لائن — حقیقی ذرائع → BhaskarOps",
+    "panelTitle": "ڈیٹا پائپ لائن — حقیقی ذرائع → BhaskarOps",
     "steps": {
       "openMeteo": "لائیو سطحی/جلدی درجہ حرارت، بلندی (SRTM)، AQI (CAMS) — کوئی توثیق نہیں، مفت، ریئل ٹائم",
       "worldCover": "حقیقی Sentinel-1/2 درجہ بندی، عوامی AWS S3 — 36 نمائندہ شہروں کے لیے نباتات/تعمیر شدہ علاقہ/پانی کے حصے",
@@ -331,7 +331,7 @@
   "landCover": {
     "bareOther": "خالی مٹی / دیگر",
     "builtUp": "تعمیر شدہ علاقہ",
-    "panelTitle": "🌍 زمین کا استعمال / زمینی پوشش — {{cityName}}",
+    "panelTitle": "زمین کا استعمال / زمینی پوشش — {{cityName}}",
     "vegetation": "نباتات",
     "water": "پانی",
     "loading": "زمینی پوشش کا ڈیٹا لوڈ ہو رہا ہے…"

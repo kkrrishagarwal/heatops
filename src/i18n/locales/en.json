@@ -133,7 +133,7 @@
   "tooltips": {
     "clickToExplore": "Click to explore cities →",
     "clickStateForDetails": "Click a state on the map to view details.",
-    "clickCityToAnalyze": "👆 Click any city above to analyze",
+    "clickCityToAnalyze": "Click any city above to analyze",
     "clickStateForDetailsSub": "to explore cities and heat data"
   },
   "dayNight": {
@@ -167,9 +167,9 @@
     "warmer": "warmer"
   },
   "sliders": {
-    "urbanGreening": "🌳 Urban Greening (NDVI +0.3):",
-    "coolRoofs": "🏠 Cool Roofs (Albedo +0.2):",
-    "waterBodies": "💧 Water Bodies (NDWI +0.1):"
+    "urbanGreening": "Urban Greening (NDVI +0.3):",
+    "coolRoofs": "Cool Roofs (Albedo +0.2):",
+    "waterBodies": "Water Bodies (NDWI +0.1):"
   },
   "compareCities": {
     "selectPlaceholder": "Select city to compare...",
@@ -196,14 +196,14 @@
     "low": "LOW"
   },
   "progressTracker": {
-    "dataCollection": "✅ Data Collection (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ Live Surface Temperature",
-    "indexCalculation": "✅ Vegetation/Built-up Fractions (36 cities)",
-    "correlationAnalysis": "✅ Correlation Analysis",
-    "randomForestModel": "✅ Random Forest Model",
-    "interventionSimulation": "✅ Intervention Simulation",
-    "dashboardCreation": "✅ Dashboard Creation",
-    "reportSubmission": "🔲 Report Submission",
+    "dataCollection": "Data Collection (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "Live Surface Temperature",
+    "indexCalculation": "Vegetation/Built-up Fractions (36 cities)",
+    "correlationAnalysis": "Correlation Analysis",
+    "randomForestModel": "Random Forest Model",
+    "interventionSimulation": "Intervention Simulation",
+    "dashboardCreation": "Dashboard Creation",
+    "reportSubmission": "Report Submission",
     "stepsComplete": "{{done}}/{{total}} Steps Complete"
   },
   "cityList": {
@@ -225,10 +225,10 @@
     "totalLoginEvents": "Total Login Events",
     "citiesAnalyzed": "Cities Analyzed",
     "successRate": "Success Rate",
-    "hourlyLoginPattern": "📊 Hourly Login Pattern",
-    "dailyLoginTrend": "📈 Daily Login Trend (30 days)",
-    "topCitiesAnalyzed": "🏙️ Top 10 Cities Analyzed",
-    "recentLoginActivity": "📝 Recent Login Activity",
+    "hourlyLoginPattern": "Hourly Login Pattern",
+    "dailyLoginTrend": "Daily Login Trend (30 days)",
+    "topCitiesAnalyzed": "Top 10 Cities Analyzed",
+    "recentLoginActivity": "Recent Login Activity",
     "tableUser": "User",
     "tableEmail": "Email",
     "tableTime": "Time",
@@ -236,7 +236,7 @@
     "tableDuration": "Duration"
   },
   "physics": {
-    "panelTitle": "⚛️ Physics of UHI Interventions",
+    "panelTitle": "Physics of UHI Interventions",
     "where": "Where:",
     "cost": "Cost:",
     "items": {
@@ -247,11 +247,11 @@
   },
   "spatial": {
     "panelTitle": "WHERE to Intervene in {{cityName}}",
-    "hottestZones": "🔴 Hottest Zones:",
-    "greenPriority": "🌳 Green Priority:",
-    "waterPriority": "💧 Water Priority:",
-    "areaNeeded": "📏 Area needed:",
-    "estimatedCost": "💰 Estimated cost:",
+    "hottestZones": "Hottest Zones:",
+    "greenPriority": "Green Priority:",
+    "waterPriority": "Water Priority:",
+    "areaNeeded": "Area needed:",
+    "estimatedCost": "Estimated cost:",
     "hotZonesCBD": "Central Business District, Industrial zones",
     "hotZonesResidential": "Dense residential areas, Commercial corridors",
     "greenCritical": "CRITICAL — Less than 20% vegetation",
@@ -262,7 +262,7 @@
     "costNote": "(@ ₹3 lakh/hectare avg)"
   },
   "mlModel": {
-    "panelTitle": "🤖 Random Forest Model — {{cityName}}",
+    "panelTitle": "Random Forest Model — {{cityName}}",
     "r2Score": "R² Score",
     "testSet": "Test set",
     "mae": "MAE",
@@ -284,7 +284,7 @@
     "source": "Source:"
   },
   "geePipeline": {
-    "panelTitle": "📡 Data Pipeline — Real Sources → BhaskarOps",
+    "panelTitle": "Data Pipeline — Real Sources → BhaskarOps",
     "steps": {
       "openMeteo": "Live surface/skin temperature, elevation (SRTM), AQI (CAMS) — no auth, free, real-time",
       "worldCover": "Real Sentinel-1/2 classification, public AWS S3 — vegetation/built-up/water fractions for 36 representative cities",
@@ -331,7 +331,7 @@
   "landCover": {
     "bareOther": "Bare Soil / Other",
     "builtUp": "Built-up",
-    "panelTitle": "🌍 Land Use / Land Cover — {{cityName}}",
+    "panelTitle": "Land Use / Land Cover — {{cityName}}",
     "vegetation": "Vegetation",
     "water": "Water",
     "loading": "Loading land cover data…"

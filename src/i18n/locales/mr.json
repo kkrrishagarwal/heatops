@@ -133,7 +133,7 @@
   "tooltips": {
     "clickToExplore": "शहरे एक्सप्लोर करण्यासाठी क्लिक करा →",
     "clickStateForDetails": "तपशील पाहण्यासाठी मॅपवर एका राज्यावर क्लिक करा.",
-    "clickCityToAnalyze": "👆 विश्लेषणासाठी वरील कोणत्याही शहरावर क्लिक करा",
+    "clickCityToAnalyze": "विश्लेषणासाठी वरील कोणत्याही शहरावर क्लिक करा",
     "clickStateForDetailsSub": "शहरे आणि उष्णता डेटा एक्सप्लोर करण्यासाठी"
   },
   "dayNight": {
@@ -167,9 +167,9 @@
     "warmer": "अधिक उष्ण"
   },
   "sliders": {
-    "urbanGreening": "🌳 शहरी हरितीकरण (एनडीव्हीआय +0.3):",
-    "coolRoofs": "🏠 कूल रूफ (अल्बेडो +0.2):",
-    "waterBodies": "💧 जलसाठे (एनडीडब्ल्यूआय +0.1):"
+    "urbanGreening": "शहरी हरितीकरण (एनडीव्हीआय +0.3):",
+    "coolRoofs": "कूल रूफ (अल्बेडो +0.2):",
+    "waterBodies": "जलसाठे (एनडीडब्ल्यूआय +0.1):"
   },
   "compareCities": {
     "selectPlaceholder": "तुलनेसाठी शहर निवडा...",
@@ -196,14 +196,14 @@
     "low": "कमी"
   },
   "progressTracker": {
-    "dataCollection": "✅ डेटा संकलन (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ लाइव्ह पृष्ठभाग तापमान",
-    "indexCalculation": "✅ वनस्पती/बांधलेले क्षेत्र अंश (36 शहरे)",
-    "correlationAnalysis": "✅ सहसंबंध विश्लेषण",
-    "randomForestModel": "✅ रँडम फॉरेस्ट मॉडेल",
-    "interventionSimulation": "✅ हस्तक्षेप सिम्युलेशन",
-    "dashboardCreation": "✅ डॅशबोर्ड निर्मिती",
-    "reportSubmission": "🔲 अहवाल सादरीकरण",
+    "dataCollection": "डेटा संकलन (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "लाइव्ह पृष्ठभाग तापमान",
+    "indexCalculation": "वनस्पती/बांधलेले क्षेत्र अंश (36 शहरे)",
+    "correlationAnalysis": "सहसंबंध विश्लेषण",
+    "randomForestModel": "रँडम फॉरेस्ट मॉडेल",
+    "interventionSimulation": "हस्तक्षेप सिम्युलेशन",
+    "dashboardCreation": "डॅशबोर्ड निर्मिती",
+    "reportSubmission": "अहवाल सादरीकरण",
     "stepsComplete": "{{done}}/{{total}} पायऱ्या पूर्ण"
   },
   "cityList": {
@@ -225,10 +225,10 @@
     "totalLoginEvents": "एकूण लॉगिन इव्हेंट्स",
     "citiesAnalyzed": "विश्लेषित शहरे",
     "successRate": "यश दर",
-    "hourlyLoginPattern": "📊 तासाभराचा लॉगिन पॅटर्न",
-    "dailyLoginTrend": "📈 दैनिक लॉगिन कल (३० दिवस)",
-    "topCitiesAnalyzed": "🏙️ टॉप १० विश्लेषित शहरे",
-    "recentLoginActivity": "📝 अलीकडील लॉगिन क्रियाकलाप",
+    "hourlyLoginPattern": "तासाभराचा लॉगिन पॅटर्न",
+    "dailyLoginTrend": "दैनिक लॉगिन कल (३० दिवस)",
+    "topCitiesAnalyzed": "टॉप १० विश्लेषित शहरे",
+    "recentLoginActivity": "अलीकडील लॉगिन क्रियाकलाप",
     "tableUser": "वापरकर्ता",
     "tableEmail": "ईमेल",
     "tableTime": "वेळ",
@@ -236,7 +236,7 @@
     "tableDuration": "कालावधी"
   },
   "physics": {
-    "panelTitle": "⚛️ यूएचआय हस्तक्षेपांचे भौतिकशास्त्र",
+    "panelTitle": "यूएचआय हस्तक्षेपांचे भौतिकशास्त्र",
     "where": "कुठे:",
     "cost": "किंमत:",
     "items": {
@@ -247,11 +247,11 @@
   },
   "spatial": {
     "panelTitle": "{{cityName}} मध्ये कुठे हस्तक्षेप करावा",
-    "hottestZones": "🔴 सर्वात उष्ण क्षेत्रे:",
-    "greenPriority": "🌳 हरित प्राधान्य:",
-    "waterPriority": "💧 जल प्राधान्य:",
-    "areaNeeded": "📏 आवश्यक क्षेत्र:",
-    "estimatedCost": "💰 अंदाजित किंमत:",
+    "hottestZones": "सर्वात उष्ण क्षेत्रे:",
+    "greenPriority": "हरित प्राधान्य:",
+    "waterPriority": "जल प्राधान्य:",
+    "areaNeeded": "आवश्यक क्षेत्र:",
+    "estimatedCost": "अंदाजित किंमत:",
     "hotZonesCBD": "मध्यवर्ती व्यापार जिल्हा, औद्योगिक क्षेत्रे",
     "hotZonesResidential": "दाट निवासी क्षेत्रे, व्यावसायिक कॉरिडॉर",
     "greenCritical": "गंभीर — २०% पेक्षा कमी वनस्पती",
@@ -262,7 +262,7 @@
     "costNote": "(@ ₹3 लाख/हेक्टर सरासरी)"
   },
   "mlModel": {
-    "panelTitle": "🤖 रँडम फॉरेस्ट मॉडेल — {{cityName}}",
+    "panelTitle": "रँडम फॉरेस्ट मॉडेल — {{cityName}}",
     "r2Score": "R² स्कोअर",
     "testSet": "टेस्ट सेट",
     "mae": "एमएई",
@@ -284,7 +284,7 @@
     "source": "स्रोत:"
   },
   "geePipeline": {
-    "panelTitle": "📡 डेटा पाइपलाइन — वास्तविक स्रोत → BhaskarOps",
+    "panelTitle": "डेटा पाइपलाइन — वास्तविक स्रोत → BhaskarOps",
     "steps": {
       "openMeteo": "लाइव्ह पृष्ठभाग/त्वचा तापमान, उंची (SRTM), AQI (CAMS) — प्रमाणीकरण नाही, मुक्त, रिअल-टाइम",
       "worldCover": "वास्तविक Sentinel-1/2 वर्गीकरण, सार्वजनिक AWS S3 — 36 प्रतिनिधी शहरांसाठी वनस्पती/बांधलेले क्षेत्र/पाणी अंश",
@@ -331,7 +331,7 @@
   "landCover": {
     "bareOther": "उघडी माती / इतर",
     "builtUp": "बांधलेले क्षेत्र",
-    "panelTitle": "🌍 जमीन वापर / भूआच्छादन — {{cityName}}",
+    "panelTitle": "जमीन वापर / भूआच्छादन — {{cityName}}",
     "vegetation": "वनस्पती",
     "water": "पाणी",
     "loading": "भूआच्छादन डेटा लोड होत आहे…"

@@ -133,7 +133,7 @@
   "tooltips": {
     "clickToExplore": "ਸ਼ਹਿਰਾਂ ਨੂੰ ਦੇਖਣ ਲਈ ਕਲਿੱਕ ਕਰੋ →",
     "clickStateForDetails": "ਵੇਰਵੇ ਦੇਖਣ ਲਈ ਨਕਸ਼ੇ ਤੇ ਇੱਕ ਰਾਜ ਤੇ ਕਲਿੱਕ ਕਰੋ।",
-    "clickCityToAnalyze": "👆 ਵਿਸ਼ਲੇਸ਼ਣ ਲਈ ਉੱਪਰ ਕਿਸੇ ਵੀ ਸ਼ਹਿਰ ਤੇ ਕਲਿੱਕ ਕਰੋ",
+    "clickCityToAnalyze": "ਵਿਸ਼ਲੇਸ਼ਣ ਲਈ ਉੱਪਰ ਕਿਸੇ ਵੀ ਸ਼ਹਿਰ ਤੇ ਕਲਿੱਕ ਕਰੋ",
     "clickStateForDetailsSub": "ਸ਼ਹਿਰਾਂ ਅਤੇ ਤਾਪ ਡੇਟਾ ਨੂੰ ਖੋਜਣ ਲਈ"
   },
   "dayNight": {
@@ -167,9 +167,9 @@
     "warmer": "ਵਧੇਰੇ ਗਰਮ"
   },
   "sliders": {
-    "urbanGreening": "🌳 ਸ਼ਹਿਰੀ ਹਰਿਆਲੀ (NDVI +0.3):",
-    "coolRoofs": "🏠 ਕੂਲ ਰੂਫ (ਐਲਬੀਡੋ +0.2):",
-    "waterBodies": "💧 ਜਲ ਸਰੋਤ (NDWI +0.1):"
+    "urbanGreening": "ਸ਼ਹਿਰੀ ਹਰਿਆਲੀ (NDVI +0.3):",
+    "coolRoofs": "ਕੂਲ ਰੂਫ (ਐਲਬੀਡੋ +0.2):",
+    "waterBodies": "ਜਲ ਸਰੋਤ (NDWI +0.1):"
   },
   "compareCities": {
     "selectPlaceholder": "ਤੁਲਨਾ ਲਈ ਸ਼ਹਿਰ ਚੁਣੋ...",
@@ -196,14 +196,14 @@
     "low": "ਘੱਟ"
   },
   "progressTracker": {
-    "dataCollection": "✅ ਡੇਟਾ ਇਕੱਠਾ ਕਰਨਾ (Open-Meteo + ESA WorldCover)",
-    "lstCalculation": "✅ ਲਾਈਵ ਸਤਹ ਤਾਪਮਾਨ",
-    "indexCalculation": "✅ ਬਨਸਪਤੀ/ਬਣਿਆ ਹੋਇਆ ਖੇਤਰ ਅੰਸ਼ (36 ਸ਼ਹਿਰ)",
-    "correlationAnalysis": "✅ ਸਬੰਧ ਵਿਸ਼ਲੇਸ਼ਣ",
-    "randomForestModel": "✅ ਰੈਂਡਮ ਫੌਰੈਸਟ ਮਾਡਲ",
-    "interventionSimulation": "✅ ਦਖਲਅੰਦਾਜ਼ੀ ਸਿਮੂਲੇਸ਼ਨ",
-    "dashboardCreation": "✅ ਡੈਸ਼ਬੋਰਡ ਨਿਰਮਾਣ",
-    "reportSubmission": "🔲 ਰਿਪੋਰਟ ਜਮ੍ਹਾਂ",
+    "dataCollection": "ਡੇਟਾ ਇਕੱਠਾ ਕਰਨਾ (Open-Meteo + ESA WorldCover)",
+    "lstCalculation": "ਲਾਈਵ ਸਤਹ ਤਾਪਮਾਨ",
+    "indexCalculation": "ਬਨਸਪਤੀ/ਬਣਿਆ ਹੋਇਆ ਖੇਤਰ ਅੰਸ਼ (36 ਸ਼ਹਿਰ)",
+    "correlationAnalysis": "ਸਬੰਧ ਵਿਸ਼ਲੇਸ਼ਣ",
+    "randomForestModel": "ਰੈਂਡਮ ਫੌਰੈਸਟ ਮਾਡਲ",
+    "interventionSimulation": "ਦਖਲਅੰਦਾਜ਼ੀ ਸਿਮੂਲੇਸ਼ਨ",
+    "dashboardCreation": "ਡੈਸ਼ਬੋਰਡ ਨਿਰਮਾਣ",
+    "reportSubmission": "ਰਿਪੋਰਟ ਜਮ੍ਹਾਂ",
     "stepsComplete": "{{done}}/{{total}} ਪੜਾਅ ਪੂਰੇ"
   },
   "cityList": {
@@ -225,10 +225,10 @@
     "totalLoginEvents": "ਕੁੱਲ ਲੌਗਇਨ ਘਟਨਾਵਾਂ",
     "citiesAnalyzed": "ਵਿਸ਼ਲੇਸ਼ਣ ਕੀਤੇ ਸ਼ਹਿਰ",
     "successRate": "ਸਫਲਤਾ ਦਰ",
-    "hourlyLoginPattern": "📊 ਘੰਟਾਵਾਰ ਲੌਗਇਨ ਪੈਟਰਨ",
-    "dailyLoginTrend": "📈 ਰੋਜ਼ਾਨਾ ਲੌਗਇਨ ਰੁਝਾਨ (30 ਦਿਨ)",
-    "topCitiesAnalyzed": "🏙️ ਚੋਟੀ ਦੇ 10 ਵਿਸ਼ਲੇਸ਼ਣ ਕੀਤੇ ਸ਼ਹਿਰ",
-    "recentLoginActivity": "📝 ਹਾਲ ਦੀ ਲੌਗਇਨ ਗਤੀਵਿਧੀ",
+    "hourlyLoginPattern": "ਘੰਟਾਵਾਰ ਲੌਗਇਨ ਪੈਟਰਨ",
+    "dailyLoginTrend": "ਰੋਜ਼ਾਨਾ ਲੌਗਇਨ ਰੁਝਾਨ (30 ਦਿਨ)",
+    "topCitiesAnalyzed": "ਚੋਟੀ ਦੇ 10 ਵਿਸ਼ਲੇਸ਼ਣ ਕੀਤੇ ਸ਼ਹਿਰ",
+    "recentLoginActivity": "ਹਾਲ ਦੀ ਲੌਗਇਨ ਗਤੀਵਿਧੀ",
     "tableUser": "ਵਰਤੋਂਕਾਰ",
     "tableEmail": "ਈਮੇਲ",
     "tableTime": "ਸਮਾਂ",
@@ -236,7 +236,7 @@
     "tableDuration": "ਅਵਧੀ"
   },
   "physics": {
-    "panelTitle": "⚛️ UHI ਦਖਲਅੰਦਾਜ਼ੀ ਦਾ ਭੌਤਿਕ ਵਿਗਿਆਨ",
+    "panelTitle": "UHI ਦਖਲਅੰਦਾਜ਼ੀ ਦਾ ਭੌਤਿਕ ਵਿਗਿਆਨ",
     "where": "ਕਿੱਥੇ:",
     "cost": "ਲਾਗਤ:",
     "items": {
@@ -247,11 +247,11 @@
   },
   "spatial": {
     "panelTitle": "{{cityName}} ਵਿੱਚ ਕਿੱਥੇ ਦਖਲ ਦੇਣਾ ਹੈ",
-    "hottestZones": "🔴 ਸਭ ਤੋਂ ਗਰਮ ਖੇਤਰ:",
-    "greenPriority": "🌳 ਹਰਿਆਲੀ ਤਰਜੀਹ:",
-    "waterPriority": "💧 ਪਾਣੀ ਤਰਜੀਹ:",
-    "areaNeeded": "📏 ਲੋੜੀਂਦਾ ਖੇਤਰ:",
-    "estimatedCost": "💰 ਅੰਦਾਜ਼ਨ ਲਾਗਤ:",
+    "hottestZones": "ਸਭ ਤੋਂ ਗਰਮ ਖੇਤਰ:",
+    "greenPriority": "ਹਰਿਆਲੀ ਤਰਜੀਹ:",
+    "waterPriority": "ਪਾਣੀ ਤਰਜੀਹ:",
+    "areaNeeded": "ਲੋੜੀਂਦਾ ਖੇਤਰ:",
+    "estimatedCost": "ਅੰਦਾਜ਼ਨ ਲਾਗਤ:",
     "hotZonesCBD": "ਕੇਂਦਰੀ ਵਪਾਰ ਜ਼ਿਲ੍ਹਾ, ਉਦਯੋਗਿਕ ਖੇਤਰ",
     "hotZonesResidential": "ਸੰਘਣੇ ਰਿਹਾਇਸ਼ੀ ਖੇਤਰ, ਵਪਾਰਕ ਕੋਰੀਡੋਰ",
     "greenCritical": "ਗੰਭੀਰ — 20% ਤੋਂ ਘੱਟ ਬਨਸਪਤੀ",
@@ -262,7 +262,7 @@
     "costNote": "(@ ₹3 ਲੱਖ/ਹੈਕਟੇਅਰ ਔਸਤ)"
   },
   "mlModel": {
-    "panelTitle": "🤖 ਰੈਂਡਮ ਫੌਰੈਸਟ ਮਾਡਲ — {{cityName}}",
+    "panelTitle": "ਰੈਂਡਮ ਫੌਰੈਸਟ ਮਾਡਲ — {{cityName}}",
     "r2Score": "R² ਸਕੋਰ",
     "testSet": "ਟੈਸਟ ਸੈੱਟ",
     "mae": "MAE",
@@ -284,7 +284,7 @@
     "source": "ਸਰੋਤ:"
   },
   "geePipeline": {
-    "panelTitle": "📡 ਡੇਟਾ ਪਾਈਪਲਾਈਨ — ਅਸਲ ਸਰੋਤ → BhaskarOps",
+    "panelTitle": "ਡੇਟਾ ਪਾਈਪਲਾਈਨ — ਅਸਲ ਸਰੋਤ → BhaskarOps",
     "steps": {
       "openMeteo": "ਲਾਈਵ ਸਤਹ/ਚਮੜੀ ਤਾਪਮਾਨ, ਉਚਾਈ (SRTM), AQI (CAMS) — ਕੋਈ ਪ੍ਰਮਾਣੀਕਰਨ ਨਹੀਂ, ਮੁਫ਼ਤ, ਰੀਅਲ-ਟਾਈਮ",
       "worldCover": "ਅਸਲ Sentinel-1/2 ਵਰਗੀਕਰਨ, ਜਨਤਕ AWS S3 — 36 ਪ੍ਰਤੀਨਿਧ ਸ਼ਹਿਰਾਂ ਲਈ ਬਨਸਪਤੀ/ਬਣਿਆ ਹੋਇਆ ਖੇਤਰ/ਪਾਣੀ ਅੰਸ਼",
@@ -331,7 +331,7 @@
   "landCover": {
     "bareOther": "ਖਾਲੀ ਮਿੱਟੀ / ਹੋਰ",
     "builtUp": "ਬਣਿਆ ਹੋਇਆ ਖੇਤਰ",
-    "panelTitle": "🌍 ਜ਼ਮੀਨ ਵਰਤੋਂ / ਜ਼ਮੀਨੀ ਢੱਕਣ — {{cityName}}",
+    "panelTitle": "ਜ਼ਮੀਨ ਵਰਤੋਂ / ਜ਼ਮੀਨੀ ਢੱਕਣ — {{cityName}}",
     "vegetation": "ਬਨਸਪਤੀ",
     "water": "ਪਾਣੀ",
     "loading": "ਜ਼ਮੀਨੀ ਢੱਕਣ ਡੇਟਾ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…"
