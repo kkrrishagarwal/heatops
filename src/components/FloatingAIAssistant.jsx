@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Bot } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AIAnalystPanel } from './AIAnalystPanel'
 
@@ -59,7 +60,7 @@ export function FloatingAIAssistant({
           transition: 'box-shadow 0.2s'
         }}
       >
-        🤖
+        <Bot size={26} strokeWidth={2} color="#d97706" aria-hidden="true" />
       </button>
 
       <div
@@ -93,7 +94,7 @@ export function FloatingAIAssistant({
         }}>
           <div>
             <h3 style={{ margin: 0, color: '#fff', fontSize: 15 }}>
-              🤖 {t('panels.aiAnalyst', 'AGNI')}
+              <Bot size={15} strokeWidth={2} style={{ verticalAlign: '-2px', marginRight: 6, color: '#d97706' }} aria-hidden="true" /> {t('panels.aiAnalyst', 'AGNI')}
             </h3>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
               {t('panels.aiAnalystFullName', 'Analytical Ground-level heat iNtelligence Interface')}

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import PanelIcon from './PanelIcon'
 import { useTranslation } from 'react-i18next'
 
 // Authority-only operational checklist, modelled on Indian Heat Action Plan (HAP)
@@ -81,7 +82,7 @@ export default function HeatActionChecklist({ city, state, risk, temp, onOpenInt
 
   return (
     <section className="panel" data-panel="CHECKLIST" data-checklist-tier={tier} style={accent ? { borderLeft: `4px solid ${accent}` } : undefined}>
-      <h3>{tier === 'cold' ? '🧊' : '📋'} {title}</h3>
+      <h3><PanelIcon name={tier === 'cold' ? 'snowflake' : 'clipboard-list'} /> {title}</h3>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: steps.length ? 10 : 0 }}>
         <span data-testid="checklist-status" style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: statusPill.color, border: `1px solid ${statusPill.border}`, background: statusPill.bg, borderRadius: 999, padding: '3px 10px' }}>
           {statusPill.text}{typeof temp === 'number' ? ` · ${temp}°C` : ''}

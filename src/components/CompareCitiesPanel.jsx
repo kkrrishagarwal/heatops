@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import PanelIcon from './PanelIcon'
 import { useTranslation } from 'react-i18next'
 import {
   RadarChart,
@@ -194,7 +195,7 @@ export function CompareCitiesPanel({ selectedCity, selectedState, liveWeather, a
 
   return (
     <section className="panel">
-      <h3>🌍 {t('panels.cityComparison', 'COMPARE CITIES')}</h3>
+      <h3><PanelIcon name="globe" /> {t('panels.cityComparison', 'COMPARE CITIES')}</h3>
       <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: -4, marginBottom: 14 }}>
         {t('compareCities.subtitle', `Comparing against ${selectedCity || 'the selected city'} — search and add up to ${MAX_COMPARE} more cities.`, { city: selectedCity || t('compareCities.theSelectedCity', 'the selected city'), max: MAX_COMPARE })}
       </p>

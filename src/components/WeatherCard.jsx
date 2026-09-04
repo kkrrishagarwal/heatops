@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import PanelIcon from './PanelIcon'
 import { useTranslation } from 'react-i18next'
 import { useWeather } from '../hooks/useWeather'
 import { getISTDateTime } from '../utils/istClock'
@@ -83,13 +84,13 @@ export function WeatherCard({ city, state, onClose, simpleAqi = false }) {
             {weather.current.condition?.icon ?? '🗂️'} {weather.city}, {weather.state}
           </h3>
           <div style={styles.coords}>
-            📍 {has(weather.lat) && has(weather.lon)
+            <PanelIcon name="map-pin" size={11} color="currentColor" style={{ verticalAlign: '-1px', marginRight: 4 }} /> {has(weather.lat) && has(weather.lon)
               ? `${weather.lat.toFixed(2)}°N ${Math.abs(weather.lon).toFixed(2)}°E`
               : t('weatherCard.coordsUnavailable', 'coordinates unavailable')}
           </div>
           {weather.isFallbackLocation && (
             <div style={styles.fallbackBadge}>
-              📍 {t('weatherCard.fallbackLocation', 'Live weather not available for {{city}} specifically — showing {{fallbackCity}}, {{state}}\'s nearest available real data point, as an estimate.', { city, fallbackCity: weather.fallbackCityUsed, state: weather.state })}
+              <PanelIcon name="map-pin" size={11} color="currentColor" style={{ verticalAlign: '-1px', marginRight: 4 }} /> {t('weatherCard.fallbackLocation', 'Live weather not available for {{city}} specifically — showing {{fallbackCity}}, {{state}}\'s nearest available real data point, as an estimate.', { city, fallbackCity: weather.fallbackCityUsed, state: weather.state })}
             </div>
           )}
           {isStale && (
@@ -105,10 +106,10 @@ export function WeatherCard({ city, state, onClose, simpleAqi = false }) {
       {/* IST Clock */}
       <div style={styles.clockSection}>
         <div style={styles.timeDisplay}>
-          {istTime.timeEmoji} {istTime.timeString}
+          <PanelIcon name={istTime.timeEmoji === '🌙' ? 'moon' : 'sun'} size={16} color="currentColor" style={{ verticalAlign: '-2px', marginRight: 6 }} /> {istTime.timeString}
         </div>
         <div style={styles.dateDisplay}>
-          📅 {istTime.dateString}
+          <PanelIcon name="calendar" size={12} color="currentColor" style={{ verticalAlign: '-2px', marginRight: 6 }} /> {istTime.dateString}
         </div>
         <div style={styles.tzDisplay}>
           IST (UTC+5:30) • {istTime.timeOfDay}
@@ -139,19 +140,19 @@ export function WeatherCard({ city, state, onClose, simpleAqi = false }) {
       <div style={styles.statsGrid}>
         {partial ? (
           <>
-            {has(weather.current.cloudCover) && <StatBox icon="☁️" label={t('weatherCard.cloudCover', 'Cloud Cover')} value={`${weather.current.cloudCover}%`} />}
-            {has(weather.current.rainChance) && <StatBox icon="🌧️" label={t('weatherCard.rainChance', 'Rain chance')} value={`${weather.current.rainChance}%`} />}
+            {has(weather.current.cloudCover) && <StatBox icon="cloud" label={t('weatherCard.cloudCover', 'Cloud Cover')} value={`${weather.current.cloudCover}%`} />}
+            {has(weather.current.rainChance) && <StatBox icon="cloud-rain" label={t('weatherCard.rainChance', 'Rain chance')} value={`${weather.current.rainChance}%`} />}
           </>
         ) : (
           <>
-        <StatBox icon="💧" label={t('weatherCard.humidity', 'Humidity')} value={`${weather.current.humidity}%`} />
-        <StatBox icon="💨" label={t('weatherCard.wind', 'Wind')} value={`${weather.current.windSpeed} km/h ${weather.current.windDirection}`} />
-        <StatBox icon="🌡️" label={t('weatherCard.pressure', 'Pressure')} value={`${weather.current.pressure} hPa`} />
-        <StatBox icon="👁️" label={t('weatherCard.visibility', 'Visibility')} value={`${weather.current.visibility} km`} />
-        <StatBox icon="☀️" label={t('weatherCard.uvIndex', 'UV Index')} value={weather.current.uvIndex} />
-        <StatBox icon="☁️" label={t('weatherCard.cloudCover', 'Cloud Cover')} value={`${weather.current.cloudCover}%`} />
-        <StatBox icon="🌅" label={t('weatherCard.sunrise', 'Sunrise')} value={weather.today?.sunrise} />
-        <StatBox icon="🌇" label={t('weatherCard.sunset', 'Sunset')} value={weather.today?.sunset} />
+        <StatBox icon="droplets" label={t('weatherCard.humidity', 'Humidity')} value={`${weather.current.humidity}%`} />
+        <StatBox icon="wind" label={t('weatherCard.wind', 'Wind')} value={`${weather.current.windSpeed} km/h ${weather.current.windDirection}`} />
+        <StatBox icon="gauge" label={t('weatherCard.pressure', 'Pressure')} value={`${weather.current.pressure} hPa`} />
+        <StatBox icon="eye" label={t('weatherCard.visibility', 'Visibility')} value={`${weather.current.visibility} km`} />
+        <StatBox icon="sun" label={t('weatherCard.uvIndex', 'UV Index')} value={weather.current.uvIndex} />
+        <StatBox icon="cloud" label={t('weatherCard.cloudCover', 'Cloud Cover')} value={`${weather.current.cloudCover}%`} />
+        <StatBox icon="sunrise" label={t('weatherCard.sunrise', 'Sunrise')} value={weather.today?.sunrise} />
+        <StatBox icon="sunset" label={t('weatherCard.sunset', 'Sunset')} value={weather.today?.sunset} />
           </>
         )}
       </div>
@@ -160,7 +161,7 @@ export function WeatherCard({ city, state, onClose, simpleAqi = false }) {
       {weather.aqi && (
       <div style={styles.section}>
         <div style={styles.sectionTitle}>
-          🌍 {t('weatherCard.aqiTitle', 'Air Quality Index (AQI)')}
+          <PanelIcon name="activity" size={13} color="currentColor" style={{ verticalAlign: '-2px', marginRight: 6 }} /> {t('weatherCard.aqiTitle', 'Air Quality Index (AQI)')}
         </div>
         <div style={styles.aqiContainer}>
           <div style={{ ...styles.aqiValue, color: weather.aqi.category.color }}>
@@ -211,7 +212,7 @@ export function WeatherCard({ city, state, onClose, simpleAqi = false }) {
                 <span style={styles.tempMax}>{day.maxTemp}°</span>
                 <span style={styles.tempMin}>{day.minTemp}°</span>
               </div>
-              <div style={styles.forecastRain}>💧 {day.rainChance}%</div>
+              <div style={styles.forecastRain}><PanelIcon name="droplets" size={10} color="currentColor" style={{ verticalAlign: '-1px', marginRight: 3 }} />{day.rainChance}%</div>
             </div>
           ))}
         </div>
@@ -239,7 +240,7 @@ export function WeatherCard({ city, state, onClose, simpleAqi = false }) {
 
       {/* Footer */}
       <div style={styles.footer}>
-        📡 {partial
+        {partial
           ? t('weatherCard.dataSourceBulk', 'Data: BhaskarOps daily cache (Open-Meteo) — partial reading')
           : t('weatherCard.dataSource', 'Data: Open-Meteo.com (WMO • ERA5 reanalysis)')} • {isStale
           ? t('weatherCard.cachedFooter', 'Cached {{age}}', { age: formatCacheAge(cachedAt, t) })
@@ -253,7 +254,7 @@ export function WeatherCard({ city, state, onClose, simpleAqi = false }) {
 function StatBox({ icon, label, value }) {
   return (
     <div style={styles.statBox}>
-      <div style={styles.statIcon}>{icon}</div>
+      <div style={styles.statIcon}>{typeof icon === 'string' && /^[a-z-]+$/.test(icon) ? <PanelIcon name={icon} size={16} style={{ marginRight: 0, verticalAlign: 'middle' }} /> : icon}</div>
       <div style={styles.statLabel}>{label}</div>
       <div style={styles.statValue}>{value}</div>
     </div>

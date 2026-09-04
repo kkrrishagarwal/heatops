@@ -28,6 +28,7 @@ import { fetchJson, describeFetchError } from './utils/fetchJson'
 import { setBulkWeatherCache, getBulkWeatherLastUpdated, normaliseBulkCities } from './utils/bulkWeatherCache'
 import { refreshStateLive, getStateRefreshedAt } from './utils/stateLiveRefresh'
 import { useLiteMode } from './utils/liteMode'
+import PanelIcon from './components/PanelIcon'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
@@ -1952,7 +1953,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
             cursor: 'pointer'
           }}
         >
-          🎨 Legend
+          <PanelIcon name="palette" size={13} color="currentColor" /> Legend
         </button>
       ) : (
       <div
@@ -4049,7 +4050,7 @@ function App({ user }) {
                 />
 
                 <div className="hottest-section">
-                  <h4>🔥 {t('panels.hottestCities', 'Hottest Cities')}</h4>
+                  <h4><PanelIcon name="flame" /> {t('panels.hottestCities', 'Hottest Cities')}</h4>
                   <CacheStatusNote status={liveCacheStatus} lastUpdated={cacheLastUpdated} isStale={isCacheStale} formatAgo={formatAgo} onRetry={retryLiveCache} marginBottom={4} />
                   <ul>
                     {liveLeaderBase.map((item, i) => (
@@ -4061,7 +4062,7 @@ function App({ user }) {
                 </div>
 
                 <div className="legend-section">
-                  <h4>🌡️ Heat Legend</h4>
+                  <h4><PanelIcon name="thermometer" size={13} /> Heat Legend</h4>
                   <div className="legend-item">
                     <span className="legend-dot" style={{background:'#b91c1c'}}/>Extreme {'>44°C'}
                   </div>
@@ -4077,7 +4078,7 @@ function App({ user }) {
                 </div>
 
                 <div className="history-section" style={{marginTop:20, padding:16, border:'1px solid rgba(148,163,184,0.15)', borderRadius:12, background:'rgba(0,0,0,0.35)'}}>
-                  <h4 style={{marginBottom:10, color:'#d97706'}}>🧾 Recent Sign-ins</h4>
+                  <h4 style={{marginBottom:10, color:'#d97706'}}><PanelIcon name="clock" size={13} color="currentColor" /> Recent Sign-ins</h4>
                   {loginHistory.length > 0 ? (
                     <ul style={{listStyle:'none', padding:0, margin:0, display:'grid', gap:8}}>
                       {loginHistory.map((entry, idx) => (
@@ -4118,14 +4119,14 @@ function App({ user }) {
                   padding: 16
                 }}>
                   <h4 style={{ color: '#d97706', borderLeft: '2px solid #d97706', paddingLeft: 8, marginBottom: 10, marginTop: 0 }}>
-                    📊 {t('nationalSummary.title', "Today's National Heat Summary")}
+                    <PanelIcon name="bar-chart" /> {t('nationalSummary.title', "Today's National Heat Summary")}
                   </h4>
                   <CacheStatusNote status={liveCacheStatus} lastUpdated={cacheLastUpdated} isStale={isCacheStale} formatAgo={formatAgo} onRetry={retryLiveCache} marginBottom={10} liveText={t('nationalSummary.live', 'Live')} />
 
                   <div style={{ display: 'grid', gap: 10 }}>
                     <div style={{ background: 'rgba(184,16,16,0.1)', border: '1px solid rgba(184,16,16,0.3)', borderRadius: 8, padding: 12 }}>
                       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
-                        🔥 {t('nationalSummary.hottestNow', 'Hottest city right now')}
+                        <PanelIcon name="flame" size={12} color="currentColor" /> {t('nationalSummary.hottestNow', 'Hottest city right now')}
                       </div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: '#ff6b6b' }}>
                         {liveLeaderBase[0]?.city}, {liveLeaderBase[0]?.state}
@@ -4135,7 +4136,7 @@ function App({ user }) {
 
                     <div style={{ background: 'rgba(187,82,0,0.1)', border: '1px solid rgba(187,82,0,0.3)', borderRadius: 8, padding: 12 }}>
                       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
-                        🌡️ {t('nationalSummary.extremeStates', 'States in Extreme/High risk category')}
+                        <PanelIcon name="thermometer" size={12} color="currentColor" /> {t('nationalSummary.extremeStates', 'States in Extreme/High risk category')}
                       </div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: '#ffaa66' }}>
                         {extremeOrHighRiskStateCount} / {Object.keys(STATE_DATA).length}
@@ -4144,7 +4145,7 @@ function App({ user }) {
 
                     <div style={{ background: 'rgba(217,119,6,0.08)', border: '1px solid rgba(217,119,6,0.3)', borderRadius: 8, padding: 12 }}>
                       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
-                        🇮🇳 {t('nationalSummary.avgTemp', 'Average national temperature')}
+                        <PanelIcon name="gauge" size={12} color="currentColor" /> {t('nationalSummary.avgTemp', 'Average national temperature')}
                       </div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: '#d97706' }}>
                         {nationalAvgTemp.toFixed(1)}°C
@@ -4155,7 +4156,7 @@ function App({ user }) {
 
                 <div style={{ marginTop: 14 }}>
                   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 8, paddingLeft: 2 }}>
-                    ⚡ {t('nationalSummary.quickPicks', 'Quick Picks')}
+                    <PanelIcon name="zap" /> {t('nationalSummary.quickPicks', 'Quick Picks')}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {QUICK_PICK_CITIES.map(qp => (
@@ -4465,7 +4466,7 @@ function App({ user }) {
                     The old static/estimated Temperature/Humidity/Wind/AQI cards (Landsat/ERA5/CPCB-labeled
                     placeholder values) have been removed entirely per data-accuracy fix. */}
                 <section className="panel" data-panel="A">
-                  <h3>🌡️ {t('panels.weatherConditions', 'WEATHER CONDITIONS')}</h3>
+                  <h3><PanelIcon name="thermometer" /> {t('panels.weatherConditions', 'WEATHER CONDITIONS')}</h3>
                   <WeatherCard city={selectedCity} state={selectedState} onClose={() => {}} simpleAqi={citizen} />
                   {/* Year-over-year comparison — additive stat, derived from existing 10-year trend data */}
                   {(() => {
@@ -4496,7 +4497,7 @@ function App({ user }) {
 
                 {/* PANEL G: Day vs Night */}
                 <section className="panel" data-panel="G">
-                  <h3>📊 {t('panels.dayNightTemp', 'DAY vs NIGHT TEMPERATURE')}</h3>
+                  <h3><PanelIcon name="sun-moon" /> {t('panels.dayNightTemp', 'DAY vs NIGHT TEMPERATURE')}</h3>
                   <div className="comparison-bar">
                     <div className="bar-item">
                       <span>{t('dayNight.day', 'Day (12 PM)')}</span>
@@ -4518,7 +4519,7 @@ function App({ user }) {
                     seeded; see the Random Forest panel disclosure for the same standard
                     applied to the ML model. */}
                 <section className="panel" data-panel="B">
-                  <h3>🔥 {t('panels.satelliteIndices', 'SATELLITE INDICES')}</h3>
+                  <h3><PanelIcon name="satellite" /> {t('panels.satelliteIndices', 'SATELLITE INDICES')}</h3>
                   <div className="indices-grid">
                     <div className="index-card">
                       <span>{t('satelliteIndices.surfaceTempLive', 'Surface Temp (live)')}</span>
@@ -4611,7 +4612,7 @@ function App({ user }) {
 
                 {/* PANEL D: Heat Risk Gauge */}
                 <section className="panel" data-panel="D">
-                  <h3>⚠️ {t('panels.heatRiskGauge', 'HEAT RISK GAUGE')}</h3>
+                  <h3><PanelIcon name="gauge" /> {t('panels.heatRiskGauge', 'HEAT RISK GAUGE')}</h3>
                   <div className="gauge-container">
                     <svg width="200" height="120" viewBox="0 0 200 120">
                       {GAUGE_SEGMENTS.map((seg) => {
@@ -4665,7 +4666,7 @@ function App({ user }) {
 
                 {/* PANEL K: Alerts */}
                 <section className="panel" data-panel="K">
-                  <h3>🚨 {t('panels.activeAlerts', 'ACTIVE ALERTS')} ({alerts.length})</h3>
+                  <h3><PanelIcon name="siren" /> {t('panels.activeAlerts', 'ACTIVE ALERTS')} ({alerts.length})</h3>
                   <div className="alerts-list">
                     {alerts.map(alert => (
                       <div key={alert.id} className="alert-item" style={{borderLeftColor: alert.color}}>
@@ -4700,7 +4701,7 @@ function App({ user }) {
                   const info = getPrecautionInfo(precautionTemp, precautionAqi)
                   return (
                     <section className="panel" data-panel="S" style={info ? { borderLeft: `4px solid ${info.color}` } : undefined}>
-                      <h3>🩺 {t('panels.healthSafety', 'HEALTH & SAFETY PRECAUTIONS')}</h3>
+                      <h3><PanelIcon name="stethoscope" /> {t('panels.healthSafety', 'HEALTH & SAFETY PRECAUTIONS')}</h3>
                       {info ? (
                         <>
                           <div style={{ fontSize: 11, fontWeight: 700, color: info.color, marginBottom: 10, letterSpacing: '0.05em' }}>
@@ -4796,7 +4797,7 @@ function App({ user }) {
                   const accent = tier === 'urgent' ? '#dc2626' : tier === 'cold' ? '#2563eb' : null
                   return (
                     <section className="panel" data-panel="HELP" data-help-tier={tier} style={accent ? { borderLeft: `4px solid ${accent}` } : undefined}>
-                      <h3>{tier === 'cold' ? '🧣' : '🤝'} {t('citizen.help.title', 'How you can help your neighbourhood')}</h3>
+                      <h3><PanelIcon name={tier === 'cold' ? 'snowflake' : 'heart-handshake'} /> {t('citizen.help.title', 'How you can help your neighbourhood')}</h3>
                       {urgent && (
                         <div style={{ fontSize: 12, color: '#dc2626', fontWeight: 700, marginBottom: 8 }}>
                           {t('citizen.help.urgentNote', '{{risk}} heat risk today — the first step matters most.', { risk })}
@@ -4833,7 +4834,7 @@ function App({ user }) {
                 {/* Citizen "What to do": a simple AGNI box next to the safety precautions */}
                 {citizen && activeTab === 'What to do' && (
                   <section className="panel" data-panel="AGNI-citizen">
-                    <h3>🤖 {t('panels.askAgni', 'ASK AGNI — is it safe today?')}</h3>
+                    <h3><PanelIcon name="bot" /> {t('panels.askAgni', 'ASK AGNI — is it safe today?')}</h3>
                     <AIAnalystPanel
                         cityName={selectedCity}
                         ensoPhase={ensoPhase}
@@ -4856,7 +4857,7 @@ function App({ user }) {
 
                 {/* PANEL J: Climate Oscillations */}
                 <section className="panel" data-panel="J">
-                  <h3>🌐 {t('panels.climateOscillations', 'GLOBAL CLIMATE SYSTEMS')}</h3>
+                  <h3><PanelIcon name="globe" /> {t('panels.climateOscillations', 'GLOBAL CLIMATE SYSTEMS')}</h3>
                   <div className="climate-grid">
                     <div className="climate-card">
                       <strong>{t('climate.enso', 'ENSO')}:</strong> {t(`climate.values.${ensoPhase}`, ensoPhase)}
@@ -4887,7 +4888,7 @@ function App({ user }) {
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 {/* PANEL E: Heatmap Grid with Dynamic Updates */}
                 <section className="panel">
-                  <h3>🔥 {t('panels.heatmapGrid', 'TEMPERATURE HEATMAP GRID')}</h3>
+                  <h3><PanelIcon name="flame" /> {t('panels.heatmapGrid', 'TEMPERATURE HEATMAP GRID')}</h3>
                   {showGridUpdatedBadge && (
                     <div
                       data-testid="grid-updated-badge"
@@ -4944,7 +4945,7 @@ function App({ user }) {
 
                 {/* PANEL M: Urban Morphology (OpenStreetMap, live, real) */}
                 <section className="panel">
-                  <h3>🏙️ {t('panels.urbanMorphology', 'URBAN MORPHOLOGY')}</h3>
+                  <h3><PanelIcon name="building" /> {t('panels.urbanMorphology', 'URBAN MORPHOLOGY')}</h3>
                   {osmStatus === 'loading' ? (
                     <div style={{fontSize: 11, color: 'rgba(255,255,255,0.5)'}}>{t('osm.loading', 'Querying OpenStreetMap…')}</div>
                   ) : osmStatus === 'error' || !osmDensity ? (
@@ -4970,7 +4971,7 @@ function App({ user }) {
 
                 {/* PANEL H: Historical Trend */}
                 <section className="panel">
-                  <h3>📈 {t('panels.historicalTrend', '10-YEAR TREND (2015-2025)')}</h3>
+                  <h3><PanelIcon name="trending-up" /> {t('panels.historicalTrend', '10-YEAR TREND (2015-2025)')}</h3>
                   {(() => {
                     const histData = getHistoricalData(selectedCity, cityData)
                     const urban2015 = histData[0].urban
@@ -4993,7 +4994,7 @@ function App({ user }) {
                 {/* Historical Heatwave Timeline — additive card, derived from the same
                     seeded 10-year urban LST trend used above (getHeatwaveEvents) */}
                 <section className="panel">
-                  <h3>🔥 {t('panels.heatwaveTimeline', 'HISTORICAL HEATWAVE TIMELINE')}</h3>
+                  <h3><PanelIcon name="history" /> {t('panels.heatwaveTimeline', 'HISTORICAL HEATWAVE TIMELINE')}</h3>
                   {(() => {
                     const events = getHeatwaveEvents(selectedCity, cityData)
                     if (events.length === 0) {
@@ -5073,7 +5074,7 @@ function App({ user }) {
                   const applied = gap != null && Math.abs(treeSlider - recTree) < 0.005 && Math.abs(roofSlider - recRoof) < 0.005
                   return (
                     <section className="panel" data-testid="recommended-plan" style={{ borderLeft: `4px solid ${gap === 0 ? '#22c55e' : '#d97706'}` }}>
-                      <h3>🎯 {t('plan.title', 'RECOMMENDED PLAN FOR {{city}}', { city: (selectedCity || '').toUpperCase() })}</h3>
+                      <h3><PanelIcon name="target" /> {t('plan.title', 'RECOMMENDED PLAN FOR {{city}}', { city: (selectedCity || '').toUpperCase() })}</h3>
                       {green == null ? (
                         <div style={{ fontSize: 12, color: '#94a3b8' }}>{t('plan.noLulc', 'No land-cover classification available for this city yet, so no target can be computed.')}</div>
                       ) : (
@@ -5116,7 +5117,7 @@ function App({ user }) {
 
                 {/* PANEL F: Intervention Sliders (kept — duplicate "Cooling Interventions" panel removed) */}
                 <section className="panel">
-                  <h3>🎛️ {t('panels.interventionSliders', 'UHI INTERVENTIONS (Real-time cooling)')}</h3>
+                  <h3><PanelIcon name="sliders" /> {t('panels.interventionSliders', 'UHI INTERVENTIONS (Real-time cooling)')}</h3>
                   <div style={{display: "grid", gap: "14px"}}>
                     <div>
                       <label style={{fontSize: "12px", color: "#22c55e", fontWeight: "700"}}>
@@ -5214,7 +5215,7 @@ function App({ user }) {
 
                 {/* Wind & Atmosphere */}
                 <section className="panel">
-                  <h3>💨 {t('panels.windAtmosphere', 'WIND & ATMOSPHERE')}</h3>
+                  <h3><PanelIcon name="wind" /> {t('panels.windAtmosphere', 'WIND & ATMOSPHERE')}</h3>
                   <div className="wind-stats">
                     <div>🧭 {t('windAtmosphere.direction', 'Direction')}: NE 45°</div>
                     <div>💨 {t('windAtmosphere.speed', 'Speed')}: 12 km/h</div>
@@ -5225,7 +5226,7 @@ function App({ user }) {
 
                 {/* Pollen & Air Quality */}
                 <section className="panel">
-                  <h3>🌿 {t('panels.pollenAirQuality', 'POLLEN & AIR QUALITY')}</h3>
+                  <h3><PanelIcon name="leaf" /> {t('panels.pollenAirQuality', 'POLLEN & AIR QUALITY')}</h3>
                   <div className="pollen-grid">
                     <div className="pollen-card">🌾 {t('pollen.grass', 'Grass')}: {t('pollen.moderate', 'MODERATE')}</div>
                     <div className="pollen-card">🌳 {t('pollen.tree', 'Tree')}: {t('pollen.high', 'HIGH')}</div>
@@ -5244,7 +5245,7 @@ function App({ user }) {
                     the floating quick-access assistant) and calls the secure /api/ask-ai
                     backend proxy, so the Gemini API key never reaches the browser. */}
                 <section className="panel">
-                  <h3>🤖 {t('panels.aiAnalyst', 'AGNI')}</h3>
+                  <h3><PanelIcon name="bot" /> {t('panels.aiAnalyst', 'AGNI')}</h3>
                   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: -8, marginBottom: 12 }}>
                     {t('panels.aiAnalystFullName', 'Analytical Ground-level heat iNtelligence Interface')}
                   </div>
@@ -5268,7 +5269,7 @@ function App({ user }) {
 
                 {/* PANEL M: Gamification */}
                 <section className="panel">
-                  <h3>⭐ {t('panels.gamification', 'POINTS & BADGES')}</h3>
+                  <h3><PanelIcon name="star" /> {t('panels.gamification', 'POINTS & BADGES')}</h3>
                   <div className="points-display">⭐ {userName}: {points} pts</div>
                   <div className="badges-shelf">
                     {points >= 10 && <span className="badge">🏅 First Analysis</span>}
@@ -5280,7 +5281,7 @@ function App({ user }) {
 
                 {/* PANEL Q: Glossary */}
                 <section className="panel">
-                  <h3>📖 {t('panels.glossary', 'GLOSSARY')} {showGlossary && '✓'}</h3>
+                  <h3><PanelIcon name="book-open" /> {t('panels.glossary', 'GLOSSARY')} {showGlossary && '✓'}</h3>
                   <button onClick={() => setShowGlossary(!showGlossary)} className="glossary-toggle">
                     {showGlossary ? `▼ ${t('buttons.hideGlossary', 'Hide Glossary')}` : `▶ ${t('buttons.showGlossary', 'Show Glossary')}`}
                   </button>
@@ -5299,7 +5300,7 @@ function App({ user }) {
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 {/* PANEL P: Export & Share (kept — duplicate panel from the Analysis section removed) */}
                 <section className="panel">
-                  <h3>📤 {t('panels.exportShare', 'EXPORT & SHARE')}</h3>
+                  <h3><PanelIcon name="share" /> {t('panels.exportShare', 'EXPORT & SHARE')}</h3>
                   <div className="export-buttons">
                     <button onClick={() => {
                       const surfaceTemp = liveWeather?.current?.surfaceTemp
@@ -5311,13 +5312,13 @@ function App({ user }) {
                       const summary = `${selectedCity}, ${selectedState}: Surface Temp ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live, Open-Meteo)' : 'N/A'} | Vegetation ${vegText} | AQI ${liveWeather?.aqi?.usAQI ?? 'N/A'} (live) | Time: ${time} ${period}`
                       navigator.clipboard.writeText(summary)
                       alert("Summary copied to clipboard!")
-                    }}>📋 {t('buttons.copySummary', 'Copy Summary')}</button>
+                    }}><PanelIcon name="copy" size={13} color="currentColor" /> {t('buttons.copySummary', 'Copy Summary')}</button>
                     <button onClick={() => {
                       const surfaceTemp = liveWeather?.current?.surfaceTemp
                       const liveRisk = liveIndiaData[selectedState]?.heatIndexLive ? getRiskLabel(liveIndiaData[selectedState].heatIndex) : `${state.risk} (estimated)`
                       const msg = `Check out ${selectedCity} heat analysis on BhaskarOps! Surface Temp: ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live)' : 'N/A'} | Risk: ${liveRisk}`
                       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`)
-                    }}>📱 {t('buttons.whatsappShare', 'WhatsApp Share')}</button>
+                    }}><PanelIcon name="message-circle" size={13} color="currentColor" /> {t('buttons.whatsappShare', 'WhatsApp Share')}</button>
                     <button onClick={() => {
                       const surfaceTemp = liveWeather?.current?.surfaceTemp
                       const lulcEntry = getLulcWithFallback(selectedCity, selectedState, lulcReal, cityCoordsData)
@@ -5331,7 +5332,7 @@ function App({ user }) {
                       a.href = url
                       a.download = `${selectedCity}-analysis.csv`
                       a.click()
-                    }}>📊 {t('buttons.csvDownload', 'CSV Download')}</button>
+                    }}><PanelIcon name="download" size={13} color="currentColor" /> {t('buttons.csvDownload', 'CSV Download')}</button>
                     <button onClick={() => {
                       const lulcEntry = getLulcWithFallback(selectedCity, selectedState, lulcReal, cityCoordsData)
                       generatePDF(selectedCity, selectedState, {
@@ -5348,13 +5349,13 @@ function App({ user }) {
                         mlMae: mlModelReal?.metrics?.mae ?? mlModelReal?.mae,
                         mlAlgorithm: mlModelReal?.model?.algorithm ?? mlModelReal?.algorithm
                       })
-                    }}>📄 {t('buttons.pdfReport', 'PDF Report')}</button>
+                    }}><PanelIcon name="file-text" size={13} color="currentColor" /> {t('buttons.pdfReport', 'PDF Report')}</button>
                   </div>
                 </section>
 
                 {/* PANEL O: Progress Tracker */}
                 <section className="panel">
-                  <h3>📋 {t('panels.progressTracker', 'BhaskarOps 2026 PROGRESS')}</h3>
+                  <h3><PanelIcon name="clipboard-list" /> {t('panels.progressTracker', 'BhaskarOps 2026 PROGRESS')}</h3>
                   <div className="progress-list">
                     <div>{t('progressTracker.dataCollection', '✅ Data Collection (Open-Meteo + ESA WorldCover)')}</div>
                     <div>{t('progressTracker.lstCalculation', '✅ Live Surface Temperature')}</div>
@@ -5373,7 +5374,7 @@ function App({ user }) {
 
                 {/* PANEL R: About & Team */}
                 <section className="panel">
-                  <h3>👥 {t('panels.aboutTeam', 'TEAM & METHODOLOGY')}</h3>
+                  <h3><PanelIcon name="users" /> {t('panels.aboutTeam', 'TEAM & METHODOLOGY')}</h3>
                   <div className="about-card">
                     <h4>BhaskarOps 2026: Urban Heat Island Mitigation</h4>
                     <p><strong>{t('aboutTeam.college', 'College:')}</strong> [Removed]</p>
@@ -5441,7 +5442,7 @@ function App({ user }) {
           </section>
 
           <section className="panel">
-            <h3>⭐ {t('panels.gamification', 'POINTS & BADGES')}</h3>
+            <h3><PanelIcon name="star" /> {t('panels.gamification', 'POINTS & BADGES')}</h3>
             <div className="points-display">⭐ {userName}: {points} pts</div>
             <div className="badges-shelf" style={{ marginTop: 8 }}>
               {earnedBadges.length === 0 ? (
@@ -5457,7 +5458,7 @@ function App({ user }) {
           </section>
 
           <section className="panel">
-            <h3>🕓 {t('panels.recentSignIns', 'Recent Sign-ins')}</h3>
+            <h3><PanelIcon name="clock" /> {t('panels.recentSignIns', 'Recent Sign-ins')}</h3>
             {loginHistory.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
                 {loginHistory.map((entry, idx) => (
