@@ -34,9 +34,26 @@ function chunk(arr, size) {
 // budget, so a throttled run may need several minutes before a batch gets through. This
 // script runs unattended in GitHub Actions (.github/workflows/refresh-weather.yml), where
 // waiting is free; it is not on a serverless time budget.
+// Network-level failures (GitHub runners see intermittent UND_ERR_CONNECT_TIMEOUT to
+// api.open-meteo.com — runs 2–4 on 5 Sept lost 27–33 batches each to exactly this) are
+// retried with a short backoff before the batch is given up; 429s keep their one-minute wait.
+const NETWORK_BACKOFF_MS = [10000, 20000, 40000]
 async function fetchWithRetry(url, label, attempts = 6) {
+  let netFailures = 0
   for (let i = 0; i < attempts; i++) {
-    const res = await fetch(url)
+    let res
+    try {
+      res = await fetch(url)
+    } catch (err) {
+      if (netFailures < NETWORK_BACKOFF_MS.length) {
+        const wait = NETWORK_BACKOFF_MS[netFailures++]
+        console.warn(`  ${label}: ${err.cause?.code || err.message} — retrying in ${wait / 1000}s`)
+        await new Promise(r => setTimeout(r, wait))
+        i-- // network retries do not consume a 429 attempt
+        continue
+      }
+      throw err
+    }
     if (res.ok) return res.json()
     if (res.status === 429 && i < attempts - 1) {
       // Open-Meteo weights multi-location batches by location count against the
@@ -136,7 +153,6 @@ export async function refreshWeatherCache() {
           rainChance: weatherRes[i]?.rainChance ?? null,
           aqi: aqiRes[i]?.aqi ?? null,
           cloudCover: weatherRes[i]?.cloudCover ?? null,
-        tempMax: weatherRes[i]?.tempMax ?? null,
           tempMax: weatherRes[i]?.tempMax ?? null,
           pm10: aqiRes[i]?.pm10 ?? null,
           observedAt: nowIso,

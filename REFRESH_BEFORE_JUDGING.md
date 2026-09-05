@@ -36,3 +36,12 @@ Judges may visit on a mild day. Open the site as `https://heatops.vercel.app/?de
 
 ## On the morning of the demo
 Follow the pre-demo checklist at the end of `DEMO_SCRIPT.md` after the freshness check above.
+
+## What the first Actions runs showed (5 Sept)
+| Run | Carried forward | Note |
+|---|---|---|
+| 2 (08:05 UTC) | 900 | first green run; 31 batches died with a bare "fetch failed" |
+| 3 (08:40 UTC) | 932 | same, before any fix |
+| 4 (09:15 UTC) | 750 | cause now logged: `UND_ERR_CONNECT_TIMEOUT` to api.open-meteo.com from the runner |
+
+The laptop never sees these; GitHub's runners intermittently fail to *connect* to Open-Meteo. From run 5 the script retries a connection failure three times (10/20/40 s) before giving a batch up, on top of the existing halves pass. If a run still carries several hundred cities forward, re-run it by hand (`gh workflow run refresh-weather.yml`) — each run gets a different runner and a different IP.
