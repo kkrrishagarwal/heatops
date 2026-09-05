@@ -24,11 +24,11 @@ class GlobeErrorBoundary extends React.Component {
   }
 }
 
+// Decorative auto-rotating globe on the sign-in screen. It used to carry a
+// "Skip" button and an intro zoom-to-India; the zoom was never triggered and
+// Skip only stopped the spin, so both were removed (5 Sept 2026).
 const IntroGlobe = ({
   active = true,
-  introTriggered = false,
-  skipIntro = false,
-  onZoomComplete,
   style,
   className,
   width = 380,
@@ -47,7 +47,7 @@ const IntroGlobe = ({
     if (!globe || !mounted) return
 
     const controls = globe.controls()
-    controls.autoRotate = active && !introTriggered && !skipIntro
+    controls.autoRotate = active
     controls.autoRotateSpeed = 0.6
     controls.enableZoom = false
     controls.enablePan = false
@@ -57,37 +57,10 @@ const IntroGlobe = ({
       new DirectionalLight(0xffffff, 0.6 * Math.PI),
     ])
 
-    if (!introTriggered && !skipIntro) {
-      globe.pointOfView({ lat: 12, lng: 50, altitude: 2.2 }, 1200)
-    }
+    globe.pointOfView({ lat: 12, lng: 50, altitude: 2.2 }, 1200)
 
     return () => globe.pauseAnimation?.()
-  }, [active, introTriggered, mounted, skipIntro])
-
-  useEffect(() => {
-    const globe = globeRef.current
-    if (!globe || !mounted) return
-
-    if (skipIntro) {
-      const controls = globe.controls()
-      controls.autoRotate = false
-      globe.pointOfView({ lat: INDIA_COORDS.lat, lng: INDIA_COORDS.lng, altitude: 0.28 }, 300)
-      onZoomComplete?.()
-      return
-    }
-
-    if (!introTriggered) return
-
-    const controls = globe.controls()
-    controls.autoRotate = false
-    globe.pointOfView({ lat: INDIA_COORDS.lat, lng: INDIA_COORDS.lng, altitude: 0.28 }, 2000)
-
-    const timer = setTimeout(() => {
-      onZoomComplete?.()
-    }, 2200)
-
-    return () => clearTimeout(timer)
-  }, [introTriggered, mounted, onZoomComplete, skipIntro])
+  }, [active, mounted])
 
   if (!mounted) return null
 

@@ -92,8 +92,6 @@ const LaunchScreen = ({ onSignIn }) => {
   const [authSuccess, setAuthSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [wideScreen, setWideScreen] = useState(false)
-  const [introTriggered, setIntroTriggered] = useState(false)
-  const [skipIntro, setSkipIntro] = useState(false)
 
   useEffect(() => {
     const updateScreen = () => setWideScreen(window.innerWidth > 768)
@@ -342,46 +340,17 @@ const LaunchScreen = ({ onSignIn }) => {
             transform: 'translate(-50%, -50%)',
             zIndex: 1,
             opacity: wideScreen ? 1 : 0.4,
-            pointerEvents: 'auto'
+            pointerEvents: 'none'
           }}
-          onClick={() => setSkipIntro(true)}
         >
           <GlobeErrorBoundary fallback={null}>
             {LITE_AT_LOAD ? null : <IntroGlobe
               active={!isLoading}
-              introTriggered={introTriggered}
-              skipIntro={skipIntro}
               width={globeSize}
               height={globeSize}
               style={{ filter: 'drop-shadow(0 0 32px rgba(217,119,6,0.2))' }}
-              onZoomComplete={() => {
-                if (skipIntro) return
-              }}
             />}
           </GlobeErrorBoundary>
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation()
-              setSkipIntro(true)
-            }}
-            style={{
-              position: 'absolute',
-              right: '-12px',
-              top: '-12px',
-              background: 'rgba(15,23,42,0.9)',
-              border: '1px solid rgba(217,119,6,0.5)',
-              borderRadius: '999px',
-              color: '#dbeafe',
-              padding: '6px 10px',
-              fontSize: '10px',
-              letterSpacing: '1.2px',
-              cursor: 'pointer',
-              textTransform: 'uppercase'
-            }}
-          >
-            Skip
-          </button>
         </div>
       )}
 
