@@ -1,0 +1,66 @@
+# Primary live-weather refresh — runs on GitHub's runners, not inside a Vercel function.
+#
+# Why here: Open-Meteo weights a multi-location request by its location count against a
+# 600/min budget, so a 1,932-city refresh needs several minutes of pacing (the local script
+# waits 25 s between 100-city batches and backs off 65 s on a 429). A Vercel Hobby function
+# has a 60 s ceiling and shared egress IPs, so the Vercel cron routinely came back with
+# 100–450 cities carried forward from the previous run. This job has no such limit, its own
+# IP, and can run several times a day, so the map is never more than ~3 hours old.
+#
+# The Vercel crons in vercel.json (14:30 IST full run + 16:00 IST retry) stay as a fallback.
+#
+# The commit is authored as the repository owner on purpose: Vercel's Hobby plan only
+# deploys commits whose author is a member of the Vercel team.
+name: Refresh live weather cache
+
+on:
+  schedule:
+    - cron: '30 */3 * * *'   # every 3 hours at :30 UTC → 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 00:00, 03:00 IST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-weather
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Refresh all cities from Open-Meteo (paced; retries on 429)
+        run: node scripts/refreshWeatherCache.mjs
+
+      - name: Commit and push if anything changed
+        env:
+          GIT_AUTHOR_NAME: kkrrishagarwal
+          GIT_AUTHOR_EMAIL: kkrrish.agarwal@gmail.com
+          GIT_COMMITTER_NAME: kkrrishagarwal
+          GIT_COMMITTER_EMAIL: kkrrish.agarwal@gmail.com
+        run: |
+          set -e
+          git add public/live-weather-cache.json public/data/history/
+          if git diff --cached --quiet; then
+            echo "No changes — nothing to commit."
+            exit 0
+          fi
+          STAMP=$(node -e "console.log(require('./public/live-weather-cache.json').lastUpdated)")
+          CARRIED=$(node -e "console.log(require('./public/live-weather-cache.json').carriedForwardCount || 0)")
+          git commit -m "Automated weather cache refresh (GitHub Actions) — ${STAMP}" -m "carried forward: ${CARRIED}"
+          # someone (or the Vercel cron) may have pushed meanwhile — rebase once and retry
+          for i in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort; exit 1; }
+          done
+          exit 1
