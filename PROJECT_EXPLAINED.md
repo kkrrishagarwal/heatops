@@ -459,6 +459,10 @@ MOSDAC (ISRO) access is still pending, so a NASA Earthdata account (`kkrrishagar
 - **GitHub Actions refresh is live.** `.github/workflows/refresh-weather.yml` was pushed once the token had the `workflow` scope; the first run failed on a missing `pg` package (the script imports the optional Postgres client), fixed by adding `npm ci` before the refresh. It runs at :30 past every third hour, paced against Open-Meteo, and commits as `kkrrishagarwal` so Vercel Hobby redeploys it. The laptop cron (`scripts/localAutoRefresh.sh`) stays as a backup.
 - **`DEMO_SCRIPT.md`** — an 8-minute click-script for 9–10 Sept, with fallbacks for a dead network, AGNI quota and the demo banner.
 
+### 8.23 Login globe: "Skip" removed, globe kept (5 Sept 2026)
+
+The sign-in screen's "SKIP" button never skipped anything — the intro zoom it was written for was never triggered, so it only stopped the globe's spin and confused first-time visitors into thinking they had to wait for a splash. Removed, along with the dead `introTriggered` / `skipIntro` plumbing; the globe simply rotates beside the form. Note for the honest record: the globe is a deliberate visual choice that costs a ~1.7 MB lazy-loaded chunk plus a 1.4 MB texture on the first screen (it never loads in Lite mode, and the dashboard chunks are unaffected). It was briefly removed and then restored the same day at the author's call.
+
 ## Bonus: Things that are built but not currently used (orphaned code)
 
 While exploring the codebase, these 4 files turned up fully written but not imported/rendered anywhere:
