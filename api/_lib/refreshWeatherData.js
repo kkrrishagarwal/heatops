@@ -66,13 +66,15 @@ async function fetchWeatherBatch(entries) {
   // request, no extra round trip. Mirrors scripts/refreshWeatherCache.mjs (kept in sync so
   // the production cron doesn't regress the map's weather-overlay fields on its next run).
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}` +
-    `&current=temperature_2m,cloud_cover&hourly=precipitation_probability&timezone=Asia/Kolkata&forecast_days=1`
+    `&current=temperature_2m,cloud_cover&hourly=precipitation_probability&daily=temperature_2m_max&timezone=Asia/Kolkata&forecast_days=1`
   const data = await fetchJsonWithRetry(url, 'weather batch')
   const arr = Array.isArray(data) ? data : [data]
   return arr.map(d => ({
     temp: d.current ? Math.round(d.current.temperature_2m) : null,
     cloudCover: typeof d.current?.cloud_cover === 'number' ? Math.round(d.current.cloud_cover) : null,
-    rainChance: d.hourly?.precipitation_probability?.[0] ?? null
+    rainChance: d.hourly?.precipitation_probability?.[0] ?? null,
+    // today's forecast high (same call, no extra request) — shown as "peak" next to "now"
+    tempMax: typeof d.daily?.temperature_2m_max?.[0] === 'number' ? Math.round(d.daily.temperature_2m_max[0]) : null
   }))
 }
 
@@ -147,6 +149,7 @@ export async function refreshWeatherData(existingCities = {}, previousLastUpdate
         rainChance: weatherRes[i]?.rainChance ?? null,
         aqi: aqiRes[i]?.aqi ?? null,
         cloudCover: weatherRes[i]?.cloudCover ?? null,
+        tempMax: weatherRes[i]?.tempMax ?? null,
         pm10: aqiRes[i]?.pm10 ?? null,
         observedAt: nowIso,
         isCarriedForward: false

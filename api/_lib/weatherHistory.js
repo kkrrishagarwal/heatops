@@ -15,7 +15,7 @@
 
 export const HISTORY_DIR = 'public/data/history'
 export const INDEX_PATH = `${HISTORY_DIR}/index.json`
-export const SNAPSHOT_FIELDS = ['temp', 'rainChance', 'aqi', 'cloudCover', 'pm10', 'carried']
+export const SNAPSHOT_FIELDS = ['temp', 'rainChance', 'aqi', 'cloudCover', 'pm10', 'carried', 'tempMax']
 export const CARRIED_LABEL = { 0: null, 1: 'flagged', 2: 'inferred' }
 
 export function snapshotDate(iso) {

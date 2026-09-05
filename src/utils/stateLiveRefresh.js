@@ -59,7 +59,7 @@ export async function refreshAllStatesSample(stateCities, { force = false } = {}
         const lats = batch.map(x => x.c.lat).join(',')
         const lons = batch.map(x => x.c.lon).join(',')
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}` +
-          `&current=temperature_2m,cloud_cover&hourly=precipitation_probability&timezone=Asia/Kolkata&forecast_days=1`
+          `&current=temperature_2m,cloud_cover&hourly=precipitation_probability&daily=temperature_2m_max&timezone=Asia/Kolkata&forecast_days=1`
         const data = await fetchJson(url, { timeoutMs: 15000 })
         const arr = Array.isArray(data) ? data : [data]
         batch.forEach((x, i) => {
@@ -70,6 +70,7 @@ export async function refreshAllStatesSample(stateCities, { force = false } = {}
             temp: Math.round(d.current.temperature_2m),
             cloudCover: typeof d.current.cloud_cover === 'number' ? Math.round(d.current.cloud_cover) : null,
             rainChance: d.hourly?.precipitation_probability?.[0] ?? null,
+            tempMax: typeof d.daily?.temperature_2m_max?.[0] === 'number' ? Math.round(d.daily.temperature_2m_max[0]) : null,
             observedAt: nowIso, isCarriedForward: false, liveRefreshed: true
           }
         })
@@ -116,7 +117,7 @@ export async function refreshStateLive(state, cityNames, { force = false } = {})
         const lats = batch.map(x => x.c.lat).join(',')
         const lons = batch.map(x => x.c.lon).join(',')
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}` +
-          `&current=temperature_2m,cloud_cover&hourly=precipitation_probability&timezone=Asia/Kolkata&forecast_days=1`
+          `&current=temperature_2m,cloud_cover&hourly=precipitation_probability&daily=temperature_2m_max&timezone=Asia/Kolkata&forecast_days=1`
         const data = await fetchJson(url, { timeoutMs: 12000 })
         const arr = Array.isArray(data) ? data : [data]
         batch.forEach((x, i) => {
@@ -128,6 +129,7 @@ export async function refreshStateLive(state, cityNames, { force = false } = {})
             temp: Math.round(d.current.temperature_2m),
             cloudCover: typeof d.current.cloud_cover === 'number' ? Math.round(d.current.cloud_cover) : null,
             rainChance: d.hourly?.precipitation_probability?.[0] ?? null,
+            tempMax: typeof d.daily?.temperature_2m_max?.[0] === 'number' ? Math.round(d.daily.temperature_2m_max[0]) : null,
             observedAt: nowIso,
             isCarriedForward: false,
             liveRefreshed: true
