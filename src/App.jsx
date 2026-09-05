@@ -29,6 +29,7 @@ import { setBulkWeatherCache, getBulkWeatherLastUpdated, normaliseBulkCities } f
 import { refreshStateLive, getStateRefreshedAt, refreshAllStatesSample } from './utils/stateLiveRefresh'
 import { useLiteMode } from './utils/liteMode'
 import PanelIcon from './components/PanelIcon'
+import CityTrendPanel from './components/CityTrendPanel'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
@@ -39,7 +40,7 @@ import { PhysicsPanel } from './components/PhysicsPanel'
 import { CoolRoofCalculator } from './components/CoolRoofCalculator'
 import { GEEPipelinePanel } from './components/GEEPipelinePanel'
 import { SpatialRecommendation } from './components/SpatialRecommendation'
-import { normalizeStateName, getCellTemp, getGridBucket, computeInterventionImpact, getHistoricalData, getDayNightData, getHeatwaveEvents, getYoYComparison, getUsers, getLoginHistory, saveLoginHistory, getAnalyticsData, getTimeSpent } from './utils/dashboardUtils'
+import { normalizeStateName, getCellTemp, getGridBucket, computeInterventionImpact, getDayNightData, getUsers, getLoginHistory, saveLoginHistory, getAnalyticsData, getTimeSpent } from './utils/dashboardUtils'
 import { WeatherCard } from './components/WeatherCard'
 import { getAQICategory } from './utils/weatherAPI'
 import { useWeather } from './hooks/useWeather'
@@ -3022,7 +3023,15 @@ function App({ user }) {
     return [...all]
       .sort((a, b) => b.temp - a.temp)
       .slice(0, 5)
-      .map((c, i) => ({ city: c.city, state: c.state, temp: c.temp, flag: i < 4 ? '🔴' : '🟠' }))
+      .map((c, i) => ({ city: c.city, state: c.state, temp: c.temp, tempMax: typeof c.tempMax === 'number' ? c.tempMax : null, hot: i < 4 }))
+  }, [liveCityCache])
+
+  // Today's forecast high across all cities — the number Google-style "hottest city today"
+  // lists quote (a day's peak), shown beside our "right now" leader so the two never look
+  // like a contradiction.
+  const livePeakCity = useMemo(() => {
+    const all = Object.values(liveCityCache).filter(c => typeof c.tempMax === 'number')
+    return all.length ? all.reduce((m, c) => (c.tempMax > m.tempMax ? c : m), all[0]) : null
   }, [liveCityCache])
 
   // Powers the "Today's National Heat Summary" shown in the right panel before any state is
@@ -4105,7 +4114,16 @@ function App({ user }) {
                   <ul>
                     {liveLeaderBase.map((item, i) => (
                       <li key={i}>
-                        {item.flag} {item.city} <span>{item.temp}°C</span>
+                        <span aria-hidden="true" style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: item.hot ? '#dc2626' : '#ea580c', marginRight: 8, verticalAlign: '1px' }} />
+                        {item.city}
+                        <span>
+                          {item.temp}°C
+                          {typeof item.tempMax === 'number' && item.tempMax > item.temp && (
+                            <span style={{ color: 'rgba(255,255,255,0.45)', fontWeight: 400, fontSize: 10, marginLeft: 6 }} title={t('hottest.peakTitle', "Today's forecast high (Open-Meteo)")}>
+                              {t('hottest.peak', 'peak')} {item.tempMax}°
+                            </span>
+                          )}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -4183,6 +4201,18 @@ function App({ user }) {
                       </div>
                       <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{liveLeaderBase[0]?.temp}°C</div>
                     </div>
+
+                    {livePeakCity && (
+                      <div style={{ background: 'rgba(184,16,16,0.06)', border: '1px solid rgba(184,16,16,0.2)', borderRadius: 8, padding: 12 }}>
+                        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
+                          <PanelIcon name="sun" size={12} color="currentColor" /> {t('nationalSummary.peakToday', "Today's forecast high")}
+                        </div>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: '#fca5a5' }}>
+                          {livePeakCity.city}, {livePeakCity.state}
+                        </div>
+                        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{livePeakCity.tempMax}°C <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{t('nationalSummary.peakNote', '(day\'s maximum, Open-Meteo forecast)')}</span></div>
+                      </div>
+                    )}
 
                     <div style={{ background: 'rgba(187,82,0,0.1)', border: '1px solid rgba(187,82,0,0.3)', borderRadius: 8, padding: 12 }}>
                       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
@@ -4519,47 +4549,37 @@ function App({ user }) {
                   <h3><PanelIcon name="thermometer" /> {t('panels.weatherConditions', 'WEATHER CONDITIONS')}</h3>
                   <WeatherCard city={selectedCity} state={selectedState} onClose={() => {}} simpleAqi={citizen} />
                   {/* Year-over-year comparison — additive stat, derived from existing 10-year trend data */}
-                  {(() => {
-                    const currentTemp = liveWeather?.current?.temp
-                    const yoy = getYoYComparison(selectedCity, cityData, currentTemp)
-                    if (!yoy) return null
-                    const arrow = yoy.delta > 0 ? '▲' : yoy.delta < 0 ? '▼' : '–'
-                    const deltaColor = yoy.delta > 0 ? '#ea580c' : yoy.delta < 0 ? '#22c55e' : 'rgba(255,255,255,0.5)'
-                    return (
-                      <div style={{
-                        marginTop: 10,
-                        fontSize: 11,
-                        color: 'rgba(255,255,255,0.6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6
-                      }}>
-                        <span>{t('yoyComparison.today', 'Today')}: <strong style={{color:'#fff'}}>{currentTemp}°C</strong></span>
-                        <span>—</span>
-                        <span>{t('yoyComparison.sameDateLastYear', 'Same date last year')}: <strong style={{color:'#fff'}}>{yoy.lastYearTemp}°C</strong></span>
-                        <span style={{color: deltaColor, fontWeight: 700}}>
-                          ({arrow} {Math.abs(yoy.delta)}°C)
-                        </span>
-                      </div>
-                    )
-                  })()}
+                  {/* The former "same date last year" line was a formula (today − an assumed annual slope), not a
+                    reading — removed. Real history lives in the 30-day trend panel below; a true
+                    year-over-year comparison arrives with the NASA MODIS 2016–2026 archive. */}
                 </section>
 
                 {/* PANEL G: Day vs Night */}
+                {/* 30-day trend from the platform's own daily archive — visible to both audiences */}
+                <CityTrendPanel city={selectedCity} state={selectedState} liveTemp={liveWeather?.current?.temp} />
+
                 <section className="panel" data-panel="G">
-                  <h3><PanelIcon name="sun-moon" /> {t('panels.dayNightTemp', 'DAY vs NIGHT TEMPERATURE')}</h3>
-                  <div className="comparison-bar">
-                    <div className="bar-item">
-                      <span>{t('dayNight.day', 'Day (12 PM)')}</span>
-                      <div className="bar" style={{background:'#c2410c', width:'70%'}}/>
-                      <span>{getDayNightData(cityData, selectedCity)[5]?.day?.toFixed(1) || (cityData.lst + 3).toFixed(1)}°C</span>
+                  <h3><PanelIcon name="sun-moon" /> {t('panels.dayNightTemp', "TODAY'S HIGH vs LOW")}</h3>
+                  {/* Real forecast high/low for today from the same Open-Meteo call the WeatherCard
+                      uses. (This panel used to print seed + 3 / seed − 8 — "50.8 °C / 47.2 °C" for
+                      a 27 °C city.) Bars are proportional to a 0–50 °C scale. */}
+                  {typeof liveWeather?.today?.maxTemp === 'number' && typeof liveWeather?.today?.minTemp === 'number' ? (
+                    <div className="comparison-bar">
+                      <div className="bar-item">
+                        <span>{t('dayNight.high', "Today's high (forecast)")}</span>
+                        <div className="bar" style={{ background: '#c2410c', width: `${Math.max(4, Math.min(100, liveWeather.today.maxTemp * 2))}%` }} />
+                        <span data-testid="today-high">{liveWeather.today.maxTemp}°C</span>
+                      </div>
+                      <div className="bar-item">
+                        <span>{t('dayNight.low', "Today's low (forecast)")}</span>
+                        <div className="bar" style={{ background: '#2563eb', width: `${Math.max(4, Math.min(100, liveWeather.today.minTemp * 2))}%` }} />
+                        <span data-testid="today-low">{liveWeather.today.minTemp}°C</span>
+                      </div>
+                      <div style={{ fontSize: 10, color: '#64748b', marginTop: 6 }}>{t('dayNight.source', 'Source: Open-Meteo daily forecast for this city (same reading as the weather card).')}</div>
                     </div>
-                    <div className="bar-item">
-                      <span>{t('dayNight.night', 'Night (12 AM)')}</span>
-                      <div className="bar" style={{background:'#2563eb', width:'50%'}}/>
-                      <span>{getDayNightData(cityData, selectedCity)[5]?.night?.toFixed(1) || (cityData.lst - 8).toFixed(1)}°C</span>
-                    </div>
-                  </div>
+                  ) : (
+                    <div style={{ fontSize: 12, color: '#94a3b8' }}>{t('cityList.noLiveData', 'NO LIVE DATA')}</div>
+                  )}
                 </section>
               </div>
 
@@ -5020,62 +5040,18 @@ function App({ user }) {
                 </section>
 
                 {/* PANEL H: Historical Trend */}
-                <section className="panel">
-                  <h3><PanelIcon name="trending-up" /> {t('panels.historicalTrend', '10-YEAR TREND (2015-2025)')}</h3>
-                  {(() => {
-                    const histData = getHistoricalData(selectedCity, cityData)
-                    const urban2015 = histData[0].urban
-                    const urbanNow = histData[5].urban
-                    const urbanChange = urbanNow - urban2015
-                    const ruralChange = histData[5].rural - histData[0].rural
-                    return (
-                      <div className="trend-chart">
-                        <p>{t('historicalTrend.urbanCore', 'Urban Core')}: {urbanChange > 0 ? '+' : ''}{urbanChange.toFixed(1)}°C {t('historicalTrend.warmer', 'warmer')}</p>
-                        <p>{t('historicalTrend.ruralAreas', 'Rural Areas')}: {ruralChange > 0 ? '+' : ''}{ruralChange.toFixed(1)}°C {t('historicalTrend.warmer', 'warmer')}</p>
-                        <div className="trend-bar">
-                          <div className="trend-urban" style={{height: Math.min(100, Math.abs(urbanChange)*10) + '%'}}/>
-                          <div className="trend-rural" style={{height: Math.min(100, Math.abs(ruralChange)*10) + '%'}}/>
-                        </div>
-                      </div>
-                    )
-                  })()}
+                <section className="panel" data-panel="LONGTERM">
+                  <h3><PanelIcon name="history" /> {t('panels.longTermHistory', 'LONG-TERM HISTORY')}</h3>
+                  {/* The former "10-year trend (2015–2025)" and "historical heatwave timeline" panels were
+                      generated from a city-name seed — not measurements — and were removed on 5 Sept.
+                      What exists today is the platform's own daily archive (30-day trend on the
+                      Overview tab); a real multi-year series arrives with NASA MODIS 2016–2026. */}
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 }}>
+                    {t('longTerm.body', 'Real archive so far: daily readings since 22 June 2026 — see the 30-day trend on the Overview tab. A satellite-measured multi-year series (NASA MODIS land-surface temperature, 2016–2026) is being integrated for 171 cities; ISRO INSAT-3D data has been requested. Nothing longer-term is shown until it is real.')}
+                  </div>
                 </section>
 
-                {/* Historical Heatwave Timeline — additive card, derived from the same
-                    seeded 10-year urban LST trend used above (getHeatwaveEvents) */}
-                <section className="panel">
-                  <h3><PanelIcon name="history" /> {t('panels.heatwaveTimeline', 'HISTORICAL HEATWAVE TIMELINE')}</h3>
-                  {(() => {
-                    const events = getHeatwaveEvents(selectedCity, cityData)
-                    if (events.length === 0) {
-                      return (
-                        <div style={{fontSize: 12, color: 'rgba(255,255,255,0.4)'}}>
-                          {t('heatwaveTimeline.noEvents', 'No significant heatwave events recorded for this city in the historical window.')}
-                        </div>
-                      )
-                    }
-                    return (
-                      <div style={{display: 'flex', flexDirection: 'column', gap: 8}}>
-                        {events.map((ev, i) => (
-                          <div key={i} style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            background: 'rgba(148,163,184,0.06)',
-                            border: '1px solid rgba(148,163,184,0.15)',
-                            borderRadius: 8,
-                            padding: '8px 12px',
-                            fontSize: 12
-                          }}>
-                            <span style={{color: '#fff', fontWeight: 600}}>{ev.date}</span>
-                            <span style={{color: '#ea580c'}}>{t('heatwaveTimeline.peakTemp', 'Peak temp')}: <strong>{ev.peakTemp}°C</strong></span>
-                            <span style={{color: 'rgba(255,255,255,0.6)'}}>{t('heatwaveTimeline.duration', 'duration')}: {ev.durationDays} {t('heatwaveTimeline.days', 'days')}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )
-                  })()}
-                </section>
+                
 
               </div>
             </div>
