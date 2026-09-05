@@ -1,8 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, Component } from 'react'
+import Globe from 'react-globe.gl'
+import { AmbientLight, DirectionalLight } from 'three'
+import IntroGlobe from './IntroGlobe'
 import { readLite } from '../utils/liteMode'
 
-// Lite mode (low-end devices): the starfield is drawn once, with no animation loop.
+// Lite mode (low-end devices): no WebGL globe at all — the sign-in card stands on its own.
 const LITE_AT_LOAD = readLite()
+
+// Texture copied from three-globe's bundled examples into public/textures —
+// three-globe's package.json "exports" map blocks importing it directly via
+// JS import, so it's served as a plain static asset instead.
+//
+// earth-dark.jpg (the previous texture) is a near-black monochrome map meant
+// for a night-mode look — with no scene lights of its own to compensate, that
+// rendered as a barely-visible black globe. earth-blue-marble.jpg is NASA's
+// Blue Marble imagery — real-looking blue oceans and green/brown landmasses.
+const earthTexture = '/textures/earth-blue-marble.jpg'
+
+// Centroid of India — used to place the highlight ring/point on the globe.
+const INDIA_COORDS = { lat: 20.5937, lng: 78.9629 }
 
 const USERS_KEY = 'heatops_users'
 
@@ -30,10 +46,43 @@ function saveStoredUsers(users) {
   localStorage.setItem(USERS_KEY, JSON.stringify(users))
 }
 
+// react-globe.gl's WebGLRenderer throws synchronously if WebGL can't be
+// created (seen for real in VSCode's embedded "Simple Browser" webview, which
+// has no GPU context) — and with no boundary, that uncaught error unmounts
+// the ENTIRE app, not just the globe, since React 18 tears down the whole
+// tree on an uncaught render/effect error. This boundary scopes the failure
+// to just the globe so the rest of the login screen still works.
+class GlobeErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { failed: false }
+  }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  componentDidCatch(error) {
+    console.warn('3D globe failed to render (likely no WebGL support), falling back:', error.message)
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children
+  }
+}
+
+function isWebGLAvailable() {
+  try {
+    const canvas = document.createElement('canvas')
+    return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')))
+  } catch {
+    return false
+  }
+}
 
 const LaunchScreen = ({ onSignIn }) => {
   const canvasRef = useRef(null)
+  const globeRef = useRef(null)
   const starAnimRef = useRef(null)
+  const [globeSize, setGlobeSize] = useState(380)
+  const [webglOk] = useState(isWebGLAvailable)
   const [authTab, setAuthTab] = useState('login')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -43,6 +92,8 @@ const LaunchScreen = ({ onSignIn }) => {
   const [authSuccess, setAuthSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [wideScreen, setWideScreen] = useState(false)
+  const [introTriggered, setIntroTriggered] = useState(false)
+  const [skipIntro, setSkipIntro] = useState(false)
 
   useEffect(() => {
     const updateScreen = () => setWideScreen(window.innerWidth > 768)
@@ -51,11 +102,10 @@ const LaunchScreen = ({ onSignIn }) => {
     return () => window.removeEventListener('resize', updateScreen)
   }, [])
 
-  // Starfield background plus a hand-drawn wireframe globe with an orbiting
-  // satellite — plain 2D canvas, no WebGL, no texture download. (A three.js
-  // "Blue Marble" globe used to sit here: 1.7 MB of JavaScript, a 1.4 MB
-  // texture and a permanent GPU render loop on the first screen, for a
-  // decoration the sign-in card never depended on. Removed 5 Sept 2026.)
+  // Starfield background, always drawn. When WebGL isn't available (or the
+  // <Globe> below throws), this also draws the original hand-drawn wireframe
+  // globe + orbiting satellite as a fallback, per the explicit instruction to
+  // keep that as a backup rather than show nothing.
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -90,7 +140,7 @@ const LaunchScreen = ({ onSignIn }) => {
         ctx.fill()
       })
 
-      if (wideScreen) {
+      if (!webglOk) {
         const cx = W * 0.62
         const cy = H * 0.52
         const R = Math.min(W, H) * 0.22
@@ -167,7 +217,46 @@ const LaunchScreen = ({ onSignIn }) => {
       starAnimRef.current = null
       window.removeEventListener('resize', resize)
     }
+  }, [webglOk])
+
+  // Size the globe relative to viewport, same general footprint as the old canvas globe.
+  useEffect(() => {
+    const updateGlobeSize = () => {
+      const size = Math.min(window.innerWidth, window.innerHeight) * (wideScreen ? 0.42 : 0.6)
+      setGlobeSize(Math.max(240, Math.min(480, size)))
+    }
+    updateGlobeSize()
+    window.addEventListener('resize', updateGlobeSize)
+    return () => window.removeEventListener('resize', updateGlobeSize)
   }, [wideScreen])
+
+  // Slow auto-rotation so the globe feels alive without requiring user interaction.
+  // Explicit pauseAnimation() on cleanup as a belt-and-suspenders measure
+  // alongside the library's own unmount destructor (see handleSubmit for the
+  // main fix — pausing as soon as sign-in starts, not on eventual unmount).
+  useEffect(() => {
+    const globe = globeRef.current
+    if (!globe) return
+    const controls = globe.controls()
+    controls.autoRotate = true
+    controls.autoRotateSpeed = 0.6
+    controls.enableZoom = false
+    globe.pointOfView({ lat: 15, lng: 78, altitude: 2.2 })
+
+    // react-globe.gl/three-render-objects default to NO scene lights (lights: []),
+    // so with the earth-dark.jpg texture this rendered as an almost-unlit black
+    // sphere. A strong ambient light keeps the whole globe visible regardless of
+    // which side currently faces the (auto-rotating) camera, and a soft
+    // directional light adds gentle shading so it still reads as 3D rather than
+    // flat. Intensities use the Math.PI scaling three.js's physically-correct
+    // lighting expects (same convention globe.gl's own internal default uses).
+    globe.lights([
+      new AmbientLight(0xffffff, 2.2 * Math.PI),
+      new DirectionalLight(0xffffff, 0.6 * Math.PI)
+    ])
+
+    return () => globe.pauseAnimation?.()
+  }, [])
 
   const handleSubmit = () => {
     if (!email || !password || (authTab === 'register' && !name)) {
@@ -206,10 +295,17 @@ const LaunchScreen = ({ onSignIn }) => {
     }
 
     setIsLoading(true)
-    // Stop the starfield loop the instant sign-in starts so the dashboard
-    // transition is not competing with a background animation.
+    // Stop the globe's render loop the instant sign-in starts, rather than
+    // waiting for it to unmount ~3s later when createLoadingScreen's overlay
+    // finishes — measured via a CDP trace that GPUTask stayed pegged at
+    // 850-1000ms/sec for several seconds into the dashboard transition, and
+    // the globe (invisible behind the opaque loading overlay this whole time
+    // anyway) was the cause, confirmed by an A/B trace with it disabled.
+    // stop any active animations immediately to avoid background CPU/GPU
+    // work during the dashboard transition (starfield + three-globe loop).
     try { if (starAnimRef.current) cancelAnimationFrame(starAnimRef.current) } catch (e) {}
     starAnimRef.current = null
+    globeRef.current?.pauseAnimation?.()
     setTimeout(() => {
       setIsLoading(false)
       onSignIn({ name: existing.name, email: existing.email })
@@ -236,6 +332,58 @@ const LaunchScreen = ({ onSignIn }) => {
         zIndex: 0,
         opacity: wideScreen ? 1 : 0.4
       }}/>
+
+      {webglOk && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '52%',
+            left: '62%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1,
+            opacity: wideScreen ? 1 : 0.4,
+            pointerEvents: 'auto'
+          }}
+          onClick={() => setSkipIntro(true)}
+        >
+          <GlobeErrorBoundary fallback={null}>
+            {LITE_AT_LOAD ? null : <IntroGlobe
+              active={!isLoading}
+              introTriggered={introTriggered}
+              skipIntro={skipIntro}
+              width={globeSize}
+              height={globeSize}
+              style={{ filter: 'drop-shadow(0 0 32px rgba(217,119,6,0.2))' }}
+              onZoomComplete={() => {
+                if (skipIntro) return
+              }}
+            />}
+          </GlobeErrorBoundary>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              setSkipIntro(true)
+            }}
+            style={{
+              position: 'absolute',
+              right: '-12px',
+              top: '-12px',
+              background: 'rgba(15,23,42,0.9)',
+              border: '1px solid rgba(217,119,6,0.5)',
+              borderRadius: '999px',
+              color: '#dbeafe',
+              padding: '6px 10px',
+              fontSize: '10px',
+              letterSpacing: '1.2px',
+              cursor: 'pointer',
+              textTransform: 'uppercase'
+            }}
+          >
+            Skip
+          </button>
+        </div>
+      )}
 
       <div style={{
         position: 'relative',
