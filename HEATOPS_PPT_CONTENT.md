@@ -64,8 +64,8 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 - **Air Quality Index (AQI)** — US AQI + PM2.5/PM10/NO₂/O₃ breakdown from Open-Meteo CAMS
 - **7-day forecast strip** — daily min/max temp for the coming week
 - **Next 12-hour chart** — hourly temperature curve for the current day
-- **Year-over-year temperature delta** — compares live LST against the same city's prior-year value ("2.3°C hotter than last year")
-- **Historical heatwave event timeline** — past heatwave occurrences for the selected city
+- **30-day temperature trend** — a real per-city chart from the platform's own daily archive (carried-forward days drawn hollow, current reading as a dashed line)
+- **Today's high vs low** — real forecast maximum/minimum from the same Open-Meteo reading
 - **Heat Risk Gauge** — semicircular arc, needle on the city's live temperature; the readout (label + dot) uses the same four tiers as the theme colour, so the gauge and the page never disagree
 - **Safe hours today (Citizen)** — one bar for the day from the hourly feels-like forecast (🔴 avoid ≥ 40 °C · 🟡 only if necessary 35–39 °C · 🟢 safe), a "Right now" status line and the time windows written out
 - **How you can help your neighbourhood (Citizen)** — severity-adaptive: the full 5-action list on High/Extreme days (elderly-check first, in red), a short 3-item list on Moderate days, a positive all-clear on Low days, and a cold-weather list below 10 °C (layers, night shelters for homeless neighbours, frost protection)
@@ -119,7 +119,7 @@ Indian cities are experiencing intensifying urban heat islands — built-up, low
 1. User signs in → a one-time **"Who are you?"** screen (🧑 Citizen / 🏛️ Government-Planner / Skip) → lands on an interactive map of India, with a "Today's National Heat Summary" card (hottest city right now, states in extreme/high risk, national average temp) and a **Quick Picks** row (Delhi, Mumbai, Bengaluru, Jaipur, Chennai, Kolkata) for one-click access to major cities without searching
 2. Clicks a state (or a Quick Pick) → map zooms to show that state's cities, color-coded by average heat severity, with real district boundaries (not a simplified outline)
 3. Clicks a city → opens a 5-tab dashboard scoped to that city
-4. **Overview tab**: live temperature/humidity/wind/AQI (refreshed from Open-Meteo), a year-over-year delta ("2.3°C hotter than last year"), and a timeline of past heatwave events for that city
+4. **Overview tab**: live temperature/humidity/wind/AQI (refreshed from Open-Meteo), a 30-day temperature trend from the platform's own archive, and today's forecast high/low for that city
 5. **Analysis tab**: real surface temperature reading, vegetation/built-up/water cover percentages (from satellite land-cover classification), and live building density around the city center
 6. **Compare tab**: search and stack up to 4 other cities against the current one on a 6-axis radar chart (heat, vegetation, built-up density, air quality, wind, water cover)
 7. **Interventions tab**: drag sliders for cooling measures (more green cover, reflective roofs, etc.) and see a projected temperature impact
@@ -130,7 +130,7 @@ Indian cities are experiencing intensifying urban heat islands — built-up, low
 ## Core Features (by tab)
 - **Interactive India Map** — click any state → drill into its cities, color-coded by heat severity, with district-level detail (real GeoJSON boundaries: 594 districts + 35 states, rendered incrementally so the map never freezes the page while it draws in)
 - **Today's National Heat Summary + Quick Picks** — empty-state right panel shows live national stats (hottest city, states at extreme/high risk, national average temp) plus one-click pill shortcuts to 6 major cities, skipping search entirely
-- **Overview tab** — live weather, AQI, year-over-year temperature comparison, historical heatwave timeline for the selected city
+- **Overview tab** — live weather, AQI, 30-day temperature trend from the daily archive, today's high/low for the selected city
 - **Analysis tab** — satellite indices (surface temp, vegetation/built-up/water fractions), urban morphology (real building density), ML-based LST prediction
 - **Compare tab** — search-and-add up to 4 cities for side-by-side radar-chart comparison across LST, NDVI, NDBI, AQI, wind, NDWI
 - **Interventions tab** — interactive sliders simulating cooling interventions and their projected impact
