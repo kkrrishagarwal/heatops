@@ -1,12 +1,13 @@
 {
-  "updatedAt": "2026-09-05T08:36:15.836Z",
+  "updatedAt": "2026-09-05T09:11:23.838Z",
   "fields": [
     "temp",
     "rainChance",
     "aqi",
     "cloudCover",
     "pm10",
-    "carried"
+    "carried",
+    "tempMax"
   ],
   "days": [
     {
@@ -426,7 +427,7 @@
     {
       "date": "2026-09-05",
       "file": "2026-09-05.json",
-      "lastUpdated": "2026-09-05T08:05:24.517Z",
+      "lastUpdated": "2026-09-05T08:40:09.140Z",
       "cityCount": 1932
     }
   ]
