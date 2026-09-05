@@ -226,6 +226,7 @@ STEP 5: History → Daily snapshots served by an API, a viewer page and CSV expo
 
 ## Key Demo Features
 - Live India map with median-based state colours and weather badges
+- 30-day temperature trend for any city, from our own daily archive — and "33 °C now, 40 °C expected" from the forecast high
 - Citizen view with safe hours and WhatsApp share
 - Severity-adaptive Heat Action Plan checklist
 - Recommended canopy plan with one-click apply

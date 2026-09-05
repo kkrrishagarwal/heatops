@@ -452,6 +452,13 @@ MOSDAC (ISRO) access is still pending, so a NASA Earthdata account (`kkrrishagar
 
 ---
 
+### 8.22 Honesty pass on the Overview, and the refresh workflow goes live (5 Sept 2026)
+
+- **Four seeded panels removed.** The Day-vs-Night bars, the "same date last year" line, the "10-year trend (2015–2025)" chart and the "historical heatwave timeline" were all generated from a hash of the city name — plausible-looking, but not measurements. They are gone. In their place: **Today's high vs low** (Open-Meteo's daily max/min for the city), a **30-day temperature trend** drawn from the platform's own daily archive (`src/components/CityTrendPanel.jsx` → `/api/weather-history`; carried-forward days drawn hollow, gaps left as gaps, nothing interpolated), and one "Long-term history" note on the Analysis tab saying what exists (archive since 22 June 2026) and what is coming (NASA MODIS 2016–2026).
+- **Forecast high in the cache.** Every refresh path now stores `tempMax` (Open-Meteo `daily.temperature_2m_max`) next to the current reading, and the daily snapshots keep it. The hottest-cities list shows "peak 40°" when the forecast high is above the current reading, and the National Summary has a "Today's forecast high" card — so the demo can say "33 °C now, 40 °C expected" without inventing anything.
+- **GitHub Actions refresh is live.** `.github/workflows/refresh-weather.yml` was pushed once the token had the `workflow` scope; the first run failed on a missing `pg` package (the script imports the optional Postgres client), fixed by adding `npm ci` before the refresh. It runs at :30 past every third hour, paced against Open-Meteo, and commits as `kkrrishagarwal` so Vercel Hobby redeploys it. The laptop cron (`scripts/localAutoRefresh.sh`) stays as a backup.
+- **`DEMO_SCRIPT.md`** — an 8-minute click-script for 9–10 Sept, with fallbacks for a dead network, AGNI quota and the demo banner.
+
 ## Bonus: Things that are built but not currently used (orphaned code)
 
 While exploring the codebase, these 4 files turned up fully written but not imported/rendered anywhere:

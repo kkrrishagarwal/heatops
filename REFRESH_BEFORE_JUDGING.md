@@ -4,16 +4,8 @@
 
 ## What runs automatically
 - **Vercel Cron** — full refresh of all 1,932 cities at 09:00 UTC (14:30 IST, peak heat), and a **retry pass** at 10:30 UTC (16:00 IST) for any batch Open-Meteo rate-limited. Each run commits `public/live-weather-cache.json` + `public/data/history/YYYY-MM-DD.json` + `index.json` in one commit, which redeploys the site.
-- **GitHub Actions every 3 hours** (`.github/workflows/`) — written and tested locally, but it needs a token with the `workflow` scope to be pushed:
-  ```bash
-  gh auth refresh -h github.com -s workflow
-  git add .github && git commit -m "ci: 3-hourly weather refresh" && git push origin main
-  ```
-  Until that's pushed, the cron alone keeps the data ≤ 24 h old.
-- Readings a run could not refresh are **carried forward and flagged** (`isCarriedForward`, real `observedAt`) — the UI shows their real age, never "fresh".
-- Opening any state on the map refreshes that state's cities live (one batched call), so the demo state is always current regardless of the cron.
-
-- **Laptop cron stopgap (4 Sept):** `scripts/localAutoRefresh.sh` runs from this laptop's crontab at :17 past every 3rd hour — paced refresh, commit, push, redeploy. It only works while the laptop is **on and online**; check `tail ~/.heatops-autorefresh.log`. The Vercel cron produced no commits on 2–4 Sept, so until the GitHub Actions workflow is pushed, this is what keeps the site fresh.
+- **GitHub Actions every 3 hours** (`.github/workflows/refresh-weather.yml`, live since 5 Sept) — at :30 past every third hour it refreshes all cities from Open-Meteo, commits the cache + daily snapshot as `kkrrishagarwal`, and pushes, which redeploys the site. Check it: `gh run list --workflow refresh-weather.yml --limit 3` (or the Actions tab). Trigger by hand: `gh workflow run refresh-weather.yml`.
+- **Laptop cron stopgap (4 Sept):** `scripts/localAutoRefresh.sh` runs from this laptop's crontab at :17 past every 3rd hour — paced refresh, commit, push, redeploy. It only works while the laptop is **on and online**; check `tail ~/.heatops-autorefresh.log`. The Vercel cron produced no commits on 2–4 Sept; the GitHub Actions workflow is now the primary refresh and this laptop cron is the backup.
 
 ## Confirm it, the morning of judging
 ```bash
@@ -41,3 +33,6 @@ Judges may visit on a mild day. Open the site as `https://heatops.vercel.app/?de
 - **Gemini key:** the free tier allows ≈ 20 requests/day per model. AGNI walks a 5-model chain, but a paid-tier key (`GEMINI_API_KEY` in Vercel) is the safe choice for a live demo.
 - **Lite mode** is opt-in (avatar menu / ☰ drawer) for low-end phones; leave it off on the demo laptop.
 - Hard-refresh the demo browser once after the last deploy (Ctrl + Shift + R).
+
+## On the morning of the demo
+Follow the pre-demo checklist at the end of `DEMO_SCRIPT.md` after the freshness check above.
