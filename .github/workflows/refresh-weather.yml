@@ -45,6 +45,10 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Refresh all cities from Open-Meteo (paced; retries on 429)
+        # Runners have no working IPv6; without this, Node's fetch intermittently fails
+        # with a bare "fetch failed" and whole batches end up carried forward.
+        env:
+          NODE_OPTIONS: --dns-result-order=ipv4first
         run: node scripts/refreshWeatherCache.mjs
 
       - name: Commit and push if anything changed

@@ -145,7 +145,7 @@ export async function refreshWeatherCache() {
       })
       return true
     } catch (err) {
-      console.warn(`  batch failed (${batch.length} cities): ${err.message}`)
+      console.warn(`  batch failed (${batch.length} cities): ${err.message}${err.cause ? ` — ${err.cause.code || err.cause.message}` : ''}`)
       return false
     }
   }
