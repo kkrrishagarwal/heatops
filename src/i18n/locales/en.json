@@ -53,7 +53,8 @@
     "heatLegend": "Heat Legend",
     "adminDashboard": "Admin Analytics Dashboard",
     "dataOutdated": "Data may be outdated",
-    "urbanMorphology": "URBAN MORPHOLOGY"
+    "urbanMorphology": "URBAN MORPHOLOGY",
+    "todayHighLow": "TODAY'S HIGH vs LOW"
   },
   "buttons": {
     "copySummary": "Copy Summary",

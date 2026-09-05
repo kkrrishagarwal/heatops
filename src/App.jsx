@@ -4559,7 +4559,7 @@ function App({ user }) {
                 <CityTrendPanel city={selectedCity} state={selectedState} liveTemp={liveWeather?.current?.temp} />
 
                 <section className="panel" data-panel="G">
-                  <h3><PanelIcon name="sun-moon" /> {t('panels.dayNightTemp', "TODAY'S HIGH vs LOW")}</h3>
+                  <h3><PanelIcon name="sun-moon" /> {t('panels.todayHighLow', "TODAY'S HIGH vs LOW")}</h3>
                   {/* Real forecast high/low for today from the same Open-Meteo call the WeatherCard
                       uses. (This panel used to print seed + 3 / seed − 8 — "50.8 °C / 47.2 °C" for
                       a 27 °C city.) Bars are proportional to a 0–50 °C scale. */}
