@@ -12,9 +12,8 @@ import { readLite, applyLiteAttr } from './utils/liteMode'
 // get the low-end CSS (no blur/shadows/animations) from the first paint.
 applyLiteAttr(readLite())
 
-// Lazy-loaded so the react-globe.gl/three.js bundle (only used on the login
-// screen) doesn't get pulled into the same chunk as the dashboard/map code —
-// keeps the 3D globe additive without growing what every other screen has to load.
+// Lazy-loaded so the sign-in screen stays in its own small chunk, separate from
+// the dashboard/map code.
 const LaunchScreen = lazy(() => import('./components/LaunchScreen'))
 
 const App3D = () => {
