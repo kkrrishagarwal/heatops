@@ -463,6 +463,23 @@ MOSDAC (ISRO) access is still pending, so a NASA Earthdata account (`kkrrishagar
 
 The sign-in screen's "SKIP" button never skipped anything — the intro zoom it was written for was never triggered, so it only stopped the globe's spin and confused first-time visitors into thinking they had to wait for a splash. Removed, along with the dead `introTriggered` / `skipIntro` plumbing; the globe simply rotates beside the form. Note for the honest record: the globe is a deliberate visual choice that costs a ~1.7 MB lazy-loaded chunk plus a 1.4 MB texture on the first screen (it never loads in Lite mode, and the dashboard chunks are unaffected). It was briefly removed and then restored the same day at the author's call.
 
+### 8.24 Map load lag — measured, then fixed at the source (5 Sept 2026)
+
+The user reported the app "lagging a little". A CDP profile of the first 14 s after the map appears (production build) showed **3.9 s of script in 23 long tasks (up to 350 ms)** — all of it in the load window; once settled, idle and hover were cheap. Causes and fixes, each measured on the same script against a local production build:
+
+- **Geometry.** The map downloaded 1.4 MB of districts (74k vertices) and 0.8 MB of states (47k) and react-simple-maps projected every vertex on the main thread. `scripts/simplifyGeo.sh` (mapshaper, Visvalingam 15 %, keep-shapes, topology preserved so neighbours still meet) cuts that to 15k / 7.5k vertices and 0.4 / 0.14 MB. Full-resolution sources live in `scripts/data/geo-full/`. mapshaper writes RFC 7946 winding, which d3-geo reads inside-out (the whole map turned one colour) — `scripts/rewindGeo.mjs` rewinds any polygon larger than a hemisphere.
+- **Resampling.** d3-geo's adaptive resampling subdivided every border segment into great-circle steps, and it grew as segments got longer. One shared `INDIA_MAP_PROJECTION` (`geoMercator().precision(0)`) is now passed to all map layers; at this size Mercator straight segments are visually identical.
+- **Repeated work.** State-boundary smoothing ran inside render and re-smoothed ~47k vertices on every data change (now memoized per feature); state centroids were recomputed on every data change (now once per GeoJSON load).
+- **Fabricated pulsing "extreme heat hotspots".** Five hard-coded white markers (Delhi, Rajasthan, UP, Gujarat, Bihar) pulsed regardless of the live data, and their SMIL animations kept the map repainting (700 ms of style recalcs per idle 10 s). Removed — the state colours already say where it is hot.
+
+| First 14 s after the map appears | Before | After |
+|---|---|---|
+| Script time | 3,920 ms | 2,297 ms |
+| Long tasks (worst) | 23 (350 ms) | 13 (116 ms) |
+| Idle style recalcs / 10 s | 700 ms | 312 ms |
+
+Also fixed the same day: `public/data/cityCoordinates.json` (the copy the browser fetches) had drifted from the master in `src/data/` — 1,689 entries instead of 1,932, with **50 cities geocoded outside India** (Jalore in France, Kutch in Colorado…), which is what put a stray city marker in the Arabian Sea when Rajasthan was opened. The public copy is now identical and `scripts/geocodeCities.mjs` writes both.
+
 ## Bonus: Things that are built but not currently used (orphaned code)
 
 While exploring the codebase, these 4 files turned up fully written but not imported/rendered anywhere:
