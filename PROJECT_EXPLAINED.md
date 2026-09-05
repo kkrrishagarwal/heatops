@@ -424,7 +424,7 @@ Ticks are stored per city **and per tier** so a heat tick never shows as done on
 
 ### 8.18 Demo override, live Compare axis, PDF report (2 Sept 2026)
 
-- **`?demoTemp=46`** — opening the site with this URL parameter forces the selected city's current temperature in that browser tab only, with a fixed "🧪 DEMO — not real data" banner while active. Exists so the severity-adaptive UI (checklist tiers, citizen card, theme, gauge) can be demonstrated on demand — e.g. a Tamil Nadu city at 46 °C — without writing a fake reading anywhere. (`applyDemoOverride` in `src/hooks/useWeather.js`.)
+- **`?demoTemp=46`** (every selected city) or **`?demo=Leh:-8,Sri Ganganagar:46`** (named cities only, others stay real — added 5 Sept so one session can show the cold tier and the extreme tier side by side) — forces the selected city's current temperature in that browser tab only, with a fixed "🧪 DEMO — not real data" banner while active. Exists so the severity-adaptive UI (checklist tiers, citizen card, theme, gauge) can be demonstrated on demand — e.g. a Tamil Nadu city at 46 °C — without writing a fake reading anywhere. (`applyDemoOverride` in `src/hooks/useWeather.js`.)
 - **Compare radar** — the LST axis and the "coolest city" callout now use each city's live current temperature (the panel already fetched it) with the seed only as fallback, and a note under the title says which axes are live (LST/AQI/Wind) vs illustrative baselines (NDVI/NDBI/NDWI).
 - **PDF Report button** wired into EXPORT & SHARE (the print-ready report `generatePDF` in `exportUtils.js` had been built but never mounted) — real values or "N/A", per that file's own rule.
 

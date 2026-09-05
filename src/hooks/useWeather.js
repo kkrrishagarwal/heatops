@@ -100,17 +100,43 @@ const DEMO_TEMP = (() => {
   } catch { return null }
 })()
 
-function applyDemoOverride(data) {
-  if (DEMO_TEMP == null || !data?.current) return data
+// Per-city variant: ?demo=Leh:-8,Sri Ganganagar:46 — each named city is forced to its own
+// value while every other city stays real, so one session can show the cold tier and the
+// extreme tier side by side. Same rules: this browser only, banner always visible.
+const DEMO_BY_CITY = (() => {
+  try {
+    const raw = new URLSearchParams(window.location.search).get('demo')
+    if (!raw) return null
+    const map = {}
+    for (const part of raw.split(',')) {
+      const i = part.lastIndexOf(':')
+      if (i < 1) continue
+      const name = decodeURIComponent(part.slice(0, i)).trim().toLowerCase()
+      const v = parseFloat(part.slice(i + 1))
+      if (name && Number.isFinite(v)) map[name] = Math.max(-25, Math.min(60, v))
+    }
+    return Object.keys(map).length ? map : null
+  } catch { return null }
+})()
+
+export function demoTempFor(city) {
+  if (DEMO_BY_CITY && city && DEMO_BY_CITY[String(city).trim().toLowerCase()] != null) return DEMO_BY_CITY[String(city).trim().toLowerCase()]
+  return DEMO_TEMP
+}
+
+function applyDemoOverride(data, city) {
+  const t = demoTempFor(city)
+  if (t == null || !data?.current) return data
   return {
     ...data,
-    demoOverride: DEMO_TEMP,
-    current: { ...data.current, temp: DEMO_TEMP, feelsLike: DEMO_TEMP }
+    demoOverride: t,
+    demoOverrideCity: city || null,
+    current: { ...data.current, temp: t, feelsLike: t }
   }
 }
 
 function buildState({ data, loading, error, isStale, cachedAt, timedOut, fallbackSource = null }) {
-  return { data: applyDemoOverride(data), loading, error, isStale, cachedAt, timedOut, fallbackSource }
+  return { data, loading, error, isStale, cachedAt, timedOut, fallbackSource }
 }
 
 // When the live fetch has failed (after the 429 backoff), pick the best cached reading:
@@ -238,5 +264,6 @@ export function useWeather(city, cityState, callerTag = 'unknown') {
       .finally(() => clearTimeout(timeoutId))
   }
 
-  return { ...state, forceRefresh }
+  // demo override is applied here, where the city name is known (see DEMO_BY_CITY above)
+  return { ...state, data: applyDemoOverride(state.data, city), forceRefresh }
 }

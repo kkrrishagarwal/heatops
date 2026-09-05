@@ -4298,7 +4298,7 @@ function App({ user }) {
             background: 'rgba(124,45,18,0.95)', border: '1px solid #f59e0b', color: '#fde68a',
             borderRadius: 999, padding: '6px 16px', fontSize: 12, fontWeight: 700, boxShadow: '0 4px 14px rgba(0,0,0,0.4)'
           }}>
-            🧪 DEMO — temperature forced to {liveWeather.demoOverride}°C via ?demoTemp (this browser only, not real data). Remove the URL parameter to return to live readings.
+            🧪 DEMO — {liveWeather.demoOverrideCity || 'this city'} forced to {liveWeather.demoOverride}°C via the ?demo / ?demoTemp URL parameter (this browser only, not real data). Remove it to return to live readings.
           </div>
         )}
         {/* Floating AI Assistant — quick access from any dashboard tab without

@@ -230,7 +230,7 @@ STEP 5: History → Daily snapshots served by an API, a viewer page and CSV expo
 - Severity-adaptive Heat Action Plan checklist
 - Recommended canopy plan with one-click apply
 - AGNI answering a ranking question from real data
-- Demo mode: add `?demoTemp=46` to show Extreme-heat behaviour, clearly labelled as a demo
+- Demo mode: `?demo=Leh:-8,Sri Ganganagar:46` shows the cold protocol and full heat activation in one session, clearly labelled as a demo
 
 [Suggested visual: six feature thumbnails in a grid]
 
