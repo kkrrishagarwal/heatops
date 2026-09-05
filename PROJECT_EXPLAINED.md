@@ -480,6 +480,12 @@ The user reported the app "lagging a little". A CDP profile of the first 14 s af
 
 Also fixed the same day: `public/data/cityCoordinates.json` (the copy the browser fetches) had drifted from the master in `src/data/` — 1,689 entries instead of 1,932, with **50 cities geocoded outside India** (Jalore in France, Kutch in Colorado…), which is what put a stray city marker in the Arabian Sea when Rajasthan was opened. The public copy is now identical and `scripts/geocodeCities.mjs` writes both.
 
+### 8.25 Map colour = the category most cities are in (5 Sept 2026)
+
+Requested rule, replacing the median colour (§8.15/8.20): for each state, count its live cities per risk bucket (Extreme / Very High / High / Moderate / Low-Moderate / Low) and colour the state by the bucket with the most cities. A **tie goes to the more severe bucket** — a disaster-management map must not under-state risk. The median temperature stays as the headline number, and the tooltip and state panel now print the full breakdown ("among 76 cities: 3 HIGH · 38 MODERATE · 34 LOW-MODERATE · 1 LOW"), so an officer can see exactly what the colour rests on. The "states in Extreme/High" summary card follows the same rule. Implementation: `pluralityBucket()` and `getStateRiskColor()/getStateRiskLabel()` in `src/App.jsx`; `riskBucket`/`bucketCounts` travel with each state's live data.
+
+Verified with Playwright on four states (rendered district fill vs the breakdown): Jharkhand's load sample was a 4–4 tie between Moderate and Low-Moderate → Moderate, and the panel says "tie → the more severe category is shown"; Rajasthan 6 of 8 Low-Moderate → green (after the full 76-city refresh: 38 Moderate vs 34 Low-Moderate → yellow, which the panel explains); Tamil Nadu 5 of 8 Moderate; Himachal 4 of 8 Low.
+
 ## Bonus: Things that are built but not currently used (orphaned code)
 
 While exploring the codebase, these 4 files turned up fully written but not imported/rendered anywhere:

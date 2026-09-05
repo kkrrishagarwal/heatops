@@ -32,7 +32,7 @@ Status (1 Sept 2026): everything in this diagram is deployed at https://heatops.
 - Three.js / react-globe.gl
 
 ### Responsibilities
-- Render India map and state/city drill-down interactions (state colour = median of its cities' live temperatures; weather-condition badges per state; opening a state refreshes its cities live in one batched call)
+- Render India map and state/city drill-down interactions (state colour = the plurality risk category of its cities' live readings (ties → more severe), median temperature shown as detail; weather-condition badges per state; opening a state refreshes its cities live in one batched call)
 - Two independent modes: audience (Citizen / Authority) × layout (Mobile / Laptop); opt-in Lite mode for low-end devices (no WebGL globe, states-only map, no blur/animations)
 - Display live weather, AQI, and forecast cards
 - Surface heat-risk categories and visual scores

@@ -77,7 +77,7 @@ STEP 6: Ask AGNI → "Is it safe to go out today?" answered from real data
 
 ## Authority Journey
 STEP 1: Sign in → Choose "Government / Planner"
-STEP 2: Map → States coloured by the live median of their cities; weather badges
+STEP 2: Map → Each state coloured by the risk category most of its cities are in; weather badges
 STEP 3: State → All its cities refreshed live; open the hottest
 STEP 4: Analyse → Satellite indices, land cover, model insights
 STEP 5: Plan → Compare cities; simulate cool roofs, green cover, water bodies
@@ -225,7 +225,7 @@ STEP 5: History → Daily snapshots served by an API, a viewer page and CSV expo
 ---
 
 ## Key Demo Features
-- Live India map with median-based state colours and weather badges
+- Live India map: each state coloured by the category most of its cities are in (ties err toward the more severe), with the city counts on hover
 - 30-day temperature trend for any city, from our own daily archive — and "33 °C now, 40 °C expected" from the forecast high
 - Citizen view with safe hours and WhatsApp share
 - Severity-adaptive Heat Action Plan checklist

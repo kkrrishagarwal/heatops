@@ -94,7 +94,7 @@ The platform remains credible, fresh, and production-like in a public deployment
 
 ### Status (1 Sept 2026) — delivered
 - Automated refresh (GitHub Actions 3-hourly written; Vercel Cron 14:30 IST + 16:00 IST retry live), daily history snapshots (65+ days), history viewer + CSV, carried-forward flagging
-- Validated geocoding for 1,932 cities; "NO LIVE DATA" instead of fabricated numbers; state colour by live median; live refresh of the opened state
+- Validated geocoding for 1,932 cities; "NO LIVE DATA" instead of fabricated numbers; state colour by the plurality risk category of live cities (ties → more severe), median as detail; live refresh of the opened state
 - Citizen / Authority views with Safe hours, WhatsApp share, neighbourhood help card, Heatwave Action Checklist; Compare for citizens
 - Analysis grid on live temperature; Recommended plan (tree canopy vs the 3-30-300 rule's 30 %)
 - AGNI: India-only scope, national ranking answers, conversation memory, markdown, 5-model fallback chain

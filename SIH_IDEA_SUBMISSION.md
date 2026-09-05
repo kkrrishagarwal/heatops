@@ -60,7 +60,7 @@ Open-Meteo ──► refresh job (every 3 h, paced) ──► live-weather-cache
               ──► commit to GitHub (Git Data API) ──► Vercel auto-redeploy ──► browser
 
 USER FLOW
-Sign in ──► "Who are you?" (Citizen / Authority) ──► India map (median heat colour per state,
+Sign in ──► "Who are you?" (Citizen / Authority) ──► India map (each state coloured by the category most of its cities are in,
 weather badges) ──► click state (its cities refreshed live in one call) ──► click city
 ──► Overview · Analysis · Compare · Interventions ──► ask AGNI (grounded on the same data)
 ──► Share / Export / Heatwave Action Checklist

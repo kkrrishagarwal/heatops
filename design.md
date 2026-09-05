@@ -29,8 +29,8 @@ The first major user action is geographic discovery: the user sees the India map
 
 ### Drill-down flow
 1. One-time "Who are you?" — Citizen or Government / Planner (changeable later from the profile menu; independent of the Mobile / Laptop layout toggle)
-2. National map overview — each state coloured by the median of its cities' live temperatures; a single 🌫️ / 🌧️ / ☁️ badge where a weather condition crosses its threshold
-3. State selection — its cities refresh live in one call; the side panel shows the live median, not a seed
+2. National map overview — each state coloured by the risk category most of its cities are in (plurality; ties → more severe); a single 🌫️ / 🌧️ / ☁️ badge where a weather condition crosses its threshold
+3. State selection — its cities refresh live in one call; the side panel shows the per-category city counts behind the colour and the live median, not a seed
 4. City selection
 5. Dashboard: Citizen = Overview · What to do · Compare; Authority = Overview · Analysis · Compare · Interventions · AI + Export (+ Heatwave Action Checklist)
 
