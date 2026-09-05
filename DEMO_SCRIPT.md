@@ -5,13 +5,13 @@ Open **https://heatops.vercel.app/?demo=Leh:-8,Sri%20Ganganagar:46** before you 
 ## 0:00 — Opening line (map screen)
 > "Every number on this screen can be clicked and traced to its source. IMD tells you how hot and when; BhaskarOps tells you *why*, *where*, and *what to do* — for 1,932 Indian cities, live."
 
-Point at: the map colours ("each state is the live median of its cities — half its cities are at or above this"), a weather badge, the "updated X min ago" line.
+Point at: the map colours ("each state is the live median of its cities — half its cities are at or above this"), a weather badge, the "updated X min ago" line, and in the National Summary the hottest-cities list with its **"peak 40°"** tags and the **Today's forecast high** card ("now vs expected — both from the forecast, neither invented").
 
 ## 0:45 — The map is live, not a picture
 Click **Rajasthan**. Say: "Opening a state reads all its cities live in one call — see the green dots." Hover the state tooltip: "live median of 76 cities". Scroll the city list: "no number here is estimated — a city we can't reach says NO LIVE DATA."
 
 ## 1:30 — City dashboard (Sri Ganganagar → forced 46 °C by the demo link)
-Search **Sri Ganganagar** → Overview. The banner says "DEMO — forced to 46 °C, not real data". Say it out loud: *"Our demo mode is labelled, because our product never fakes a reading — even for a demo."* Show: the red theme, the Heat Risk Gauge, the live weather card with sources under each metric.
+Search **Sri Ganganagar** → Overview. The banner says "DEMO — forced to 46 °C, not real data". Say it out loud: *"Our demo mode is labelled, because our product never fakes a reading — even for a demo."* Show: the red theme, the Heat Risk Gauge, the live weather card with sources under each metric. Scroll to **30-DAY TEMPERATURE TREND** — "this is our own archive, one real reading a day since June; hollow dots are days we could not reach the city and say so" — and **TODAY'S HIGH vs LOW** from the forecast.
 
 ## 2:30 — The action layer (Authority)
 Scroll to **HEATWAVE ACTION CHECKLIST** — "ACTIVE — Extreme". "Five Heat Action Plan steps, modelled on Ahmedabad's HAP and NDMA guidelines. Tick one." Then: "At Moderate it becomes preparedness; at Low, routine; below 10 °C it becomes a cold-weather protocol." *(Optional: search Leh → −8 °C → cold checklist, 20 seconds.)*
