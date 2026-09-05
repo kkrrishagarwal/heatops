@@ -22,7 +22,7 @@ import {
   Geography,
   Marker
 } from 'react-simple-maps'
-import { geoCentroid } from 'd3'
+import { geoCentroid, geoMercator } from 'd3'
 import './App.css'
 import { fetchJson, describeFetchError } from './utils/fetchJson'
 import { setBulkWeatherCache, getBulkWeatherLastUpdated, normaliseBulkCities } from './utils/bulkWeatherCache'
@@ -988,6 +988,18 @@ const JK_URL = '/data/jk_ladakh_official.geojson'
 // India's Mercator mid-latitude). Kashmir, Arunachal and the A&N / Lakshadweep labels
 // stay inside the box — checked at scale 1120; anything larger clips the top.
 const INDIA_MAP_PROJECTION_CONFIG = { scale: 1120, center: [82.8, 23.2] }
+// One shared d3 projection for every map layer (react-simple-maps accepts a projection
+// function directly). translate = half of ComposableMap's default 800x600 viewBox, i.e. what
+// the library computed from the config above. precision(0) turns off d3-geo's adaptive
+// resampling: by default it subdivides every border segment into great-circle steps, which
+// a CPU profile showed to be the bulk of the projection work (linePoint/mercatorRaw) — and
+// it grew as the geometry was simplified, since longer segments get more subdivisions.
+// At this map size Mercator straight segments are visually identical.
+const INDIA_MAP_PROJECTION = geoMercator()
+  .translate([400, 300])
+  .scale(INDIA_MAP_PROJECTION_CONFIG.scale)
+  .center(INDIA_MAP_PROJECTION_CONFIG.center)
+  .precision(0)
 
 // STATES_URL (~23MB) and JK_URL are each used by TWO separate map layers
 // (fill + border). Without this cache, react-simple-maps' <Geographies> fetches
@@ -995,7 +1007,7 @@ const INDIA_MAP_PROJECTION_CONFIG = { scale: 1120, center: [82.8, 23.2] }
 // contributor to the slow/"stuck" map load. One shared in-flight-promise cache
 // per URL means every layer reuses the same fetch+parse instead of redoing it.
 const geoDataCache = new Map()
-// These files are 10s of MB, so the timeout is generous — but it is a real
+// The simplified files are 0.1–0.4 MB (scripts/simplifyGeo.sh); the timeout stays generous — but it is a real
 // timeout: a stalled CDN no longer leaves the map spinner up forever.
 const GEO_FETCH_TIMEOUT_MS = 90000
 function loadGeoData(url) {
@@ -1050,7 +1062,7 @@ function smoothRing(coords, iterations = 1) {
     ) {
       smoothed = [...smoothed, smoothed[0]]
     }
-// These files are 10s of MB, so the timeout is generous — but it is a real
+// The simplified files are 0.1–0.4 MB (scripts/simplifyGeo.sh); the timeout stays generous — but it is a real
 // timeout: a stalled CDN no longer leaves the map spinner up forever.
 const GEO_FETCH_TIMEOUT_MS = 90000
 function loadGeoData(url) {
@@ -1090,9 +1102,18 @@ function smoothGeometry(geometry) {
   return geometry
 }
 
+// Memoized per feature object: the states layers call this inside their render function,
+// so without the cache every re-render (cache load, live sample, selection…) re-smoothed
+// ~47k vertices per layer and handed react-simple-maps a brand-new geometry to re-project.
+const smoothedFeatureCache = new WeakMap()
 function smoothGeoFeature(feature) {
   if (!feature || !feature.geometry) return feature
-  return { ...feature, geometry: smoothGeometry(feature.geometry) }
+  let out = smoothedFeatureCache.get(feature)
+  if (!out) {
+    out = { ...feature, geometry: smoothGeometry(feature.geometry) }
+    smoothedFeatureCache.set(feature, out)
+  }
+  return out
 }
 
 // Single source of truth for heat-index color/risk buckets — used by getHeatIndexColor,
@@ -1247,13 +1268,6 @@ function getRawName(geo) {
   )
 }
 
-const EXTREME_HEAT_HOTSPOTS = [
-  { name: 'Delhi', coords: [77.1, 28.6] },
-  { name: 'Rajasthan', coords: [74.0, 26.5] },
-  { name: 'Uttar Pradesh', coords: [80.9, 26.8] },
-  { name: 'Gujarat', coords: [71.5, 22.5] },
-  { name: 'Bihar', coords: [85.3, 25.5] }
-]
 
 // city/state pairs use STATE_DATA's actual city-list spelling (Delhi's own entry lists
 // "New Delhi", not "Delhi", as its first city) so these map straight onto real keys.
@@ -1276,8 +1290,7 @@ const QUICK_PICK_CITIES = [
 const DistrictsLayer = React.memo(function DistrictsLayer({ DATA }) {
   return (
     <ComposableMap
-      projection='geoMercator'
-      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      projection={INDIA_MAP_PROJECTION}
       style={INDIA_MAP_LAYER_STYLE}
     >
       <GeographiesLayer
@@ -1366,8 +1379,7 @@ function WeatherGlyph({ kind }) {
 const WeatherOverlayIcons = React.memo(function WeatherOverlayIcons({ DATA, centroids }) {
   return (
     <ComposableMap
-      projection='geoMercator'
-      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      projection={INDIA_MAP_PROJECTION}
       style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
     >
       {Object.entries(centroids || {}).map(([name, coords]) => {
@@ -1396,8 +1408,7 @@ const WeatherOverlayIcons = React.memo(function WeatherOverlayIcons({ DATA, cent
 const StatesInteractiveLayer = React.memo(function StatesInteractiveLayer({ DATA, onStateClick, onHoverEnter, onHoverLeave, solidFill = false }) {
   return (
     <ComposableMap
-      projection='geoMercator'
-      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      projection={INDIA_MAP_PROJECTION}
       style={INDIA_MAP_LAYER_STYLE}
     >
       <GeographiesLayer
@@ -1460,8 +1471,7 @@ const StatesInteractiveLayer = React.memo(function StatesInteractiveLayer({ DATA
 const JKInteractiveLayer = React.memo(function JKInteractiveLayer({ DATA, onStateClick, onHoverEnter, onHoverLeave }) {
   return (
     <ComposableMap
-      projection='geoMercator'
-      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      projection={INDIA_MAP_PROJECTION}
       style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
     >
       <GeographiesLayer
@@ -1515,8 +1525,7 @@ const JKInteractiveLayer = React.memo(function JKInteractiveLayer({ DATA, onStat
 const StateBordersLayer = React.memo(function StateBordersLayer({ DATA, registerBorderRef }) {
   return (
     <ComposableMap
-      projection='geoMercator'
-      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      projection={INDIA_MAP_PROJECTION}
       style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
     >
       <GeographiesLayer
@@ -1561,8 +1570,7 @@ const StateBordersLayer = React.memo(function StateBordersLayer({ DATA, register
 const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorderRef }) {
   return (
     <ComposableMap
-      projection='geoMercator'
-      projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+      projection={INDIA_MAP_PROJECTION}
       style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
     >
       <GeographiesLayer
@@ -1675,27 +1683,37 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
   // a tint alone couldn't visually distinguish "heavy cloud" (gray) from "active rain"
   // (blue) once blended over green/olive heat colors, so rain/dust also get an emoji
   // marker pinned at their state's true geometric center.
-  const stateCentroids = useMemo(() => {
+  // Two steps so the expensive part (geoCentroid over every state's coordinates) runs once
+  // per GeoJSON load, not on every live-data change: previously DATA was in the deps and
+  // the centroids were recomputed six times during a normal map load (visible in a CPU
+  // profile as d3's centroidRingPoint).
+  const rawCentroids = useMemo(() => {
     const out = {}
     if (statesGeoData?.features) {
       for (const geo of statesGeoData.features) {
         const raw = getRawName(geo)
-        const name = fixStateName(raw, DATA)
-        if (!name || /jammu|kashmir|ladakh/i.test(name || raw)) continue
-        try { out[name] = geoCentroid(geo) } catch { /* skip malformed geometry */ }
+        if (!raw || /jammu|kashmir|ladakh/i.test(raw)) continue
+        try { out[raw] = geoCentroid(geo) } catch { /* skip malformed geometry */ }
       }
     }
     if (jkGeoData?.features) {
       for (const geo of jkGeoData.features) {
         const raw = getRawName(geo)
-        if (!/jammu|kashmir|ladakh/i.test(raw)) continue
-        const name = fixStateName(raw, DATA)
-        if (!name) continue
-        try { out[name] = geoCentroid(geo) } catch { /* skip malformed geometry */ }
+        if (!raw || !/jammu|kashmir|ladakh/i.test(raw)) continue
+        try { out[raw] = geoCentroid(geo) } catch { /* skip malformed geometry */ }
       }
     }
     return out
-  }, [statesGeoData, jkGeoData, DATA])
+  }, [statesGeoData, jkGeoData])
+  const stateCentroids = useMemo(() => {
+    const out = {}
+    for (const [raw, c] of Object.entries(rawCentroids)) {
+      const name = fixStateName(raw, DATA)
+      if (!name || /jammu|kashmir|ladakh/i.test(name) && !/jammu|kashmir|ladakh/i.test(raw)) continue
+      out[name] = c
+    }
+    return out
+  }, [rawCentroids, DATA])
 
   // Heat values are a static dataset (not a live feed), so "loaded N ago" — tracked from
   // when this map actually finished loading in THIS session — is the honest framing,
@@ -1806,33 +1824,14 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
       <StateBordersLayer DATA={DATA} registerBorderRef={registerBorderRef} />
       <JKBordersLayer DATA={DATA} registerBorderRef={registerBorderRef} />
 
-      {/* LAYER 4: Pulsing extreme-heat hotspot markers.
-          Previously red/#ff3333 — same color family as the EXTREME/VERY HIGH
-          heat zones underneath them, so they nearly disappeared into the map.
-          White-with-dark-outline guarantees contrast against red, orange, AND
-          yellow heat zones alike (not just the specific shade behind any one
-          marker), per the suggested fix. */}
-      <ComposableMap
-        projection='geoMercator'
-        projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
-        style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
-      >
-        {EXTREME_HEAT_HOTSPOTS.map((spot) => (
-          <Marker key={spot.name} coordinates={spot.coords}>
-            <circle r={6} fill='none' stroke='#ffffff' strokeWidth={1.5} opacity={0.95}>
-              <animate attributeName='r' values='5;10;5' dur='1.6s' repeatCount='indefinite' />
-              <animate attributeName='opacity' values='0.95;0.4;0.95' dur='1.6s' repeatCount='indefinite' />
-            </circle>
-            <circle r={3.5} fill='#ffffff' stroke='#0a0e1a' strokeWidth={1.5} />
-          </Marker>
-        ))}
-      </ComposableMap>
+      {/* (A hard-coded "extreme heat hotspot" layer used to pulse over Delhi, Rajasthan,
+          UP, Gujarat and Bihar regardless of the live data. Removed 5 Sept 2026: it was
+          not a measurement, and its two SMIL animations kept the map repainting.) */}
 
       {/* LAYER 5: Active-state glowing cyan crosshair marker */}
       {activeName && activeData?.centroid && (
         <ComposableMap
-          projection='geoMercator'
-          projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+          projection={INDIA_MAP_PROJECTION}
           style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
         >
           <Marker coordinates={activeData.centroid}>
@@ -1847,8 +1846,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
 
       {/* LAYER 6: Island labels */}
       <ComposableMap
-        projection='geoMercator'
-        projectionConfig={INDIA_MAP_PROJECTION_CONFIG}
+        projection={INDIA_MAP_PROJECTION}
         style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
       >
         <Marker coordinates={[72.6, 10.5]}>
@@ -2058,8 +2056,9 @@ function LegendRow({ color, label }) {
 // -> 15s of cursor movement) showed react-simple-maps' own path-projection math
 // (useGeographies -> prepareFeatures -> path/mercatorRaw/polygonContains, all internal to
 // the library, not any app code) consuming ~45 of ~75 profiled seconds in one continuous
-// block right after the map appears — the districts layer alone has 594 features in a
-// 34.5MB file, and the states layer's 35 features average ~650KB of coordinate data each.
+// block right after the map appears. (Since 5 Sept 2026 the served files are simplified
+// with mapshaper — scripts/simplifyGeo.sh — to ~15k district and ~7.5k state vertices, which
+// cut that projection work about 5x; the chunking below still spreads what remains.)
 // That's a single synchronous main-thread block long enough to make the cursor feel
 // completely unresponsive for a real stretch of time, which survived every previous fix
 // (timer isolation, theming, etc.) because none of those touched this — it isn't caused by
@@ -2071,8 +2070,8 @@ function LegendRow({ color, label }) {
 // recompute its already-projected paths (which a naive "grow one big slice" approach would
 // do, multiplying total work rather than just spreading it out).
 // Chunk size is per-URL, not a flat constant: the districts file has many cheap features
-// (594 features / 34.5MB), but the states file has very few, individually huge ones (35
-// features / 23MB, ~650KB of coordinates each) — a chunk size tuned for districts would
+// (594 features), but the states file has very few, individually large ones (35 features,
+// the coastline-heavy ones carrying most of the vertices) — a chunk size tuned for districts would
 // still make each states chunk freeze for a long stretch. Smaller chunks were tried as a
 // flat default (3) and made total time-to-fully-rendered WORSE, not better, since each
 // chunk forces a full React re-render/commit and that fixed per-chunk overhead dominates at
