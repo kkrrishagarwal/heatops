@@ -1135,6 +1135,37 @@ function getRiskLabel(heatIndex) {
   return HEAT_INDEX_BUCKETS.find(b => heatIndex >= b.min).label
 }
 
+// Map colour rule (5 Sept 2026): a state is coloured by the risk category that the MOST of
+// its cities are in — a plurality vote over HEAT_INDEX_BUCKETS — not by a single statistic.
+// A median (used before) hides "what most of the state is in" once buckets are involved:
+// half the cities at 29 °C and half at 31 °C is a coin-flip between two colours. Ties go to
+// the more severe bucket (HEAT_INDEX_BUCKETS is ordered most → least severe and we only
+// replace the leader on a strictly larger count), because a disaster-management map should
+// never under-state risk on a tie. The median stays available as supporting detail.
+function pluralityBucket(temps) {
+  const counts = HEAT_INDEX_BUCKETS.map(b => ({ label: b.label, color: b.color, min: b.min, count: 0 }))
+  for (const t of temps) {
+    const i = HEAT_INDEX_BUCKETS.findIndex(b => t >= b.min)
+    if (i >= 0) counts[i].count++
+  }
+  let best = null
+  for (const c of counts) if (!best || c.count > best.count) best = c
+  const total = temps.length
+  return {
+    bucket: best ? { label: best.label, color: best.color, min: best.min, count: best.count, share: total ? Math.round((best.count / total) * 100) : 0 } : null,
+    counts: counts.map(c => ({ ...c, share: total ? Math.round((c.count / total) * 100) : 0 })),
+    total
+  }
+}
+// Colour / label for a state's map fill and badge: the plurality bucket when live city
+// readings exist, else the bucket of whatever heat index the state carries.
+function getStateRiskColor(data) {
+  return data?.riskBucket?.color || getHeatIndexColor(typeof data?.heatIndex === 'number' ? data.heatIndex : 30)
+}
+function getStateRiskLabel(data) {
+  return data?.riskBucket?.label || getRiskLabel(typeof data?.heatIndex === 'number' ? data.heatIndex : 30)
+}
+
 // Heat Risk Gauge geometry — was previously 4 hand-picked arc paths whose angular spans
 // already summed to the full 180°, permanently hiding a 5th "base" green arc drawn
 // underneath them, with a "needle" that was just a dot fixed at the pivot and never actually
@@ -1306,7 +1337,7 @@ const DistrictsLayer = React.memo(function DistrictsLayer({ DATA }) {
             }
 
             const heat = DATA?.[stateName]?.heatIndex || 30
-            const color = getHeatIndexColor(heat)
+            const color = getStateRiskColor(DATA?.[stateName]) || getHeatIndexColor(heat)
             if (!color || typeof color !== 'string') {
               console.warn('INVALID HEAT COLOR', heat, stateName)
             }
@@ -1314,6 +1345,7 @@ const DistrictsLayer = React.memo(function DistrictsLayer({ DATA }) {
               <Geography
                 key={geo.rsmKey}
                 geography={geo}
+                data-state={stateName}
                 style={{
                   default: {
                     fill: color,
@@ -1424,7 +1456,7 @@ const StatesInteractiveLayer = React.memo(function StatesInteractiveLayer({ DATA
             }
 
             const heat = DATA?.[name]?.heatIndex || 30
-            const color = getHeatIndexColor(heat)
+            const color = getStateRiskColor(DATA?.[name]) || getHeatIndexColor(heat)
             // Normally transparent — the district layer underneath carries the heat colour.
             // In Lite mode that layer is skipped, so this one paints the state itself.
             const baseFill = solidFill ? color : 'rgba(0,0,0,0)'
@@ -1432,6 +1464,7 @@ const StatesInteractiveLayer = React.memo(function StatesInteractiveLayer({ DATA
               <Geography
                 key={geo.rsmKey + '_state'}
                 geography={geo}
+                data-state={name}
                 onClick={() => onStateClick(name)}
                 onMouseEnter={() => onHoverEnter(name)}
                 onMouseLeave={() => onHoverLeave()}
@@ -1484,7 +1517,7 @@ const JKInteractiveLayer = React.memo(function JKInteractiveLayer({ DATA, onStat
               const rawState = p.NAME_1 || p.ST_NM || p.STATE || p.st_nm || ''
               const stateName = fixStateName(rawState, DATA)
 
-              const color = getHeatIndexColor(DATA?.[stateName]?.heatIndex || 30)
+              const color = getStateRiskColor(DATA?.[stateName])
               return (
                 <Geography
                   key={geo.rsmKey + '_jk'}
@@ -1903,9 +1936,15 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
           </div>
           <div style={{ marginBottom: 4 }}>
             Risk:{' '}
-            <span style={{ background: getHeatIndexColor(activeData.heatIndex), padding: '1px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700 }}>
-              {getRiskLabel(activeData.heatIndex)}
+            <span style={{ background: getStateRiskColor(activeData), padding: '1px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700 }}>
+              {getStateRiskLabel(activeData)}
             </span>
+            {activeData.riskBucket && (
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>
+                colour = most common category: {activeData.riskBucket.count} of {activeData.liveCityCount} cities are {activeData.riskBucket.label}
+                {activeData.bucketCounts && ` · ${activeData.bucketCounts.filter(b => b.count > 0 && b.label !== activeData.riskBucket.label).map(b => `${b.count} ${b.label}`).join(' · ')}`}
+              </div>
+            )}
           </div>
           <div style={{ marginBottom: 4 }}>📍 Cities: <strong>{activeData.cities?.length || 0}</strong></div>
           <div style={{ color: '#d97706', fontSize: 11, marginTop: 6 }}>Click to explore cities →</div>
@@ -3048,11 +3087,11 @@ function App({ user }) {
   // (same bulk Open-Meteo cache that powers the ticker/leader lists; entries carry their
   // own .state field, so this self-extends as the cache gains cities). Replaces
   // STATE_DATA's hardcoded per-state avgLST as the map-coloring source.
-  // State heat index = the MEDIAN of its cities' live temperatures, not the mean. Rule
-  // requested for the map: if half of a state's cities are at ≥ 30 °C the state is
-  // MODERATE (yellow) even when a few cold hill stations drag the average under 30 — and
-  // symmetrically it only turns HIGH (orange) once half its cities are ≥ 35 °C. The median
-  // is exactly "the temperature that half the state's cities reach".
+  // State heat index (the number) = the MEDIAN of its cities' live temperatures — "the
+  // temperature half the state's cities reach". The map COLOUR, since 5 Sept 2026, is the
+  // plurality risk category of those same cities (riskBucket below, see pluralityBucket):
+  // whichever bucket holds the most cities wins, ties go to the more severe bucket. The
+  // median is kept as the headline number and supporting detail in the tooltip/panel.
   const liveStateHeatIndex = useMemo(() => {
     // Prefer the freshest vintage per state: when a state has enough readings observed in
     // the last 15 minutes (the map-load sample, or the full refresh a selection triggers),
@@ -3082,9 +3121,12 @@ function App({ user }) {
       // upper median for even counts: with exactly half the cities at ≥ 30 the state reads 30
       const median = arr[Math.floor(n / 2)]
       const mean = arr.reduce((a, b) => a + b, 0) / n
+      const plural = pluralityBucket(arr)
       out[state] = {
         heatIndex: Math.round(median * 10) / 10,
         meanTemp: Math.round(mean * 10) / 10,
+        riskBucket: plural.bucket,      // what colours the map (plurality of city categories)
+        bucketCounts: plural.counts,    // per-category city counts for tooltip / detail panel
         cityCount: n,
         vintage: useFresh ? (arrFresh.length >= arrAll.length ? 'live' : 'sample') : 'cache'
       }
@@ -3141,7 +3183,7 @@ function App({ user }) {
       const live = liveStateHeatIndex[state]
       const weatherCondition = liveStateWeatherCondition[state] || { type: 'clear' }
       return [state, live
-        ? { ...data, heatIndex: live.heatIndex, meanTemp: live.meanTemp, heatIndexLive: true, liveCityCount: live.cityCount, heatIndexVintage: live.vintage, weatherCondition }
+        ? { ...data, heatIndex: live.heatIndex, meanTemp: live.meanTemp, heatIndexLive: true, liveCityCount: live.cityCount, heatIndexVintage: live.vintage, riskBucket: live.riskBucket, bucketCounts: live.bucketCounts, weatherCondition }
         : { ...data, heatIndexLive: false, weatherCondition }]
     }))
   }, [liveStateHeatIndex, liveStateWeatherCondition])
@@ -3152,7 +3194,7 @@ function App({ user }) {
   const extremeOrHighRiskStateCount = useMemo(() => {
     const states = Object.values(liveIndiaData)
     if (states.some(s => s.heatIndexLive)) {
-      return states.filter(s => s.heatIndex >= 35).length
+      return states.filter(s => (s.riskBucket ? s.riskBucket.min >= 35 : s.heatIndex >= 35)).length
     }
     return Object.values(STATE_DATA).filter(s => s.risk === 'EXTREME' || s.risk === 'HIGH').length
   }, [liveIndiaData])
@@ -4046,7 +4088,7 @@ function App({ user }) {
                       explicit (est.) marker when only the hardcoded fallback exists. */}
                   {(() => {
                     const sd = liveIndiaData[selectedState]
-                    const label = typeof sd?.heatIndex === 'number' ? getRiskLabel(sd.heatIndex) : (STATE_DATA[selectedState]?.risk || 'N/A')
+                    const label = sd?.riskBucket?.label || (typeof sd?.heatIndex === 'number' ? getRiskLabel(sd.heatIndex) : (STATE_DATA[selectedState]?.risk || 'N/A'))
                     const c = getRiskBadgeColor(label)
                     return (
                       <span className="risk-badge" style={{ background: c.bg, color: c.text }}>
@@ -4056,6 +4098,23 @@ function App({ user }) {
                   })()}
                 </div>
 
+                {/* Why the state has the colour it has: the plurality vote behind the map fill,
+                    with the full per-category city counts as supporting detail for a DM. */}
+                {liveIndiaData[selectedState]?.riskBucket && (
+                  <div data-testid="state-bucket-breakdown" style={{ fontSize: 11, color: '#cbd5e1', margin: '6px 0 10px', lineHeight: 1.5 }}>
+                    {t('statePanel.colourRule', 'Map colour = the most common category among {{n}} cities with live readings:', { n: liveIndiaData[selectedState].liveCityCount })}{' '}
+                    {liveIndiaData[selectedState].bucketCounts.filter(b => b.count > 0).map((b, i) => (
+                      <span key={b.label} data-bucket={b.label} data-count={b.count}>
+                        {i > 0 ? ' · ' : ''}
+                        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: b.color, marginRight: 4, verticalAlign: 'middle' }} />
+                        <strong>{b.count}</strong> {b.label} ({b.share}%)
+                      </span>
+                    ))}
+                    {liveIndiaData[selectedState].bucketCounts.filter(b => b.count === liveIndiaData[selectedState].riskBucket.count).length > 1 && (
+                      <span style={{ color: '#fbbf24' }}> · {t('statePanel.tieRule', 'tie → the more severe category is shown')}</span>
+                    )}
+                  </div>
+                )}
                 <div className="metrics-grid">
                   {/* Live state average of the cached/refreshed city temperatures — the same number
                       that colours the state on the map and drives the badge above. The old tile
@@ -5333,7 +5392,7 @@ function App({ user }) {
                     }}><PanelIcon name="copy" size={13} color="currentColor" /> {t('buttons.copySummary', 'Copy Summary')}</button>
                     <button onClick={() => {
                       const surfaceTemp = liveWeather?.current?.surfaceTemp
-                      const liveRisk = liveIndiaData[selectedState]?.heatIndexLive ? getRiskLabel(liveIndiaData[selectedState].heatIndex) : `${state.risk} (estimated)`
+                      const liveRisk = liveIndiaData[selectedState]?.heatIndexLive ? getStateRiskLabel(liveIndiaData[selectedState]) : `${state.risk} (estimated)`
                       const msg = `Check out ${selectedCity} heat analysis on BhaskarOps! Surface Temp: ${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) + '°C (live)' : 'N/A'} | Risk: ${liveRisk}`
                       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`)
                     }}><PanelIcon name="message-circle" size={13} color="currentColor" /> {t('buttons.whatsappShare', 'WhatsApp Share')}</button>
@@ -5342,7 +5401,7 @@ function App({ user }) {
                       const lulcEntry = getLulcWithFallback(selectedCity, selectedState, lulcReal, cityCoordsData)
                       const vegCell = lulcEntry ? `${lulcEntry.vegetation}${lulcEntry.isFallback ? ` (est. from ${lulcEntry.fallbackCity})` : ''}` : 'N/A'
                       const builtCell = lulcEntry ? `${lulcEntry.builtUp}${lulcEntry.isFallback ? ` (est. from ${lulcEntry.fallbackCity})` : ''}` : 'N/A'
-                      const liveRisk = liveIndiaData[selectedState]?.heatIndexLive ? getRiskLabel(liveIndiaData[selectedState].heatIndex) : `${state.risk} (estimated)`
+                      const liveRisk = liveIndiaData[selectedState]?.heatIndexLive ? getStateRiskLabel(liveIndiaData[selectedState]) : `${state.risk} (estimated)`
                       const csv = `City,State,SurfaceTempC_live,VegetationPct_WorldCover,BuiltUpPct_WorldCover,AQI_live,Risk\n${selectedCity},${selectedState},${typeof surfaceTemp === 'number' ? surfaceTemp.toFixed(1) : 'N/A'},${vegCell},${builtCell},${liveWeather?.aqi?.usAQI ?? 'N/A'},${liveRisk}`
                       const blob = new Blob([csv], {type:'text/csv'})
                       const url = window.URL.createObjectURL(blob)
