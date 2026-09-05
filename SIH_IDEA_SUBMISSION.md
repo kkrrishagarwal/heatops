@@ -44,7 +44,7 @@ Everything below is true of the live prototype at https://heatops.vercel.app as 
 ## Slide 3 — Technical approach (Template 3)
 
 **Technologies used**
-- **Frontend:** React 18 + Vite · react-simple-maps (GeoJSON: 36 states, 594 districts, chunked render) · Recharts · i18next (11 languages)
+- **Frontend:** React 18 + Vite · react-simple-maps (GeoJSON: 36 states, 594 districts, chunked render) · Recharts · Three.js globe · i18next (11 languages)
 - **Backend:** Node.js serverless functions on Vercel — Gemini proxy (key never reaches the browser), cron refresh; **GitHub Actions** job every 3 h; GitHub Git Data API commits data back to the repo
 - **AI:** Google Gemini via AGNI persona; 5-model fallback chain; system prompt enforces grounding, India-only scope, "(estimated)" tagging
 - **Data / ML:** Open-Meteo (live weather, AQI, geocoding) · ESA WorldCover 10 m (land cover incl. tree canopy) · NASA MODIS MOD11A1 satellite surface temperature via Earthdata/AppEEARS (integration in progress) · OpenStreetMap Overpass + Nominatim (building density, validated coordinates) · scikit-learn RandomForest trained offline on a published MODIS dataset (20 cities, 2000–2018)
@@ -89,7 +89,7 @@ weather badges) ──► click state (its cities refreshed live in one call) �
 - 5-model Gemini chain; paid key for production; India-only ranking answers computed from our own cache
 - Validated geocoding (Open-Meteo → OSM Nominatim → spelling aliases); honest "NO LIVE DATA"; peak-hour (14:30 IST) snapshots
 - Both R² scores disclosed on screen; roadmap: retrain on ISRO INSAT-3D LST via MOSDAC
-- Chunked map rendering, cached fallbacks, error boundaries; Lite mode for low-end phones (states-only map, no animations); scale path: Postgres history mirror (already coded, paused)
+- Chunked map rendering, cached fallbacks, error boundaries; Lite mode for low-end phones (no 3D globe, states-only map); scale path: Postgres history mirror (already coded, paused)
 
 ---
 

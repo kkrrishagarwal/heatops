@@ -17,6 +17,7 @@
 | **React (Vite)** | The dashboard is highly interactive (tabs, sliders, live-updating charts) — React's state-driven UI model is a natural fit, and Vite's dev server + build are both fast. |
 | **JavaScript (JSX), not TypeScript** | Simplicity for a small team/hackathon pace — the type-checking overhead was skipped. |
 | **react-simple-maps + d3-geo** | For India's choropleth map (coloring state/district boundaries) — this library is built specifically for SVG-based geographic maps and takes GeoJSON directly. |
+| **react-globe.gl + three.js** | Only for the intro/launch screen — to show a rotating 3D Earth globe, which isn't possible with pure CSS/SVG. |
 | **recharts** | Charts (radar comparison, line trends, bar charts) — a React-native charting library with low boilerplate. |
 | **react-i18next** | For supporting 11 Indian languages — this is the industry-standard i18n library for React. |
 | **Node.js scripts (.mjs)** | Data-refresh scripts (weather cache, city geocoding) — small standalone scripts that run via cron or manually; a full backend framework wasn't needed for them. |
@@ -103,7 +104,7 @@ heatops/
 
 Here's what happens, step by step, when a user opens the app:
 
-1. **The sign-in screen appears** (`LaunchScreen.jsx`) — a starfield and a hand-drawn wireframe globe on a plain 2D canvas (the three.js globe was removed on 5 Sept 2026, see §8.23). Login/register happens purely in `localStorage` (there's no real database — this is demo-level auth, not real user accounts).
+1. **The sign-in screen appears** (`LaunchScreen.jsx`) — with a 3D globe. Login/register happens purely in `localStorage` (there's no real database — this is demo-level auth, not real user accounts).
 
 2. **After sign-in, the map screen appears** (the `IndiaMap` component inside `App.jsx`). At this point, `public/live-weather-cache.json` gets fetched in the background — a file that already has the current temperature, rain-chance, AQI, cloud-cover, and PM10 stored for all 1,932 cities (because fetching all 2,050 cities live would be far too slow).
 
@@ -127,6 +128,7 @@ Here's what happens, step by step, when a user opens the app:
 |---|---|---|
 | React 18 + Vite | The entire frontend UI | Fast dev experience, component-based, a natural fit for an interactive dashboard |
 | react-simple-maps + d3-geo | India's choropleth map | A library built specifically for SVG-based geographic maps, supports GeoJSON directly |
+| react-globe.gl + three.js | The intro screen's 3D globe | Purely for visual polish — not possible without 3D rendering |
 | recharts | All charts (radar, line, bar) | Low-boilerplate charting that works well with React |
 | react-i18next | 11 languages | The industry-standard React i18n solution |
 | Tailwind CSS (partial) + custom CSS | Styling | A config file exists, but most styling is actually custom inline styles in App.jsx |
@@ -456,10 +458,6 @@ MOSDAC (ISRO) access is still pending, so a NASA Earthdata account (`kkrrishagar
 - **Forecast high in the cache.** Every refresh path now stores `tempMax` (Open-Meteo `daily.temperature_2m_max`) next to the current reading, and the daily snapshots keep it. The hottest-cities list shows "peak 40°" when the forecast high is above the current reading, and the National Summary has a "Today's forecast high" card — so the demo can say "33 °C now, 40 °C expected" without inventing anything.
 - **GitHub Actions refresh is live.** `.github/workflows/refresh-weather.yml` was pushed once the token had the `workflow` scope; the first run failed on a missing `pg` package (the script imports the optional Postgres client), fixed by adding `npm ci` before the refresh. It runs at :30 past every third hour, paced against Open-Meteo, and commits as `kkrrishagarwal` so Vercel Hobby redeploys it. The laptop cron (`scripts/localAutoRefresh.sh`) stays as a backup.
 - **`DEMO_SCRIPT.md`** — an 8-minute click-script for 9–10 Sept, with fallbacks for a dead network, AGNI quota and the demo banner.
-
-### 8.23 The 3D login globe is gone (5 Sept 2026)
-
-The rotating "Blue Marble" globe on the sign-in screen (react-globe.gl + three.js) was decoration only: the sign-in card never depended on it, its "Skip" button only stopped the spin, and the intro zoom it was built for was never triggered anywhere. It cost a **1.7 MB** JavaScript chunk, a **1.4 MB** texture and a permanent WebGL render loop on the very first screen — the worst possible first impression on a budget phone, and the code itself carried a comment about the GPU staying pegged into the dashboard transition. Removed along with both packages (32 fewer dependencies); the launch-screen chunk is now **8 KB**. The starfield and the lightweight 2D wireframe globe with its orbiting satellite (previously the no-WebGL fallback) remain.
 
 ## Bonus: Things that are built but not currently used (orphaned code)
 

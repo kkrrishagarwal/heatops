@@ -20,7 +20,7 @@ BhaskarOps solves this by fusing real satellite, weather, and ML-derived data in
 
 **Technology Stack being used** (1024 char limit, current: ~980)
 
-Frontend: React 18 + Vite, react-simple-maps (interactive India map with district-level GeoJSON), Recharts (radar/trend charts), i18next (11-language support).
+Frontend: React 18 + Vite, react-simple-maps (interactive India map with district-level GeoJSON), Recharts (radar/trend charts), Three.js / react-globe.gl (3D login globe), i18next (11-language support).
 
 Backend: Vercel serverless functions (Node.js) — proxy Gemini API calls (key never reaches the browser) and run a scheduled Vercel Cron job that refreshes live weather/AQI data daily and auto-commits it via the GitHub REST API, triggering an auto-redeploy.
 
@@ -46,6 +46,7 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 - **🧑 Citizen / 🏛️ Authority view** — a one-time "Who are you?" screen after sign-in; Citizen = essentials in plain language (city, temperature, risk badge, air-quality category, one tip; Overview · What to do · Compare), Authority = the full technical dashboard; switchable later from the profile menu / ☰ drawer / laptop navbar, or via `?view=citizen`
 - **📱 Mobile / 💻 Laptop layout toggle** — independent of the audience choice; auto-picks by screen width on first visit, remembered afterwards
 - **Mobile header with ☰ drawer** — stacked rows and a drawer for language / view switches / profile; nothing scrolls sideways at 375 px
+- **3D rotating globe login screen** — Three.js / react-globe.gl animated globe before sign-in, sets the tone immediately
 - **Animated heat ticker (navbar)** — scrolling live temperature readout across cities in the top bar
 - **Quick Picks shortcuts** — one-click pill buttons (Delhi, Mumbai, Bengaluru, Jaipur, Chennai, Kolkata) so users skip search on first open
 - **Heat Index color legend** — always-visible panel key mapping 6 heat tiers (Low → Extreme) to colors, plus a white pulsing-dot entry that explains the heatwave-state markers on the map
@@ -91,7 +92,7 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 - **One colour vintage on the map** — on load, one batched call samples ~8 cities per state so every state is coloured from the same current readings (re-sampled every 10 min); opening a state reads all its cities live, so the list, the state median / map colour and the selected city always agree; fresh rows show a green dot
 - **Recommended plan per city** — the city's **tree canopy** (ESA WorldCover 10 m, class 10 only) vs the 30 % canopy target of the 3-30-300 urban-forestry rule (Konijnendijk, J. Forestry Research 2023); cool-roof share sized to built-up density; one-click apply to the intervention sliders; sources and caveats printed on the card. Tree canopy is far below "vegetation" in most Indian cities (e.g. Rajkot: 29 % vegetation, 5 % canopy) — which is exactly why the rule is hard to meet
 - **Analysis heatmap grid on live data** — the grid and the intervention preview use the city's live temperature (else the state's live median), with the ±2 °C cell pattern labelled illustrative
-- **Lite mode for low-end phones** — opt-in from the menu (auto only for Save-Data / 2G): states-only map that keeps its heat colours, no blur/animations; same data
+- **Lite mode for low-end phones** — opt-in from the menu (auto only for Save-Data / 2G): no 3D globe, states-only map that keeps its heat colours, no blur/animations; same data
 - **Graceful degradation** — error boundaries around the map and every panel ("Something went wrong — Try again"), 10-second timeouts on every fetch, cached fallbacks labelled as such
 
 ---
@@ -166,6 +167,7 @@ Every number shown is traceable to a real source, with honest "not available" fa
 
 ## Other Notable Details
 - **11 languages** supported (English + Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, Urdu, Kannada, Odia, Punjabi)
+- **3D rotating globe** login screen (Three.js)
 - Export options: PDF report (print-ready, real values or N/A), CSV download, copyable summary, WhatsApp share
 - Fully responsive, dark-themed "mission control" aesthetic
 - **Self-refreshing live data, judging-day-ready**: a GitHub Actions job runs every 3 hours (with a daily Vercel Cron fallback), re-fetching live weather/AQI for all 1,932 tracked cities from Open-Meteo and committing the refreshed snapshot back to the repo (triggering an automatic redeploy) — so the National Heat Summary, hottest-cities leaderboard and navbar ticker are never more than ~24 h stale even with nobody touching the deployment; every run is also kept as a daily history file, so the archive grows on its own
@@ -174,7 +176,7 @@ Every number shown is traceable to a real source, with honest "not available" fa
 - **Profiled and fixed a real cursor-lag bug**, not a guess: a CDP CPU profile (sign-in → map screen → 15s of cursor movement) showed react-simple-maps' own path-projection math — not any app feature — consuming 37.7% of all CPU time in one ~45-second synchronous block right after the map mounted (594 districts + 35 states being projected to SVG paths all at once). Fixed by rendering that geometry in small chunks across animation frames instead of one block; confirmed via before/after profiling that the cursor-movement phase of the same test dropped from 69.5s to 15.9s.
 
 ## Tech Stack
-React 18 + Vite · Recharts · react-simple-maps · i18next · Vercel serverless functions (Node.js) · scikit-learn (Python, offline-trained model)
+React 18 + Vite · Recharts · react-simple-maps · Three.js/react-globe.gl · i18next · Vercel serverless functions (Node.js) · scikit-learn (Python, offline-trained model)
 
 ---
 
@@ -219,7 +221,7 @@ Concretely: (1) genuine multi-source real-data fusion with honest gaps disclosed
 |  |  | (chunked  | |Quick Picks| | (radar   | |  (chat UI,   |  |      |
 |  |  |  render)  | |   Tabs    | |  chart)  | | 7 templates) |  |      |
 |  |  +-----------+ +-----------+ +----------+ +--------------+  |      |
-|  |  i18next (11 languages)                                      |      |
+|  |  i18next (11 languages)  ·  Three.js (login globe)          |      |
 |  |  Citizen/Authority x Mobile/Laptop · heat-reactive theme    |      |
 |  |  error boundaries · cached fallbacks (labelled)             |      |
 |  +-------------------------------------------------------------+      |
