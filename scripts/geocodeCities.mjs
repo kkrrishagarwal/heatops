@@ -27,6 +27,10 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const APP_JSX_PATH = path.join(__dirname, '../src/App.jsx')
 const OUTPUT_PATH = path.join(__dirname, '../src/data/cityCoordinates.json')
+// The browser fetches a copy from /data/ at runtime (cityCoordinateResolver.js); keep it in
+// lock-step with the master so the two can never disagree again (5 Sept 2026: the public
+// copy had drifted to an older geocode with 50 cities placed outside India).
+const PUBLIC_COPY_PATH = path.join(__dirname, '../public/data/cityCoordinates.json')
 
 const ARGS = new Set(process.argv.slice(2))
 const REDO_ALL = ARGS.has('--all')
@@ -266,11 +270,17 @@ async function main() {
     } catch (err) { console.warn(`  nominatim error "${item.city}, ${item.state}": ${err.message}`); failed.push(item) }
     if (n % 25 === 0 || n === remaining.length) {
       console.log(`  nominatim ${n}/${remaining.length} (${failed.length} unresolved)`)
-      if (!DRY_RUN) fs.writeFileSync(OUTPUT_PATH, JSON.stringify(out, null, 0))
+      if (!DRY_RUN) {
+    fs.writeFileSync(OUTPUT_PATH, JSON.stringify(out, null, 0))
+    fs.copyFileSync(OUTPUT_PATH, PUBLIC_COPY_PATH)
+  }
     }
   }
 
-  if (!DRY_RUN) fs.writeFileSync(OUTPUT_PATH, JSON.stringify(out, null, 0))
+  if (!DRY_RUN) {
+    fs.writeFileSync(OUTPUT_PATH, JSON.stringify(out, null, 0))
+    fs.copyFileSync(OUTPUT_PATH, PUBLIC_COPY_PATH)
+  }
   console.log(`\nDone. ${Object.keys(out).length}/${cityList.length} cities have validated coordinates${DRY_RUN ? ' (dry run — not written)' : ` → ${path.relative(process.cwd(), OUTPUT_PATH)}`}.`)
   const bySrc = {}; for (const v of Object.values(out)) bySrc[`${v.source || 'open-meteo'}/${v.accepted || 'state'}`] = (bySrc[`${v.source || 'open-meteo'}/${v.accepted || 'state'}`] || 0) + 1
   console.log('By source/acceptance:', JSON.stringify(bySrc))
