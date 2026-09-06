@@ -44,12 +44,18 @@ export function GEEPipelinePanel() {
     },
     {
       step: "4",
+      title: t('geePipeline.steps.modisTitle', 'NASA MODIS (MOD11A1.061)'),
+      detail: t('geePipeline.steps.modis', 'Terra satellite land-surface temperature, 1 km, day + night — point samples via NASA Earthdata/AppEEARS for 1,912 cities since 1 March 2026; only QC-passed readings kept, cloud days left as gaps (see the satellite panel below)'),
+      color: "#38bdf8"
+    },
+    {
+      step: "5",
       title: t('geePipeline.steps.rfTitle', 'Random Forest ML'),
       detail: t('geePipeline.steps.rf', 'sklearn RandomForestRegressor n=100, trained on real MODIS-derived data from 20 global cities (real, see Random Forest panel below — not India-specific)'),
       color: "#dc2626"
     },
     {
-      step: "5",
+      step: "6",
       title: t('geePipeline.steps.dashboardTitle', 'BhaskarOps Dashboard'),
       detail: t('geePipeline.steps.dashboard', 'React + D3 + Recharts real-time visualization'),
       color: "#d97706"
