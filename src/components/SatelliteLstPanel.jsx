@@ -1,23 +1,33 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, Legend } from 'recharts'
 import PanelIcon from './PanelIcon'
-import { fetchJson } from '../utils/fetchJson'
+import { loadModisIndex, loadModisStateFile } from '../utils/modisLst'
 
 // NASA MODIS land-surface temperature for the selected city, from public/data/modis-lst/
 // (built by scripts/processModisLst.mjs from AppEEARS point samples of MOD11A1.061).
 // Real satellite readings only: cloud-blocked days are gaps, nothing is interpolated, and
 // the QC rule that filtered them is printed. Surface temperature is not air temperature —
 // the panel says so, because a 40 °C rooftop and a 33 °C weather station are both true.
-let indexPromise = null
-function loadIndex() {
-  if (!indexPromise) indexPromise = fetchJson('/data/modis-lst/index.json', { timeoutMs: 20000 }).catch(e => { indexPromise = null; throw e })
-  return indexPromise
-}
-const stateFiles = new Map()
-function loadStateFile(file) {
-  if (!stateFiles.has(file)) stateFiles.set(file, fetchJson(`/data/modis-lst/${file}`, { timeoutMs: 20000 }).catch(e => { stateFiles.delete(file); throw e }))
-  return stateFiles.get(file)
+// The daily series (one dot per clear overpass, with cloud gaps) read as noise on a small
+// chart. Weekly averages of the clear-sky readings are far easier to read and still honest:
+// each point says how many clear days it rests on, and weeks with no clear day stay empty.
+function weeklyAverages(rows) {
+  if (!rows.length) return []
+  const start = new Date(rows[0][0] + 'T00:00:00').getTime()
+  const weeks = new Map()
+  for (const [date, d, n] of rows) {
+    const w = Math.floor((new Date(date + 'T00:00:00').getTime() - start) / (7 * 86400000))
+    const b = weeks.get(w) || { w, dates: [], day: [], night: [] }
+    b.dates.push(date); if (d !== null) b.day.push(d); if (n !== null) b.night.push(n)
+    weeks.set(w, b)
+  }
+  const mean = a => (a.length ? Math.round((a.reduce((x, y) => x + y, 0) / a.length) * 10) / 10 : null)
+  return [...weeks.values()].sort((a, b) => a.w - b.w).map(b => {
+    const weekStart = new Date(start + b.w * 7 * 86400000)
+    const iso = weekStart.toISOString().slice(0, 10)
+    return { date: iso, label: fmt(iso), day: mean(b.day), night: mean(b.night), clearDays: b.day.length, clearNights: b.night.length }
+  })
 }
 function fmt(iso) {
   return new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
@@ -34,16 +44,15 @@ export default function SatelliteLstPanel({ city, state, liveTemp }) {
     if (!city || !state) return
     let cancelled = false
     setStatus('loading'); setSummary(null); setSeries(null)
-    loadIndex().then(async idx => {
+    loadModisIndex().then(async idx => {
       if (cancelled) return
       setMeta(idx.meta)
       const s = idx.cities?.[`${city}|${state}`]
       if (!s) { setStatus('missing'); return }
       setSummary(s)
-      const sf = await loadStateFile(s.file)
+      const sf = await loadModisStateFile(s.file)
       if (cancelled) return
-      const rows = (sf.cities?.[`${city}|${state}`] || []).map(([date, d, n]) => ({ date, label: fmt(date), day: d, night: n }))
-      setSeries(rows); setStatus('ready')
+      setSeries(weeklyAverages(sf.cities?.[`${city}|${state}`] || [])); setStatus('ready')
     }).catch(() => { if (!cancelled) setStatus('error') })
     return () => { cancelled = true }
   }, [city, state])
@@ -90,18 +99,23 @@ export default function SatelliteLstPanel({ city, state, liveTemp }) {
                 <LineChart data={series} margin={{ top: 6, right: 10, left: -10, bottom: 0 }}>
                   <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#94a3b8' }} interval="preserveStartEnd" minTickGap={34} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} domain={[d => Math.floor(d - 1), d => Math.ceil(d + 1)]} tickFormatter={v => `${Math.round(v)}°`} allowDecimals={false} axisLine={false} tickLine={false} width={46} />
-                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 6, fontSize: 11 }} formatter={(v, name) => [`${v}°C`, name === 'day' ? t('modis.day', 'Day surface') : t('modis.night', 'Night surface')]} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} formatter={v => (v === 'day' ? t('modis.day', 'Day surface') : t('modis.night', 'Night surface'))} />
-                  {typeof liveTemp === 'number' && <ReferenceLine y={liveTemp} stroke="rgba(56,189,248,0.6)" strokeDasharray="4 3" label={{ value: `${t('modis.liveAir', 'live air')} ${liveTemp}°C`, fontSize: 9, fill: '#7dd3fc', position: 'insideTopRight' }} />}
-                  <Line type="monotone" dataKey="day" stroke="#f59e0b" strokeWidth={1.8} dot={{ r: 2 }} connectNulls={false} isAnimationActive={false} />
-                  <Line type="monotone" dataKey="night" stroke="#818cf8" strokeWidth={1.5} dot={{ r: 2 }} connectNulls={false} isAnimationActive={false} />
+                  <Tooltip
+                    contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 6, fontSize: 11 }}
+                    labelFormatter={l => `${t('modis.weekOf', 'Week of')} ${l}`}
+                    formatter={(v, name, p) => [`${v}°C (${name === 'day' ? p.payload.clearDays : p.payload.clearNights} ${t('modis.clearDaysShort', 'clear days')})`, name === 'day' ? t('modis.day', 'Day surface, weekly avg') : t('modis.night', 'Night surface, weekly avg')]}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 10 }} formatter={v => (v === 'day' ? t('modis.day', 'Day surface, weekly avg') : t('modis.night', 'Night surface, weekly avg'))} />
+                  {typeof liveTemp === 'number' && <ReferenceLine y={liveTemp} stroke="rgba(56,189,248,0.7)" strokeDasharray="4 3" label={{ value: `${t('modis.liveAir', 'live AIR now')} ${liveTemp}°C`, fontSize: 9, fill: '#7dd3fc', position: 'insideBottomRight' }} />}
+                  {summary.hottestDay && (() => { const wk = series.find(w => w.date <= summary.hottestDay.date && summary.hottestDay.date < new Date(new Date(w.date + 'T00:00:00').getTime() + 7 * 86400000).toISOString().slice(0, 10)); return wk ? <ReferenceDot x={wk.label} y={wk.day ?? summary.hottestDay.c} r={5} fill="#ef4444" stroke="#fff" strokeWidth={1} label={{ value: `${t('modis.peak', 'peak')} ${summary.hottestDay.c}°`, fontSize: 9, fill: '#fca5a5', position: 'top' }} /> : null })()}
+                  <Line type="monotone" dataKey="day" stroke="#f59e0b" strokeWidth={2.2} dot={{ r: 3 }} connectNulls={false} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="night" stroke="#818cf8" strokeWidth={1.6} dot={{ r: 2.5 }} connectNulls={false} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           )}
           <div style={{ fontSize: 10, color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>
             {t('modis.caveat', 'Land-surface temperature is what the satellite sees on roofs, roads and soil at overpass time — it runs several degrees above the air temperature a weather station reports on hot clear days. The two are different measurements; both are real.')}
-            {' '}{t('modis.qc', 'Gaps are cloud-blocked days (kept out by MODIS QC: good/other quality, LST error ≤ 2 K); nothing is interpolated.')}
+            {' '}{t('modis.qc', 'Each point is the average of that week\'s clear-sky readings (hover for how many); weeks with no clear day are left empty. Cloud-blocked days are excluded by MODIS QC (good/other quality, LST error ≤ 2 K); nothing is interpolated.')}
             {' '}<span style={{ color: '#94a3b8' }}>{t('modis.source', 'Source: NASA LP DAAC MOD11A1.061 (Terra MODIS, 1 km) via AppEEARS point samples, {{from}} → {{to}}.', { from: meta?.dateRange?.from || '', to: meta?.dateRange?.to || '' })}</span>
           </div>
         </>

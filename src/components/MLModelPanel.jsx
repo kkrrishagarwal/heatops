@@ -102,6 +102,9 @@ export function MLModelPanel({ mlModel, cityName, loadError = null, onRetry }) {
       <div style={titleStyle}>
         <PanelIcon name="bot" /> {t('mlModel.panelTitle', 'Random Forest Model — {{cityName}}', { cityName })}
       </div>
+      <div style={{ fontSize: 11, color: '#94a3b8', margin: '-6px 0 10px', lineHeight: 1.5 }}>
+        {t('mlModel.role', 'Research prototype and its honest scorecard — it is not the source of any number shown in this app. Measured satellite temperature for this city is in the NASA MODIS panel above.')}
+      </div>
 
       {/* Honest data source disclosure — not buried, shown right at the top */}
       <div style={{

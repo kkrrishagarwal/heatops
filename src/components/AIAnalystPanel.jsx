@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { getModisSummary, modisContextLine } from '../utils/modisLst'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { buildLocationContext } from '../utils/agniLocationContext'
@@ -42,7 +43,7 @@ function buildFallbackAnswer({ city, lst, ndvi, ndbi, aqi }) {
 }
 
 export function AIAnalystPanel({
-  cityName, ensoPhase, lst, ndvi, ndbi, aqi, audience = 'authority',
+  cityName, stateName = null, ensoPhase, lst, ndvi, ndbi, aqi, audience = 'authority',
   chatHistory, setChatHistory, aiLoading, setAiLoading,
   selectedQuestion, setSelectedQuestion
 }) {
@@ -154,7 +155,11 @@ export function AIAnalystPanel({
     // The app's UI language is the tie-breaker for messages with no language signal ("hi").
     const uiLang = LANGUAGE_NAMES[(i18n?.language || 'en').split('-')[0]] || 'English'
     const audienceNote = audience === 'citizen' ? ' Audience: a resident, not an expert — answer simply and briefly, no jargon or index acronyms, focus on practical safety.' : ''
-    const fullContext = `${context} Preferred reply language: ${uiLang}.${audienceNote}` + location.text
+    // NASA MODIS satellite surface temperature for the selected city — the same numbers the
+    // Analysis tab shows, so AGNI can answer "what did the satellite see?" from real data.
+    const modisLine = modisContextLine(await getModisSummary(cityName, stateName))
+    let fullContext = `${context} Preferred reply language: ${uiLang}.${audienceNote}` + location.text
+    if (modisLine && fullContext.length + modisLine.length < 3900) fullContext += modisLine
     const requestBody = { question, context: fullContext, history }
     console.log('[AIAnalystPanel] sending request to /api/ask-ai:', { ...requestBody, extraLocations: { cities: location.cities, states: location.states } })
 

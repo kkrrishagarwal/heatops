@@ -4966,6 +4966,7 @@ function App({ user }) {
                     <h3><PanelIcon name="bot" /> {t('panels.askAgni', 'ASK AGNI — is it safe today?')}</h3>
                     <AIAnalystPanel
                         cityName={selectedCity}
+                        stateName={selectedState}
                         ensoPhase={ensoPhase}
                         lst={realSurfaceTemp}
                         ndvi={realLulcEntry?.vegetation ?? null}
@@ -5067,6 +5068,8 @@ function App({ user }) {
 
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 {/* PANEL C: ML Model Panel */}
+                <SatelliteLstPanel city={selectedCity} state={selectedState} liveTemp={liveWeather?.current?.temp} />
+
                 <MLModelPanel mlModel={mlModelReal} cityName={selectedCity} loadError={mlModelError} onRetry={retryMlModel} />
 
                 {/* PANEL L: Land Use / Land Cover */}
@@ -5099,8 +5102,6 @@ function App({ user }) {
                 </section>
 
                 {/* PANEL H: Historical Trend */}
-                <SatelliteLstPanel city={selectedCity} state={selectedState} liveTemp={liveWeather?.current?.temp} />
-
                 <section className="panel" data-panel="LONGTERM">
                   <h3><PanelIcon name="history" /> {t('panels.longTermHistory', 'LONG-TERM HISTORY')}</h3>
                   {/* The former "10-year trend (2015–2025)" and "historical heatwave timeline" panels were
@@ -5332,6 +5333,7 @@ function App({ user }) {
                   </div>
                   <AIAnalystPanel
                     cityName={selectedCity}
+                    stateName={selectedState}
                     ensoPhase={ensoPhase}
                     lst={realSurfaceTemp}
                     ndvi={realLulcEntry?.vegetation ?? null}
