@@ -17,7 +17,7 @@ Search **Sri Ganganagar** → Overview. The banner says "DEMO — forced to 46 �
 Scroll to **HEATWAVE ACTION CHECKLIST** — "ACTIVE — Extreme". "Five Heat Action Plan steps, modelled on Ahmedabad's HAP and NDMA guidelines. Tick one." Then: "At Moderate it becomes preparedness; at Low, routine; below 10 °C it becomes a cold-weather protocol." *(Optional: search Leh → −8 °C → cold checklist, 20 seconds.)*
 
 ## 3:30 — Why it's hot + what to do
-**Analysis** tab: satellite indices with sources; the heatmap grid — "base is the live temperature; the cell pattern is labelled illustrative."
+**Analysis** tab: scroll to **SATELLITE SURFACE TEMPERATURE (NASA MODIS)** — "this is what Terra saw on Delhi's roofs and roads at 10:30 every clear morning since March: hottest surface 39.9 °C on 20 May, and the gaps are honest — cloud days are left empty, not filled in." Then the heatmap grid — "base is the live temperature; the cell pattern is labelled illustrative."
 **Interventions** tab: **Recommended plan** — "Tree canopy 9.7 % vs the 30 % target of the 3-30-300 rule; +20 points; Apply." Click **Apply recommended plan** → projected cooling appears. "The cooling model is illustrative and says so; the canopy number is ESA satellite data."
 
 ## 5:00 — Compare (both audiences)
@@ -31,7 +31,7 @@ Switch **Citizen** (navbar). Show: plain-language strip, **Safe hours today**, *
 
 ## 7:30 — Data credibility + close
 **AI + Export** tab → Export & Share (Copy / WhatsApp / CSV / PDF). Then the honesty line:
-> "Every source is named — Open-Meteo, ESA WorldCover, NASA MODIS incoming, ISRO INSAT-3D requested. Our ML model prints its weak score next to its good one. It refreshes itself every three hours from GitHub. Running cost: zero rupees."
+> "Every source is named — Open-Meteo, ESA WorldCover, NASA MODIS satellite surface temperature for 1,912 cities, ISRO INSAT-3D requested. Our ML model prints its weak score next to its good one. It refreshes itself every three hours from GitHub. Running cost: zero rupees."
 
 > "BhaskarOps: live heat intelligence for India — honest by design, useful to a citizen and a collector alike."
 

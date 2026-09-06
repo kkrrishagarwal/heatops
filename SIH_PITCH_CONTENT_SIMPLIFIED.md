@@ -175,7 +175,7 @@ Trained on a published MODIS dataset of 20 global cities. Roadmap: retrain on In
 ## Data Sources
 - **Open-Meteo** — live weather, air quality, geocoding
 - **ESA WorldCover 10 m** — vegetation, built-up, tree canopy
-- **NASA MODIS (MOD11A1)** — satellite surface temperature, 2016–2026 (integration in progress)
+- **NASA MODIS (MOD11A1)** — satellite land-surface temperature, daily 1 km: live in the app for 1,912 cities since March 2026; the 2016–2026 series for 171 cities is processing at NASA
 - **OpenStreetMap** — building density, validated coordinates
 - **ISRO INSAT-3D** — requested via MOSDAC as the next layer
 
@@ -261,7 +261,7 @@ STEP 5: History → Daily snapshots served by an API, a viewer page and CSV expo
 - Already built and deployed; ₹0 per month on free tiers
 - 70+ days of real daily data archived; the pipeline runs unattended
 - Known risks — API limits, data gaps, model limits — each has a working answer
-- Next: NASA MODIS integration, ISRO INSAT-3D, Indian retraining of the model
+- Next: NASA MODIS 2016–2026 history (processing), ISRO INSAT-3D, Indian retraining of the model
 
 [Suggested visual: roadmap timeline — done / in progress / next]
 

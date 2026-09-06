@@ -41,7 +41,7 @@ BHRIGU (National Heat Insights Explorer, built by CSTEP) is the closest governme
 |---|---|---|
 | Data resolution | 1 km grid, national scale, 5,000+ urban areas | 1,932 cities with live readings; district boundaries; ESA 10 m land cover for 171 cities |
 | Data freshness | Historical archive, 2002–2025 | Live — refreshed every few hours; states re-sampled live every 10 minutes in the browser |
-| Historical depth | 23 years | 70+ days of daily snapshots (growing nightly) + NASA MODIS satellite surface temperature 2016–2026 being integrated |
+| Historical depth | 23 years | 70+ days of daily snapshots (growing nightly) + NASA MODIS satellite surface temperature since March 2026 for 1,912 cities (in the app); 2016–2026 for 171 cities processing at NASA |
 | Primary focus | Heat-exposure evidence base for research and policy | Day-to-day operational decisions and public communication |
 | Intervention simulation | Not a core feature | Illustrative cooling model + cost estimates + canopy-target recommendation |
 | Conversational AI | Not offered | AGNI, grounded and honest |
@@ -83,7 +83,7 @@ BHRIGU (National Heat Insights Explorer, built by CSTEP) is the closest governme
 
 | Advantage | Disadvantage |
 |---|---|
-| Live, self-refreshing — answers "what's happening right now" | Shorter archive (70+ days + MODIS history in progress) vs 23 years |
+| Live, self-refreshing — answers "what's happening right now" | Shorter archive (70+ days of our own + 6 months of MODIS; 10-year MODIS processing) vs 23 years |
 | Illustrative intervention model + cost estimates + canopy recommendation — "what to do and roughly at what cost" | Intervention cooling is a labelled model, not a measurement |
 | AGNI — natural-language access, grounded, honest | New and unestablished — no institutional credibility yet |
 | 11 Indian languages; Citizen and Authority views | ML model's unseen-city generalisation is weak (R² −0.39, disclosed in-app) |

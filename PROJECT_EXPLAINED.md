@@ -486,6 +486,12 @@ Requested rule, replacing the median colour (§8.15/8.20): for each state, count
 
 Verified with Playwright on four states (rendered district fill vs the breakdown): Jharkhand's load sample was a 4–4 tie between Moderate and Low-Moderate → Moderate, and the panel says "tie → the more severe category is shown"; Rajasthan 6 of 8 Low-Moderate → green (after the full 76-city refresh: 38 Moderate vs 34 Low-Moderate → yellow, which the panel explains); Tamil Nadu 5 of 8 Moderate; Himachal 4 of 8 Low.
 
+### 8.26 NASA MODIS satellite surface temperature is in the app (5 Sept 2026)
+
+Both "all cities, 1 March 2026 → present" AppEEARS requests completed (966 + 966 points, 357,420 rows). `scripts/processModisLst.mjs` turns the raw CSVs (kept out of git in `scripts/data/nasa/raw/`; the request definitions are committed for provenance) into `public/data/modis-lst/index.json` (one summary per city) plus one daily-series file per state. Rules: only readings that pass MODIS's own QC (MODLAND good/other-quality **and** LST error ≤ 2 K) are kept — cloud-blocked days are gaps, never interpolated; Kelvin → °C exactly; city matching is exact on the AppEEARS ID (all 1,932 IDs matched, 1,912 cities have at least one clear-sky reading, 20 never had one in the monsoon window). Result: 170,052 quality readings, 1 March → 2 September 2026.
+
+`SatelliteLstPanel` (Analysis tab) shows the latest clear-sky day and night surface temperature with its date and overpass time, the season's hottest surface, season means, a day/night chart with the live air temperature as a reference line, and the caveat that **surface temperature is not air temperature** — a 40 °C rooftop and a 33 °C weather station are both true. Verified: New Delhi's panel (29.3 °C on 29 Aug, hottest 39.9 °C on 20 May, 72 clear days) matches the JSON, and the raw CSV row for that day reads 302.42 K. The 2016–2026 request for 171 cities is still processing at NASA; when its CSV lands in `scripts/data/nasa/raw/` the same script and panel pick it up.
+
 ## Bonus: Things that are built but not currently used (orphaned code)
 
 While exploring the codebase, these 4 files turned up fully written but not imported/rendered anywhere:
