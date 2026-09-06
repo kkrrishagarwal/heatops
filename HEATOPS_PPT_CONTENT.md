@@ -64,6 +64,7 @@ Yes, this is my first hackathon. It's been a genuine crash course in building so
 - **Air Quality Index (AQI)** — US AQI + PM2.5/PM10/NO₂/O₃ breakdown from Open-Meteo CAMS
 - **7-day forecast strip** — daily min/max temp for the coming week
 - **Next 12-hour chart** — hourly temperature curve for the current day
+- **Satellite surface temperature (NASA MODIS)** — Analysis-tab panel per city: latest clear-sky day and night surface temperature with date and overpass time, the season's hottest surface, weekly-average chart with the live air temperature as a reference line; AGNI is grounded on the same numbers
 - **30-day temperature trend** — a real per-city chart from the platform's own daily archive (carried-forward days drawn hollow, current reading as a dashed line)
 - **Today's high vs low** — real forecast maximum/minimum from the same Open-Meteo reading
 - **Heat Risk Gauge** — semicircular arc, needle on the city's live temperature; the readout (label + dot) uses the same four tiers as the theme colour, so the gauge and the page never disagree
@@ -143,7 +144,7 @@ Indian cities are experiencing intensifying urban heat islands — built-up, low
 ## Data Sources (credibility slide)
 Every number shown is traceable to a real source, with honest "not available" fallbacks rather than fabricated placeholders:
 - **Open-Meteo** — live air/surface temperature, elevation (SRTM), air quality (CAMS); the bulk cache of all 1,932 cities is committed to the repo so every reading is auditable in git history
-- **NASA MODIS (MOD11A1, Terra)** — daily 1 km satellite land-surface temperature via NASA Earthdata/AppEEARS: all 1,932 cities for 2026 and a 2016–2026 history for 171 cities (integration in progress); ISRO INSAT-3D via MOSDAC requested as the next source
+- **NASA MODIS (MOD11A1, Terra)** — daily 1 km satellite land-surface temperature via NASA Earthdata/AppEEARS, **live in the app**: 1,912 cities, every clear-sky day and night since 1 March 2026 (170,052 quality-passed readings; cloud days shown as gaps, never filled). A 2016–2026 series for 171 cities is still processing at NASA; ISRO INSAT-3D via MOSDAC requested as the next source
 - **Open-Meteo geocoding + OSM Nominatim** — city coordinates, each validated to lie in its own state (wrong-place hits rejected, unresolved cities left blank rather than guessed)
 - **ESA WorldCover 10m (2021)** — real satellite land-cover classification (vegetation/built-up/water %) for 36 representative cities
 - **OpenStreetMap (Overpass API)** — live building density/urban morphology

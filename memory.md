@@ -17,7 +17,7 @@ This project is not simply a weather dashboard. It is a planning and decision-su
 - Coverage: 1,956 cities / 36 states-UTs; 1,932 with validated coordinates and live readings; 24 hamlet names honestly blank
 - Data: Open-Meteo (weather, AQI, geocoding), ESA WorldCover 10 m (171 cities, incl. tree canopy = class 10), OSM Overpass + Nominatim, a published MODIS dataset for the ML model
 - Refresh: GitHub Actions every 3 h (pending `workflow` scope) + laptop cron stopgap every 3 h + Vercel Cron 14:30 IST + 16:00 IST retry (silent 2–4 Sept); every run commits the cache and a daily history snapshot (69+ days kept)
-- Satellite: NASA MODIS MOD11A1 LST requested via AppEEARS (2026 all cities; 2016–2026 for 171) — integration pending arrival; MOSDAC still pending
+- Satellite: NASA MODIS MOD11A1 LST via AppEEARS is in the app (1,912 cities, daily since 1 Mar 2026; `scripts/processModisLst.mjs` → `public/data/modis-lst/`; `SatelliteLstPanel` on the Analysis tab; AGNI grounded on it). 2016–2026 for 171 cities still processing at NASA; a peak-season (May–mid-June, 2016–2026) insurance request is the fallback; MOSDAC still pending
 - UI: lucide icon set, overline headings, Archivo numerals (4 Sept redesign) — no emoji chrome, no fabricated panels (wind is live; pollen removed)
 - Map colour: plurality risk category of a state's live cities (ties → more severe); median temperature kept as the headline number and detail; opening a state refreshes its cities live
 - Modes: Citizen / Authority × Mobile / Laptop; opt-in Lite mode for low-end devices
