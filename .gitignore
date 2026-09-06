@@ -11,3 +11,6 @@ __pycache__
 .claude
 .env*
 history-*.csv
+
+# NASA AppEEARS raw CSVs (70 MB each) — processed by scripts/processModisLst.mjs into public/data/modis-lst/
+scripts/data/nasa/raw/
