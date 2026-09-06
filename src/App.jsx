@@ -2933,7 +2933,44 @@ function App({ user }) {
         })
     }, liveCacheAttempt === 0 ? 500 : 0)
     return () => { cancelled = true; clearTimeout(timer) }
+
   }, [liveCacheAttempt])
+
+  // The cache is rebuilt by GitHub Actions on a schedule, but a tab that stays open only
+  // fetched it once — a page opened at dawn kept colouring states from pre-dawn readings
+  // all morning ("daily cache from 6 h ago" while production already had a fresh one), and
+  // opening a state then flipped it to a different colour. Re-fetch every 15 minutes and
+  // when the tab becomes visible again; merge by observedAt so a newer live reading is never
+  // replaced by an older cached one. Costs nothing against Open-Meteo's quota.
+  useEffect(() => {
+    if (liveCacheStatus !== 'ready') return
+    let cancelled = false
+    const reload = async () => {
+      try {
+        const data = await fetchJson(`/live-weather-cache.json?t=${Date.now()}`, { timeoutMs: 20000 })
+        if (cancelled || !data?.cities) return
+        const incoming = normaliseBulkCities(data.cities)
+        setLiveCityCache(prev => {
+          const next = { ...prev }
+          for (const [key, entry] of Object.entries(incoming)) {
+            const cur = prev[key]
+            const curAt = cur?.observedAt ? new Date(cur.observedAt).getTime() : 0
+            const newAt = entry?.observedAt ? new Date(entry.observedAt).getTime() : 0
+            if (!cur || newAt > curAt) next[key] = { ...(cur || {}), ...entry }
+          }
+          queueMicrotask(() => setBulkWeatherCache(next, data.lastUpdated || getBulkWeatherLastUpdated()))
+          return next
+        })
+        if (data.lastUpdated) setCacheLastUpdated(data.lastUpdated)
+      } catch (err) {
+        console.warn('[live-weather-cache] periodic reload failed:', err?.message)
+      }
+    }
+    const id = setInterval(reload, 15 * 60 * 1000)
+    const onVisible = () => { if (document.visibilityState === 'visible') reload() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => { cancelled = true; clearInterval(id); document.removeEventListener('visibilitychange', onVisible) }
+  }, [liveCacheStatus])
 
   // Real RandomForestRegressor metrics (R², MAE, feature_importances_) trained
   // on real MODIS satellite data — see scripts/train_lst_model.py. One global
@@ -3030,11 +3067,16 @@ function App({ user }) {
         return next
       })
     })
-    run(false)
-    // Keep the vintage alive: without this, the sampled readings aged past the freshness
-    // window after a while and the map silently reverted to the stale cache colours.
-    const id = setInterval(() => run(true), 10 * 60 * 1000)
-    const onVisible = () => { if (document.visibilityState === 'visible') run(false) }
+    // Open-Meteo's free quota is per IP and weighted by locations: 36 states × 8 cities every
+    // 10 minutes exhausted it in a long session and every later sample came back 429 (seen
+    // in testing) — the map then fell back to the cache honestly, but silently. So: sample
+    // only when the cache itself is older than 45 minutes (fresh cache = nothing to fix),
+    // and every 20 minutes rather than 10.
+    const cacheAgeMs = () => { const iso = getBulkWeatherLastUpdated(); return iso ? Date.now() - new Date(iso).getTime() : Infinity }
+    const runIfStale = (force) => { if (cacheAgeMs() > 45 * 60 * 1000) run(force) }
+    runIfStale(false)
+    const id = setInterval(() => runIfStale(true), 20 * 60 * 1000)
+    const onVisible = () => { if (document.visibilityState === 'visible') runIfStale(false) }
     document.addEventListener('visibilitychange', onVisible)
     return () => { cancelled = true; clearInterval(id); document.removeEventListener('visibilitychange', onVisible) }
   }, [liveCacheStatus])
