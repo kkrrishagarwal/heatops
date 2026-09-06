@@ -25,7 +25,8 @@ function weeklyAverages(rows) {
   const mean = a => (a.length ? Math.round((a.reduce((x, y) => x + y, 0) / a.length) * 10) / 10 : null)
   return [...weeks.values()].sort((a, b) => a.w - b.w).map(b => {
     const weekStart = new Date(start + b.w * 7 * 86400000)
-    const iso = weekStart.toISOString().slice(0, 10)
+    // local-date ISO string (toISOString would shift IST midnight back to the previous UTC day)
+    const iso = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`
     return { date: iso, label: fmt(iso), day: mean(b.day), night: mean(b.night), clearDays: b.day.length, clearNights: b.night.length }
   })
 }
