@@ -30,6 +30,7 @@ import { refreshStateLive, getStateRefreshedAt, refreshAllStatesSample } from '.
 import { useLiteMode } from './utils/liteMode'
 import PanelIcon from './components/PanelIcon'
 import CityTrendPanel from './components/CityTrendPanel'
+import SatelliteLstPanel from './components/SatelliteLstPanel'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
@@ -5098,14 +5099,17 @@ function App({ user }) {
                 </section>
 
                 {/* PANEL H: Historical Trend */}
+                <SatelliteLstPanel city={selectedCity} state={selectedState} liveTemp={liveWeather?.current?.temp} />
+
                 <section className="panel" data-panel="LONGTERM">
                   <h3><PanelIcon name="history" /> {t('panels.longTermHistory', 'LONG-TERM HISTORY')}</h3>
                   {/* The former "10-year trend (2015–2025)" and "historical heatwave timeline" panels were
                       generated from a city-name seed — not measurements — and were removed on 5 Sept.
                       What exists today is the platform's own daily archive (30-day trend on the
-                      Overview tab); a real multi-year series arrives with NASA MODIS 2016–2026. */}
+                      Overview tab) plus the NASA MODIS season series above; the 2016–2026 request is
+                      still processing at NASA. */}
                   <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 }}>
-                    {t('longTerm.body', 'Real archive so far: daily readings since 22 June 2026 — see the 30-day trend on the Overview tab. A satellite-measured multi-year series (NASA MODIS land-surface temperature, 2016–2026) is being integrated for 171 cities; ISRO INSAT-3D data has been requested. Nothing longer-term is shown until it is real.')}
+                    {t('longTerm.body', 'Real archive so far: our own daily readings since 22 June 2026 (30-day trend on the Overview tab) and NASA MODIS satellite surface temperature since 1 March 2026 for 1,912 cities (panel above). A 2016–2026 satellite series for 171 cities is still processing at NASA (AppEEARS); ISRO INSAT-3D data has been requested. Nothing longer-term is shown until it is real.')}
                   </div>
                 </section>
 
