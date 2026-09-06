@@ -118,6 +118,7 @@ export default function SatelliteLstPanel({ city, state, liveTemp }) {
             {t('modis.caveat', 'Land-surface temperature is what the satellite sees on roofs, roads and soil at overpass time — it runs several degrees above the air temperature a weather station reports on hot clear days. The two are different measurements; both are real.')}
             {' '}{t('modis.qc', 'Each point is the average of that week\'s clear-sky readings (hover for how many); weeks with no clear day are left empty. Cloud-blocked days are excluded by MODIS QC (good/other quality, LST error ≤ 2 K); nothing is interpolated.')}
             {' '}<span style={{ color: '#94a3b8' }}>{t('modis.source', 'Source: NASA LP DAAC MOD11A1.061 (Terra MODIS, 1 km) via AppEEARS point samples, {{from}} → {{to}}.', { from: meta?.dateRange?.from || '', to: meta?.dateRange?.to || '' })}</span>
+            {' '}<span style={{ color: '#94a3b8' }}>{t('modis.roadmap', 'Longer history: a 2016–2026 series for 171 cities is still processing at NASA; ISRO INSAT-3D data has been requested. Our own daily archive (30-day trend, Overview tab) runs since 22 June 2026. Nothing longer-term is shown until it is real.')}</span>
           </div>
         </>
       )}
