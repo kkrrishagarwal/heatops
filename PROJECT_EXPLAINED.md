@@ -512,6 +512,12 @@ Built after mentor feedback on 8 Sept ("stick to the authority; bring a feature 
 
 **Verified locally (dev server, Rajasthan, 8 Sept evening):** ₹1 Cr → Bikaner, Jaipur, Jodhpur, Kota funded, plantation + relief, priority-ten risk 78 → 76; ₹50 L recalculated live with the compare table; 4 markers on the map, marker click opened the city; cost mode +5 % canopy = 16 ha, 6,400 trees, ₹22.4 L; target 10 % → ₹20.7 Cr (78 → 70); 12 assumption rows; ₹2,000 → minimum-cost message; no page errors. Also in this pass: sign-in now lands on the Authority view (Citizen remains a toggle).
 
+### 8.28 Telangana exists on the map (8 Sept 2026)
+
+The GADM boundary files predate the 2014 bifurcation: Telangana's ten districts sat under Andhra Pradesh and there was no Telangana polygon, so a state the app has carried in its data all along could never be coloured or clicked. `scripts/fixTelanganaBoundaries.mjs` re-tags Adilabad, Hyderabad, Karimnagar, Khammam, Mahbubnagar, Medak, Nalgonda, Nizamabad, Rangareddy and Warangal to Telangana in the full-resolution districts file and rebuilds both state polygons by dissolving districts (mapshaper), so the state outline matches the district layer exactly; `scripts/simplifyGeo.sh` then regenerates the served copies. Khammam is kept whole in Telangana — its Bhadrachalam-area mandals moved to Andhra Pradesh in 2014, but GADM has no mandal geometry to draw that. The states file now has 36 features (28 states + 8 UTs minus the J&K/Ladakh pair, which come from their own official file). Verified: Telangana colours on its own, its tooltip and panel list its 68 cities.
+
+Found on the way: `vite.config.js` has a dev-only middleware that serves a precompressed `.gz` sibling of each GeoJSON when one exists. The siblings dated from 28 August, so since the 5 Sept simplification the dev server had been showing browsers the *old* boundaries while curl and production served the new ones. The simplify script now regenerates the `.gz` files.
+
 ## Bonus: Things that are built but not currently used (orphaned code)
 
 While exploring the codebase, these 4 files turned up fully written but not imported/rendered anywhere:

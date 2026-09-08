@@ -20,4 +20,8 @@ done
 # mapshaper writes RFC 7946 winding (exterior rings counter-clockwise); d3-geo needs the
 # opposite, otherwise every polygon fills the whole map. Rewind whatever came out inverted.
 node scripts/rewindGeo.mjs public/data/india_states_full.geojson public/data/india_districts_full.geojson public/data/jk_ladakh_official.geojson
-ls -la public/data/*.geojson
+# vite.config.js has a dev-only middleware that serves a precompressed .gz sibling when one
+# exists — regenerate them, or the dev server keeps showing the OLD boundaries to browsers
+# (curl and production are unaffected). Found the hard way on 8 Sept 2026.
+for f in india_states_full india_districts_full jk_ladakh_official; do gzip -9 -kf "public/data/$f.geojson"; done
+ls -la public/data/*.geojson public/data/*.geojson.gz
