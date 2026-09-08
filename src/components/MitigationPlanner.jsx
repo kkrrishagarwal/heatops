@@ -32,7 +32,7 @@ const card = { background: 'rgba(15,23,42,0.55)', border: '1px solid #1e293b', b
 const label = { fontSize: 10, color: '#94a3b8', letterSpacing: 0.6, textTransform: 'uppercase' }
 const big = { fontSize: 20, fontWeight: 800, color: '#f1f5f9', lineHeight: 1.2 }
 
-export default function MitigationPlanner({ stateName, cities, liveCityCache, lulcReal, cityCoordsData, onClose, onHighlight, focusCity, onFocusCity, scope = 'state', cityName = null }) {
+export default function MitigationPlanner({ stateName, cities, liveCityCache, lulcReal, cityCoordsData, onClose, onHighlight, focusCity, onFocusCity, scope = 'state', cityName = null, onApplyToSliders = null }) {
   const single = scope === 'city'
   const { t } = useTranslation()
   const [mode, setMode] = useState('budget') // budget | cost | target
@@ -204,6 +204,14 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
         {/* Actions */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
           {!single && <button data-testid="planner-map" style={btn(onMap)} onClick={() => setOnMap(v => !v)}>{onMap ? t('planner.hideMap', 'HIDE ON MAP') : t('planner.viewMap', 'VIEW ON MAP')}</button>}
+          {single && onApplyToSliders && p.cities[0] && (
+            <button data-testid="planner-apply-sliders" style={{ ...btn(true) }} onClick={() => {
+              const c = p.cities[0]; const prof = c.profile
+              const tree = Math.min(0.3, (c.types.green?.qty || 0) / prof.coreAreaHa)
+              const roof = prof.roofs ? Math.min(0.2, ((c.types.roofs?.qty || 0) / prof.roofs) * 0.2) : 0
+              onApplyToSliders({ tree: Math.round(tree * 100) / 100, roof: Math.round(roof * 100) / 100 })
+            }}>{t('planner.applySliders', 'APPLY PLAN TO SLIDERS →')}</button>
+          )}
           {showCompare && <button style={btn(false)} onClick={() => setPlanA({ ...p, savedBudget: p.budget })} data-testid="planner-save-a">{t('planner.saveA', 'SAVE AS PLAN A')}</button>}
           <button style={btn(false)} onClick={() => exportReport(p)} data-testid="planner-export">{t('planner.export', 'EXPORT REPORT')}</button>
           <button style={btn(false)} onClick={() => exportCsv(p)}>{t('planner.csv', 'CSV')}</button>
@@ -233,6 +241,9 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
         <h3 style={{ margin: 0 }}><PanelIcon name="target" /> {single ? t('planner.titleCity', 'MITIGATION PLANNER — {{city}}', { city: (cityName || '').toUpperCase() }) : t('planner.title', 'SMART MITIGATION PLANNER — {{state}}', { state: stateName.toUpperCase() })}</h3>
         {onClose && <button style={btn(false)} onClick={onClose} data-testid="planner-close">← {t('planner.back', 'STATE')}</button>}
+      </div>
+      <div data-testid="planner-role" style={{ display: 'inline-block', margin: '6px 0 2px', padding: '3px 8px', borderRadius: 999, fontSize: 10, fontWeight: 800, letterSpacing: 0.8, color: single ? '#7dd3fc' : '#fbbf24', background: single ? 'rgba(56,189,248,0.12)' : 'rgba(217,119,6,0.14)', border: `1px solid ${single ? 'rgba(56,189,248,0.4)' : 'rgba(217,119,6,0.45)'}` }}>
+        {single ? t('planner.roleDm', 'FOR THE DISTRICT MAGISTRATE — BUDGET ALLOCATION WITHIN THIS CITY') : t('planner.roleCmo', 'FOR THE STATE OFFICER / CMO — BUDGET ALLOCATION ACROSS CITIES')}
       </div>
       <div style={{ fontSize: 11, color: '#94a3b8', margin: '4px 0 10px' }}>{single ? t('planner.subtitleCity', 'For the District Magistrate: what should this city buy with a given budget, what does one intervention cost, and what budget reaches a target — from its live, satellite and land-cover data. Model-based estimates; every assumption is one click away. The state-wide plan is in the state panel on the map.') : t('planner.subtitle', 'Where should limited heat-mitigation money go? Ranks this state\'s cities on live, satellite and land-cover data and spends the budget where each rupee removes the most projected risk. Model-based estimates — every assumption is one click away.')}</div>
 

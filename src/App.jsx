@@ -5331,6 +5331,11 @@ function App({ user }) {
                       doesn't have to switch tabs to confirm the effect. */}
                   {(() => {
                     const impact = computeInterventionImpact(gridBase, treeSlider, roofSlider, waterSlider)
+                    // On a monsoon day the whole grid can already sit in the coolest band, so
+                    // "0/100 cells move" is true but reads as a bug; also show the same
+                    // settings on a 40 °C reference day so the effect is visible.
+                    const REF_HOT = 40
+                    const impactHot = gridBase < REF_HOT ? computeInterventionImpact(REF_HOT, treeSlider, roofSlider, waterSlider) : null
                     const active = impact.totalCooling > 0
                     return (
                       <div
@@ -5352,6 +5357,11 @@ function App({ user }) {
                             <div>
                               −{impact.totalCooling.toFixed(1)}°C {t('interventions.perCell', 'per cell')} · <strong>{impact.changed}</strong>/100 {t('interventions.cellsChange', 'cells move to a cooler category')}
                             </div>
+                            {impact.changed === 0 && impactHot && (
+                              <div style={{ color: '#94a3b8' }} data-testid="impact-ref-day">
+                                {t('interventions.allCool', 'At today\'s base of {{t}}°C every cell is already in the coolest band, so none can move. On a {{ref}}°C reference day the same settings move', { t: gridBase.toFixed(0), ref: REF_HOT })} <strong>{impactHot.changed}</strong>/100 {t('interventions.cells', 'cells')}.
+                              </div>
+                            )}
                             {impact.transitions.length > 0 && (
                               <div style={{ color: '#cbd5e1' }}>
                                 {impact.transitions.map(tr => `${tr.from} → ${tr.to}: ${tr.count}`).join(' · ')}
@@ -5389,6 +5399,7 @@ function App({ user }) {
                     cityName={selectedCity}
                     stateName={selectedState}
                     cities={[selectedCity]}
+                    onApplyToSliders={({ tree, roof }) => { setTreeSlider(tree); setRoofSlider(roof); setWaterSlider(0); setInterventionTouchedAt(Date.now()) }}
                     liveCityCache={liveCityCache}
                     lulcReal={lulcReal}
                     cityCoordsData={cityCoordsData}

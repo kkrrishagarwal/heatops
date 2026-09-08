@@ -230,7 +230,7 @@ function explain(cities, usable, byType) {
     else if (p.canopyGapPct) lines.push(`Its tree canopy is ${p.canopy}% against the 30 % target — plantation there costs ${fmtINR(ASSUMPTIONS.treesPerHa * ASSUMPTIONS.costPerTree)} per hectare and only enters the plan once cheaper measures are exhausted.`)
   }
   const order = Object.values(byType).sort((a, b) => b.points / b.cost - a.points / a.cost)
-  if (order.length > 1) lines.push(`Per rupee, ${INTERVENTIONS[order[0].type].label.toLowerCase()} gives the most projected risk reduction in these cities, so it is funded first; ${INTERVENTIONS[order[order.length - 1].type].label.toLowerCase()} is funded last.`)
+  if (order.length > 1) lines.push(`Per rupee, ${INTERVENTIONS[order[0].type].label.toLowerCase()} gives the most projected risk reduction ${usable.length === 1 ? 'here' : 'in these cities'}, so it is funded first; ${INTERVENTIONS[order[order.length - 1].type].label.toLowerCase()} is funded last.`)
   const skipped = usable.length - cities.length
   if (skipped > 0) lines.push(`${skipped} lower-risk ${skipped === 1 ? 'city was' : 'cities were'} not funded at this budget — raising it extends the plan down the ranking.`)
   if (byType.cooling) lines.push(`Cooling centres and water stations are capped at ${Math.round(ASSUMPTIONS.reliefMaxShare * 100)} % of the budget: they relieve exposure quickly but do not cool the city.`)
