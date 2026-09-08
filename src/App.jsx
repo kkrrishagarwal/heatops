@@ -31,6 +31,7 @@ import { useLiteMode } from './utils/liteMode'
 import PanelIcon from './components/PanelIcon'
 import CityTrendPanel from './components/CityTrendPanel'
 import SatelliteLstPanel from './components/SatelliteLstPanel'
+import MitigationPlanner from './components/MitigationPlanner'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
@@ -1645,7 +1646,7 @@ const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorder
 // forwardRef exposes the internal zoom/pan transform div so the parent can mutate its
 // style.transform directly via ref during a drag gesture (bypassing React state entirely
 // for that high-frequency path) — see the onMouseMove handler at the call site for why.
-const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null, lite = false }, transformRef) => {
+const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, plannerMarkers = [], onPlannerMarkerClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null, lite = false }, transformRef) => {
   // Legend is collapsed by default so the map itself stays fully visible (it covered ~60% of the map on phones).
   const [legendOpen, setLegendOpen] = useState(false)
   const { t } = useTranslation()
@@ -1875,6 +1876,22 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, s
             </circle>
             <circle r={5} fill='#22f6ff' stroke='#ffffff' strokeWidth={1.5} />
           </Marker>
+        </ComposableMap>
+      )}
+
+      {/* LAYER 5b: Smart Mitigation Planner — cities the current plan funds. Marker colour =
+          the city's current risk band, label = projected before → after. */}
+      {plannerMarkers.length > 0 && (
+        <ComposableMap projection={INDIA_MAP_PROJECTION} style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}>
+          {plannerMarkers.map(m => (
+            <Marker key={`plan_${m.city}`} coordinates={[m.lon, m.lat]}>
+              <g data-planner-marker={m.city} style={{ pointerEvents: 'all', cursor: 'pointer' }} onClick={() => onPlannerMarkerClick?.(m.city)}>
+                <circle r={9} fill="rgba(15,23,42,0.85)" stroke={m.color} strokeWidth={2.5} />
+                <circle r={3} fill={m.color} />
+                <text y={-13} fontSize={7} fill="#f8fafc" textAnchor="middle" fontFamily="monospace" style={{ paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 2 }}>{m.city} {m.before}→{m.after}</text>
+              </g>
+            </Marker>
+          ))}
         </ComposableMap>
       )}
 
@@ -3049,6 +3066,13 @@ function App({ user }) {
   // map colour, ticker). The bulk cache is a once-a-day snapshot; without this the list
   // showed the dawn value (Udaipur 23 °C) next to the selected city's live value (28 °C).
   const [stateRefreshedAt, setStateRefreshedAt] = useState({})
+  // Smart Mitigation Planner (Authority): opened from the state panel; its funded cities are
+  // drawn on the map as markers, and clicking a marker opens that city's line in the plan.
+  const [plannerOpen, setPlannerOpen] = useState(false)
+  const [plannerMarkers, setPlannerMarkers] = useState([])
+  const [plannerFocusCity, setPlannerFocusCity] = useState(null)
+  useEffect(() => { setPlannerOpen(false); setPlannerMarkers([]); setPlannerFocusCity(null) }, [selectedState])
+  const handlePlannerHighlight = useCallback(cities => setPlannerMarkers(cities), [])
   const { lite, setLite } = useLiteMode()
 
   // Whole-map live sample (one batched call, ~8 cities/state): every state's colour comes
@@ -4005,6 +4029,8 @@ function App({ user }) {
                           selectedState={selectedState}
                           lite={lite}
                           onStateClick={handleStateClick}
+                          plannerMarkers={plannerMarkers}
+                          onPlannerMarkerClick={(city) => { setPlannerFocusCity(city) }}
                           scale={mapScale}
                           pos={mapPos}
                           isDragging={isDragging}
@@ -4139,7 +4165,29 @@ function App({ user }) {
                       </span>
                     )
                   })()}
+                  {!citizen && (
+                    <button
+                      data-testid="open-planner"
+                      onClick={() => setPlannerOpen(v => !v)}
+                      style={{ marginTop: 10, width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d97706', background: plannerOpen ? 'rgba(217,119,6,0.25)' : 'rgba(217,119,6,0.12)', color: '#fbbf24', fontWeight: 800, fontSize: 12, letterSpacing: 0.6, cursor: 'pointer' }}
+                    >
+                      <PanelIcon name="target" size={12} color="#fbbf24" /> {plannerOpen ? t('planner.closeBtn', 'CLOSE MITIGATION PLANNER') : t('planner.openBtn', 'SMART MITIGATION PLANNER — WHERE SHOULD THE MONEY GO?')}
+                    </button>
+                  )}
                 </div>
+                {plannerOpen && !citizen ? (
+                  <MitigationPlanner
+                    stateName={selectedState}
+                    cities={STATE_DATA[selectedState]?.cities || []}
+                    liveCityCache={liveCityCache}
+                    lulcReal={lulcReal}
+                    cityCoordsData={cityCoordsData}
+                    onClose={() => setPlannerOpen(false)}
+                    onHighlight={handlePlannerHighlight}
+                    focusCity={plannerFocusCity}
+                  />
+                ) : (
+                <>
 
                 {/* Why the state has the colour it has: the plurality vote behind the map fill,
                     with the full per-category city counts as supporting detail for a DM. */}
@@ -4208,6 +4256,8 @@ function App({ user }) {
                     setPoints(points + 10)
                   }}
                 />
+                </>
+                )}
 
                 <div className="hottest-section">
                   <h4><PanelIcon name="flame" /> {t('panels.hottestCities', 'Hottest Cities')}</h4>

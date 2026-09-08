@@ -40,10 +40,10 @@ export function applyAudienceAttr(mode) {
 }
 
 export function useAudienceMode() {
-  // null = never chosen (the chooser screen handles that); the dashboard itself treats
-  // null as citizen — simplicity first for anyone who somehow lands here unasked.
+  // null = never chosen; since 8 Sept 2026 the product is authority-first, so an unchosen
+  // visitor gets the Government / Planner view (Citizen stays a one-click toggle).
   const [stored, setStored] = useState(readStoredAudience)
-  const audience = stored || 'citizen'
+  const audience = stored || 'authority'
 
   useEffect(() => { applyAudienceAttr(audience) }, [audience])
 

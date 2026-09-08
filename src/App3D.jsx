@@ -20,10 +20,13 @@ const LaunchScreen = lazy(() => import('./components/LaunchScreen'))
 const App3D = () => {
   const [screen, setScreen] = useState('launch') // 'launch' or 'dashboard'
   const [user, setUser] = useState(null)
-  // Asked once per browser: citizen vs authority view (see hooks/useAudienceMode.js)
-  const [audienceChosen, setAudienceChosen] = useState(() => readStoredAudience() !== null)
+  // Authority-first (8 Sept 2026, on mentor feedback): sign-in lands on the Government /
+  // Planner view; the Citizen view stays one click away in the nav bar. The chooser screen
+  // is kept in the codebase but no longer shown — a stored choice is still respected.
+  const [audienceChosen, setAudienceChosen] = useState(true)
 
   const handleSignIn = (userData) => {
+    if (readStoredAudience() === null) storeAudience('authority')
     // Show loading screen
     createLoadingScreen(() => {
       setUser(userData)
