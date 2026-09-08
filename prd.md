@@ -71,7 +71,7 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 
 ## 7. Functional Requirements
 ### 7.1 Map and Discovery
-- Show a national India heat map with state and district-level geographic structure (1,956 cities, 36 states/UTs; 1,932 with live readings).
+- Show a national India heat map with state and district-level geographic structure (1,956 cities, 28 states and 8 UTs; 1,932 with live readings).
 - Colour each state by the risk category that most of its cities are in (plurality over live readings; ties → the more severe category); show the per-category counts and the median as detail; show one weather-condition badge per affected state.
 - Allow drill-down from state to city level; opening a state refreshes its cities live.
 - Support quick-pick city navigation and a global city search.

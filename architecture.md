@@ -10,7 +10,7 @@ flowchart LR
     U[User Browser] --> FE[React 18 + Vite SPA]
     FE -->|direct fetch| EXT[Open-Meteo weather · AQI · geocoding\nOSM Overpass]
     FE -->|static| CACHE[public/live-weather-cache.json\n1,932 cities]
-    FE -->|static| GEO[GeoJSON 36 states / 594 districts\nlulc_real.json · ml_model_real.json]
+    FE -->|static| GEO[GeoJSON 35 state/UT + 594 district boundaries\nlulc_real.json · ml_model_real.json]
     FE -->|POST| AI[/api/ask-ai · Gemini proxy\n5-model fallback chain]
     AI --> GEMINI[Google Gemini]
     JOB[GitHub Actions every 3 h\n+ Vercel Cron 14:30 IST + 16:00 retry] --> REFRESH[refreshWeatherData]

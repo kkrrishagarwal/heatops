@@ -22,7 +22,7 @@ Everything below is true of the live prototype at https://heatops.vercel.app as 
 
 **Detailed explanation of the proposed solution**
 - Interactive India map, colour-coded by live heat severity, drill-down to 594 districts
-- 1,956 cities across all 36 states/UTs; 1,932 with live readings (the rest say "NO LIVE DATA", never a guess)
+- 1,956 cities across all 28 states and 8 UTs; 1,932 with live readings (the rest say "NO LIVE DATA", never a guess)
 - City dashboard: Overview (live weather/AQI) · Analysis (satellite indices, land cover, ML) · Compare (radar vs 4 cities) · Interventions (cooling sliders → projected °C) · AGNI + Export
 - Two audiences, one product: **Citizen view** (plain-language risk badge, safe hours today, WhatsApp share, how to help the neighbourhood) and **Authority view** (full dashboard + Heatwave Action Checklist)
 - **Compare tab serves both:** officials rank cities by live heat, air and canopy to decide where cooling money goes first; citizens see "is my city hotter than my parents' city?" and share it — one chart, allocation for one audience, awareness for the other
@@ -44,7 +44,7 @@ Everything below is true of the live prototype at https://heatops.vercel.app as 
 ## Slide 3 — Technical approach (Template 3)
 
 **Technologies used**
-- **Frontend:** React 18 + Vite · react-simple-maps (GeoJSON: 36 states, 594 districts, chunked render) · Recharts · Three.js globe · i18next (11 languages)
+- **Frontend:** React 18 + Vite · react-simple-maps (GeoJSON: 35 state/UT boundaries, 594 districts, chunked render) · Recharts · Three.js globe · i18next (11 languages)
 - **Backend:** Node.js serverless functions on Vercel — Gemini proxy (key never reaches the browser), cron refresh; **GitHub Actions** job every 3 h; GitHub Git Data API commits data back to the repo
 - **AI:** Google Gemini via AGNI persona; 5-model fallback chain; system prompt enforces grounding, India-only scope, "(estimated)" tagging
 - **Data / ML:** Open-Meteo (live weather, AQI, geocoding) · ESA WorldCover 10 m (land cover incl. tree canopy) · NASA MODIS MOD11A1 satellite land-surface temperature via Earthdata/AppEEARS (in the app: 1,912 cities, daily since 1 March 2026; 2016–2026 series processing) · OpenStreetMap Overpass + Nominatim (building density, validated coordinates) · scikit-learn RandomForest trained offline on a published MODIS dataset (20 cities, 2000–2018)
@@ -104,7 +104,7 @@ weather badges) ──► click state (its cities refreshed live in one call) �
 - **Social:** heat-health awareness for vulnerable groups (elderly, outdoor workers); 11 languages; citizen and authority on one shared picture
 - **Economic:** target cooling budgets where projected °C reduction is highest; Cool Roof ROI calculator (Ahmedabad/Telangana pilot coefficients); lower cooling-energy demand
 - **Environmental:** promotes green cover, reflective roofs and water bodies; tracks air quality alongside heat
-- **Governance:** transparent, auditable data (every daily snapshot is in git); an operational aid for Heat Action Plans across all 36 states/UTs, not one metro
+- **Governance:** transparent, auditable data (every daily snapshot is in git); an operational aid for Heat Action Plans across all 28 states and 8 UTs, not one metro
 
 ---
 

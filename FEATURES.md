@@ -36,7 +36,7 @@
 ### Map screen
 | Feature | What it does |
 |---|---|
-| **Live India map** | 36 states/UTs, 594 districts. Each state is coloured by the **risk category most of its cities are in** (plurality vote over live readings; ties go to the more severe category). |
+| **Live India map** | 28 states and 8 UTs, 594 districts. Each state is coloured by the **risk category most of its cities are in** (plurality vote over live readings; ties go to the more severe category). |
 | **Today's National Heat Summary** | Hottest city right now, today's forecast peak city, states in Extreme/High, national average — all from the same live cache the map uses |
 | **State panel** | Risk badge, the exact city-count breakdown behind the colour ("38 Moderate · 34 Low-Moderate…"), median temperature, baseline indices (labelled), AQI, and the full city list with live temperatures — refreshed live in one batched call when the state is opened |
 | **Hottest cities list** | Top five nationally, colour-coded, with forecast peaks |
@@ -103,6 +103,7 @@
 | **AGNI (Analytical Ground-level heat iNtelligence Interface)** | Gemini through a serverless proxy (key never in the browser); grounded on the selected city, any named cities, an India-wide ranking and the city's MODIS summary; India-only by design; "(estimated)" tagging; five-model fallback chain; 11 languages; conversation memory |
 | **Map rendering** | react-simple-maps + d3 on mapshaper-simplified GeoJSON (5× fewer vertices, topology preserved), one shared projection, memoized layers; load-window script time cut 42 % in the 5 Sept pass |
 | **Honesty rules, enforced in code** | No reading is fabricated; a missing reading says NO LIVE DATA; stale readings are flagged; illustrative models are labelled; the ML model prints its weak score; the demo override is banner-labelled; seeded "history" panels were removed rather than relabelled |
+| **Smart Mitigation Planner** | The decision engine for "I have ₹X — where should it go?": ranks a state's cities on live, satellite and land-cover data, spends the budget greedily by projected risk-points per rupee across procurable packages, explains itself in sentences, shows before/after, funded cities on the map, Plan A vs current, cost mode, target mode, and a government-style export with assumptions and limitations. Every unit cost is a stated assumption; population is declared not modelled |
 | **Refresh checklist + demo script** | `REFRESH_BEFORE_JUDGING.md` and `DEMO_SCRIPT.md`: what to check on the morning of judging and the 8-minute click path |
 
 **Pending, shown honestly as pending:** NASA MODIS 2016–2026 for 171 cities (processing at NASA); ISRO INSAT-3D via MOSDAC (requested).
@@ -140,6 +141,9 @@ flowchart TD
     C -->|Government / Planner| D[India map + National Heat Summary<br/>hottest city · forecast peak · states in High risk]
     D --> E[Click a state]
     E --> F[State panel<br/>risk badge · city-count breakdown behind the colour<br/>median temp · all cities refreshed live]
+    F --> P[SMART MITIGATION PLANNER<br/>budget → ranked, costed, explained plan<br/>cost mode · target mode · Plan A vs B]
+    P --> PM[Funded cities on the map<br/>before → after]
+    P --> PE[Export report for the DDMA meeting]
     F --> G[Open a city]
     G --> H[OVERVIEW<br/>live weather · risk gauge · alerts<br/>Heat Action Plan checklist adapts to severity<br/>30-day trend · today's high/low]
     G --> I[ANALYSIS<br/>land cover ESA · buildings OSM<br/>NASA MODIS surface temperature<br/>model card with honest scores]

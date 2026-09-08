@@ -23,7 +23,7 @@ Citizens don't know *why* their city is hot. Officials have no live, city-level 
 ---
 
 ## Our USP in One Line
-**"A heat dashboard you can show a judge, a planner, or a non-English-speaking citizen — and every number survives the question 'where's that from?'"**
+**"A heat dashboard you can show a judge, a planner, or a citizen — and every number survives the question 'where's that from?'"**
 
 [Suggested visual: single bold statement slide]
 
@@ -31,7 +31,7 @@ Citizens don't know *why* their city is hot. Officials have no live, city-level 
 
 ## What BhaskarOps Does
 - Live heat map of India, coloured by real city temperatures
-- 1,956 cities across all 36 states/UTs; 1,932 with live readings
+- 1,956 cities across all 28 states and 8 UTs; 1,932 with live readings
 - City dashboards: weather, satellite indices, comparisons, interventions
 - Citizen view and Authority view — two audiences, one product
 - AGNI: ask questions in plain language, in 11 Indian languages
@@ -106,6 +106,21 @@ STEP 6: Act → Tick the Heat Action Plan checklist; export the report
 Modelled on the Ahmedabad HAP and NDMA guidelines. Ticks saved per city.
 
 [Suggested visual: four-column tier table with colour bands red / amber / grey / blue]
+
+---
+
+## Smart Mitigation Planner — the Decision Engine
+**"I have ₹1 crore for heat mitigation. Where should it go?"**
+
+STEP 1: Budget → preset or custom amount
+STEP 2: Rank → every city in the state scored on forecast high, NASA satellite peak, built-up share, canopy gap
+STEP 3: Optimise → the budget is spent where each rupee removes the most projected risk (roofs, plantation, cooling centres, water, reflective surfaces, schools and hospitals)
+STEP 4: Explain → "Why this plan?" in plain sentences, every unit cost printed
+STEP 5: Decide → before/after, funded cities on the map, Plan A vs Plan B, export for the DDMA meeting
+
+Also: "What does +5 % canopy cost in Bikaner?" and "What budget reaches a 10 % reduction?" — same engine.
+
+[Suggested visual: planner screenshot — ₹1 Cr allocation bars, before/after cards, map markers]
 
 ---
 
@@ -225,6 +240,7 @@ STEP 5: History → Daily snapshots served by an API, a viewer page and CSV expo
 ---
 
 ## Key Demo Features
+- Smart Mitigation Planner: ₹1 crore → ranked, costed, explained plan; re-optimises live at ₹50 lakh; funded cities on the map
 - Live India map: each state coloured by the category most of its cities are in (ties err toward the more severe), with the city counts on hover
 - NASA MODIS satellite surface temperature for the selected city: hottest surface this season with its date, weekly chart, and AGNI answering from the same numbers
 - 30-day temperature trend for any city, from our own daily archive — and "33 °C now, 40 °C expected" from the forecast high
@@ -239,7 +255,7 @@ STEP 5: History → Daily snapshots served by an API, a viewer page and CSV expo
 ---
 
 ## Evaluation Criteria Mapping
-- **Innovation:** the first Indian heat tool that closes the loop — monitor → explain → simulate → act — with honesty enforced in code
+- **Innovation:** the first Indian heat tool that closes the loop — monitor → explain → decide → act — with a budget optimiser that explains itself and honesty enforced in code
 - **Technical:** live multi-source data fusion, self-refreshing pipeline, grounded AI, verified with automated browser tests
 - **Usability:** two audiences, 11 languages, low-end-phone mode, plain-language guidance
 - **Presentation:** every claim on these slides can be clicked and checked on the live site
