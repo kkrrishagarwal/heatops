@@ -218,7 +218,12 @@ function summarise(profiles, usable, chosen, budget, remaining) {
 function explain(cities, usable, byType) {
   const lines = []
   const top = cities[0]
-  if (top) {
+  if (top && usable.length === 1) {
+    const p = top.profile
+    lines.push(`${p.city} scores ${p.risk}/100 (${p.riskLabel.label.toLowerCase()}) on the composite: forecast high ${p.tempMax ?? p.temp} °C${p.modisPeak != null ? `, NASA MODIS season peak surface ${p.modisPeak} °C` : ''}${p.builtUp != null ? `, ${p.builtUp}% built-up` : ''}${p.canopy != null ? `, canopy ${p.canopy}% against the 30 % target` : ''}.`)
+    if (top.types.green) lines.push(`Plantation is funded because the canopy gap is ${p.canopyGapPct.toFixed(0)} points and each hectare in the 1 km core projects ${(100 / p.coreAreaHa / 100 * ASSUMPTIONS.treeCoolingPerFraction).toFixed(2)} °C of cooling for ${fmtINR(ASSUMPTIONS.treesPerHa * ASSUMPTIONS.costPerTree)}.`)
+    if (top.types.roofs) lines.push(`Cool roofs are funded because ${p.roofs ? `the core has ~${p.roofs.toLocaleString('en-IN')} roofs and` : ''} each 100 treated roofs cost ${fmtINR(100 * (ASSUMPTIONS.roofSqft * ASSUMPTIONS.coolRoofPerSqft + ASSUMPTIONS.coolRoofLabourPerRoof))} at the lime-wash rate.`)
+  } else if (top) {
     const p = top.profile
     lines.push(`${p.city} gets the largest share: composite risk ${p.risk}/100 (${p.riskLabel.label.toLowerCase()})${p.modisPeak != null ? `, NASA MODIS season peak surface ${p.modisPeak} °C` : ''}${p.builtUp != null ? `, ${p.builtUp}% built-up` : ''}.`)
     if (p.canopyGapPct && top.types.green) lines.push(`Its tree canopy is ${p.canopy}% against the 30 % target of the 3-30-300 rule — a ${p.canopyGapPct.toFixed(0)}-point gap, which is why plantation is funded there.`)
@@ -229,7 +234,8 @@ function explain(cities, usable, byType) {
   const skipped = usable.length - cities.length
   if (skipped > 0) lines.push(`${skipped} lower-risk ${skipped === 1 ? 'city was' : 'cities were'} not funded at this budget — raising it extends the plan down the ranking.`)
   if (byType.cooling) lines.push(`Cooling centres and water stations are capped at ${Math.round(ASSUMPTIONS.reliefMaxShare * 100)} % of the budget: they relieve exposure quickly but do not cool the city.`)
-  lines.push('Every further ₹25 L in the same city counts for 10 % less than the previous ₹25 L, so the budget spreads to the next-worst city rather than piling up in one.')
+  if (usable.length > 1) lines.push('Every further ₹25 L in the same city counts for 10 % less than the previous ₹25 L, so the budget spreads to the next-worst city rather than piling up in one.')
+  else lines.push('Every further ₹25 L in this city counts for 10 % less than the previous ₹25 L — the model saturates rather than promising linear gains.')
   return lines
 }
 

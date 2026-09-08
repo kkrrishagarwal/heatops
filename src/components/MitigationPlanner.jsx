@@ -32,7 +32,8 @@ const card = { background: 'rgba(15,23,42,0.55)', border: '1px solid #1e293b', b
 const label = { fontSize: 10, color: '#94a3b8', letterSpacing: 0.6, textTransform: 'uppercase' }
 const big = { fontSize: 20, fontWeight: 800, color: '#f1f5f9', lineHeight: 1.2 }
 
-export default function MitigationPlanner({ stateName, cities, liveCityCache, lulcReal, cityCoordsData, onClose, onHighlight, focusCity, onFocusCity }) {
+export default function MitigationPlanner({ stateName, cities, liveCityCache, lulcReal, cityCoordsData, onClose, onHighlight, focusCity, onFocusCity, scope = 'state', cityName = null }) {
+  const single = scope === 'city'
   const { t } = useTranslation()
   const [mode, setMode] = useState('budget') // budget | cost | target
   const [budget, setBudget] = useState(10000000)
@@ -117,7 +118,7 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
   const exportReport = (p) => {
     if (!p || p.error) return
     const lines = []
-    lines.push(`BHASKAROPS — SMART MITIGATION PLAN`, `State: ${stateName}`, `Date: ${new Date().toLocaleString('en-IN')}`, `Available budget: ${fmtINR(p.budget)} · allocated ${fmtINR(p.spent)} · unallocated ${fmtINR(p.remaining)}`, '')
+    lines.push(`BHASKAROPS — ${single ? 'CITY MITIGATION PLAN' : 'SMART MITIGATION PLAN'}`, single ? `City: ${cityName}, ${stateName}` : `State: ${stateName}`, `Date: ${new Date().toLocaleString('en-IN')}`, `Available budget: ${fmtINR(p.budget)} · allocated ${fmtINR(p.spent)} · unallocated ${fmtINR(p.remaining)}`, '')
     lines.push('PROJECTED OUTCOME (model-based estimates, not guarantees)', `State composite risk: ${p.stateBefore} → ${p.stateAfter} (${p.reductionPct[0]}–${p.reductionPct[1]} % reduction, confidence ${p.confidence})`, `Cities ranked ${p.citiesRanked}, funded ${p.citiesCovered}`, `Roofs treated ${p.roofs} · plantation ${p.hectaresGreen} ha (${p.trees} trees) · cooling units ${p.coolingUnits} · facilities ${p.facilities} · reflective ${p.hectaresReflective} ha`, '')
     lines.push('ALLOCATION'); for (const tpe of Object.values(p.byType)) lines.push(`  ${INTERVENTIONS[tpe.type].label}: ${fmtINR(tpe.cost)} — ${Object.entries(tpe.units).map(([u, q]) => `${q} ${u}`).join(', ')}`)
     lines.push('', 'CITIES'); for (const c of p.cities) lines.push(`  ${c.city}: risk ${c.before} → ${c.after}, ${fmtINR(c.cost)} — ${Object.values(c.types).map(x => `${INTERVENTIONS[x.type].label} ${fmtINR(x.cost)}`).join('; ')}`)
@@ -144,14 +145,14 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
       <div data-testid="planner-plan">
         {/* Before / after */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 10, alignItems: 'center', margin: '10px 0' }}>
-          <div style={card}><div style={label}>{t('planner.current', 'Current state')}</div><div style={{ ...big, color: before.color }} data-testid="risk-before">{p.stateBefore} / 100</div><div style={{ fontSize: 11, color: before.color, fontWeight: 700 }}>{before.label}</div><div style={{ fontSize: 10, color: '#94a3b8' }}>{t('planner.avgOf', 'average of the {{n}} highest-risk cities', { n: p.prioritySize })}</div><div style={{ fontSize: 10, color: '#64748b' }}>{t('planner.allAvg', 'whole state ({{n}} cities): {{v}}', { n: p.citiesRanked, v: p.allBefore })}</div></div>
+          <div style={card}><div style={label}>{t('planner.current', 'Current state')}</div><div style={{ ...big, color: before.color }} data-testid="risk-before">{p.stateBefore} / 100</div><div style={{ fontSize: 11, color: before.color, fontWeight: 700 }}>{before.label}</div>{single ? <div style={{ fontSize: 10, color: '#94a3b8' }}>{t('planner.thisCity', 'composite risk of this city')}</div> : <><div style={{ fontSize: 10, color: '#94a3b8' }}>{t('planner.avgOf', 'average of the {{n}} highest-risk cities', { n: p.prioritySize })}</div><div style={{ fontSize: 10, color: '#64748b' }}>{t('planner.allAvg', 'whole state ({{n}} cities): {{v}}', { n: p.citiesRanked, v: p.allBefore })}</div></>}</div>
           <div style={{ color: '#d97706', fontSize: 22, fontWeight: 800 }}>→</div>
-          <div style={{ ...card, borderColor: '#d97706' }}><div style={label}>{t('planner.proposed', 'With this plan (projected)')}</div><div style={{ ...big, color: after.color }} data-testid="risk-after">{p.stateAfter} / 100</div><div style={{ fontSize: 11, color: after.color, fontWeight: 700 }}>{after.label}</div><div style={{ fontSize: 10, color: '#94a3b8' }}>−{p.stateBefore - p.stateAfter} {t('planner.points', 'points')} · {p.reductionPct[0]}–{p.reductionPct[1]} %</div><div style={{ fontSize: 10, color: '#64748b' }}>{t('planner.allAvgAfter', 'whole state: {{v}}', { v: p.allAfter })}</div></div>
+          <div style={{ ...card, borderColor: '#d97706' }}><div style={label}>{t('planner.proposed', 'With this plan (projected)')}</div><div style={{ ...big, color: after.color }} data-testid="risk-after">{p.stateAfter} / 100</div><div style={{ fontSize: 11, color: after.color, fontWeight: 700 }}>{after.label}</div><div style={{ fontSize: 10, color: '#94a3b8' }}>−{p.stateBefore - p.stateAfter} {t('planner.points', 'points')} · {p.reductionPct[0]}–{p.reductionPct[1]} %</div>{!single && <div style={{ fontSize: 10, color: '#64748b' }}>{t('planner.allAvgAfter', 'whole state: {{v}}', { v: p.allAfter })}</div>}</div>
         </div>
         {/* Impact dashboard */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: 8 }}>
           <div style={card}><div style={label}>{t('planner.investment', 'Investment')}</div><div style={big} data-testid="plan-spent">{fmtINR(p.spent)}</div><div style={{ fontSize: 10, color: '#94a3b8' }}>{p.remaining > 0 ? `${fmtINR(p.remaining)} ${t('planner.unallocated', 'unallocated')}` : t('planner.fullyUsed', 'fully allocated')}</div></div>
-          <div style={card}><div style={label}>{t('planner.citiesCovered', 'Cities funded')}</div><div style={big}>{p.citiesCovered} / {p.citiesRanked}</div></div>
+          {!single && <div style={card}><div style={label}>{t('planner.citiesCovered', 'Cities funded')}</div><div style={big}>{p.citiesCovered} / {p.citiesRanked}</div></div>}
           <div style={card}><div style={label}>{t('planner.roofs', 'Cool roofs')}</div><div style={big}>{p.roofs.toLocaleString('en-IN')}</div></div>
           <div style={card}><div style={label}>{t('planner.green', 'Plantation')}</div><div style={big}>{p.hectaresGreen} ha</div><div style={{ fontSize: 10, color: '#94a3b8' }}>{p.trees.toLocaleString('en-IN')} {t('planner.trees', 'trees')}</div></div>
           <div style={card}><div style={label}>{t('planner.cooling', 'Cooling units')}</div><div style={big}>{p.coolingUnits}</div></div>
@@ -177,7 +178,7 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
         </div>
         {/* Cities */}
         <div style={{ ...card, marginTop: 10 }}>
-          <div style={label}>{t('planner.byCity', 'City by city — click for details')}</div>
+          <div style={label}>{single ? t('planner.thisCityDetails', 'This city — click for inputs and packages') : t('planner.byCity', 'City by city — click for details')}</div>
           {p.cities.map(c => {
             const open = openCity === c.city
             const b = riskLabel(c.before), a = riskLabel(c.after)
@@ -198,11 +199,11 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
               </div>
             )
           })}
-          {unranked > 0 && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 6 }}>{t('planner.unranked', '{{n}} cities in this state have no live reading yet and were not ranked — nothing is estimated for them.', { n: unranked })}</div>}
+          {unranked > 0 && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 6 }}>{single ? t('planner.unrankedCity', 'No live reading for this city yet — nothing is estimated.') : t('planner.unranked', '{{n}} cities in this state have no live reading yet and were not ranked — nothing is estimated for them.', { n: unranked })}</div>}
         </div>
         {/* Actions */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
-          <button data-testid="planner-map" style={btn(onMap)} onClick={() => setOnMap(v => !v)}>{onMap ? t('planner.hideMap', 'HIDE ON MAP') : t('planner.viewMap', 'VIEW ON MAP')}</button>
+          {!single && <button data-testid="planner-map" style={btn(onMap)} onClick={() => setOnMap(v => !v)}>{onMap ? t('planner.hideMap', 'HIDE ON MAP') : t('planner.viewMap', 'VIEW ON MAP')}</button>}
           {showCompare && <button style={btn(false)} onClick={() => setPlanA({ ...p, savedBudget: p.budget })} data-testid="planner-save-a">{t('planner.saveA', 'SAVE AS PLAN A')}</button>}
           <button style={btn(false)} onClick={() => exportReport(p)} data-testid="planner-export">{t('planner.export', 'EXPORT REPORT')}</button>
           <button style={btn(false)} onClick={() => exportCsv(p)}>{t('planner.csv', 'CSV')}</button>
@@ -216,7 +217,7 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
                 <tr><td>{t('planner.budget', 'Budget')}</td><td align="right">{fmtINR(planA.budget)}</td><td align="right">{fmtINR(p.budget)}</td></tr>
                 <tr><td>{t('planner.riskAfter', 'Projected risk')}</td><td align="right">{planA.stateBefore} → {planA.stateAfter}</td><td align="right">{p.stateBefore} → {p.stateAfter}</td></tr>
                 <tr><td>{t('planner.reduction', 'Reduction')}</td><td align="right">{planA.reductionPct[0]}–{planA.reductionPct[1]} %</td><td align="right">{p.reductionPct[0]}–{p.reductionPct[1]} %</td></tr>
-                <tr><td>{t('planner.citiesCovered', 'Cities funded')}</td><td align="right">{planA.citiesCovered}</td><td align="right">{p.citiesCovered}</td></tr>
+                {!single && <tr><td>{t('planner.citiesCovered', 'Cities funded')}</td><td align="right">{planA.citiesCovered}</td><td align="right">{p.citiesCovered}</td></tr>}
                 <tr><td>{t('planner.roofs', 'Cool roofs')}</td><td align="right">{planA.roofs}</td><td align="right">{p.roofs}</td></tr>
                 <tr><td>{t('planner.green', 'Plantation')}</td><td align="right">{planA.hectaresGreen} ha</td><td align="right">{p.hectaresGreen} ha</td></tr>
               </tbody>
@@ -230,10 +231,10 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
   return (
     <section className="panel" data-panel="PLANNER" style={{ borderLeft: '4px solid #d97706' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-        <h3 style={{ margin: 0 }}><PanelIcon name="target" /> {t('planner.title', 'SMART MITIGATION PLANNER — {{state}}', { state: stateName.toUpperCase() })}</h3>
+        <h3 style={{ margin: 0 }}><PanelIcon name="target" /> {single ? t('planner.titleCity', 'MITIGATION PLANNER — {{city}}', { city: (cityName || '').toUpperCase() }) : t('planner.title', 'SMART MITIGATION PLANNER — {{state}}', { state: stateName.toUpperCase() })}</h3>
         {onClose && <button style={btn(false)} onClick={onClose} data-testid="planner-close">← {t('planner.back', 'STATE')}</button>}
       </div>
-      <div style={{ fontSize: 11, color: '#94a3b8', margin: '4px 0 10px' }}>{t('planner.subtitle', 'Where should limited heat-mitigation money go? Ranks this state\'s cities on live, satellite and land-cover data and spends the budget where each rupee removes the most projected risk. Model-based estimates — every assumption is one click away.')}</div>
+      <div style={{ fontSize: 11, color: '#94a3b8', margin: '4px 0 10px' }}>{single ? t('planner.subtitleCity', 'For the District Magistrate: what should this city buy with a given budget, what does one intervention cost, and what budget reaches a target — from its live, satellite and land-cover data. Model-based estimates; every assumption is one click away. The state-wide plan is in the state panel on the map.') : t('planner.subtitle', 'Where should limited heat-mitigation money go? Ranks this state\'s cities on live, satellite and land-cover data and spends the budget where each rupee removes the most projected risk. Model-based estimates — every assumption is one click away.')}</div>
 
       {dataStatus === 'loading' && <div style={{ fontSize: 12, color: '#94a3b8' }}>{t('planner.loading', 'Loading satellite and facility data…')}</div>}
       {dataStatus !== 'loading' && (
@@ -266,7 +267,7 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
           {mode === 'cost' && (
             <div style={card}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <label style={{ fontSize: 11, color: '#94a3b8' }}>{t('planner.city', 'City')}<br /><select value={costCity} onChange={e => setCostCity(e.target.value)} data-testid="cost-city" style={{ width: '100%', background: '#0f172a', color: '#f8fafc', border: '1px solid #334155', borderRadius: 6, padding: 6, fontSize: 12 }}>{ranked.map(p => <option key={p.city} value={p.city}>{p.city} · {p.risk}</option>)}</select></label>
+                {!single && <label style={{ fontSize: 11, color: '#94a3b8' }}>{t('planner.city', 'City')}<br /><select value={costCity} onChange={e => setCostCity(e.target.value)} data-testid="cost-city" style={{ width: '100%', background: '#0f172a', color: '#f8fafc', border: '1px solid #334155', borderRadius: 6, padding: 6, fontSize: 12 }}>{ranked.map(p => <option key={p.city} value={p.city}>{p.city} · {p.risk}</option>)}</select></label>}
                 <label style={{ fontSize: 11, color: '#94a3b8' }}>{t('planner.intervention', 'Intervention')}<br /><select value={costType} onChange={e => { setCostType(e.target.value); setCostQty({ green: 5, roofs: 500, cooling: 2, surfaces: 5, facilities: 5 }[e.target.value]) }} data-testid="cost-type" style={{ width: '100%', background: '#0f172a', color: '#f8fafc', border: '1px solid #334155', borderRadius: 6, padding: 6, fontSize: 12 }}>{Object.values(INTERVENTIONS).map(i => <option key={i.key} value={i.key}>{i.label}</option>)}</select></label>
               </div>
               <div style={{ marginTop: 10 }}>
@@ -293,7 +294,7 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
           {mode === 'target' && (
             <>
               <div style={card}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}><span>{t('planner.targetLabel', 'Desired reduction in the composite risk of the state\'s 10 highest-risk cities')}</span><span style={{ color: '#fbbf24', fontWeight: 700, fontSize: 13 }}>{target} %</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}><span>{single ? t('planner.targetLabelCity', 'Desired reduction in this city\'s composite risk') : t('planner.targetLabel', 'Desired reduction in the composite risk of the state\'s 10 highest-risk cities')}</span><span style={{ color: '#fbbf24', fontWeight: 700, fontSize: 13 }}>{target} %</span></div>
                 <input type="range" min={2} max={30} step={1} value={target} onChange={e => setTarget(Number(e.target.value))} style={{ width: '100%', accentColor: '#d97706' }} data-testid="target-slider" />
                 {targetPlan && !targetPlan.error && <div style={{ marginTop: 8 }}><div style={label}>{t('planner.required', 'Estimated investment required')}</div><div style={{ ...big, color: '#fbbf24' }} data-testid="target-budget">{fmtINR(targetPlan.spent)}</div></div>}
               </div>

@@ -41,7 +41,6 @@ import { LandCoverPanel } from './components/LandCoverPanel'
 import { PhysicsPanel } from './components/PhysicsPanel'
 import { CoolRoofCalculator } from './components/CoolRoofCalculator'
 import { GEEPipelinePanel } from './components/GEEPipelinePanel'
-import { SpatialRecommendation } from './components/SpatialRecommendation'
 import { normalizeStateName, getCellTemp, getGridBucket, computeInterventionImpact, getUsers, getLoginHistory, saveLoginHistory, getAnalyticsData, getTimeSpent } from './utils/dashboardUtils'
 import { WeatherCard } from './components/WeatherCard'
 import { getAQICategory } from './utils/weatherAPI'
@@ -5381,7 +5380,20 @@ function App({ user }) {
 
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 {/* PANEL J: Spatial Recommendation */}
-                <SpatialRecommendation cityData={cityData} cityName={selectedCity} />
+                {/* City-level planner for the District Magistrate (the state-wide one is in the
+                    state panel). Replaces the old "WHERE to intervene" box, whose zones, area and
+                    ₹3 lakh/ha were canned text keyed off a baseline index — not city data. */}
+                {!citizen && (
+                  <MitigationPlanner
+                    scope="city"
+                    cityName={selectedCity}
+                    stateName={selectedState}
+                    cities={[selectedCity]}
+                    liveCityCache={liveCityCache}
+                    lulcReal={lulcReal}
+                    cityCoordsData={cityCoordsData}
+                  />
+                )}
 
                 {/* Wind & Atmosphere — LIVE values from the same Open-Meteo reading the
                     WeatherCard shows. (This panel used to print hardcoded "12 km/h, NE 45°,
