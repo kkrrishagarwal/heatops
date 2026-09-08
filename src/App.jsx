@@ -981,9 +981,13 @@ function fixStateName(raw) {
   return trimmed
 }
 
-const STATES_URL = '/data/india_states_full.geojson'
-const DISTRICTS_URL = '/data/india_districts_full.geojson'
-const JK_URL = '/data/jk_ladakh_official.geojson'
+// Bump GEO_VERSION whenever the boundary files change: Vercel serves them with a one-hour
+// browser cache, so without a new query string a returning visitor keeps yesterday's map
+// (that is how the Telangana split stayed invisible on the author's laptop on 8 Sept).
+const GEO_VERSION = '2026-09-08b'
+const STATES_URL = `/data/india_states_full.geojson?v=${GEO_VERSION}`
+const DISTRICTS_URL = `/data/india_districts_full.geojson?v=${GEO_VERSION}`
+const JK_URL = `/data/jk_ladakh_official.geojson?v=${GEO_VERSION}`
 // scale 1120 / centre 23.2°N: India fills ~93% of the 800×600 map box (was 83% at
 // scale 1000, with the extra slack sitting under Kanyakumari because 22.5°N is south of
 // India's Mercator mid-latitude). Kashmir, Arunachal and the A&N / Lakshadweep labels
@@ -1899,18 +1903,19 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
         projection={INDIA_MAP_PROJECTION}
         style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}
       >
+        {/* The label used to be a text with pointer-events off inside an otherwise empty group,
+            so there was nothing to click. A transparent pill behind the text is the hit area;
+            the island polygons themselves are too small to hit at this zoom. */}
         <Marker coordinates={[72.6, 10.5]}>
-          <g style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={() => onStateClick('Lakshadweep')}>
-            <text x={0} y={30} fontSize={7} fill='#e2e8f0' textAnchor='middle' fontFamily='monospace' style={{ pointerEvents: 'none' }}>
-              Lakshadweep
-            </text>
+          <g data-island="Lakshadweep" style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={() => onStateClick('Lakshadweep')}>
+            <rect x={-30} y={20} width={60} height={14} rx={7} fill='rgba(15,23,42,0.75)' stroke='rgba(226,232,240,0.35)' strokeWidth={0.6} />
+            <text x={0} y={30} fontSize={7} fill='#e2e8f0' textAnchor='middle' fontFamily='monospace'>Lakshadweep ↗</text>
           </g>
         </Marker>
         <Marker coordinates={[93.0, 10.5]}>
-          <g style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={() => onStateClick('Andaman and Nicobar Islands')}>
-            <text x={0} y={34} fontSize={6.5} fill='#e2e8f0' textAnchor='middle' fontFamily='monospace' style={{ pointerEvents: 'none' }}>
-              A&N Islands
-            </text>
+          <g data-island="Andaman and Nicobar Islands" style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={() => onStateClick('Andaman and Nicobar Islands')}>
+            <rect x={-30} y={24} width={60} height={14} rx={7} fill='rgba(15,23,42,0.75)' stroke='rgba(226,232,240,0.35)' strokeWidth={0.6} />
+            <text x={0} y={34} fontSize={6.5} fill='#e2e8f0' textAnchor='middle' fontFamily='monospace'>A&N Islands ↗</text>
           </g>
         </Marker>
       </ComposableMap>
