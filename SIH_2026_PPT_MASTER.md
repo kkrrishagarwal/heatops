@@ -930,12 +930,12 @@ Frontend: React 18 + Vite, react-simple-maps (India map with district-level GeoJ
 | Source file | Contributed |
 |---|---|
 | SIH_IDEA_SUBMISSION.md | 6-slide template content, references, risks/strategies |
-| BHASKAROPS.md §5 (was SIH_PITCH_CONTENT_SIMPLIFIED.md) | One-slide-per-idea content, six-step flows, suggested visuals, extended deck order |
-| PROJECT_EXPLAINED.md (HEATOPS_PPT_CONTENT.md merged into BHASKAROPS.md) | Submission form answers, naming rationale, full feature list, architecture |
-| BHASKAROPS.md §6 (was STAKEHOLDER_DIFFERENTIATION.md) | IMD / BHRIGU comparison tables, equity lens |
-| BHASKAROPS.md §4 (was FEATURES.md) | Small/medium/large feature map, mermaid journeys, data-flow chart |
+| JUDGES_BRIEF.md §2 (was SIH_PITCH_CONTENT_SIMPLIFIED.md) | One-slide-per-idea content, six-step flows, suggested visuals, extended deck order |
+| PROJECT_EXPLAINED.md (HEATOPS_PPT_CONTENT.md merged into JUDGES_BRIEF.md) | Submission form answers, naming rationale, full feature list, architecture |
+| JUDGES_BRIEF.md §3 (was STAKEHOLDER_DIFFERENTIATION.md) | IMD / BHRIGU comparison tables, equity lens |
+| PROJECT_STORY.md §3 (was FEATURES.md) | Small/medium/large feature map, mermaid journeys, data-flow chart |
 | PROJECT_EXPLAINED.md | Real vs estimated data audit, dated change log, performance numbers, geocoding audit, MODIS integration details |
-| BHASKAROPS.md §3 (was DEMO_SCRIPT.md) | 8-minute demo table, fallbacks, morning checklist |
+| PROJECT_STORY.md §2 (was DEMO_SCRIPT.md) | 8-minute demo table, fallbacks, morning checklist |
 | REFRESH_BEFORE_JUDGING.md | Refresh operations, Actions run history, demo override |
 | architecture.md | High-level mermaid, principles, security model |
 | prd.md | Target users, goals, non-goals, use cases, success metrics |

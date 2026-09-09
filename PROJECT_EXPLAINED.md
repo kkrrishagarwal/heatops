@@ -457,7 +457,7 @@ MOSDAC (ISRO) access is still pending, so a NASA Earthdata account (`kkrrishagar
 - **Four seeded panels removed.** The Day-vs-Night bars, the "same date last year" line, the "10-year trend (2015–2025)" chart and the "historical heatwave timeline" were all generated from a hash of the city name — plausible-looking, but not measurements. They are gone. In their place: **Today's high vs low** (Open-Meteo's daily max/min for the city), a **30-day temperature trend** drawn from the platform's own daily archive (`src/components/CityTrendPanel.jsx` → `/api/weather-history`; carried-forward days drawn hollow, gaps left as gaps, nothing interpolated), and one "Long-term history" note on the Analysis tab saying what exists (archive since 22 June 2026) and what is coming (NASA MODIS 2016–2026).
 - **Forecast high in the cache.** Every refresh path now stores `tempMax` (Open-Meteo `daily.temperature_2m_max`) next to the current reading, and the daily snapshots keep it. The hottest-cities list shows "peak 40°" when the forecast high is above the current reading, and the National Summary has a "Today's forecast high" card — so the demo can say "33 °C now, 40 °C expected" without inventing anything.
 - **GitHub Actions refresh is live.** `.github/workflows/refresh-weather.yml` was pushed once the token had the `workflow` scope; the first run failed on a missing `pg` package (the script imports the optional Postgres client), fixed by adding `npm ci` before the refresh. It runs at :30 past every third hour, paced against Open-Meteo, and commits as `kkrrishagarwal` so Vercel Hobby redeploys it. The laptop cron (`scripts/localAutoRefresh.sh`) was retired on 6 Sept once Actions was reliable — the two jobs conflicted on the same cache files; the script stays for manual use.
-- **`BHASKAROPS.md` (section 3; formerly `DEMO_SCRIPT.md`)** — an 8-minute click-script for 9–10 Sept, with fallbacks for a dead network, AGNI quota and the demo banner.
+- **`PROJECT_STORY.md` (section 2; formerly `DEMO_SCRIPT.md`)** — an 8-minute click-script for 9–10 Sept, with fallbacks for a dead network, AGNI quota and the demo banner.
 
 ### 8.23 Login globe: "Skip" removed, globe kept (5 Sept 2026)
 
@@ -520,7 +520,7 @@ Found on the way: `vite.config.js` has a dev-only middleware that serves a preco
 
 ### 8.29 One presentation document (8 Sept 2026)
 
-Six presentation-facing files (`FEATURES.md`, `PRESENTATION_SCRIPT.md`, `DEMO_SCRIPT.md`, `SIH_PITCH_CONTENT_SIMPLIFIED.md`, `STAKEHOLDER_DIFFERENTIATION.md`, `HEATOPS_PPT_CONTENT.md`) were merged into **`BHASKAROPS.md`**: one page of problem/solution/USP, the spoken script, the click path, every feature with the flow charts, slide content, and the IMD/BHRIGU/equity comparison. This file (`PROJECT_EXPLAINED.md`) stays as the technical explanation and change log; `REFRESH_BEFORE_JUDGING.md` stays as the morning-of checklist.
+Six presentation-facing files (`FEATURES.md`, `PRESENTATION_SCRIPT.md`, `DEMO_SCRIPT.md`, `SIH_PITCH_CONTENT_SIMPLIFIED.md`, `STAKEHOLDER_DIFFERENTIATION.md`, `HEATOPS_PPT_CONTENT.md`) were merged, then split into two: **`JUDGES_BRIEF.md`** (one page, slide content, IMD/BHRIGU/equity comparison, judges' Q&A) and **`PROJECT_STORY.md`** (the spoken script from problem to solution, the click path, every feature small to large with the flow charts). This file (`PROJECT_EXPLAINED.md`) stays as the technical explanation and change log; `REFRESH_BEFORE_JUDGING.md` stays as the morning-of checklist.
 
 ## Bonus: Things that are built but not currently used (orphaned code)
 
