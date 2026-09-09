@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, Legend } from 'recharts'
+import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, Legend, CartesianGrid } from 'recharts'
 import PanelIcon from './PanelIcon'
 import { loadModisIndex, loadModisStateFile } from '../utils/modisLst'
 
@@ -29,6 +29,13 @@ function weeklyAverages(rows) {
     const iso = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`
     return { date: iso, label: fmt(iso), day: mean(b.day), night: mean(b.night), clearDays: b.day.length, clearNights: b.night.length }
   })
+}
+// One x-axis label per month (the first weekly point of each month) — weekly labels
+// crowded the axis and the dates read as noise.
+function monthTicks(series) {
+  const seen = new Set(); const out = []
+  for (const w of series) { const m = w.date.slice(0, 7); if (!seen.has(m)) { seen.add(m); out.push(w.label) } }
+  return out
 }
 function fmt(iso) {
   return new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
@@ -95,22 +102,30 @@ export default function SatelliteLstPanel({ city, state, liveTemp }) {
             </div>
           </div>
           {series && series.length > 2 && (
-            <div style={{ width: '100%', height: 170 }}>
+            <div style={{ width: '100%', height: 230 }}>
               <ResponsiveContainer>
-                <LineChart data={series} margin={{ top: 6, right: 10, left: -10, bottom: 0 }}>
-                  <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#94a3b8' }} interval="preserveStartEnd" minTickGap={34} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} domain={[d => Math.floor(d - 1), d => Math.ceil(d + 1)]} tickFormatter={v => `${Math.round(v)}°`} allowDecimals={false} axisLine={false} tickLine={false} width={46} />
+                <ComposedChart data={series} margin={{ top: 18, right: 14, left: -8, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="modisDayFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} stroke="rgba(148,163,184,0.12)" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#94a3b8' }} ticks={monthTicks(series)} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} domain={[d => Math.floor(d - 1), d => Math.ceil(d + 1)]} tickFormatter={v => `${Math.round(v)}°`} allowDecimals={false} axisLine={false} tickLine={false} width={44} />
                   <Tooltip
                     contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 6, fontSize: 11 }}
                     labelFormatter={l => `${t('modis.weekOf', 'Week of')} ${l}`}
                     formatter={(v, name, p) => [`${v}°C (${name === 'day' ? p.payload.clearDays : p.payload.clearNights} ${t('modis.clearDaysShort', 'clear days')})`, name === 'day' ? t('modis.day', 'Day surface, weekly avg') : t('modis.night', 'Night surface, weekly avg')]}
                   />
-                  <Legend wrapperStyle={{ fontSize: 10 }} formatter={v => (v === 'day' ? t('modis.day', 'Day surface, weekly avg') : t('modis.night', 'Night surface, weekly avg'))} />
-                  {typeof liveTemp === 'number' && <ReferenceLine y={liveTemp} stroke="rgba(56,189,248,0.7)" strokeDasharray="4 3" label={{ value: `${t('modis.liveAir', 'live AIR now')} ${liveTemp}°C`, fontSize: 9, fill: '#7dd3fc', position: 'insideBottomRight' }} />}
-                  {summary.hottestDay && (() => { const wk = series.find(w => w.date <= summary.hottestDay.date && summary.hottestDay.date < new Date(new Date(w.date + 'T00:00:00').getTime() + 7 * 86400000).toISOString().slice(0, 10)); return wk ? <ReferenceDot x={wk.label} y={wk.day ?? summary.hottestDay.c} r={5} fill="#ef4444" stroke="#fff" strokeWidth={1} label={{ value: `${t('modis.peak', 'peak')} ${summary.hottestDay.c}°`, fontSize: 9, fill: '#fca5a5', position: 'top' }} /> : null })()}
-                  <Line type="monotone" dataKey="day" stroke="#f59e0b" strokeWidth={2.2} dot={{ r: 3 }} connectNulls={false} isAnimationActive={false} />
-                  <Line type="monotone" dataKey="night" stroke="#818cf8" strokeWidth={1.6} dot={{ r: 2.5 }} connectNulls={false} isAnimationActive={false} />
-                </LineChart>
+                  <Legend verticalAlign="top" align="right" height={20} iconType="plainline" wrapperStyle={{ fontSize: 10, top: 0 }} payload={[{ value: t('modis.day', 'Day surface, weekly avg'), type: 'plainline', color: '#f59e0b', id: 'day', payload: { strokeDasharray: '' } }, { value: t('modis.night', 'Night surface, weekly avg'), type: 'plainline', color: '#818cf8', id: 'night', payload: { strokeDasharray: '' } }]} />
+                  {typeof liveTemp === 'number' && <ReferenceLine y={liveTemp} stroke="rgba(56,189,248,0.75)" strokeDasharray="5 4" label={{ value: `${t('modis.liveAir', 'live air now')} ${liveTemp}°C`, fontSize: 9, fill: '#7dd3fc', position: 'insideTopLeft', dy: -4 }} />}
+                  <Area type="monotone" dataKey="day" stroke="none" fill="url(#modisDayFill)" isAnimationActive={false} connectNulls={false} legendType="none" tooltipType="none" />
+                  <Line type="monotone" dataKey="day" stroke="#f59e0b" strokeWidth={2.4} dot={false} activeDot={{ r: 4, stroke: '#0f172a', strokeWidth: 1 }} connectNulls={false} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="night" stroke="#818cf8" strokeWidth={1.8} dot={false} activeDot={{ r: 4, stroke: '#0f172a', strokeWidth: 1 }} connectNulls={false} isAnimationActive={false} />
+                  {summary.hottestDay && (() => { const wk = series.find(w => w.date <= summary.hottestDay.date && summary.hottestDay.date < new Date(new Date(w.date + 'T00:00:00').getTime() + 7 * 86400000).toISOString().slice(0, 10)); return wk ? <ReferenceDot x={wk.label} y={wk.day ?? summary.hottestDay.c} r={5} fill="#ef4444" stroke="#fff" strokeWidth={1.5} label={{ value: `${t('modis.peak', 'peak')} ${summary.hottestDay.c}°`, fontSize: 10, fill: '#fca5a5', position: 'top', dy: -2 }} /> : null })()}
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           )}
