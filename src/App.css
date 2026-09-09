@@ -235,7 +235,7 @@ body {
   backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-  z-index: 100;
+  z-index: 500;
   position: relative;
 }
 
@@ -244,6 +244,10 @@ body {
   flex-direction: column;
   gap: 10px;
   padding: 16px 22px;
+  /* Header dropdowns (language, avatar) must paint above the content columns below —
+     without a stacking order of its own the header lost to the state panel (8 Sept). */
+  position: relative;
+  z-index: 500;
   background: linear-gradient(180deg, rgba(4,11,26,0.95), rgba(9,18,40,0.92));
   border-bottom: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 16px 40px rgba(0,0,0,0.22);

@@ -503,11 +503,21 @@ function LanguageDropdown() {
   }, [])
 
   const current = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language) || SUPPORTED_LANGUAGES[0]
+  // The menu is positioned against the viewport, not the button: on the map screen the
+  // switcher lives inside a scrollable tab bar (overflow: auto), and a scroll container
+  // clips anything hanging out of it no matter the z-index — the menu opened but was
+  // invisible (8 Sept). position: fixed escapes every overflow ancestor.
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
+  const toggle = () => {
+    const r = ref.current?.getBoundingClientRect()
+    if (r) setMenuPos({ top: r.bottom + 4, right: Math.max(8, window.innerWidth - r.right) })
+    setOpen(o => !o)
+  }
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={toggle}
         style={{
           background: 'rgba(255,255,255,0.05)', color: '#cbd5e1',
           border: '1px solid rgba(255,255,255,0.15)', borderRadius: 4,
@@ -519,10 +529,10 @@ function LanguageDropdown() {
         {current.label} <span style={{ fontSize: 8, opacity: 0.7 }}>▾</span>
       </button>
       {open && (
-        <div style={{
-          position: 'absolute', top: '100%', right: 0, marginTop: 4,
+        <div data-testid="language-menu" style={{
+          position: 'fixed', top: menuPos.top, right: menuPos.right,
           background: '#0f1729', border: '1px solid #1a2a4a', borderRadius: 8,
-          minWidth: 190, maxHeight: 320, overflowY: 'auto', zIndex: 2000,
+          minWidth: 190, maxHeight: 320, overflowY: 'auto', zIndex: 5000,
           boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
         }}>
           {SUPPORTED_LANGUAGES.map(lang => (
