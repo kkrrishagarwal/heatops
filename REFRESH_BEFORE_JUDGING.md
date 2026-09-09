@@ -35,7 +35,7 @@ Judges may visit on a mild day. Open the site as `https://heatops.vercel.app/?de
 - Hard-refresh the demo browser once after the last deploy (Ctrl + Shift + R).
 
 ## On the morning of the demo
-Follow the pre-demo checklist at the end of `DEMO_SCRIPT.md` after the freshness check above.
+Follow the pre-demo checklist in `BHASKAROPS.md` (section 3, the demo path) after the freshness check above.
 
 ## What the first Actions runs showed (5 Sept)
 | Run | Carried forward | Note |

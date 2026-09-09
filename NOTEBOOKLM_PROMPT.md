@@ -15,8 +15,8 @@ Add these only if you want the specific things they carry:
 | Add | Only if you want |
 |---|---|
 | `BhaskarOps_SIH2026_Idea_Submission.pdf` | NotebookLM to match the existing deck's structure and phrasing |
-| `FEATURES.md` | The mermaid flowcharts, if you want it to describe the user journeys step by step |
-| `STAKEHOLDER_DIFFERENTIATION.md` | Deeper IMD / BHRIGU comparison and the equity-lens tables |
+| `BHASKAROPS.md` (section 4) | The mermaid flowcharts, if you want it to describe the user journeys step by step |
+| `BHASKAROPS.md` (section 6) | Deeper IMD / BHRIGU comparison and the equity-lens tables |
 
 If you add any of them, paste this line into your first prompt:
 
