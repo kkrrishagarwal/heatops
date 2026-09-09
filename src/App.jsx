@@ -3339,6 +3339,10 @@ function App({ user }) {
   const [treeSlider, setTreeSlider] = useState(0)
   const [roofSlider, setRoofSlider] = useState(0)
   const [waterSlider, setWaterSlider] = useState(0)
+  // Interventions tab: preview the sliders on a 40 °C day instead of today's live base —
+  // an explicit button, never a silent switch (the two grids must start from the same base
+  // unless the presenter chooses otherwise).
+  const [previewHotDay, setPreviewHotDay] = useState(false)
   // Cross-tab awareness: sliders live on the Interventions tab but drive the Analysis tab's
   // heatmap grid. Record when they were last touched so the Analysis tab can flag the grid
   // as freshly updated the next time the user lands on it.
@@ -5386,7 +5390,7 @@ function App({ user }) {
                           // Live before/after pair. On a cool day every cell is already in the
                           // coolest band and nothing can visibly change, so the pair is drawn on a
                           // 40 °C reference day instead — and says so.
-                          const useRef = gridBase < 35
+                          const useRef = previewHotDay
                           const b = useRef ? REF_HOT : gridBase
                           return (
                             <div data-testid="live-grid-pair" style={{ margin: '8px 0 10px' }}>
@@ -5396,9 +5400,12 @@ function App({ user }) {
                                   <MiniGrid base={b} size={11} label={t('interventions.gridBefore', 'Before')} testId="mini-grid-before" />
                                   <div style={{ fontSize: 10, color: '#94a3b8', maxWidth: 150, lineHeight: 1.4 }}>
                                     {useRef
-                                      ? t('interventions.gridRefNote', "Drawn on a 40 °C reference day: today's base of {{t}}°C already sits in the coolest band, so the colours could not move.", { t: gridBase.toFixed(0) })
-                                      : t('interventions.gridTodayNote', "Today's live base. Same cells and thresholds as the Analysis tab.")}
+                                      ? t('interventions.gridRefNote', "Reference day: the same cells as the Analysis tab, started from 40 °C instead of today's {{t}}°C.", { t: gridBase.toFixed(0) })
+                                      : t('interventions.gridTodayNote', "Today's live base — identical to the grid on the Analysis tab.")}
                                   </div>
+                                  <button data-testid="preview-hot-day" onClick={() => setPreviewHotDay(v => !v)} style={{ padding: '6px 8px', borderRadius: 6, border: `1px solid ${useRef ? '#d97706' : '#334155'}`, background: useRef ? 'rgba(217,119,6,0.18)' : 'rgba(15,23,42,0.6)', color: useRef ? '#fbbf24' : '#cbd5e1', fontSize: 10, fontWeight: 700, cursor: 'pointer', letterSpacing: 0.4 }}>
+                                    {useRef ? t('interventions.backToToday', "BACK TO TODAY'S {{t}}°C", { t: gridBase.toFixed(0) }) : t('interventions.previewHot', 'PREVIEW ON A 40 °C DAY')}
+                                  </button>
                                 </div>
                               </div>
                             </div>
