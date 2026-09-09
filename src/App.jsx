@@ -1662,14 +1662,14 @@ const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorder
 // Compact live copy of the Analysis tab's TEMPERATURE HEATMAP GRID, so the sliders'
 // effect is visible right next to them (judges asked to see the colours move without
 // changing tab). Same getCellTemp/getGridBucket as the full grid; illustrative pattern.
-function MiniGrid({ base, tree = 0, roof = 0, water = 0, size = 15, label, testId }) {
+function MiniGrid({ base, tree = 0, roof = 0, water = 0, size = 15, label, testId, numbers = false }) {
   return (
     <div data-testid={testId} style={{ display: 'inline-block' }}>
       {label && <div style={{ fontSize: 9, color: '#94a3b8', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 4, textAlign: 'center' }}>{label}</div>}
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(10, ${size}px)`, gap: 2 }}>
         {Array.from({ length: 100 }).map((_, i) => {
           const temp = getCellTemp(base, Math.floor(i / 10), i % 10, tree, roof, water)
-          return <div key={i} data-bucket={getGridBucket(temp).label} title={`${temp.toFixed(1)}°C`} style={{ width: size, height: size, borderRadius: 2, background: getGridBucket(temp).color, opacity: 0.9, transition: 'background 0.35s' }} />
+          return <div key={i} data-bucket={getGridBucket(temp).label} title={`${temp.toFixed(1)}°C`} style={{ width: size, height: size, borderRadius: 3, background: getGridBucket(temp).color, opacity: 0.92, transition: 'background 0.4s', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: numbers ? Math.max(8, size * 0.38) : 0, fontWeight: 700, color: '#f8fafc', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{numbers ? temp.toFixed(0) : ''}</div>
         })}
       </div>
     </div>
@@ -5389,14 +5389,17 @@ function App({ user }) {
                           const useRef = gridBase < 35
                           const b = useRef ? REF_HOT : gridBase
                           return (
-                            <div data-testid="live-grid-pair" style={{ display: 'flex', gap: 14, alignItems: 'flex-end', flexWrap: 'wrap', margin: '8px 0 10px' }}>
-                              <MiniGrid base={b} label={`${t('interventions.gridNow', 'Now')} · ${b.toFixed(0)}°C`} testId="mini-grid-before" />
-                              <div style={{ color: '#d97706', fontSize: 18, fontWeight: 800, paddingBottom: 60 }}>→</div>
-                              <MiniGrid base={b} tree={treeSlider} roof={roofSlider} water={waterSlider} label={t('interventions.gridWith', 'With your sliders')} testId="mini-grid-after" />
-                              <div style={{ fontSize: 10, color: '#94a3b8', maxWidth: 170, lineHeight: 1.4 }}>
-                                {useRef
-                                  ? t('interventions.gridRefNote', "Drawn on a 40 °C reference day: today's base of {{t}}°C already sits in the coolest band, so the colours could not move.", { t: gridBase.toFixed(0) })
-                                  : t('interventions.gridTodayNote', "Today's live base. Same cells and thresholds as the Analysis tab.")}
+                            <div data-testid="live-grid-pair" style={{ margin: '8px 0 10px' }}>
+                              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                                <MiniGrid base={b} tree={treeSlider} roof={roofSlider} water={waterSlider} size={26} numbers label={`${t('interventions.gridLive', 'Live — moves with your sliders')} · ${t('interventions.gridBase', 'base')} ${b.toFixed(0)}°C`} testId="mini-grid-after" />
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                  <MiniGrid base={b} size={11} label={t('interventions.gridBefore', 'Before')} testId="mini-grid-before" />
+                                  <div style={{ fontSize: 10, color: '#94a3b8', maxWidth: 150, lineHeight: 1.4 }}>
+                                    {useRef
+                                      ? t('interventions.gridRefNote', "Drawn on a 40 °C reference day: today's base of {{t}}°C already sits in the coolest band, so the colours could not move.", { t: gridBase.toFixed(0) })
+                                      : t('interventions.gridTodayNote', "Today's live base. Same cells and thresholds as the Analysis tab.")}
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           )
