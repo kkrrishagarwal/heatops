@@ -105,9 +105,9 @@ export default function SatelliteLstPanel({ city, state, liveTemp }) {
             </div>
           </div>
           {series && series.length > 2 && (
-            <div style={{ width: '100%', height: 230 }}>
+            <div style={{ width: '100%', height: 250 }}>
               <ResponsiveContainer>
-                <ComposedChart data={series} margin={{ top: 18, right: 14, left: -8, bottom: 0 }}>
+                <ComposedChart data={series} margin={{ top: 10, right: 14, left: -8, bottom: 0 }}>
                   <defs>
                     <linearGradient id="modisDayFill" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.35} />
@@ -122,8 +122,8 @@ export default function SatelliteLstPanel({ city, state, liveTemp }) {
                     labelFormatter={l => `${t('modis.weekOf', 'Week of')} ${l}`}
                     formatter={(v, name, p) => [`${v}°C (${name === 'day' ? p.payload.clearDays : p.payload.clearNights} ${t('modis.clearDaysShort', 'clear days')})`, name === 'day' ? t('modis.day', 'Day surface, weekly avg') : t('modis.night', 'Night surface, weekly avg')]}
                   />
-                  <Legend verticalAlign="top" align="right" height={20} iconType="plainline" wrapperStyle={{ fontSize: 10, top: 0 }} payload={[{ value: t('modis.day', 'Day surface, weekly avg'), type: 'plainline', color: '#f59e0b', id: 'day', payload: { strokeDasharray: '' } }, { value: t('modis.night', 'Night surface, weekly avg'), type: 'plainline', color: '#818cf8', id: 'night', payload: { strokeDasharray: '' } }, { value: t('modis.gapLegend', 'dotted = cloud, no reading that week'), type: 'plainline', color: 'rgba(203,213,225,0.6)', id: 'gap', payload: { strokeDasharray: '2 5' } }]} />
-                  {typeof liveTemp === 'number' && <ReferenceLine y={liveTemp} stroke="rgba(56,189,248,0.75)" strokeDasharray="5 4" label={{ value: `${t('modis.liveAir', 'live air now')} ${liveTemp}°C`, fontSize: 9, fill: '#7dd3fc', position: 'insideTopLeft', dy: -4 }} />}
+                  <Legend verticalAlign="top" align="left" height={34} iconType="plainline" wrapperStyle={{ fontSize: 10, top: 0, lineHeight: '16px' }} payload={[{ value: t('modis.day', 'Day surface, weekly avg'), type: 'plainline', color: '#f59e0b', id: 'day', payload: { strokeDasharray: '' } }, { value: t('modis.night', 'Night surface, weekly avg'), type: 'plainline', color: '#818cf8', id: 'night', payload: { strokeDasharray: '' } }, { value: t('modis.gapLegend', 'dotted = cloud, no reading that week'), type: 'plainline', color: 'rgba(203,213,225,0.6)', id: 'gap', payload: { strokeDasharray: '2 5' } }, ...(typeof liveTemp === 'number' ? [{ value: `${t('modis.liveAir', 'live air now')} ${liveTemp}°C`, type: 'plainline', color: '#38bdf8', id: 'air', payload: { strokeDasharray: '5 4' } }] : [])]} />
+                  {typeof liveTemp === 'number' && <ReferenceLine y={liveTemp} stroke="rgba(56,189,248,0.75)" strokeDasharray="5 4" />}
                   <Area type="monotone" dataKey="day" stroke="none" fill="url(#modisDayFill)" isAnimationActive={false} connectNulls={false} legendType="none" tooltipType="none" />
                   {/* Dotted bridges across cloud-blocked weeks (connectNulls) drawn UNDER the solid
                       lines: the eye follows the trend, but only the solid parts are measurements. */}
