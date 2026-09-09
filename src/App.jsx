@@ -1659,6 +1659,23 @@ const JKBordersLayer = React.memo(function JKBordersLayer({ DATA, registerBorder
 // forwardRef exposes the internal zoom/pan transform div so the parent can mutate its
 // style.transform directly via ref during a drag gesture (bypassing React state entirely
 // for that high-frequency path) — see the onMouseMove handler at the call site for why.
+// Compact live copy of the Analysis tab's TEMPERATURE HEATMAP GRID, so the sliders'
+// effect is visible right next to them (judges asked to see the colours move without
+// changing tab). Same getCellTemp/getGridBucket as the full grid; illustrative pattern.
+function MiniGrid({ base, tree = 0, roof = 0, water = 0, size = 15, label, testId }) {
+  return (
+    <div data-testid={testId} style={{ display: 'inline-block' }}>
+      {label && <div style={{ fontSize: 9, color: '#94a3b8', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 4, textAlign: 'center' }}>{label}</div>}
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(10, ${size}px)`, gap: 2 }}>
+        {Array.from({ length: 100 }).map((_, i) => {
+          const temp = getCellTemp(base, Math.floor(i / 10), i % 10, tree, roof, water)
+          return <div key={i} data-bucket={getGridBucket(temp).label} title={`${temp.toFixed(1)}°C`} style={{ width: size, height: size, borderRadius: 2, background: getGridBucket(temp).color, opacity: 0.9, transition: 'background 0.35s' }} />
+        })}
+      </div>
+    </div>
+  )
+}
+
 const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, plannerMarkers = [], onPlannerMarkerClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null, lite = false }, transformRef) => {
   // Legend is collapsed by default so the map itself stays fully visible (it covered ~60% of the map on phones).
   const [legendOpen, setLegendOpen] = useState(false)
@@ -5365,6 +5382,25 @@ function App({ user }) {
                         <div style={{ fontWeight: 700, color: active ? '#d97706' : '#94a3b8', marginBottom: 2 }}>
                           📊 {t('interventions.previewTitle', 'Estimated impact on the Analysis heatmap grid')}
                         </div>
+                        {(() => {
+                          // Live before/after pair. On a cool day every cell is already in the
+                          // coolest band and nothing can visibly change, so the pair is drawn on a
+                          // 40 °C reference day instead — and says so.
+                          const useRef = gridBase < 35
+                          const b = useRef ? REF_HOT : gridBase
+                          return (
+                            <div data-testid="live-grid-pair" style={{ display: 'flex', gap: 14, alignItems: 'flex-end', flexWrap: 'wrap', margin: '8px 0 10px' }}>
+                              <MiniGrid base={b} label={`${t('interventions.gridNow', 'Now')} · ${b.toFixed(0)}°C`} testId="mini-grid-before" />
+                              <div style={{ color: '#d97706', fontSize: 18, fontWeight: 800, paddingBottom: 60 }}>→</div>
+                              <MiniGrid base={b} tree={treeSlider} roof={roofSlider} water={waterSlider} label={t('interventions.gridWith', 'With your sliders')} testId="mini-grid-after" />
+                              <div style={{ fontSize: 10, color: '#94a3b8', maxWidth: 170, lineHeight: 1.4 }}>
+                                {useRef
+                                  ? t('interventions.gridRefNote', "Drawn on a 40 °C reference day: today's base of {{t}}°C already sits in the coolest band, so the colours could not move.", { t: gridBase.toFixed(0) })
+                                  : t('interventions.gridTodayNote', "Today's live base. Same cells and thresholds as the Analysis tab.")}
+                              </div>
+                            </div>
+                          )
+                        })()}
                         {!active ? (
                           <div style={{ color: '#94a3b8' }}>{t('interventions.previewIdle', 'Move a slider to preview its effect — the grid on the Analysis tab updates live with these settings.')}</div>
                         ) : (
