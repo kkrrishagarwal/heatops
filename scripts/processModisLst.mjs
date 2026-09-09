@@ -78,13 +78,32 @@ for (const f of files) {
   console.log(`${f}: ${lines.length - 1} rows`)
 }
 
+// Yearly summaries per city from everything loaded (the 2016–2026 request covers 171
+// cities; the two 2026 requests cover the rest for this year only). Peak-season = April–June,
+// the months a heat officer cares about; a year needs ≥ 10 clear peak-season days to count.
+const SEASON_START = '2026-03-01' // the season series shown on the chart is 2026 only
+const yearly = {}
+for (const [key, days] of Object.entries(perCity)) {
+  const byYear = {}
+  for (const [date, v] of Object.entries(days)) {
+    const y = date.slice(0, 4), m = +date.slice(5, 7)
+    const b = (byYear[y] ||= { day: [], night: [], peakDay: [], peakNight: [], hottest: null })
+    if (v.d !== null) { b.day.push(v.d); if (m >= 4 && m <= 6) b.peakDay.push(v.d); if (!b.hottest || v.d > b.hottest.c) b.hottest = { date, c: v.d } }
+    if (v.n !== null) { b.night.push(v.n); if (m >= 4 && m <= 6) b.peakNight.push(v.n) }
+  }
+  const mean = a => (a.length ? Math.round(a.reduce((x, y) => x + y, 0) / a.length * 10) / 10 : null)
+  const rows = Object.entries(byYear).sort().map(([year, b]) => ({ year: +year, clearDays: b.day.length, peakDays: b.peakDay.length, peakDayMean: b.peakDay.length >= 10 ? mean(b.peakDay) : null, peakNightMean: b.peakNight.length >= 10 ? mean(b.peakNight) : null, hottest: b.hottest, annualDayMean: b.day.length >= 40 ? mean(b.day) : null }))
+  if (rows.length > 1) yearly[key] = rows
+}
+
 fs.mkdirSync(OUT_DIR, { recursive: true })
 for (const old of fs.readdirSync(OUT_DIR)) fs.unlinkSync(path.join(OUT_DIR, old))
 const index = {}
 const byState = {}
+const byStateYearly = {}
 for (const [key, days] of Object.entries(perCity)) {
   const [city, state] = key.split('|')
-  const dates = Object.keys(days).sort()
+  const dates = Object.keys(days).filter(dt => dt >= SEASON_START).sort()
   const series = dates.map(dt => [dt, days[dt].d, days[dt].n])
   const dayVals = series.filter(s => s[1] !== null), nightVals = series.filter(s => s[2] !== null)
   const latestDay = dayVals[dayVals.length - 1], latestNight = nightVals[nightVals.length - 1]
@@ -97,9 +116,11 @@ for (const [key, days] of Object.entries(perCity)) {
     latestNight: latestNight ? { date: latestNight[0], c: latestNight[2] } : null,
     hottestDay: hottest ? { date: hottest[0], c: hottest[1] } : null,
     meanDay: mean(dayVals.map(s => s[1])), meanNight: mean(nightVals.map(s => s[2])),
-    file: `${slug(state)}.json`
+    file: `${slug(state)}.json`,
+    years: yearly[key] ? yearly[key].length : 0
   }
   ;(byState[state] ||= {})[key] = series
+  if (yearly[key]) (byStateYearly[state] ||= {})[key] = yearly[key]
 }
 const meta = {
   source: 'NASA LP DAAC — MOD11A1.061 (Terra MODIS daily 1 km land-surface temperature), point samples via AppEEARS',
@@ -107,13 +128,15 @@ const meta = {
   qcRule: 'MODLAND flag good/other-quality and LST error ≤ 2 K; cloud-blocked days dropped, nothing interpolated',
   units: '°C (Kelvin − 273.15)',
   dateRange: { from: minDate, to: maxDate },
+  seasonFrom: SEASON_START,
+  yearlyCities: Object.keys(yearly).length,
   cities: Object.keys(index).length,
   generatedAt: new Date().toISOString(),
   inputs: files
 }
 fs.writeFileSync(path.join(OUT_DIR, 'index.json'), JSON.stringify({ meta, cities: index }))
 for (const [state, cities] of Object.entries(byState)) {
-  fs.writeFileSync(path.join(OUT_DIR, `${slug(state)}.json`), JSON.stringify({ state, dateRange: meta.dateRange, cities }))
+  fs.writeFileSync(path.join(OUT_DIR, `${slug(state)}.json`), JSON.stringify({ state, dateRange: { from: SEASON_START, to: meta.dateRange.to }, cities, yearly: byStateYearly[state] || {} }))
 }
 const size = f => (fs.statSync(path.join(OUT_DIR, f)).size / 1024).toFixed(0) + ' KB'
 console.log(`rows ${rows.toLocaleString()} · kept (QC-passed day or night) ${kept.toLocaleString()} · cities ${meta.cities} · ${minDate} → ${maxDate}`)

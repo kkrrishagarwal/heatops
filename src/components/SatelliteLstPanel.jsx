@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, Legend, CartesianGrid } from 'recharts'
+import { ComposedChart, Area, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, Legend, CartesianGrid, Cell } from 'recharts'
 import PanelIcon from './PanelIcon'
 import { loadModisIndex, loadModisStateFile } from '../utils/modisLst'
 
@@ -47,11 +47,12 @@ export default function SatelliteLstPanel({ city, state, liveTemp }) {
   const [meta, setMeta] = useState(null)
   const [summary, setSummary] = useState(null)
   const [series, setSeries] = useState(null)
+  const [yearly, setYearly] = useState(null)
 
   useEffect(() => {
     if (!city || !state) return
     let cancelled = false
-    setStatus('loading'); setSummary(null); setSeries(null)
+    setStatus('loading'); setSummary(null); setSeries(null); setYearly(null)
     loadModisIndex().then(async idx => {
       if (cancelled) return
       setMeta(idx.meta)
@@ -60,7 +61,9 @@ export default function SatelliteLstPanel({ city, state, liveTemp }) {
       setSummary(s)
       const sf = await loadModisStateFile(s.file)
       if (cancelled) return
-      setSeries(weeklyAverages(sf.cities?.[`${city}|${state}`] || [])); setStatus('ready')
+      setSeries(weeklyAverages(sf.cities?.[`${city}|${state}`] || []))
+      const yr = sf.yearly?.[`${city}|${state}`]; setYearly(Array.isArray(yr) && yr.length > 1 ? yr : null)
+      setStatus('ready')
     }).catch(() => { if (!cancelled) setStatus('error') })
     return () => { cancelled = true }
   }, [city, state])
@@ -133,11 +136,46 @@ export default function SatelliteLstPanel({ city, state, liveTemp }) {
               </ResponsiveContainer>
             </div>
           )}
+          {yearly && (() => {
+            const rows = yearly.filter(y => y.peakDayMean != null)
+            if (rows.length < 3) return null
+            const first = rows[0], last = rows[rows.length - 1]
+            const hottestYear = rows.reduce((m, y) => (y.hottest && (!m || y.hottest.c > m.hottest.c) ? y : m), null)
+            const partial = last.year === 2026
+            return (
+              <div data-testid="modis-yearly" style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid rgba(148,163,184,0.15)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 6 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0', letterSpacing: 0.4 }}>{t('modis.yearlyTitle', 'PEAK-SEASON SURFACE, YEAR BY YEAR ({{from}}–{{to}})', { from: first.year, to: last.year })}</div>
+                  <div style={{ fontSize: 10, color: '#94a3b8' }}>{t('modis.yearlyHint', 'April–June mean of clear-sky day readings · bar height = mean · red dot = hottest single day')}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 11, color: '#cbd5e1', margin: '6px 0' }}>
+                  <span data-testid="yearly-first">{first.year}: <strong>{first.peakDayMean}°C</strong></span>
+                  <span data-testid="yearly-last">{last.year}: <strong>{last.peakDayMean}°C</strong>{partial ? ` (${t('modis.partial', 'season complete, year ongoing')})` : ''}</span>
+                  {hottestYear?.hottest && <span data-testid="yearly-hottest">{t('modis.allTime', 'Hottest surface on record')}: <strong>{hottestYear.hottest.c}°C</strong> · {fmt(hottestYear.hottest.date)} {hottestYear.year}</span>}
+                </div>
+                <div style={{ width: '100%', height: 150 }}>
+                  <ResponsiveContainer>
+                    <ComposedChart data={rows} margin={{ top: 12, right: 12, left: -8, bottom: 0 }}>
+                      <CartesianGrid vertical={false} stroke="rgba(148,163,184,0.12)" />
+                      <XAxis dataKey="year" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} domain={[d => Math.floor(d - 3), d => Math.ceil(d + 3)]} tickFormatter={v => `${Math.round(v)}°`} allowDecimals={false} axisLine={false} tickLine={false} width={44} />
+                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 6, fontSize: 11 }} formatter={(v, name, p) => name === 'peakDayMean' ? [`${v}°C (${p.payload.peakDays} ${t('modis.clearDaysShort', 'clear days')})`, t('modis.peakMean', 'Apr–Jun mean, day surface')] : [`${v}°C`, t('modis.hottestDay', 'Hottest day')]} />
+                      <Bar dataKey="peakDayMean" fill="#f59e0b" radius={[3, 3, 0, 0]} isAnimationActive={false} maxBarSize={28}>
+                        {rows.map(y => <Cell key={y.year} fill={y.year === last.year && partial ? 'rgba(245,158,11,0.55)' : '#f59e0b'} />)}
+                      </Bar>
+                      <Line type="monotone" dataKey={y => y.hottest?.c ?? null} name="hottest" stroke="none" dot={{ r: 3.5, fill: '#ef4444', stroke: '#fff', strokeWidth: 1 }} activeDot={{ r: 5 }} isAnimationActive={false} legendType="none" />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+                <div style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>{t('modis.yearlySource', 'NASA MODIS MOD11A1.061 via AppEEARS, 171 cities, 1 Jan 2016 → 2 Sep 2026; a year is shown only with ≥ 10 clear peak-season days. Ten-year trends in surface temperature reflect weather, cloud cover and land-cover change together — read direction, not single-year jumps.')}</div>
+              </div>
+            )
+          })()}
           <div style={{ fontSize: 10, color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>
             {t('modis.caveat', 'Land-surface temperature is what the satellite sees on roofs, roads and soil at overpass time — it runs several degrees above the air temperature a weather station reports on hot clear days. The two are different measurements; both are real.')}
             {' '}{t('modis.qc', 'Each point is the average of that week\'s clear-sky readings (hover for how many); weeks with no clear day are bridged by a dotted line, never by an invented value. Cloud-blocked days are excluded by MODIS QC (good/other quality, LST error ≤ 2 K); nothing is interpolated.')}
             {' '}<span style={{ color: '#94a3b8' }}>{t('modis.source', 'Source: NASA LP DAAC MOD11A1.061 (Terra MODIS, 1 km) via AppEEARS point samples, {{from}} → {{to}}.', { from: meta?.dateRange?.from || '', to: meta?.dateRange?.to || '' })}</span>
-            {' '}<span style={{ color: '#94a3b8' }}>{t('modis.roadmap', 'Longer history: a 2016–2026 series for 171 cities is still processing at NASA; ISRO INSAT-3D data has been requested. Our own daily archive (30-day trend, Overview tab) runs since 22 June 2026. Nothing longer-term is shown until it is real.')}</span>
+            {' '}<span style={{ color: '#94a3b8' }}>{t('modis.roadmap', 'Longer history: the 2016–2026 record for 171 cities is shown above where available; ISRO INSAT-3D data has been requested. Our own daily archive (30-day trend, Overview tab) runs since 22 June 2026.')}</span>
           </div>
         </>
       )}

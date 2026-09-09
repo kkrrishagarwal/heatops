@@ -522,6 +522,10 @@ Found on the way: `vite.config.js` has a dev-only middleware that serves a preco
 
 Six presentation-facing files (`FEATURES.md`, `PRESENTATION_SCRIPT.md`, `DEMO_SCRIPT.md`, `SIH_PITCH_CONTENT_SIMPLIFIED.md`, `STAKEHOLDER_DIFFERENTIATION.md`, `HEATOPS_PPT_CONTENT.md`) were merged, then split into two: **`JUDGES_BRIEF.md`** (one page, slide content, IMD/BHRIGU/equity comparison, judges' Q&A) and **`PROJECT_STORY.md`** (the spoken script from problem to solution, the click path, every feature small to large with the flow charts). This file (`PROJECT_EXPLAINED.md`) stays as the technical explanation and change log; `REFRESH_BEFORE_JUDGING.md` stays as the morning-of checklist.
 
+### 8.29 NASA MODIS 2016–2026 for 171 cities — the ten-year record is in (10 Sept 2026)
+
+The third AppEEARS request completed: 171 ESA-classified cities, every day from 1 Jan 2016 to 2 Sep 2026, 662,459 rows. `scripts/processModisLst.mjs` now reads all three raw files together (1,019,879 rows → 528,421 QC-passed readings), keeps the 2026 season series for the chart, and adds a **yearly summary per city**: for each year the April–June mean of clear-sky day and night surface readings (shown only when the year has ≥ 10 clear peak-season days), the hottest single day, and the annual mean. 167 of the 171 cities have all eleven years. The satellite panel gained a **"Peak-season surface, year by year"** bar chart (bar = Apr–Jun mean, red dot = hottest day, the ongoing year shaded lighter) with the first/last years and the all-time hottest surface printed above it, and AGNI's context says the record exists. Jaipur: 42.8 °C (2016) → 34.7 °C (2026), hottest surface on record 51.8 °C on 29 May 2019. The footer warns that a ten-year surface trend mixes weather, cloud cover and land-cover change, so it should be read for direction, not single-year jumps.
+
 ## Bonus: Things that are built but not currently used (orphaned code)
 
 While exploring the codebase, these 4 files turned up fully written but not imported/rendered anywhere:

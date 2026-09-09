@@ -66,7 +66,7 @@ Serverless functions under `api/` (Vercel) and `netlify/functions/` (mirror):
 ### 5.2 Geo and land data
 - India district/state GeoJSON files under `public/data/`
 - Geo features are used for map rendering and city-localization logic.
-- NASA MODIS MOD11A1 satellite land-surface temperature (daily, 1 km) via Earthdata/AppEEARS: `scripts/processModisLst.mjs` converts the raw point-sample CSVs (git-ignored, ~70 MB each) into `public/data/modis-lst/` (one index + one file per state, QC-filtered, °C); `SatelliteLstPanel` shows it on the Analysis tab beside the live air reading, for 1,912 cities since 1 March 2026. The 2016–2026 request for 171 cities is still processing.
+- NASA MODIS MOD11A1 satellite land-surface temperature (daily, 1 km) via Earthdata/AppEEARS: `scripts/processModisLst.mjs` converts the raw point-sample CSVs (git-ignored, ~70 MB each) into `public/data/modis-lst/` (one index + one file per state, QC-filtered, °C); `SatelliteLstPanel` shows it on the Analysis tab beside the live air reading, for 1,912 cities since 1 March 2026. The 2016–2026 record for 171 cities is in (yearly Apr–Jun means and hottest day per year, per state file).
 - Land-cover metrics come from ESA WorldCover 10 m (2021) classified offline for 171 cities (`build_lulc_data.py`: built-up, vegetation, water, and tree canopy = class 10 alone); other cities borrow the nearest classified city, labelled with the distance. Building density is a live OSM Overpass query.
 
 ### 5.3 AI analysis

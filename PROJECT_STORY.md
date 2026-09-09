@@ -302,7 +302,7 @@ Switch **Citizen** (navbar) for one breath: "the same data in plain language for
 | **Smart Mitigation Planner** | The decision engine for "I have ₹X — where should it go?": ranks a state's cities on live, satellite and land-cover data, spends the budget greedily by projected risk-points per rupee across procurable packages, explains itself in sentences, shows before/after, funded cities on the map, Plan A vs current, cost mode, target mode, and a government-style export with assumptions and limitations. Every unit cost is a stated assumption; population is declared not modelled |
 | **Refresh checklist + demo script** | `REFRESH_BEFORE_JUDGING.md` and `DEMO_SCRIPT.md`: what to check on the morning of judging and the 8-minute click path |
 
-**Pending, shown honestly as pending:** NASA MODIS 2016–2026 for 171 cities (processing at NASA); ISRO INSAT-3D via MOSDAC (requested).
+**Pending, shown honestly as pending:** NASA MODIS 2016–2026 for 171 cities (in the app); ISRO INSAT-3D via MOSDAC (requested).
 
 ---
 

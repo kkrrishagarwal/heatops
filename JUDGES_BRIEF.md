@@ -166,7 +166,7 @@ Trained on a published MODIS dataset of 20 global cities. Roadmap: retrain on In
 ### Data Sources
 - **Open-Meteo** — live weather, air quality, geocoding
 - **ESA WorldCover 10 m** — vegetation, built-up, tree canopy
-- **NASA MODIS (MOD11A1)** — satellite land-surface temperature, daily 1 km: live in the app for 1,912 cities since March 2026; the 2016–2026 series for 171 cities is processing at NASA
+- **NASA MODIS (MOD11A1)** — satellite land-surface temperature, daily 1 km: 1,912 cities since March 2026, and a **ten-year record (2016–2026)** for 171 cities shown year by year
 - **OpenStreetMap** — building density, validated coordinates
 - **ISRO INSAT-3D** — requested via MOSDAC as the next layer
 
@@ -238,7 +238,7 @@ STEP 5: History → Daily snapshots served by an API, a viewer page and CSV expo
 - Already built and deployed; ₹0 per month on free tiers
 - 70+ days of real daily data archived; the pipeline runs unattended
 - Known risks — API limits, data gaps, model limits — each has a working answer
-- Next: NASA MODIS 2016–2026 history (processing), ISRO INSAT-3D, Indian retraining of the model
+- Next: NASA MODIS 2016–2026 history, ISRO INSAT-3D, Indian retraining of the model
 
 [Suggested visual: roadmap timeline — done / in progress / next]
 
@@ -297,7 +297,7 @@ BHRIGU (National Heat Insights Explorer, built by CSTEP) is the closest governme
 |---|---|---|
 | Data resolution | 1 km grid, national scale, 5,000+ urban areas | 1,932 cities with live readings; district boundaries; ESA 10 m land cover for 171 cities |
 | Data freshness | Historical archive, 2002–2025 | Live — refreshed every few hours; states re-sampled live every 10 minutes in the browser |
-| Historical depth | 23 years | 70+ days of daily snapshots (growing nightly) + NASA MODIS satellite surface temperature since March 2026 for 1,912 cities (in the app); 2016–2026 for 171 cities processing at NASA |
+| Historical depth | 23 years | 70+ days of daily snapshots (growing nightly) + NASA MODIS satellite surface temperature since March 2026 for 1,912 cities (in the app); 2016–2026 for 171 cities in the app |
 | Primary focus | Heat-exposure evidence base for research and policy | Day-to-day operational decisions and public communication |
 | Intervention simulation | Not a core feature | Illustrative cooling model + cost estimates + canopy-target recommendation |
 | Conversational AI | Not offered | AGNI, grounded and honest |

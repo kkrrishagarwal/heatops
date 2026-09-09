@@ -159,7 +159,7 @@ The mechanism plays out nationwide, so BhaskarOps deliberately covers all 28 sta
 ### Stated honestly as pending, not claimed as built
 | Item | Status as shown in the product |
 |---|---|
-| **NASA MODIS 2016–2026 series** (171 cities, decade-long history) | Requested and **processing at NASA**. Until it lands, the app shows only what it has: every clear-sky day since 1 March 2026 |
+| **NASA MODIS 2016–2026 series** (171 cities, decade-long history) | **Delivered 9 Sept and in the app** — year-by-year peak-season chart. Until it lands, the app shows only what it has: every clear-sky day since 1 March 2026 |
 | **ISRO INSAT-3D LST** via MOSDAC | Pipeline written, **access requested**. Named on the roadmap, never on a data panel |
 | **Retraining on Indian cities** | Planned once the decade series lands — which is exactly why the model's **−0.39** unseen-city score is published today |
 
@@ -256,7 +256,7 @@ BhaskarOps is built to avoid both.
 | Honesty rules, enforced in code | No fabricated reading; missing says NO LIVE DATA; stale flagged; models labelled; demo banner-labelled; seeded panels removed rather than relabelled |
 | Graceful degradation | Error boundaries around the map and every panel, 10 s timeouts on every fetch, cached fallbacks labelled |
 
-**Pending, shown honestly as pending:** NASA MODIS 2016–2026 for 171 cities (processing at NASA); ISRO INSAT-3D via MOSDAC (requested).
+**Pending, shown honestly as pending:** ISRO INSAT-3D via MOSDAC; the NASA MODIS 2016–2026 record for 171 cities is in the app (requested).
 
 ---
 
@@ -707,7 +707,7 @@ One-time development cost: built iteratively as a hackathon prototype, not scope
 | **COMPOUND** | Each city that acts adds intervention outcomes to the archive — the one asset a general-purpose AI cannot obtain, and the reason accuracy improves with adoption |
 
 ### Roadmap (next)
-- NASA MODIS 2016–2026 history for 171 cities (processing at NASA) → true year-over-year comparison
+- NASA MODIS 2016–2026 history for 171 cities — delivered and shown year by year in the satellite panel
 - ISRO INSAT-3D LST via MOSDAC (pipeline written, pending approval)
 - Retrain the ML model on Indian cities
 - IMD-rule heat alerts; more intervention models and forecast scenarios

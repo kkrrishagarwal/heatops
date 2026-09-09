@@ -42,5 +42,6 @@ export function modisContextLine(summary) {
   if (summary.latestNight) parts.push(`latest NIGHT surface ${summary.latestNight.c}°C on ${summary.latestNight.date}`)
   if (summary.hottestDay) parts.push(`season's hottest surface ${summary.hottestDay.c}°C on ${summary.hottestDay.date}`)
   if (summary.meanDay != null) parts.push(`season mean day/night surface ${summary.meanDay}/${summary.meanNight}°C over ${summary.clearDays} clear days`)
+  if (summary.years > 1) parts.push(`a ${summary.years}-year satellite record (2016–2026) exists for this city — the Analysis tab shows its April–June peak-season means year by year`)
   return ` NASA MODIS satellite land-SURFACE temperature for ${summary.city} (MOD11A1, 1 km, ${r ? `${r.from} to ${r.to}` : 'this season'}; surface ≠ air temperature, cloud days excluded): ${parts.join('; ')}.`
 }
