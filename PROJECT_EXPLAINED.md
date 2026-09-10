@@ -530,6 +530,18 @@ The third AppEEARS request completed: 171 ESA-classified cities, every day from 
 
 Judges asked for prediction. The city's Open-Meteo call already returned seven daily maxima that the app never showed. `src/utils/heatwaveOutlook.js` classifies them with **IMD's published thresholds** — 40 °C plains / 37 °C coast / 30 °C hills (terrain from the city's SRTM elevation and the state's coastal flag), ≥ 45 °C heatwave, ≥ 47 °C severe — and finds spells of two or more consecutive qualifying days. The departure-from-normal rule cannot be applied without a per-city climatological normal, so the panel calls itself a threshold-based outlook and links to IMD for official warnings. `HeatwaveOutlookPanel` sits on the city Overview (bars vs the threshold line, headline badge, spell summary) and again on the Interventions tab with the **"If nothing is done / With the plan"** contrast fed by the city-level planner: relief measures and checklist activation this week, cool roofs and plantation as a multi-season effect — never a claimed change to this week's forecast. The National Summary gained a **"Heatwave watch"** card: cities whose forecast high today reaches 40 °C, and those at the 45 °C mark. The demo override now drives the forecast too (today at the demo value, easing 1 °C a day), so `?demo=Sri Ganganagar:46` shows a 7-day spell in a September rehearsal, banner-labelled as before.
 
+### 8.31 PREDICTION tab — the District Magistrate's one-page brief (10 Sept 2026)
+
+Asked for on the day: "one place where the DM sees when the heatwave comes, what to do, the budget, the team, and what changes if we act". `src/components/PredictionBrief.jsx` is that page, second tab in the Authority view, and it invents nothing — every block is drawn from an existing engine:
+
+1. **When / How bad / If you act** — three header cards: the outlook's first spell or first threshold day; today's composite risk with its inputs; the projected risk after the plan.
+2. **7-day heatwave outlook** — the same `HeatwaveOutlookPanel` as the Overview, with the "if nothing is done / with the plan" contrast.
+3. **This week — get the team on it** — the Heat Action Plan checklist steps for the tier the outlook implies (full activation ≥ 45 °C, preparedness above the terrain threshold, cold protocol below 10 °C), each with an **owner** (Municipal Commissioner, CMHO, District Information Officer, PHED, Town Planner — the usual district roles, editable in `OWNER`) and a **by-when** (before the first threshold day). Ticks live on the Overview checklist; the button jumps there.
+4. **Where the budget goes** — the city-level planner's allocation for ₹25 L / ₹50 L / ₹1 Cr / ₹5 Cr, or the plan already optimised on the Interventions tab if there is one, with the first three "why" lines and a link to the full planner.
+5. **The heat map if you act** — the Analysis grid today beside the same grid with the plan's greening, roofs and reflective surfaces applied (reflective pavement uses the model's surface coefficient), labelled as the illustrative multi-season effect, with the applied percentages printed and a note when a city has no land cover of its own.
+
+`STEP_SETS` in `HeatActionChecklist.jsx` is now exported so the brief and the checklist share one list. Verified locally with the demo override: Sri Ganganagar at 46 °C → 7-day spell, 5 activation steps, ₹1 Cr → relief + reflective surfaces; Jaipur at 44 °C → 5-day watch spell, 3 preparedness steps, ₹1 Cr → greening, roofs, cooling, grid Extreme → Moderate/High.
+
 ## Bonus: Things that are built but not currently used (orphaned code)
 
 While exploring the codebase, these 4 files turned up fully written but not imported/rendered anywhere:

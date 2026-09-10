@@ -33,6 +33,7 @@ import CityTrendPanel from './components/CityTrendPanel'
 import SatelliteLstPanel from './components/SatelliteLstPanel'
 import MitigationPlanner from './components/MitigationPlanner'
 import HeatwaveOutlookPanel from './components/HeatwaveOutlookPanel'
+import PredictionBrief from './components/PredictionBrief'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
@@ -2860,7 +2861,7 @@ function App({ user }) {
   useEffect(() => {
     // Keep the active tab valid when the audience changes in either direction.
     if (!citizen && activeTab === 'What to do') setActiveTab('Overview')
-    if (citizen && ['Analysis', 'Interventions', 'AI + Export'].includes(activeTab)) setActiveTab('Overview')
+    if (citizen && ['Prediction', 'Analysis', 'Interventions', 'AI + Export'].includes(activeTab)) setActiveTab('Overview')
   }, [citizen, activeTab])
   // Dashboard tab bar overflow-fade hints (mobile: OVERVIEW/ANALYSIS/COMPARE/
   // INTERVENTIONS/AI+EXPORT don't all fit under ~500px). Measured via ref rather
@@ -4519,10 +4520,11 @@ function App({ user }) {
     // Citizens get Compare too — "is my city hotter than my parents' city?" is exactly the
     // question residents ask; the technical tabs (Analysis, Interventions, AI + Export) stay
     // Authority-only. AGNI is still reachable for citizens via the floating button.
-    const TABS = citizen ? ['Overview', 'What to do', 'Compare'] : ['Overview', 'Analysis', 'Compare', 'Interventions', 'AI + Export']
+    const TABS = citizen ? ['Overview', 'What to do', 'Compare'] : ['Overview', 'Prediction', 'Analysis', 'Compare', 'Interventions', 'AI + Export']
     const TAB_LABELS = {
       'What to do': t('tabs.whatToDo', 'WHAT TO DO'),
       'Overview': t('tabs.overview', 'OVERVIEW'),
+      'Prediction': t('tabs.prediction', 'PREDICTION'),
       'Analysis': t('tabs.analysis', 'ANALYSIS'),
       'Compare': t('tabs.compare', 'COMPARE'),
       'Interventions': t('tabs.interventions', 'INTERVENTIONS'),
@@ -5529,6 +5531,26 @@ function App({ user }) {
                   </div>
                 </section>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'Prediction' && !citizen && (
+            <div className="dashboard-content" style={{ display: 'block' }}>
+              <PredictionBrief
+                city={selectedCity}
+                state={selectedState}
+                liveWeather={liveWeather}
+                liveCityCache={liveCityCache}
+                lulcReal={lulcReal}
+                cityCoordsData={cityCoordsData}
+                gridBase={gridBase}
+                treeSlider={treeSlider}
+                roofSlider={roofSlider}
+                waterSlider={waterSlider}
+                cityPlan={cityPlan}
+                isCoastal={!!STATE_DATA[selectedState]?.coastal}
+                onGoTo={(tab) => setActiveTab(tab)}
+              />
             </div>
           )}
 

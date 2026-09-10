@@ -245,6 +245,7 @@ Switch **Citizen** (navbar) for one breath: "the same data in plain language for
 | **Active alerts** | Threshold alerts from live values |
 | **Heat Action Plan checklist** (Authority) | Severity-adaptive: full activation steps at High/Extreme (cooling centres, hospital alert, advisory, tankers, cool-roof priority), preparedness at Moderate, routine at Low, a cold-weather protocol below 10 °C. Ticks saved per city, timestamped. Modelled on the Ahmedabad HAP and NDMA guidelines |
 | **Health & safety precautions** | Plain-language guidance matched to the current tier |
+| **PREDICTION tab — district brief** | One page for the DM: when the heat comes, how bad, the week's checklist with owners and deadlines, where the budget goes, and the heat grid today vs with the plan. Everything drawn from the outlook, checklist, planner and grid |
 | **7-day heatwave outlook** | Forecast maxima classified with IMD thresholds (plains/coast/hills), spells of consecutive qualifying days, headline badge; on the Interventions tab it shows "if nothing is done" vs "with the plan" |
 | **30-day temperature trend** | The platform's own daily archive; carried-forward days hollow, gaps left as gaps, live reading as a dashed line |
 | **Today's high vs low** | The day's forecast maximum and minimum, from the same forecast as the weather card |
@@ -343,6 +344,7 @@ flowchart TD
     P --> PE[Export report for the DDMA meeting]
     F --> G[Open a city]
     G --> H[OVERVIEW<br/>live weather · risk gauge · alerts<br/>Heat Action Plan checklist adapts to severity<br/>30-day trend · today's high/low]
+    G --> PR[PREDICTION<br/>when · how bad · team with owners<br/>budget · heat map if you act]
     G --> I[ANALYSIS<br/>land cover ESA · buildings OSM<br/>NASA MODIS surface temperature<br/>model card with honest scores]
     G --> J[COMPARE<br/>up to 5 cities on one radar<br/>rank for cooling budgets]
     G --> K[INTERVENTIONS<br/>recommended canopy plan 3-30-300<br/>sliders · cool-roof ROI · costs]

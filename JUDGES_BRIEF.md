@@ -70,7 +70,7 @@ STEP 2: Predict → Risk level for each city, from the same rules used everywher
 STEP 3: Analyze → Why it's hot: built-up share, vegetation, tree canopy from satellite land cover
 STEP 4: Compare → Rank cities and states; benchmark one city against four others
 STEP 5: Recommend → Cooling plan per city: canopy target, cool roofs, projected effect and cost
-STEP 6: Act → Citizens get safe hours and help cards; officials get a Heat Action Plan checklist
+STEP 6: Act → Officials get the PREDICTION brief: when, how bad, the week's checklist with owners, the budget, and the heat map if they act
 
 [Suggested visual: six-step horizontal flowchart]
 

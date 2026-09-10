@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next'
 const STORAGE_PREFIX = 'heatops_checklist:'
 export const COLD_TEMP_C = 10
 
-const STEP_SETS = {
+export const STEP_SETS = {
   heat: [
     { id: 'cooling', icon: '🏢', text: 'Activate public cooling centres / shaded rest points (public halls, temples, bus depots) and publish their locations.' },
     { id: 'health', icon: '🏥', text: 'Alert the district health department and hospitals to prepare heat-stroke wards, ORS stocks and ambulance readiness.' },
