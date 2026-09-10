@@ -261,11 +261,23 @@ const LaunchScreen = ({ onSignIn }) => {
       setAuthError('Please fill out all fields')
       return
     }
+    // A real address, not "abc": local part, one @, a domain with a dot and a 2+ letter TLD.
+    // Accounts are keyed by email, so a typo here silently creates a second account.
+    const emailOk = /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/.test(email.trim())
+    if (!emailOk) {
+      setAuthError('Enter a valid email address, e.g. name@example.com')
+      return
+    }
+    if (password.length < 6) {
+      setAuthError('Password must be at least 6 characters')
+      return
+    }
     setAuthError('')
     setAuthSuccess('')
 
     const users = getStoredUsers()
-    const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase())
+    const cleanEmail = email.trim().toLowerCase()
+    const existing = users.find((u) => u.email.toLowerCase() === cleanEmail)
 
     if (authTab === 'register') {
       if (existing) {
@@ -274,7 +286,7 @@ const LaunchScreen = ({ onSignIn }) => {
       }
       saveStoredUsers([
         ...users,
-        { id: 'usr_' + Date.now(), name, email, password: hashPassword(password), createdAt: new Date().toISOString() }
+        { id: 'usr_' + Date.now(), name: name.trim(), email: cleanEmail, password: hashPassword(password), createdAt: new Date().toISOString() }
       ])
       setAuthSuccess('Account created! Please Sign In.')
       setAuthTab('login')
@@ -448,12 +460,14 @@ const LaunchScreen = ({ onSignIn }) => {
           )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>EMAIL</label>
+            <label style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>EMAIL <span style={{ color: '#475569', textTransform: 'none' }}>· a full address, e.g. name@example.com</span></label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder="name@example.com"
+              autoComplete="email"
+              inputMode="email"
               style={{
                 width: '100%',
                 padding: '10px 14px',
