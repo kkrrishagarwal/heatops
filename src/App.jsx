@@ -32,6 +32,7 @@ import PanelIcon from './components/PanelIcon'
 import CityTrendPanel from './components/CityTrendPanel'
 import SatelliteLstPanel from './components/SatelliteLstPanel'
 import MitigationPlanner from './components/MitigationPlanner'
+import HeatwaveOutlookPanel from './components/HeatwaveOutlookPanel'
 import AppErrorBoundary from './components/AppErrorBoundary'
 import { getCityData } from './utils/realData'
 import { getBuildingDensity } from './utils/osmUtils'
@@ -3103,6 +3104,7 @@ function App({ user }) {
   const [plannerMarkers, setPlannerMarkers] = useState([])
   const [plannerFocusCity, setPlannerFocusCity] = useState(null)
   useEffect(() => { setPlannerOpen(false); setPlannerMarkers([]); setPlannerFocusCity(null) }, [selectedState])
+  useEffect(() => { setCityPlan(null) }, [selectedCity])
   const handlePlannerHighlight = useCallback(cities => setPlannerMarkers(cities), [])
   const { lite, setLite } = useLiteMode()
 
@@ -3297,6 +3299,14 @@ function App({ user }) {
     return Object.values(STATE_DATA).filter(s => s.risk === 'EXTREME' || s.risk === 'HIGH').length
   }, [liveIndiaData])
 
+  // Cities whose forecast high today reaches IMD's plains threshold (40 °C) or the absolute
+  // heatwave mark (45 °C) — from the cache's tempMax. A same-day watch list, not a warning.
+  const heatwaveWatch = useMemo(() => {
+    const all = Object.values(liveCityCache).filter(c => typeof c.tempMax === 'number')
+    const above40 = all.filter(c => c.tempMax >= 40).sort((a, b) => b.tempMax - a.tempMax)
+    return { above40, above45: above40.filter(c => c.tempMax >= 45), total: all.length }
+  }, [liveCityCache])
+
   const liveWorstAqiCity = useMemo(() => {
     const all = Object.values(liveCityCache).filter(c => typeof c.aqi === 'number')
     return all.length ? all.reduce((max, c) => (c.aqi > max.aqi ? c : max), all[0]) : null
@@ -3343,6 +3353,8 @@ function App({ user }) {
   // an explicit button, never a silent switch (the two grids must start from the same base
   // unless the presenter chooses otherwise).
   const [previewHotDay, setPreviewHotDay] = useState(false)
+  const [cityPlan, setCityPlan] = useState(null) // current plan from the city-level planner, for the outlook contrast
+  const handleCityPlanChange = useCallback(p => setCityPlan(p), [])
   // Cross-tab awareness: sliders live on the Interventions tab but drive the Analysis tab's
   // heatmap grid. Record when they were last touched so the Analysis tab can flag the grid
   // as freshly updated the next time the user lands on it.
@@ -4400,6 +4412,21 @@ function App({ user }) {
                       </div>
                     )}
 
+                    <div data-testid="heatwave-watch" style={{ background: heatwaveWatch.above45.length ? 'rgba(185,28,28,0.08)' : heatwaveWatch.above40.length ? 'rgba(202,138,4,0.08)' : 'rgba(21,128,61,0.08)', border: `1px solid ${heatwaveWatch.above45.length ? 'rgba(185,28,28,0.4)' : heatwaveWatch.above40.length ? 'rgba(202,138,4,0.4)' : 'rgba(21,128,61,0.35)'}`, borderRadius: 8, padding: 12 }}>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
+                        <PanelIcon name="calendar" size={12} color="currentColor" /> {t('nationalSummary.watchTitle', "Heatwave watch — today's forecast highs")}
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: heatwaveWatch.above45.length ? '#fca5a5' : heatwaveWatch.above40.length ? '#fbbf24' : '#86efac' }}>
+                        {heatwaveWatch.above40.length} <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.6)' }}>/ {heatwaveWatch.total} {t('nationalSummary.citiesAt40', 'cities forecast ≥ 40 °C')}</span>
+                      </div>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>
+                        {heatwaveWatch.above45.length ? t('nationalSummary.above45', '{{n}} at or above the 45 °C heatwave mark: {{list}}', { n: heatwaveWatch.above45.length, list: heatwaveWatch.above45.slice(0, 4).map(c => `${c.city} ${c.tempMax}°`).join(', ') })
+                          : heatwaveWatch.above40.length ? heatwaveWatch.above40.slice(0, 4).map(c => `${c.city} ${c.tempMax}°`).join(' · ')
+                          : t('nationalSummary.noneAt40', 'No city reaches the 40 °C plains threshold today')}
+                      </div>
+                      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{t('nationalSummary.watchNote', 'Open-Meteo forecast maxima vs IMD thresholds · same-day watch, not an official warning')}</div>
+                    </div>
+
                     <div style={{ background: 'rgba(187,82,0,0.1)', border: '1px solid rgba(187,82,0,0.3)', borderRadius: 8, padding: 12 }}>
                       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
                         <PanelIcon name="thermometer" size={12} color="currentColor" /> {t('nationalSummary.extremeStates', 'States in Extreme/High risk category')}
@@ -4739,6 +4766,16 @@ function App({ user }) {
                     reading — removed. Real history lives in the 30-day trend panel below; a true
                     year-over-year comparison arrives with the NASA MODIS 2016–2026 archive. */}
                 </section>
+
+                {/* 7-day heatwave outlook — forecast maxima classified with IMD thresholds */}
+                {liveWeather?.forecast && (
+                  <HeatwaveOutlookPanel
+                    forecast={liveWeather.forecast}
+                    elevation={liveWeather.elevation}
+                    isCoastal={!!STATE_DATA[selectedState]?.coastal}
+                    city={selectedCity}
+                  />
+                )}
 
                 {/* PANEL G: Day vs Night */}
                 {/* 30-day trend from the platform's own daily archive — visible to both audiences */}
@@ -5461,9 +5498,19 @@ function App({ user }) {
                     stateName={selectedState}
                     cities={[selectedCity]}
                     onApplyToSliders={({ tree, roof }) => { setTreeSlider(tree); setRoofSlider(roof); setWaterSlider(0); setInterventionTouchedAt(Date.now()) }}
+                    onPlanChange={handleCityPlanChange}
                     liveCityCache={liveCityCache}
                     lulcReal={lulcReal}
                     cityCoordsData={cityCoordsData}
+                  />
+                )}
+                {!citizen && liveWeather?.forecast && (
+                  <HeatwaveOutlookPanel
+                    forecast={liveWeather.forecast}
+                    elevation={liveWeather.elevation}
+                    isCoastal={!!STATE_DATA[selectedState]?.coastal}
+                    city={selectedCity}
+                    plan={cityPlan}
                   />
                 )}
 

@@ -65,7 +65,7 @@ Also: "What does +5 % canopy cost in Bikaner?" and "What budget reaches a 10 % r
 ## 2. Slide-by-slide content
 
 ### The Heat-Intelligence Pipeline
-STEP 1: Detect → Live temperature and air quality for every city, refreshed every few hours
+STEP 1: Detect → Live temperature and air quality for every city, refreshed hourly; 7-day heatwave outlook against IMD thresholds
 STEP 2: Predict → Risk level for each city, from the same rules used everywhere in the app
 STEP 3: Analyze → Why it's hot: built-up share, vegetation, tree canopy from satellite land cover
 STEP 4: Compare → Rank cities and states; benchmark one city against four others

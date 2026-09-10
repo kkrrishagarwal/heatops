@@ -127,11 +127,16 @@ export function demoTempFor(city) {
 function applyDemoOverride(data, city) {
   const t = demoTempFor(city)
   if (t == null || !data?.current) return data
+  // The forecast follows the override too, so the 7-day outlook shows a heatwave spell in a
+  // rehearsal: today at the demo value, then easing by 1 °C a day. Still banner-labelled.
+  const forecast = Array.isArray(data.forecast) ? data.forecast.map((d, i) => ({ ...d, maxTemp: Math.round(t - i), minTemp: Math.round(Math.min(d.minTemp ?? t - 12, t - 12)) })) : data.forecast
   return {
     ...data,
     demoOverride: t,
     demoOverrideCity: city || null,
-    current: { ...data.current, temp: t, feelsLike: t }
+    current: { ...data.current, temp: t, feelsLike: t },
+    today: data.today ? { ...data.today, maxTemp: Math.round(t) } : data.today,
+    forecast
   }
 }
 

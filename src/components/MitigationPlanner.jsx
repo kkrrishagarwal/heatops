@@ -32,7 +32,7 @@ const card = { background: 'rgba(15,23,42,0.55)', border: '1px solid #1e293b', b
 const label = { fontSize: 10, color: '#94a3b8', letterSpacing: 0.6, textTransform: 'uppercase' }
 const big = { fontSize: 20, fontWeight: 800, color: '#f1f5f9', lineHeight: 1.2 }
 
-export default function MitigationPlanner({ stateName, cities, liveCityCache, lulcReal, cityCoordsData, onClose, onHighlight, focusCity, onFocusCity, scope = 'state', cityName = null, onApplyToSliders = null }) {
+export default function MitigationPlanner({ stateName, cities, liveCityCache, lulcReal, cityCoordsData, onClose, onHighlight, focusCity, onFocusCity, scope = 'state', cityName = null, onApplyToSliders = null, onPlanChange = null }) {
   const single = scope === 'city'
   const { t } = useTranslation()
   const [mode, setMode] = useState('budget') // budget | cost | target
@@ -110,6 +110,7 @@ export default function MitigationPlanner({ stateName, cities, liveCityCache, lu
   }, [onMap, plan, targetPlan, mode, onHighlight, cityCoordsData, stateName])
   useEffect(() => () => onHighlight && onHighlight([]), [onHighlight])
   useEffect(() => { if (focusCity) setOpenCity(focusCity) }, [focusCity])
+  useEffect(() => { if (onPlanChange) onPlanChange(optimised && plan && !plan.error ? plan : null) }, [plan, optimised, onPlanChange])
 
   const costProfile = ranked.find(p => p.city === costCity) || ranked[0]
   const costResult = costProfile ? estimateIntervention(costProfile, costType, costQty) : null
