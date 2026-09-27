@@ -1146,6 +1146,34 @@ function smoothGeoFeature(feature) {
 const IS_DEMO_LINK = (() => {
   try { const q = new URLSearchParams(window.location.search); return q.has('demo') || q.has('demoTemp') } catch { return false }
 })()
+// Relative-heat colouring (demo links only, opt out with &relative=0). Off-season the
+// absolute IMD buckets paint the whole country yellow — true, but it hides WHERE the heat
+// actually is. In this mode a state's colour is its rank among all states' medians today:
+// the hottest tenth is deep red, the coolest tenth green. Every temperature shown is still
+// the real reading — only the colour scale changes meaning, and the legend says so.
+const RELATIVE_COLOUR = (() => {
+  try {
+    const q = new URLSearchParams(window.location.search)
+    if (q.has('relative')) return q.get('relative') !== '0'
+    return IS_DEMO_LINK
+  } catch { return false }
+})()
+
+// Percentile cut-offs over the live state medians, hottest first. `p` = share of states
+// this bucket sits above.
+const RELATIVE_BUCKETS = [
+  { p: 0.90, color: '#991b1b', label: 'HOTTEST 10%' },
+  { p: 0.75, color: '#dc2626', label: 'HOTTER 25%' },
+  { p: 0.50, color: '#ea580c', label: 'ABOVE AVERAGE' },
+  { p: 0.25, color: '#f59e0b', label: 'AROUND AVERAGE' },
+  { p: 0.10, color: '#facc15', label: 'COOLER' },
+  { p: -1, color: '#15803d', label: 'COOLEST 10%' }
+]
+
+function relativeBucketFor(fractionCoolerThan) {
+  return RELATIVE_BUCKETS.find(b => fractionCoolerThan >= b.p) || RELATIVE_BUCKETS[RELATIVE_BUCKETS.length - 1]
+}
+
 const HEAT_INDEX_BUCKETS = [
   { min: 45, color: IS_DEMO_LINK ? '#991b1b' : '#b91c1c', label: 'EXTREME', legend: 'EXTREME 45+' },
   { min: 40, color: IS_DEMO_LINK ? '#dc2626' : '#c2410c', label: 'VERY HIGH', legend: 'VERY HIGH 40-45' },
@@ -1805,6 +1833,26 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
     const id = setInterval(() => setNow(Date.now()), 30000)
     return () => clearInterval(id)
   }, [])
+  // Legend rows for RELATIVE_COLOUR: each band labelled with the real °C span of the states
+  // that landed in it, so "deep red" is always readable as an actual temperature range.
+  const relativeLegend = useMemo(() => {
+    if (!RELATIVE_COLOUR) return []
+    const byLabel = {}
+    for (const v of Object.values(DATA || {})) {
+      if (!v?.riskBucket?.relative || typeof v.heatIndex !== 'number') continue
+      const e = byLabel[v.riskBucket.label] || (byLabel[v.riskBucket.label] = { color: v.riskBucket.color, min: Infinity, max: -Infinity })
+      e.min = Math.min(e.min, v.heatIndex)
+      e.max = Math.max(e.max, v.heatIndex)
+    }
+    return RELATIVE_BUCKETS
+      .filter(b => byLabel[b.label])
+      .map(b => {
+        const e = byLabel[b.label]
+        const span = e.min === e.max ? `${e.min}°C` : `${e.min}–${e.max}°C`
+        return { label: b.label, color: b.color, legend: `${b.label} · ${span}` }
+      })
+  }, [DATA])
+
   const dataAgeLabel = (() => {
     if (!loadedAt) return null
     const mins = Math.max(0, Math.round((now - loadedAt) / 60000))
@@ -2003,8 +2051,10 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
             </span>
             {activeData.riskBucket && (
               <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>
-                colour = most common category: {activeData.riskBucket.count} of {activeData.liveCityCount} cities are {activeData.riskBucket.label}
-                {activeData.bucketCounts && ` · ${activeData.bucketCounts.filter(b => b.count > 0 && b.label !== activeData.riskBucket.label).map(b => `${b.count} ${b.label}`).join(' · ')}`}
+                {activeData.riskBucket.relative
+                  ? `colour = rank today: hotter than ${activeData.riskBucket.percentile}% of states (real readings, not an IMD danger level)`
+                  : `colour = most common category: ${activeData.riskBucket.count} of ${activeData.liveCityCount} cities are ${activeData.riskBucket.label}`}
+                {!activeData.riskBucket.relative && activeData.bucketCounts && ` · ${activeData.bucketCounts.filter(b => b.count > 0 && b.label !== activeData.riskBucket.label).map(b => `${b.count} ${b.label}`).join(' · ')}`}
               </div>
             )}
           </div>
@@ -2078,7 +2128,7 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
-          <span style={{ fontWeight: 700, letterSpacing: 0.5 }}>HEAT INDEX</span>
+          <span style={{ fontWeight: 700, letterSpacing: 0.5 }}>{RELATIVE_COLOUR ? 'HEAT TODAY · RANKED' : 'HEAT INDEX'}</span>
           <button
             type="button"
             onClick={() => setLegendOpen(false)}
@@ -2092,7 +2142,17 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
             ✕
           </button>
         </div>
-        {HEAT_INDEX_BUCKETS.map(b => (
+        {RELATIVE_COLOUR ? (
+          <>
+            {relativeLegend.map(b => (
+              <LegendRow key={b.label} color={b.color} label={b.legend} />
+            ))}
+            <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 5, maxWidth: 210, lineHeight: 1.35 }}>
+              Colour = how hot a state is compared with the rest of India today, not an IMD
+              danger level. The temperatures are the real live readings.
+            </div>
+          </>
+        ) : HEAT_INDEX_BUCKETS.map(b => (
           <LegendRow key={b.label} color={b.color} label={b.legend} />
         ))}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, paddingTop: 4, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
@@ -3241,6 +3301,20 @@ function App({ user }) {
         bucketCounts: plural.counts,    // per-category city counts for tooltip / detail panel
         cityCount: n,
         vintage: useFresh ? (arrFresh.length >= arrAll.length ? 'live' : 'sample') : 'cache'
+      }
+    }
+    // Demo links: repaint by rank instead of absolute IMD buckets (see RELATIVE_BUCKETS).
+    // The median, city counts and every displayed temperature are untouched — only
+    // riskBucket (the colour) changes, and it carries relative:true so the tooltip and
+    // legend can say what the colour now means.
+    if (RELATIVE_COLOUR) {
+      const medians = Object.values(out).map(v => v.heatIndex).sort((a, b) => a - b)
+      const total = medians.length
+      for (const v of Object.values(out)) {
+        const cooler = medians.filter(m => m < v.heatIndex).length
+        const frac = total > 1 ? cooler / (total - 1) : 1
+        const b = relativeBucketFor(frac)
+        v.riskBucket = { label: b.label, color: b.color, relative: true, percentile: Math.round(frac * 100) }
       }
     }
     return out
