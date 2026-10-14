@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { fetchCompleteWeather } from '../utils/weatherAPI'
 import { getBulkWeatherEntry, buildWeatherFromBulkEntry } from '../utils/bulkWeatherCache'
 
@@ -295,6 +295,10 @@ export function useWeather(city, cityState, callerTag = 'unknown') {
       .finally(() => clearTimeout(timeoutId))
   }
 
-  // demo override is applied here, where the city name is known (see DEMO_BY_CITY above)
-  return { ...state, data: applyDemoOverride(state.data, city), forceRefresh }
+  // demo override is applied here, where the city name is known (see DEMO_BY_CITY above).
+  // Memoised: applyDemoOverride returns a NEW object, and App's alerts effect depends on
+  // liveWeather and calls setState — un-memoised, every ?demo link re-rendered App in an
+  // endless loop ("Maximum update depth exceeded"), burning CPU for the whole demo.
+  const data = useMemo(() => applyDemoOverride(state.data, city), [state.data, city])
+  return { ...state, data, forceRefresh }
 }
