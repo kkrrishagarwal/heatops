@@ -2,12 +2,20 @@ import React, { useMemo, useState } from 'react'
 import PanelIcon from './PanelIcon'
 import { assessHeatStress, heatIndexSteps, HEAT_INDEX_BANDS, WBGT_CATEGORIES } from '../utils/heatStress'
 
-// HEAT STRESS panel — turns the live temperature + humidity into the three numbers that
-// decide whether heat is dangerous to a human body: NWS Heat Index, Stull wet-bulb, and an
-// ISO 7243 WBGT shade estimate with the TB MED 507 work/rest category. "Show the working"
-// prints every formula with today's numbers substituted, for the technical defence.
+// HEAT STRESS panel — "how dangerous is the heat?" in plain words: what it feels like (NWS
+// Heat Index), a danger word, what outdoor workers should do (work/rest from the ISO 7243
+// WBGT estimate and TB MED 507) and the worst time of day. "Show the science" reveals the
+// three technical numbers (Heat Index, Stull wet-bulb, WBGT) and every formula with today's
+// values substituted, for the technical defence.
 const card = { background: 'rgba(15,23,42,0.55)', border: '1px solid #1e293b', borderRadius: 10, padding: '10px 12px', minWidth: 0 }
 const label = { fontSize: 10, color: '#94a3b8', letterSpacing: 0.7, textTransform: 'uppercase', marginBottom: 4 }
+const PLAIN = {
+  'extreme-danger': { label: 'EXTREMELY DANGEROUS', effect: 'Heat stroke is very likely. Stay indoors in a cool place.' },
+  danger: { label: 'DANGEROUS', effect: 'Heat exhaustion is likely and heat stroke is possible. Avoid going out in the afternoon.' },
+  'extreme-caution': { label: 'BE VERY CAREFUL', effect: 'Cramps or heat exhaustion can happen if you stay out long or work hard.' },
+  caution: { label: 'TAKE CARE', effect: 'You may tire faster if you stay out long. Drink water.' },
+  none: { label: 'SAFE', effect: 'No heat risk right now.' }
+}
 const mono = { fontFamily: '"IBM Plex Mono", ui-monospace, monospace', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, overflowWrap: 'anywhere' }
 
 export default function HeatStressPanel({ liveWeather, city, simple = false }) {
@@ -31,56 +39,75 @@ export default function HeatStressPanel({ liveWeather, city, simple = false }) {
   const cat = now.wbgtCategory
   const steps = heatIndexSteps(now.temp, now.rh)
 
+  // Plain-language wording for the headline: most readers (and many judges) do not know
+  // what "Heat Index" or "WBGT" mean, so the panel leads with "feels like" and what to do;
+  // the three technical numbers and their formulas sit behind "Show the science".
+  const plain = PLAIN[band.key]
+  const feels = steps?.offChart ? 'over 57' : `${now.heatIndex}`
+  const [work, rest] = (cat.workRest.match(/\d+/g) || [])
+  const workerLine = cat.cat >= 2 && work
+    ? `Outdoor workers: work ${work} minutes, then rest ${rest} minutes in the shade, every hour. Drink ${cat.water.replace(' per hour', '')} of water an hour.`
+    : 'Outdoor workers: normal working hours are fine — keep drinking water.'
+
+  const headline = (
+    <>
+      <div data-testid="heat-feels" style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 26, fontWeight: 800, color: band.color }}>Feels like {feels}°C</span>
+        <span style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', background: band.color === '#15803d' ? '#22c55e' : band.color, borderRadius: 5, padding: '2px 8px' }}>{plain.label}</span>
+      </div>
+      <div style={{ fontSize: 13, color: '#e2e8f0', marginTop: 6 }}>
+        The air is {now.temp}°C{now.rh >= 40 ? `, but ${now.rh}% humidity makes it feel hotter` : ` with ${now.rh}% humidity`}. {plain.effect}
+      </div>
+    </>
+  )
+
   if (simple) {
     return (
       <section className="panel" data-panel="HEAT-STRESS" style={{ borderLeft: `4px solid ${band.color}` }}>
-        <h3><PanelIcon name="thermometer" /> HOW THE HEAT FEELS</h3>
-        <div style={{ fontSize: 22, fontWeight: 800, color: band.color }}>{steps?.offChart ? '> 57' : now.heatIndex}°C <span style={{ fontSize: 13 }}>{band.label}</span></div>
-        <div style={{ fontSize: 12, color: '#cbd5e1', marginTop: 4 }}>{now.temp}°C air with {now.rh}% humidity feels like {now.heatIndex}°C. {band.effect}</div>
-        {cat.cat >= 3 && <div style={{ fontSize: 12, color: '#fbbf24', marginTop: 6 }}>If you work outdoors: {cat.workRest}, and drink {cat.water}.</div>}
+        <h3><PanelIcon name="thermometer" /> HOW HOT DOES IT FEEL?</h3>
+        {headline}
+        {cat.cat >= 2 && <div style={{ fontSize: 12, color: '#fbbf24', marginTop: 8 }}>{workerLine}</div>}
       </section>
     )
   }
 
   return (
     <section className="panel" data-panel="HEAT-STRESS" style={{ borderLeft: `4px solid ${band.color}` }}>
-      <h3><PanelIcon name="thermometer" /> HEAT STRESS — HEAT INDEX · WET-BULB · WBGT</h3>
-      <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 10 }}>
-        From live air temperature {now.temp}°C and relative humidity {now.rh}%{demo ? ` (temperature forced by the ?demo link; humidity recomputed for that temperature from today's real moisture${liveWeather?.demoHumidityFrom ? ` — ${liveWeather.demoHumidityFrom.temp}°C / ${liveWeather.demoHumidityFrom.humidity}% → ${now.temp}°C / ${now.rh}%` : ''})` : ''}. Air temperature alone understates danger: humid heat stops sweat from cooling the body.
+      <h3><PanelIcon name="thermometer" /> HOW DANGEROUS IS THE HEAT?</h3>
+      {headline}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 10, fontSize: 12, color: '#cbd5e1' }}>
+        <div data-testid="heat-workers">👷 {workerLine}</div>
+        <div data-testid="heat-stress-peak">🕒 {peak
+          ? <>Worst time in the next 24 hours: <b>{peak.time}</b> (feels like {peak.heatIndex}°C).</>
+          : demo ? 'Worst time of day is not shown on a demo link.' : 'No hourly forecast to find the worst time of day.'}</div>
+        {demo && <div style={{ fontSize: 10, color: '#94a3b8' }}>Demo link: temperature forced to {now.temp}°C; humidity recalculated for that temperature from today's real moisture{liveWeather?.demoHumidityFrom ? ` (${liveWeather.demoHumidityFrom.temp}°C / ${liveWeather.demoHumidityFrom.humidity}% → ${now.temp}°C / ${now.rh}%)` : ''}.</div>}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-        <div style={card} data-testid="heat-index">
-          <div style={label}>Heat Index (NWS)</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: band.color }}>{steps?.offChart ? '> 57°C' : `${now.heatIndex}°C`}</div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: band.color }}>{band.label}{steps?.offChart ? ' · beyond the NWS chart' : ''}</div>
-          <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>{band.effect}</div>
-        </div>
-        <div style={card} data-testid="wet-bulb">
-          <div style={label}>Wet-bulb (Stull 2011)</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: now.wetBulb >= 31 ? '#dc2626' : now.wetBulb >= 28 ? '#f59e0b' : '#e2e8f0' }}>{now.wetBulb}°C</div>
-          <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>Lowest temperature sweat can cool skin to. Healthy adults lose the ability to shed heat at around 31°C wet-bulb (lab studies, Vecellio et al. 2022); 35°C is the theoretical limit.</div>
-        </div>
-        <div style={card} data-testid="wbgt">
-          <div style={label}>WBGT — shade estimate</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: cat.cat >= 4 ? '#f87171' : cat.cat === 3 ? '#f59e0b' : '#e2e8f0' }}>{now.wbgt}°C</div>
-          <div style={{ fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span aria-hidden="true" style={{ width: 12, height: 12, borderRadius: 2, background: cat.color, border: `2px solid ${cat.ring}` }} />
-            {cat.cat ? `Category ${cat.cat} · ${cat.flag} flag` : cat.label}
-          </div>
-          <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>Outdoor work (moderate): {cat.workRest} · water {cat.water}</div>
-        </div>
-      </div>
-
-      <div style={{ fontSize: 11, color: '#cbd5e1', marginTop: 10 }} data-testid="heat-stress-peak">
-        {peak
-          ? <>Worst hour in the next 24 h: <b>{peak.time}</b> — WBGT {peak.wbgt}°C (category {peak.wbgtCategory.cat}), Heat Index {peak.heatIndex}°C at {peak.temp}°C / {peak.rh}%.</>
-          : demo ? 'Hourly peak not shown on a ?demo link — the hourly forecast is the real one and would not match the forced temperature.' : 'No hourly forecast to find the peak hour.'}
-      </div>
-
-      <button type="button" onClick={() => setShowMath(v => !v)} style={{ marginTop: 10, background: 'transparent', border: '1px solid #334155', color: '#fbbf24', borderRadius: 6, padding: '5px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-        {showMath ? 'Hide the working' : 'Show the working'}
+      <button type="button" data-testid="heat-science-toggle" onClick={() => setShowMath(v => !v)} style={{ marginTop: 10, background: 'transparent', border: '1px solid #334155', color: '#fbbf24', borderRadius: 6, padding: '5px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+        {showMath ? 'Hide the science' : 'Show the science (for experts)'}
       </button>
+
+      {showMath && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginTop: 10 }}>
+          <div style={card} data-testid="heat-index">
+            <div style={label}>Heat Index (US NWS)</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: band.color }}>{steps?.offChart ? '> 57°C' : `${now.heatIndex}°C`}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: band.color }}>{band.label}</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>The "feels like" number above: temperature + humidity.</div>
+          </div>
+          <div style={card} data-testid="wet-bulb">
+            <div style={label}>Wet-bulb (Stull 2011)</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: now.wetBulb >= 31 ? '#dc2626' : now.wetBulb >= 28 ? '#f59e0b' : '#e2e8f0' }}>{now.wetBulb}°C</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>How far sweat can cool the body. Around 31°C even healthy adults stop being able to cool down (Vecellio et al. 2022).</div>
+          </div>
+          <div style={card} data-testid="wbgt">
+            <div style={label}>WBGT, shade (ISO 7243)</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: cat.cat >= 4 ? '#f87171' : cat.cat === 3 ? '#f59e0b' : '#e2e8f0' }}>{now.wbgt}°C</div>
+            <div style={{ fontSize: 11, fontWeight: 700 }}>{cat.cat ? `Category ${cat.cat} · ${cat.flag} flag` : cat.label}</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>The standard used to set work/rest times (US Army TB MED 507) — gives the workers' line above.</div>
+          </div>
+        </div>
+      )}
 
       {showMath && steps && (
         <div data-testid="heat-stress-math" style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>

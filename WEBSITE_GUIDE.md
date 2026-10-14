@@ -177,7 +177,7 @@ Header: ← Back to Map, city and state, audience toggle, layout toggle, languag
 | **Satellite Indices** | Surface temperature (modelled), vegetation/built-up/water %, elevation | Open-Meteo, ESA WorldCover, SRTM |
 | **Heat Risk Gauge** | Needle on a 15–50 °C dial | City live temp → state median → estimate |
 | **Active Alerts** | Dismissible alerts: state heat > 45 °C, AQI > 300, and others | Mixed (see §13) |
-| **Heat Stress** | Heat Index, wet-bulb and WBGT with danger bands, worst hour of the next 24 h, and "Show the working" (citizens see one plain line) | Formulas on live temperature + humidity, see §11.12 |
+| **How dangerous is the heat?** | "Feels like X °C" with a plain danger word (Safe / Take care / Be very careful / Dangerous / Extremely dangerous), what outdoor workers should do, and the worst time of day. "Show the science (for experts)" reveals Heat Index, wet-bulb, WBGT and every formula. Citizens see the same headline without the button. | Formulas on live temperature + humidity, see §11.12 |
 | **Agent37 Heat Response Co-Pilot** (authority) | Agent-written Heat Action Protocol, simulated actions, Executive Brief | See §6.8 |
 | **Heatwave Action Checklist** (authority) | Tick-list that adapts to severity | Rules, see below |
 | **Health & Safety Precautions** | Rule-based advice list | Rules on temperature and AQI |
