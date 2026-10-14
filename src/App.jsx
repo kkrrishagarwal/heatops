@@ -452,11 +452,9 @@ function getRiskBadgeColor(risk){
     'LOW-MODERATE': {bg:'#4d7c0f', text:'#fff'},
     'LOW': {bg:'#15803d', text:'#fff'}
   }
-  // Demo links: the live-derived bucket badges follow the demo map colours.
-  if (IS_DEMO_LINK) {
-    const b = HEAT_INDEX_BUCKETS.find(x => x.label === risk)
-    if (b) return { bg: b.color, text: (risk === 'MODERATE' || risk === 'LOW-MODERATE') ? '#0f172a' : '#fff' }
-  }
+  // Live-derived bucket badges follow the map colours (yellow buckets need dark text).
+  const b = HEAT_INDEX_BUCKETS.find(x => x.label === risk)
+  if (b) return { bg: b.color, text: (risk === 'MODERATE' || risk === 'LOW-MODERATE') ? '#0f172a' : '#fff' }
   return map[risk] || {bg:'#444', text:'#fff'}
 }
 
@@ -1140,9 +1138,10 @@ function smoothGeoFeature(feature) {
 
 // Single source of truth for heat-index color/risk buckets — used by getHeatIndexColor,
 // getRiskLabel, and the map legend, so they can never drift out of sync with each other.
-// Demo links (?demo=… / ?demoTemp=…, e.g. the Sri Ganganagar rehearsal link) use a brighter
-// red → orange → yellow ramp for every hot bucket, with only LOW (<25 °C) green. The normal
-// live app keeps its original palette. Thresholds are identical in both — only colours differ.
+// One red → orange → yellow ramp for every bucket from 25 °C up, with only LOW (<25 °C)
+// green — so a state whose cities read as "Moderate" (yellow) in the city list and gauge
+// is yellow on the map too, never green. Demo links (?demo=… / ?demoTemp=…) additionally
+// switch to rank-based colouring, see RELATIVE_COLOUR below.
 const IS_DEMO_LINK = (() => {
   try { const q = new URLSearchParams(window.location.search); return q.has('demo') || q.has('demoTemp') } catch { return false }
 })()
@@ -1175,11 +1174,11 @@ function relativeBucketFor(fractionCoolerThan) {
 }
 
 const HEAT_INDEX_BUCKETS = [
-  { min: 45, color: IS_DEMO_LINK ? '#991b1b' : '#b91c1c', label: 'EXTREME', legend: 'EXTREME 45+' },
-  { min: 40, color: IS_DEMO_LINK ? '#dc2626' : '#c2410c', label: 'VERY HIGH', legend: 'VERY HIGH 40-45' },
-  { min: 35, color: IS_DEMO_LINK ? '#ea580c' : '#b45309', label: 'HIGH', legend: 'HIGH 35-40' },
-  { min: 30, color: IS_DEMO_LINK ? '#f59e0b' : '#ca8a04', label: 'MODERATE', legend: 'MODERATE 30-35' },
-  { min: 25, color: IS_DEMO_LINK ? '#facc15' : '#4d7c0f', label: 'LOW-MODERATE', legend: 'LOW-MODERATE 25-30' },
+  { min: 45, color: '#991b1b', label: 'EXTREME', legend: 'EXTREME 45+' },
+  { min: 40, color: '#dc2626', label: 'VERY HIGH', legend: 'VERY HIGH 40-45' },
+  { min: 35, color: '#ea580c', label: 'HIGH', legend: 'HIGH 35-40' },
+  { min: 30, color: '#f59e0b', label: 'MODERATE', legend: 'MODERATE 30-35' },
+  { min: 25, color: '#facc15', label: 'LOW-MODERATE', legend: 'LOW-MODERATE 25-30' },
   { min: -Infinity, color: '#15803d', label: 'LOW', legend: 'LOW <25' }
 ]
 
@@ -4398,7 +4397,7 @@ function App({ user }) {
                   <ul>
                     {liveLeaderBase.map((item, i) => (
                       <li key={i}>
-                        <span aria-hidden="true" style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: item.hot ? '#dc2626' : '#ea580c', marginRight: 8, verticalAlign: '1px' }} />
+                        <span aria-hidden="true" style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: typeof item.temp === 'number' ? getHeatIndexColor(item.temp) : '#ea580c', marginRight: 8, verticalAlign: '1px' }} />
                         {item.city}
                         <span>
                           {item.temp}°C
@@ -4415,18 +4414,11 @@ function App({ user }) {
 
                 <div className="legend-section">
                   <h4><PanelIcon name="thermometer" size={13} /> Heat Legend</h4>
-                  <div className="legend-item">
-                    <span className="legend-dot" style={{background:'#b91c1c'}}/>Extreme {'>44°C'}
-                  </div>
-                  <div className="legend-item">
-                    <span className="legend-dot" style={{background:'#c2410c'}}/>High {'38-44°C'}
-                  </div>
-                  <div className="legend-item">
-                    <span className="legend-dot" style={{background:'#ca8a04'}}/>Moderate {'32-38°C'}
-                  </div>
-                  <div className="legend-item">
-                    <span className="legend-dot" style={{background:'#15803d'}}/>Cool {'<32°C'}
-                  </div>
+                  {HEAT_INDEX_BUCKETS.map(b => (
+                    <div className="legend-item" key={b.label}>
+                      <span className="legend-dot" style={{background: b.color}}/>{b.legend}°C
+                    </div>
+                  ))}
                 </div>
 
                 <div className="history-section" style={{marginTop:20, padding:16, border:'1px solid rgba(148,163,184,0.15)', borderRadius:12, background:'rgba(0,0,0,0.35)'}}>
