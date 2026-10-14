@@ -46,7 +46,7 @@ import { GEEPipelinePanel } from './components/GEEPipelinePanel'
 import { normalizeStateName, getCellTemp, getGridBucket, computeInterventionImpact, getUsers, getLoginHistory, saveLoginHistory, getAnalyticsData, getTimeSpent } from './utils/dashboardUtils'
 import { WeatherCard } from './components/WeatherCard'
 import { getAQICategory } from './utils/weatherAPI'
-import { useWeather } from './hooks/useWeather'
+import { useWeather, DEMO_ACTIVE } from './hooks/useWeather'
 import { loadCityCoordinates } from './utils/cityCoordinateResolver'
 import { getLulcWithFallback } from './utils/lulcFallback'
 import { generatePDF } from './utils/exportUtils'
@@ -58,6 +58,8 @@ import { CompareCitiesPanel } from './components/CompareCitiesPanel'
 import ViewModeToggle from './components/ViewModeToggle'
 import AudienceToggle from './components/AudienceToggle'
 import HeatActionChecklist from './components/HeatActionChecklist'
+import HeatStressPanel from './components/HeatStressPanel'
+import HeatCoPilot from './components/HeatCoPilot'
 import { useViewMode } from './hooks/useViewMode'
 import { useAudienceMode } from './hooks/useAudienceMode'
 
@@ -1142,9 +1144,9 @@ function smoothGeoFeature(feature) {
 // green — so a state whose cities read as "Moderate" (yellow) in the city list and gauge
 // is yellow on the map too, never green. Demo links (?demo=… / ?demoTemp=…) additionally
 // switch to rank-based colouring, see RELATIVE_COLOUR below.
-const IS_DEMO_LINK = (() => {
-  try { const q = new URLSearchParams(window.location.search); return q.has('demo') || q.has('demoTemp') } catch { return false }
-})()
+// Only a link with at least one VALID override counts (see DEMO_ACTIVE in useWeather) —
+// "?demo=" or "?demoTemp=abc" stays in normal live mode.
+const IS_DEMO_LINK = DEMO_ACTIVE
 // Relative-heat colouring (demo links only, opt out with &relative=0). Off-season the
 // absolute IMD buckets paint the whole country yellow — true, but it hides WHERE the heat
 // actually is. In this mode a state's colour is its rank among all states' medians today:
@@ -5049,6 +5051,25 @@ function App({ user }) {
                     ))}
                   </div>
                 </section>
+
+                {/* Heat stress (Heat Index, wet-bulb, WBGT) from live temperature + humidity —
+                    full working for authorities, one plain-language line for citizens. */}
+                <HeatStressPanel liveWeather={liveWeather} city={selectedCity} simple={citizen} />
+
+                {/* AUTHORITY ONLY — Agent37 Heat Response Co-Pilot: agent-written Heat Action
+                    Protocol with a labelled rule-based fallback, simulated actions, exec brief. */}
+                {!citizen && (
+                  <AppErrorBoundary compact title="Co-Pilot could not be displayed">
+                    <HeatCoPilot
+                      city={selectedCity}
+                      state={selectedState}
+                      liveWeather={liveWeather}
+                      lulcReal={lulcReal}
+                      cityCoordsData={cityCoordsData}
+                      isCoastal={!!STATE_DATA[selectedState]?.coastal}
+                    />
+                  </AppErrorBoundary>
+                )}
 
                 {/* AUTHORITY ONLY — operational Heatwave Action Checklist (HAP steps), ticks kept
                     locally per city so it works as a live tool in a demo. */}

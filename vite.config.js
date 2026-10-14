@@ -104,6 +104,66 @@ function askAIDevMiddleware(mode) {
   }
 }
 
+// Dev-only guard: Vite's dev server answers HTTP 500 to any URL with a broken percent
+// escape (e.g. "?demo=%zz:46"), before the app can load. Production (Vercel) serves such
+// URLs normally, so mirror that: escape stray "%" and redirect; if the URL still cannot be
+// decoded (invalid UTF-8 bytes), drop the query string. Keeps a hand-typed demo link from
+// white-screening a local demo.
+function malformedUrlGuard() {
+  return {
+    name: 'malformed-url-guard',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        try { decodeURI(req.url); return next() } catch { /* repair below */ }
+        let target = req.url.replace(/%(?![0-9A-Fa-f]{2})/g, '%25')
+        try { decodeURI(target) } catch { target = req.url.split('?')[0] || '/' }
+        res.statusCode = 302
+        res.setHeader('Location', target)
+        res.end()
+      })
+    }
+  }
+}
+
+// Dev-only mirror of api/heat-agent.js (Agent37 Heat Response Co-Pilot) so `npm run dev`
+// serves GET/POST /api/heat-agent exactly like production, through the same shared lib.
+// AGENT37_API_KEY / AGENT37_INSTANCE_ID are copied from .env into process.env here (Vite
+// does not do that for server code); without them the route returns the labelled fallback.
+function heatAgentDevMiddleware(mode) {
+  return {
+    name: 'heat-agent-dev-middleware',
+    configureServer(server) {
+      const env = loadEnv(mode, process.cwd(), '')
+      for (const k of ['AGENT37_API_KEY', 'AGENT37_INSTANCE_ID', 'AGENT37_TIMEOUT_MS']) {
+        if (env[k] && !process.env[k]) process.env[k] = env[k]
+      }
+      server.middlewares.use('/api/heat-agent', async (req, res) => {
+        res.setHeader('Content-Type', 'application/json')
+        res.setHeader('Cache-Control', 'no-store')
+        try {
+          const { handleHeatAgent, pingHeatAgent } = await server.ssrLoadModule('/api/_lib/heatAgent.js')
+          if (req.method === 'GET') { res.end(JSON.stringify(await pingHeatAgent())); return }
+          if (req.method !== 'POST') { res.statusCode = 405; res.setHeader('Allow', 'GET, POST'); res.end(JSON.stringify({ error: 'Method not allowed. Use GET or POST.' })); return }
+          const chunks = []
+          for await (const chunk of req) chunks.push(chunk)
+          let body
+          try { body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') } catch {
+            res.statusCode = 400; res.end(JSON.stringify({ error: 'Request body must be valid JSON.' })); return
+          }
+          const { getClientKey } = await server.ssrLoadModule('/api/_lib/askAI.js')
+          const result = await handleHeatAgent({ body, clientKey: getClientKey(req.headers, req.socket?.remoteAddress) })
+          console.log('[heat-agent dev middleware]', result.source, result.reason || result.meta?.elapsedMs)
+          res.end(JSON.stringify(result))
+        } catch (err) {
+          res.statusCode = err?.status || 500
+          if (err?.retryAfterSeconds) res.setHeader('Retry-After', String(err.retryAfterSeconds))
+          res.end(JSON.stringify({ error: err?.message || 'Internal server error.', retryAfterSeconds: err?.retryAfterSeconds ?? null }))
+        }
+      })
+    }
+  }
+}
+
 // Dev-only mirror of api/weather-history.js so `npm run dev` can serve
 // GET /api/weather-history exactly like production. Snapshot files are read from disk.
 function weatherHistoryDevMiddleware(mode) {
@@ -133,7 +193,7 @@ function weatherHistoryDevMiddleware(mode) {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), askAIDevMiddleware(mode), weatherHistoryDevMiddleware(mode), geoJsonCompressionMiddleware()],
+  plugins: [malformedUrlGuard(), react(), askAIDevMiddleware(mode), heatAgentDevMiddleware(mode), weatherHistoryDevMiddleware(mode), geoJsonCompressionMiddleware()],
   build: {
     outDir: 'dist',
     sourcemap: false,

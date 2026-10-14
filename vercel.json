@@ -5,6 +5,9 @@
       "maxDuration": 60,
       "includeFiles": "src/data/cityCoordinates.json"
     },
+    "api/heat-agent.js": {
+      "maxDuration": 60
+    },
     "api/weather-history.js": {
       "includeFiles": "public/data/history/**"
     },
