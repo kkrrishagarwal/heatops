@@ -10,6 +10,7 @@
 //   seasonal   — the structural plan the Mitigation Planner would buy with the chosen budget
 //                (cool roofs, plantation, reflective surfaces…) and what it projects.
 import { ASSUMPTIONS, optimisePlan, budgetForTarget, fmtINR } from './mitigationPlanner'
+import { heatIndexC, heatIndexBand } from './heatStress'
 
 const EMERGENCY_QTY = {
   critical: { coolingCentres: 4, waterStations: 10 },
@@ -41,7 +42,7 @@ export function workHoursLost(workRest) {
   return Math.round((Number(m[2]) / 60) * 8 * 10) / 10
 }
 
-export function buildCosting({ profile, level, stress, outlook, budget }) {
+export function buildCosting({ profile, level, stress, outlook, budget, current = null }) {
   const A = ASSUMPTIONS
   const q = EMERGENCY_QTY[level] || EMERGENCY_QTY.routine
   const items = []
@@ -84,8 +85,36 @@ export function buildCosting({ profile, level, stress, outlook, budget }) {
     wetBulbC: stress?.wetBulb ?? null,
     wbgtCat: stress?.wbgtCat ?? null,
     workHoursLostPerWorkerPerDay: hoursLost,
-    exposureWindow: '12:00–16:00'
+    exposureWindow: '12:00–16:00',
+    exposure: exposureSeries({ forecast: outlook?.days, current, thresholdC: outlook?.threshold?.t ?? 40 })
   }
 
   return { unitCosts: unitCostTable(), emergency, seasonal, target, consequences, fmt: { emergencyTotal: fmtINR(emergency.total), seasonalSpent: seasonal ? fmtINR(seasonal.spent) : null, targetInvestment: target && !target.unreachable ? fmtINR(target.investment) : null } }
+}
+
+// ── Exposure series for the "if this is not controlled" chart ────────────────
+// Theory (dose–response, kept to what we can measure): heat-illness risk for an outdoor
+// worker rises with time spent in the hottest window on days when the Heat Index reaches
+// "Extreme Caution" (≥ 32.2 °C) or worse (NWS bands). The protocol's labour order moves
+// outdoor work to 06:00–11:00, so on those days danger-window exposure drops from the full
+// window (4 h) to 0. Each day's Heat Index comes from the forecast maximum with the day's
+// real moisture content held constant (dew point from the current reading), the same rule
+// the demo override uses. Nothing here estimates casualties.
+
+const DANGER_WINDOW_H = 4
+const es = T => 6.112 * Math.exp((17.62 * T) / (243.12 + T))
+
+export function exposureSeries({ forecast, current, thresholdC = 40 }) {
+  const t0 = current?.temp; const rh0 = current?.humidity
+  const haveRh = typeof t0 === 'number' && typeof rh0 === 'number'
+  const days = (Array.isArray(forecast) ? forecast.slice(0, 7) : []).map(d => {
+    const tmax = typeof d?.maxTemp === 'number' ? d.maxTemp : null
+    const rh = haveRh && tmax != null ? Math.round(Math.min(100, Math.max(1, (rh0 / 100) * es(t0) / es(tmax) * 100))) : null
+    const hi = tmax != null && rh != null ? heatIndexC(tmax, rh) : null
+    const band = hi != null ? heatIndexBand(hi) : null
+    const dangerous = band ? ['extreme-caution', 'danger', 'extreme-danger'].includes(band.key) : tmax != null && tmax >= thresholdC
+    return { date: d?.date || '', maxTemp: tmax, rh, heatIndex: hi, band: band?.label || null, noAction: dangerous ? DANGER_WINDOW_H : 0, withProtocol: 0 }
+  })
+  const totalNoAction = days.reduce((s, d) => s + d.noAction, 0)
+  return { days, totalNoAction, totalWithProtocol: 0, windowHours: DANGER_WINDOW_H, method: haveRh ? 'heat-index' : 'threshold' }
 }

@@ -7,6 +7,7 @@ import { cityRiskProfile, riskLabel } from '../utils/mitigationPlanner'
 import { activationLevel, buildFallbackPlan, sanitisePlan, LEVELS } from '../utils/heatActionProtocol'
 import { openExecutiveBrief } from '../utils/executiveBrief'
 import { buildCosting, BUDGET_PRESETS } from '../utils/heatCosting'
+import ConsequenceChart from './ConsequenceChart'
 import { fmtINR } from '../utils/mitigationPlanner'
 
 // AI HEAT RESPONSE CO-PILOT (authority view). One button sends the selected city's live
@@ -63,7 +64,7 @@ export function buildCopilotInput({ city, state, liveWeather, lulcReal, cityCoor
   const hot = outlook?.days?.find(d => ['watch', 'heatwave', 'severe'].includes(d.level))
   const stressOut = now ? { heatIndex: now.heatIndex, heatIndexBandKey: now.heatIndexBand.key, heatIndexBandLabel: now.heatIndexBand.label, heatIndexEffect: now.heatIndexBand.effect, wetBulb: now.wetBulb, wbgt: now.wbgt, wbgtCat: now.wbgtCategory.cat, workRest: now.wbgtCategory.workRest, peakTime: peak?.time ?? null, peakWbgt: peak?.wbgt ?? null } : {}
   const level = activationLevel({ current: { temp: liveWeather?.current?.temp ?? null }, today: { maxTemp: liveWeather?.today?.maxTemp ?? null }, stress: stressOut, outlook: { worst: outlook?.worst } }).level
-  const costing = buildCosting({ profile, level, stress: stressOut, outlook, budget })
+  const costing = buildCosting({ profile, level, stress: stressOut, outlook, budget, current: liveWeather?.current || null })
   return {
     city, state,
     elevation: liveWeather?.elevation ?? null,
@@ -261,6 +262,11 @@ export default function HeatCoPilot({ city, state, liveWeather, lulcReal, cityCo
               <div style={{ fontSize: 12, color: '#e2e8f0' }}>{plan.ifNotControlled.summary}</div>
               {plan.ifNotControlled.consequences.length > 0 && <ul style={{ margin: '6px 0 0 16px', padding: 0, fontSize: 11, color: '#cbd5e1' }}>{plan.ifNotControlled.consequences.map((c, k) => <li key={k}>{c}</li>)}</ul>}
               {plan.ifNotControlled.whoIsHitFirst.length > 0 && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>Hit first: {plan.ifNotControlled.whoIsHitFirst.join(' · ')}</div>}
+              {input.costing?.consequences?.exposure?.days?.length > 0 && (
+                <div style={{ marginTop: 10 }}>
+                  <ConsequenceChart exposure={input.costing.consequences.exposure} thresholdC={input.outlook?.threshold} labourWindow={(plan.labour?.shiftWindow || '').match(/\d{1,2}:\d{2}\s*[–-]\s*\d{1,2}:\d{2}/)?.[0].replace('-', '–') || '06:00–11:00'} />
+                </div>
+              )}
             </div>
           )}
 
