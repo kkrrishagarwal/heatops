@@ -163,7 +163,9 @@ File: [src/components/CommandCenterHud.jsx](src/components/CommandCenterHud.jsx)
 - **Left dock:** layer toggles — *Air temperature* (live Open-Meteo readings for 1,932 cities), *Surface temperature* (latest NASA MODIS clear-sky pass for 1,912 cities), *Built-up share* (ESA WorldCover, 171 cities); city search (defaults to Sri Ganganagar); the alert triage badge (temperature, activation level, feels-like, reasons); the 10×10 thermal grid with its "illustrative pattern" note.
 - **Right dock:** the AI Heat Response Co-Pilot (§6.8) and the Heatwave Action Checklist.
 - **Bottom scrubber:** *Historical* scrubs 2016–2026 and plots each year's April–June mean surface temperature for the 166 cities with a multi-year MODIS record (`public/data/modis-lst/yearly-peaks.json`, built by [scripts/buildModisYearlyPeaks.mjs](scripts/buildModisYearlyPeaks.mjs)); *Live Pass* scrubs the selected state's daily satellite passes (e.g. Rajasthan on 11 April 2026: 74 of 76 cities clear-sky) with the latest national pass at the left stop; *Forecast* scrubs the selected city's 7-day forecast while the map shows today's forecast highs nationally.
+- **State colours follow the scrubber:** in every mode except live air temperature, each state is re-coloured from the readings on screen (same most-common-bucket rule; grey = no reading in that layer), and the tooltip names the layer, year/date and city count behind the colour. City dots are off by default ("Show city dots" toggle).
 - Every overlay point is a real reading joined to a real coordinate; cloud-blocked days are gaps, not estimates. Lite mode turns the point overlays off.
+- Note on hill states in Surface/Historical modes: MODIS measures the *ground* at ~10:30 am, not the air. Bare high-altitude ground gets far hotter than the air above it (Leh: 33 °C surface mean in Apr–Jun 2018 with a 44 °C hottest day, while the air is often under 20 °C), and the long-record cities in J&K are all on the Jammu side. So red hills are faithful to the data; they are surface readings.
 
 ---
 
@@ -371,7 +373,7 @@ Demo behaviour:
 Median of the state's city air temperatures; colour = bucket with the most cities (§5.2). Readings under 45 minutes old are used alone when the state has at least min(5, n) of them.
 
 ### 11.2 "Feels like"
-Open-Meteo's `apparent_temperature`. The site does not compute its own heat index or wet-bulb temperature.
+The weather card shows Open-Meteo's `apparent_temperature`. The "How dangerous is the heat?" panel and the Co-Pilot use the site's own Heat Index, wet-bulb and WBGT (§11.12).
 
 ### 11.3 Urban Heat Island gap
 `UHI = city temperature − temperature at a point 0.35° north and 0.10° east (~40 km away)`
@@ -580,7 +582,6 @@ Things a careful reviewer could find. None stops the site from running.
 - Physics panel cost ranges differ from the planner's unit costs.
 
 **Data**
-- The weather cache in this checkout dates from 27 September 2026.
 - Schools-and-hospitals data covers only 6 cities.
 - 24 small localities have no coordinates and rely on live geocoding.
 - ISRO INSAT-3D data has been requested but is not in the product; the parser script has never been run.
