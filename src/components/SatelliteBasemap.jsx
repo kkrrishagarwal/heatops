@@ -4,19 +4,20 @@ import React, { useMemo, useState } from 'react'
 // projection the vector layers use, so imagery and borders line up exactly. Web-Mercator
 // tiles (z/x/y) are placed by projecting each tile's NW and SE corners. Sources (no API key):
 //   esri  — Esri World Imagery (Maxar / Earthstar Geographics), the Google-Maps-style view
-//   gibs  — NASA GIBS MODIS Terra true-colour, one image per calendar day, so the Live Pass
-//           date shows the real satellite picture of India for that day (cloud and all)
+//   gibs  — NASA GIBS VIIRS (Suomi NPP) true-colour, one image per calendar day, so the Live
+//           Pass date shows the real satellite picture of India for that day (cloud and all).
+//           VIIRS's 3,000 km swath leaves no orbit gaps over India, unlike MODIS Terra's.
 // Tiles that fail to load (offline, missing date) are simply dropped — the dark surface shows.
 const INDIA_BBOX = { west: 66, east: 98, south: 5, north: 38 }
 
 export const BASEMAPS = {
   dark: { label: 'Dark', attribution: '' },
   esri: { label: 'Satellite', attribution: 'Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community' },
-  gibs: { label: 'NASA true colour', attribution: 'NASA EOSDIS GIBS / Worldview — MODIS Terra corrected reflectance (true colour)' }
+  gibs: { label: 'NASA true colour', attribution: 'NASA EOSDIS GIBS / Worldview — VIIRS SNPP corrected reflectance (true colour)' }
 }
 
 function tileUrl(source, z, x, y, date) {
-  if (source === 'gibs') return `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${date}/GoogleMapsCompatible_Level9/${z}/${y}/${x}.jpg`
+  if (source === 'gibs') return `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${date}/GoogleMapsCompatible_Level9/${z}/${y}/${x}.jpg`
   return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`
 }
 const lon2x = (lon, z) => Math.floor(((lon + 180) / 360) * 2 ** z)

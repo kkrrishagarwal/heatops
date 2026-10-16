@@ -60,6 +60,7 @@ import AudienceToggle from './components/AudienceToggle'
 import HeatActionChecklist from './components/HeatActionChecklist'
 import CommandCenterHud from './components/CommandCenterHud'
 import SatelliteBasemap from './components/SatelliteBasemap'
+import { createPortal } from 'react-dom'
 import HeatStressPanel from './components/HeatStressPanel'
 import HeatCoPilot from './components/HeatCoPilot'
 import { useViewMode } from './hooks/useViewMode'
@@ -1720,7 +1721,7 @@ function MiniGrid({ base, tree = 0, roof = 0, water = 0, size = 15, label, testI
   )
 }
 
-const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, plannerMarkers = [], onPlannerMarkerClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null, lite = false, overlay = null, basemap = null }, transformRef) => {
+const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, plannerMarkers = [], onPlannerMarkerClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null, lite = false, overlay = null, basemap = null, portalTooltip = false }, transformRef) => {
   // Legend is collapsed by default so the map itself stays fully visible (it covered ~60% of the map on phones).
   const [legendOpen, setLegendOpen] = useState(false)
   const { t } = useTranslation()
@@ -2040,12 +2041,11 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
       {/* TOOLTIP CARD — top-right glass panel — deliberately OUTSIDE the zoom/pan
           transform div above, so it stays a fixed-size screen overlay regardless of
           map zoom level (see comment at the top of this component's render). */}
-      {tooltip.visible && activeData && (
+      {tooltip.visible && activeData && (portalTooltip ? createPortal : (el => el))(
         <div
+          data-map-tooltip="true"
           style={{
-            position: 'absolute',
-            top: 16,
-            right: 16,
+            ...(portalTooltip ? { position: 'fixed', top: 68, left: '50%', transform: 'translateX(-50%)', zIndex: 30 } : { position: 'absolute', top: 16, right: 16 }),
             minWidth: 190,
             background: 'rgba(10, 22, 40, 0.92)',
             border: '1px solid rgba(148, 163, 184, 0.3)',
@@ -2092,7 +2092,8 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
           </div>
           <div style={{ marginBottom: 4 }}>📍 Cities: <strong>{activeData.cities?.length || 0}</strong></div>
           <div style={{ color: '#d97706', fontSize: 11, marginTop: 6 }}>Click to explore cities →</div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* HEAT INDEX LEGEND — bottom-left. maxWidth (see .map-heat-legend in
@@ -3983,6 +3984,7 @@ function App({ user }) {
                   audience={audience}
                   overlay={overlay}
                   basemap={{ source: overlay?.basemap || 'dark', date: overlay?.basemapDate, zoom: mapScale * 0.8 }}
+                  portalTooltip
                 />
               </AppErrorBoundary>
             </div>
@@ -4010,6 +4012,8 @@ function App({ user }) {
         onLogout={() => { setUserName(''); setUserEmail(''); setScreen('signin') }}
         userName={userName}
         lite={lite}
+        zoom={mapScale}
+        onZoom={(dir) => { if (dir === 0) { setMapScale(1); setMapPos({ x: 0, y: 0 }); return } setMapScale(prev => { const next = Math.min(Math.max(prev + dir * 0.5, 1), 5); if (next === 1 && prev !== 1) setMapPos({ x: 0, y: 0 }); return next }) }}
       />
     )
   }

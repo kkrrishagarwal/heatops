@@ -32,7 +32,7 @@ export default function CommandCenterHud({
   renderMap, liveIndiaData, liveCityCache, cityCoordsData, lulcReal, liveWeather,
   selectedState, selectedCity, onSelectCity, allCities = [], colorFor, buckets = [], isCoastal = false,
   cacheStatus, cacheStale = false, cacheAgeLabel, audience, onAudienceChange, onOpenClassic, onOpenDashboard, onLogout, userName,
-  teamId = 'B26-0322', lite = false
+  teamId = 'B26-0322', lite = false, zoom = 1, onZoom = () => {}
 }) {
   const [layer, setLayer] = useState('air')
   const [mode, setMode] = useState('live')
@@ -139,6 +139,14 @@ export default function CommandCenterHud({
       {/* MAP — full viewport, owned by App (zoom / pan / click state lives there) */}
       <div className="absolute inset-0 z-0 hud-map">{renderMap({ ...overlay, points: showDots ? overlay?.points : [], focus, stateData, basemap, basemapDate: basemap === 'gibs' ? gibsSafeDate(mode === 'live' && layer === 'modis' && dateIdx >= 0 ? stateDates[dateIdx] : null) : null })}</div>
       {basemap !== 'dark' && <div className="absolute bottom-2 left-3 z-10 text-[9px] text-slate-400" data-testid="basemap-attribution">{BASEMAPS[basemap].attribution}</div>}
+
+      {/* ZOOM CONTROLS — top of the map, just left of the right dock (the left dock runs full height) */}
+      <div className="absolute top-20 right-[26rem] z-10 flex flex-col gap-1" data-testid="hud-zoom">
+        <button type="button" aria-label="Zoom in" title="Zoom in (or scroll)" onClick={() => onZoom(1)} disabled={zoom >= 5} className="h-9 w-9 rounded-md border border-slate-600 bg-slate-950/85 text-lg font-bold text-slate-100 backdrop-blur-md hover:border-amber-400 hover:text-amber-300 disabled:opacity-40">+</button>
+        <button type="button" aria-label="Zoom out" title="Zoom out" onClick={() => onZoom(-1)} disabled={zoom <= 1} className="h-9 w-9 rounded-md border border-slate-600 bg-slate-950/85 text-lg font-bold text-slate-100 backdrop-blur-md hover:border-amber-400 hover:text-amber-300 disabled:opacity-40">−</button>
+        <button type="button" aria-label="Reset zoom" title="Fit India to the screen" onClick={() => onZoom(0)} className="h-9 w-9 rounded-md border border-slate-600 bg-slate-950/85 text-sm font-bold text-slate-100 backdrop-blur-md hover:border-amber-400 hover:text-amber-300">↺</button>
+        <div className="text-center text-[9px] text-slate-400">{zoom.toFixed(1)}×</div>
+      </div>
 
       {/* TOP BAR */}
       <header className="absolute inset-x-0 top-0 z-20 flex h-14 items-center gap-3 border-b border-sky-500/20 bg-slate-950/80 px-4 backdrop-blur-md">
