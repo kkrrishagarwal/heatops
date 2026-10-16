@@ -14,7 +14,7 @@ import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOver
 // map fills the viewport (rendered by App through renderMap so zoom/pan state stays in one
 // place), with three floating docks over it and no page scroll:
 //   left   — layer toggles, city selector, alert triage badge, 10×10 thermal grid
-//   right  — Agent37 Heat Response Co-Pilot (directive, actions, SMS/SDMA/brief) + checklist
+//   right  — AI Heat Response Co-Pilot (directive, actions, SMS/SDMA/brief) + checklist
 //   bottom — timeline scrubber: Historical (MODIS 2016–2026) · Live Pass · Forecast (7 days)
 // Every overlay point is a real reading (see utils/hudOverlay.js). Docks scroll internally.
 const DOCK = 'absolute z-10 bg-slate-950/85 backdrop-blur-md rounded-xl p-4 text-slate-100 shadow-2xl border'
@@ -201,11 +201,11 @@ export default function CommandCenterHud({
         ) : <div className="text-[11px] text-slate-400">No reading for this city yet.</div>}
       </aside>
 
-      {/* RIGHT DOCK — Agent37 command */}
+      {/* RIGHT DOCK — AI command */}
       <aside data-testid="hud-right" className={`${DOCK} right-6 top-20 w-96 max-h-[calc(100vh-10.5rem)] overflow-y-auto border-emerald-500/30 hud-dock`}>
         <div className="mb-2 flex items-center justify-between">
-          <div className={H3 + ' mb-0'}>Agent37 directive</div>
-          <span className="font-mono text-[10px] text-emerald-300">#A37-{teamId}</span>
+          <div className={H3 + ' mb-0'}>AI directive</div>
+          <span className="font-mono text-[10px] text-emerald-300">#HAP-{teamId}</span>
         </div>
         {selectedCity ? (
           <AppErrorBoundary compact title="Co-Pilot could not be displayed">

@@ -7,11 +7,12 @@ import { cityRiskProfile, riskLabel } from '../utils/mitigationPlanner'
 import { activationLevel, buildFallbackPlan, sanitisePlan, LEVELS } from '../utils/heatActionProtocol'
 import { openExecutiveBrief } from '../utils/executiveBrief'
 
-// AGENT37 HEAT RESPONSE CO-PILOT (authority view). One button sends the selected city's live
-// readings, heat stress, IMD-threshold outlook and land cover to POST /api/heat-agent, where
-// an Agent37-hosted agent writes a structured municipal Heat Action Protocol. The panel:
-//   • pings GET /api/heat-agent on mount — shows whether Agent37 is configured and wakes a
-//     sleeping instance so the real run starts warm;
+// AI HEAT RESPONSE CO-PILOT (authority view). One button sends the selected city's live
+// readings, heat stress, IMD-threshold outlook and land cover to POST /api/heat-agent, which
+// has an AI write a structured municipal Heat Action Protocol — an Agent37-hosted agent when
+// an instance is configured, otherwise Google Gemini (the key AGNI already uses). The panel:
+//   • pings GET /api/heat-agent on mount — shows which engine is available (and wakes a
+//     sleeping Agent37 instance so a real run starts warm);
 //   • never hangs: "Use offline protocol now" is available while the agent works, and any
 //     timeout / network failure / bad reply renders the rule-based protocol, labelled as such;
 //   • offers three SIMULATED actions (ward advisory, SMS broadcast, SDMA incident) that only
@@ -138,19 +139,19 @@ export default function HeatCoPilot({ city, state, liveWeather, lulcReal, cityCo
     setNotice(ok ? '' : 'The browser blocked the brief window — allow pop-ups for this site and try again.')
   }
 
-  const status = agent == null ? { text: 'Checking Agent37…', color: '#94a3b8' }
-    : agent.configured === false ? { text: 'Agent37 not configured — runs will use the offline protocol', color: '#f59e0b' }
+  const status = agent == null ? { text: 'Checking the AI engine…', color: '#94a3b8' }
     : agent.configured == null ? { text: 'Co-Pilot server unreachable — offline protocol available', color: '#f59e0b' }
-    : agent.reachable ? { text: `Agent37 connected · instance ${agent.instance}`, color: '#22c55e' }
-    : { text: `Agent37 instance ${agent.instance} is waking up — first run may take longer`, color: '#f59e0b' }
+    : agent.configured === false ? (agent.gemini ? { text: 'AI engine: Google Gemini (server-side key) · offline protocol as backup', color: '#22c55e' } : { text: 'No AI engine configured — runs will use the offline protocol', color: '#f59e0b' })
+    : agent.reachable ? { text: `AI engine: Agent37 · instance ${agent.instance}${agent.gemini ? ' · Gemini as backup' : ''}`, color: '#22c55e' }
+    : { text: `Agent37 instance ${agent.instance} is waking up${agent.gemini ? ' — Gemini answers meanwhile' : ' — first run may take longer'}`, color: '#f59e0b' }
   const lvl = LEVELS[plan?.level || pre.level]
 
   if (!city) return null
   return (
     <section className="panel" data-panel="COPILOT" style={{ borderLeft: `4px solid ${lvl.color}` }}>
-      <h3><PanelIcon name="bot" /> AGENT37 HEAT RESPONSE CO-PILOT</h3>
+      <h3><PanelIcon name="bot" /> AI HEAT RESPONSE CO-PILOT</h3>
       {!compact && <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>
-        An Agent37-hosted AI agent reads {city}'s live heat readings, heat stress, 7-day IMD-threshold outlook and land cover, and writes a municipal Heat Action Protocol: actions, owners, deadlines, labour timing and the public advisory.
+        An AI reads {city}'s live heat readings, heat stress, 7-day IMD-threshold outlook and land cover, and writes a municipal Heat Action Protocol: actions, owners, deadlines, labour timing and the public advisory.
       </div>}
       <div data-testid="copilot-status" style={{ fontSize: 11, color: status.color, marginBottom: 10 }}>● {status.text}</div>
 
@@ -162,22 +163,24 @@ export default function HeatCoPilot({ city, state, liveWeather, lulcReal, cityCo
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         <button type="button" data-testid="copilot-run" onClick={run} disabled={phase === 'running'} style={{ ...btn('#f59e0b'), opacity: phase === 'running' ? 0.6 : 1 }}>
-          {phase === 'running' ? 'Agent working…' : result ? 'Run the Co-Pilot again' : 'Run Agent37 Co-Pilot'}
+          {phase === 'running' ? 'AI working…' : result ? 'Run the Co-Pilot again' : 'Run AI Co-Pilot'}
         </button>
         {phase === 'running' && <button type="button" data-testid="copilot-offline" onClick={useOfflineNow} style={ghost}>Use offline protocol now</button>}
       </div>
       {phase === 'running' && (
         <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 8 }} aria-live="polite">
-          {elapsed}s — sending readings to Agent37{elapsed >= 8 ? '. An idle instance wakes on the first request, which can take a while; the offline protocol is one click away.' : '…'}
+          {elapsed}s — the AI is writing the protocol{elapsed >= 10 ? '. Taking longer than usual; the offline protocol is one click away.' : '…'}
         </div>
       )}
 
       {plan && (
         <div data-testid="copilot-plan" style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div data-testid="copilot-source" style={{ fontSize: 11, padding: '6px 10px', borderRadius: 6, background: result.source === 'agent37' ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)', color: result.source === 'agent37' ? '#86efac' : '#fcd34d', border: `1px solid ${result.source === 'agent37' ? 'rgba(34,197,94,0.4)' : 'rgba(245,158,11,0.4)'}` }}>
+          <div data-testid="copilot-source" style={{ fontSize: 11, padding: '6px 10px', borderRadius: 6, background: result.source === 'fallback' ? 'rgba(245,158,11,0.12)' : 'rgba(34,197,94,0.12)', color: result.source === 'fallback' ? '#fcd34d' : '#86efac', border: `1px solid ${result.source === 'fallback' ? 'rgba(245,158,11,0.4)' : 'rgba(34,197,94,0.4)'}` }}>
             {result.source === 'agent37'
-              ? <>Generated by Agent37{result.meta?.agent ? ` · ${result.meta.agent}` : ''}{result.meta?.instance ? ` · instance ${result.meta.instance}` : ''}{result.meta?.elapsedMs ? ` · ${(result.meta.elapsedMs / 1000).toFixed(1)} s` : ''}{typeof result.meta?.costUsd === 'number' ? ` · $${result.meta.costUsd.toFixed(4)}` : ''}. Agent output — review before issuing orders.</>
-              : <>Offline protocol (rule-based, NDMA / Ahmedabad HAP) — not generated by the agent. Reason: {result.reason}</>}
+              ? <>Generated by Agent37{result.meta?.agent ? ` · ${result.meta.agent}` : ''}{result.meta?.instance ? ` · instance ${result.meta.instance}` : ''}{result.meta?.elapsedMs ? ` · ${(result.meta.elapsedMs / 1000).toFixed(1)} s` : ''}{typeof result.meta?.costUsd === 'number' ? ` · $${result.meta.costUsd.toFixed(4)}` : ''}. AI output — review before issuing orders.</>
+              : result.source === 'gemini'
+                ? <>Generated by Google Gemini{result.meta?.model ? ` (${result.meta.model})` : ''}{result.meta?.elapsedMs ? ` · ${(result.meta.elapsedMs / 1000).toFixed(1)} s` : ''}{result.meta?.tokens ? ` · ${result.meta.tokens} tokens` : ''}. AI output — review before issuing orders.</>
+                : <>Offline protocol (rule-based, NDMA / Ahmedabad HAP) — not generated by an AI. Reason: {result.reason}</>}
           </div>
 
           <div style={{ ...card, borderLeft: `4px solid ${lvl.color}` }}>

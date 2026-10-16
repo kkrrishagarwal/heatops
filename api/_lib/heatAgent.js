@@ -6,11 +6,13 @@
 // Secrets: AGENT37_API_KEY and AGENT37_INSTANCE_ID are server-side env vars (no VITE_
 // prefix), so they never reach the browser bundle.
 //
+// Three tiers, in order, each labelled in the response so the UI never misattributes a plan:
+//   1. 'agent37'  — an Agent37-hosted agent (needs AGENT37_API_KEY + AGENT37_INSTANCE_ID)
+//   2. 'gemini'   — Google Gemini with JSON output (GEMINI_API_KEY, the same key AGNI uses);
+//                   used when Agent37 is not configured or fails
+//   3. 'fallback' — the deterministic rule-based protocol (src/utils/heatActionProtocol.js)
 // Never-fail contract: every outcome except bad input (400) and rate limiting (429) returns
-// 200 with a usable plan. If Agent37 is not configured, asleep past the time budget, down,
-// or answers with something that is not valid plan JSON, the deterministic rule-based
-// protocol (src/utils/heatActionProtocol.js) is returned instead, with `source: 'fallback'`
-// and the reason — the UI labels it, and never presents it as agent output.
+// 200 with a usable plan and `source` + `reason` saying which tier produced it and why.
 import { buildFallbackPlan, sanitisePlan, PLAN_SCHEMA_TEXT, activationLevel } from '../../src/utils/heatActionProtocol.js'
 
 export class HeatAgentError extends Error {
@@ -24,6 +26,11 @@ export class HeatAgentError extends Error {
 // Vercel's function limit is 60 s (vercel.json); leave headroom to send the fallback.
 const AGENT_TIMEOUT_MS = Number(process.env.AGENT37_TIMEOUT_MS) || 50000
 const PING_TIMEOUT_MS = 8000
+// Gemini: a plan is ~1,500 output tokens, so this call has its own budget rather than AGNI's
+// 900-token chat limit. JSON mode (responseMimeType) makes the model return the object only.
+const GEMINI_MODELS = (process.env.GEMINI_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash,gemini-3.5-flash,gemini-flash-lite-latest').split(',').map(m => m.trim()).filter(Boolean)
+const GEMINI_TIMEOUT_MS = Number(process.env.HEAT_GEMINI_TIMEOUT_MS) || 25000
+const GEMINI_MAX_TOKENS = 2048
 
 function agentConfig() {
   const key = process.env.AGENT37_API_KEY
@@ -162,30 +169,73 @@ async function callAgent37(cfg, input) {
   }
 }
 
+async function callGemini(input) {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) return { ok: false, reason: 'GEMINI_API_KEY is not set on this server.' }
+  const started = Date.now()
+  const prompt = buildPrompt(input).replace('Do not browse or run tools; answer directly from DATA.', 'Answer directly from DATA.')
+  let lastReason = 'no Gemini model answered'
+  for (const model of GEMINI_MODELS) {
+    let res
+    try {
+      res = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: GEMINI_MAX_TOKENS, temperature: 0.3, responseMimeType: 'application/json', ...(model.startsWith('gemini-2.5') ? { thinkingConfig: { thinkingBudget: 0 } } : {}) }
+        })
+      }, GEMINI_TIMEOUT_MS)
+    } catch (err) {
+      lastReason = err?.name === 'AbortError' ? `Gemini (${model}) did not answer within ${Math.round(GEMINI_TIMEOUT_MS / 1000)} s.` : `Could not reach Gemini (${err?.message || 'network error'}).`
+      continue
+    }
+    const text = await res.text().catch(() => '')
+    let data = null
+    try { data = JSON.parse(text) } catch { /* handled below */ }
+    if (!res.ok) {
+      lastReason = `Gemini (${model}) returned HTTP ${res.status}${data?.error?.status ? ` ${data.error.status}` : ''}.`
+      if ([429, 503, 404].includes(res.status)) continue // quota / overload / retired model: try the next
+      return { ok: false, reason: lastReason }
+    }
+    const out = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || ''
+    const plan = sanitisePlan(extractJson(out))
+    if (!plan) { lastReason = `Gemini (${model}) answered, but not with a valid plan.`; continue }
+    const u = data?.usageMetadata || {}
+    return { ok: true, plan, meta: { model, tokens: typeof u.totalTokenCount === 'number' ? u.totalTokenCount : null, elapsedMs: Date.now() - started } }
+  }
+  return { ok: false, reason: lastReason }
+}
+
 export async function handleHeatAgent({ body, clientKey }) {
   const input = sanitiseInput(body)
   const limit = checkRate(clientKey)
   if (!limit.allowed) throw new HeatAgentError(429, `Too many Co-Pilot runs — please wait ${limit.retryAfterSeconds}s.`, limit.retryAfterSeconds)
   const generatedAt = new Date().toISOString()
   const cfg = agentConfig()
-  if (!cfg) {
-    return { source: 'fallback', reason: 'Agent37 is not configured on this server (AGENT37_API_KEY / AGENT37_INSTANCE_ID not set).', plan: buildFallbackPlan(input), generatedAt }
+  let agentReason = 'Agent37 is not configured on this server (no instance).'
+  if (cfg) {
+    const out = await callAgent37(cfg, input)
+    if (out.ok) return { source: 'agent37', plan: out.plan, meta: out.meta, generatedAt }
+    agentReason = out.reason
+    console.warn('[heat-agent] Agent37 failed, trying Gemini:', out.reason)
   }
-  const out = await callAgent37(cfg, input)
-  if (out.ok) return { source: 'agent37', plan: out.plan, meta: out.meta, generatedAt }
-  console.warn('[heat-agent] falling back:', out.reason)
-  return { source: 'fallback', reason: out.reason, plan: buildFallbackPlan(input), generatedAt }
+  const g = await callGemini(input)
+  if (g.ok) return { source: 'gemini', plan: g.plan, meta: g.meta, generatedAt, agentReason }
+  console.warn('[heat-agent] falling back to the rule-based protocol:', g.reason)
+  return { source: 'fallback', reason: `${agentReason} ${g.reason}`, plan: buildFallbackPlan(input), generatedAt }
 }
 
 // GET /api/heat-agent — status + wake-up ping. Hitting the instance URL wakes a sleeping
 // instance, so the panel calls this on mount and the real run starts warm.
 export async function pingHeatAgent() {
   const cfg = agentConfig()
-  if (!cfg) return { configured: false, reachable: false }
+  const gemini = !!process.env.GEMINI_API_KEY
+  if (!cfg) return { configured: false, reachable: false, gemini }
   try {
     const res = await fetchWithTimeout(`${cfg.base}/v1/health`, { headers: { 'X-Agent37-Key': cfg.key } }, PING_TIMEOUT_MS)
-    return { configured: true, reachable: res.ok, status: res.status, instance: cfg.instance }
+    return { configured: true, reachable: res.ok, status: res.status, instance: cfg.instance, gemini }
   } catch (err) {
-    return { configured: true, reachable: false, waking: err?.name === 'AbortError', instance: cfg.instance }
+    return { configured: true, reachable: false, waking: err?.name === 'AbortError', instance: cfg.instance, gemini }
   }
 }

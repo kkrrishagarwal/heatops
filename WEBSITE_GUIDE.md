@@ -101,6 +101,8 @@ Left to right on the laptop layout:
 
 ## 5. Map screen
 
+The Authority view on a laptop opens on the **Command Center** (§5.5); the classic map screen below is one click away ("Classic map") and is what citizens and phones see.
+
 ### 5.1 The map
 
 - Drawn from local GeoJSON files (36 states/UTs, 594 districts, a separate official J&K/Ladakh boundary file). No map tile server is used.
@@ -153,6 +155,16 @@ Colours run red → orange → yellow from EXTREME down to LOW-MODERATE; only LO
 - **City list:** searchable; each row shows the live temperature (green dot if under 15 minutes old) or "NO LIVE DATA". Select a city, then **🔥 Analyze {city}** opens the dashboard.
 - Hottest Cities list, a heat legend, and Recent Sign-ins.
 
+### 5.5 Command Center (authority, laptop)
+
+File: [src/components/CommandCenterHud.jsx](src/components/CommandCenterHud.jsx). A map-centric layout with no page scroll: the India map fills the viewport and three translucent docks float over it.
+
+- **Top bar:** city and its rank/risk badge, data freshness (LIVE / CACHED with age), IST clock, Citizen/Authority toggle, "Classic map", "Full dashboard →", Logout.
+- **Left dock:** layer toggles — *Air temperature* (live Open-Meteo readings for 1,932 cities), *Surface temperature* (latest NASA MODIS clear-sky pass for 1,912 cities), *Built-up share* (ESA WorldCover, 171 cities); city search (defaults to Sri Ganganagar); the alert triage badge (temperature, activation level, feels-like, reasons); the 10×10 thermal grid with its "illustrative pattern" note.
+- **Right dock:** the AI Heat Response Co-Pilot (§6.8) and the Heatwave Action Checklist.
+- **Bottom scrubber:** *Historical* scrubs 2016–2026 and plots each year's April–June mean surface temperature for the 166 cities with a multi-year MODIS record (`public/data/modis-lst/yearly-peaks.json`, built by [scripts/buildModisYearlyPeaks.mjs](scripts/buildModisYearlyPeaks.mjs)); *Live Pass* scrubs the selected state's daily satellite passes (e.g. Rajasthan on 11 April 2026: 74 of 76 cities clear-sky) with the latest national pass at the left stop; *Forecast* scrubs the selected city's 7-day forecast while the map shows today's forecast highs nationally.
+- Every overlay point is a real reading joined to a real coordinate; cloud-blocked days are gaps, not estimates. Lite mode turns the point overlays off.
+
 ---
 
 ## 6. City dashboard
@@ -178,7 +190,7 @@ Header: ← Back to Map, city and state, audience toggle, layout toggle, languag
 | **Heat Risk Gauge** | Needle on a 15–50 °C dial | City live temp → state median → estimate |
 | **Active Alerts** | Dismissible alerts: state heat > 45 °C, AQI > 300, and others | Mixed (see §13) |
 | **How dangerous is the heat?** | "Feels like X °C" with a plain danger word (Safe / Take care / Be very careful / Dangerous / Extremely dangerous), what outdoor workers should do, and the worst time of day. "Show the science (for experts)" reveals Heat Index, wet-bulb, WBGT and every formula. Citizens see the same headline without the button. | Formulas on live temperature + humidity, see §11.12 |
-| **Agent37 Heat Response Co-Pilot** (authority) | Agent-written Heat Action Protocol, simulated actions, Executive Brief | See §6.8 |
+| **AI Heat Response Co-Pilot** (authority) | AI-written Heat Action Protocol (Gemini; Agent37 if an instance is configured), simulated actions, Executive Brief | See §6.8 |
 | **Heatwave Action Checklist** (authority) | Tick-list that adapts to severity | Rules, see below |
 | **Health & Safety Precautions** | Rule-based advice list | Rules on temperature and AQI |
 | **Global Climate Systems** | ENSO, IOD, MJO, PDO, NAO, Polar Vortex | Fixed text |
@@ -252,14 +264,14 @@ Add up to 4 cities to a radar chart with six axes: LST, NDVI, NDBI, AQI, Wind, N
 - **Export & Share:** Copy Summary, WhatsApp Share, CSV Download, PDF Report (opens a printable page and the browser's print dialog).
 - **Progress tracker** and **Team & Methodology:** static text.
 
-### 6.8 Agent37 Heat Response Co-Pilot (authority, Overview tab)
+### 6.8 AI Heat Response Co-Pilot (authority, Overview tab and Command Center)
 
 Files: [src/components/HeatCoPilot.jsx](src/components/HeatCoPilot.jsx), [api/_lib/heatAgent.js](api/_lib/heatAgent.js), [src/utils/heatActionProtocol.js](src/utils/heatActionProtocol.js), [src/utils/executiveBrief.js](src/utils/executiveBrief.js).
 
-1. **Status line:** on load the panel pings `GET /api/heat-agent`, which reports whether Agent37 is configured and wakes a sleeping instance.
+1. **Status line:** on load the panel pings `GET /api/heat-agent`, which reports which AI engine is available: an Agent37 instance (if `AGENT37_API_KEY` and `AGENT37_INSTANCE_ID` are set) or Google Gemini (the same server-side key AGNI uses). The project currently runs on Gemini; the Agent37 path is built but dormant because no instance has been created.
 2. **Rule-based pre-assessment:** the activation level from the thresholds below, with the reasons.
-3. **Run Agent37 Co-Pilot:** sends the city's temperature, humidity, heat stress, 7-day IMD-threshold outlook, land cover and risk score to `POST /api/heat-agent`. The server asks the Agent37 agent for a JSON Heat Action Protocol (actions with owner, deadline and priority; labour order; English and Hindi SMS; SDMA incident; assumptions), validates it, and returns it.
-4. **Never hangs:** "Use offline protocol now" appears while the agent works. If Agent37 is not configured, times out (50 s server, 65 s browser), errors, or replies with invalid JSON, the rule-based protocol is shown instead with an amber banner giving the reason. Agent output gets a green banner with the instance, time and cost.
+3. **Run AI Co-Pilot:** sends the city's temperature, humidity, heat stress, 7-day IMD-threshold outlook, land cover and risk score to `POST /api/heat-agent`. The server tries Agent37 first (if configured), then Gemini in JSON mode (up to 25 s per model, same model chain as AGNI), asking for a Heat Action Protocol (actions with owner, deadline and priority; labour order; English and Hindi SMS; SDMA incident; assumptions). The reply is validated and clamped before it reaches the page.
+4. **Never hangs:** "Use offline protocol now" appears while the AI works. If no engine is configured, both time out or fail, or neither returns valid JSON, the rule-based protocol is shown instead with an amber banner giving the reason. AI output gets a green banner naming the engine, model, time and tokens, and the Executive Brief footer says the same.
 5. **Simulated actions:** "Dispatch ward advisory", "Simulate SMS broadcast" (counts characters and SMS segments), "Log incident to SDMA". Each writes a time-stamped entry with a reference number (e.g. `SDMA-RJ-…`) to an action log kept in the browser. Nothing is sent anywhere, and the log says so.
 6. **Export Executive Heat Action Brief:** a printable one-page brief for the District Magistrate (situation, heat-stress numbers, 7-day forecast, actions table, labour order, SMS text, SDMA incident, action log, assumptions, data sources and who produced the plan).
 
@@ -271,7 +283,7 @@ Files: [src/components/HeatCoPilot.jsx](src/components/HeatCoPilot.jsx), [api/_l
 | COLD | current temperature < 10 °C |
 | ROUTINE | none of the above |
 
-The agent is told to use only the numbers it is given and never to invent ward names, population or facility counts, because the project holds none.
+The AI is told to use only the numbers it is given and never to invent ward names, population or facility counts, because the project holds none; in testing, Gemini listed what was missing under "assumptions" rather than guessing.
 
 ---
 
@@ -473,7 +485,7 @@ The Australian BoM WBGT shortcut was tested and rejected: it reads about 5 °C h
 | Route | Method | Purpose |
 |---|---|---|
 | `/api/ask-ai` | POST | AGNI: validates input, rate-limits, calls Gemini with a five-model fallback chain |
-| `/api/heat-agent` | GET / POST | GET: Agent37 status and wake-up ping. POST: run the Co-Pilot (6 runs per minute per visitor); always returns a plan, labelled agent or fallback |
+| `/api/heat-agent` | GET / POST | GET: which AI engine is available (Agent37 / Gemini). POST: run the Co-Pilot (6 runs per minute per visitor); always returns a plan, labelled `agent37`, `gemini` or `fallback` |
 | `/api/weather-history` | GET | `?city=&state=&days=` returns a city's archive series; `?runs=1` lists refresh runs |
 | `/api/refresh-weather-cache` | GET (cron) | Full cache refresh, commits to GitHub |
 | `/api/refresh-weather-cache-retry` | GET (cron) | Re-fetches only cities that failed |
@@ -484,12 +496,12 @@ In local development the Vite dev server serves `/api/ask-ai` and `/api/weather-
 
 | Variable | Needed for |
 |---|---|
-| `GEMINI_API_KEY` | AGNI |
+| `GEMINI_API_KEY` | AGNI and the AI Co-Pilot |
 | `GEMINI_MODELS` | Optional override of the model chain |
 | `CRON_SECRET` | Protecting the cron routes |
 | `GITHUB_TOKEN` | Letting the cron commit the refreshed cache |
 | `DATABASE_URL` | Optional Postgres mirror of the archive |
-| `AGENT37_API_KEY`, `AGENT37_INSTANCE_ID` | Agent37 Co-Pilot. Without them the Co-Pilot shows the labelled rule-based protocol |
+| `AGENT37_API_KEY`, `AGENT37_INSTANCE_ID` | Optional: puts an Agent37 instance in front of Gemini for the Co-Pilot. Not set in production |
 
 **Deployment:** Vercel (primary). A Netlify config exists but only wires up `/api/ask-ai`.
 
@@ -536,7 +548,7 @@ Run locally with `npm run dev` and no connection:
 |---|---|
 | Sign-in, map, colours and medians from the cached file | Live weather for a selected city (falls back to cached, labelled) |
 | MODIS, land cover, ML scorecard, planner, calculators, heat stress | AGNI (error bubble; templated fallback for heat questions) |
-| Co-Pilot offline protocol, simulated actions, Executive Brief | The Agent37 Co-Pilot itself (falls back to the offline protocol, labelled) |
+| Co-Pilot offline protocol, simulated actions, Executive Brief | The AI Co-Pilot itself (falls back to the offline protocol, labelled) |
 | 30-day trend (reads local snapshot files) | Building density ("unavailable") |
 | Checklist, exports, language switching | Rural baseline / UHI gap |
 | | Google Fonts (system fonts are used instead) |
@@ -596,7 +608,8 @@ Things a careful reviewer could find. None stops the site from running.
 | [src/utils/exportUtils.js](src/utils/exportUtils.js) | CSV, WhatsApp, printable report |
 | [src/utils/heatStress.js](src/utils/heatStress.js) | Heat Index, wet-bulb, WBGT, work/rest categories |
 | [src/utils/heatActionProtocol.js](src/utils/heatActionProtocol.js) | Activation levels, rule-based protocol, plan validation |
-| [src/components/HeatCoPilot.jsx](src/components/HeatCoPilot.jsx), [api/_lib/heatAgent.js](api/_lib/heatAgent.js) | Agent37 Co-Pilot (browser panel, server call) |
+| [src/components/HeatCoPilot.jsx](src/components/HeatCoPilot.jsx), [api/_lib/heatAgent.js](api/_lib/heatAgent.js) | AI Co-Pilot (browser panel; server tiers Agent37 → Gemini → rule-based) |
+| [src/components/CommandCenterHud.jsx](src/components/CommandCenterHud.jsx), [src/utils/hudOverlay.js](src/utils/hudOverlay.js) | Command Center HUD (full-screen map, docks, timeline scrubber, real-reading overlays) |
 | [src/i18n/](src/i18n/) | 11 language files |
 | [api/](api/) | Serverless routes and their shared code |
 | [scripts/](scripts/) | Data builders: weather refresh, MODIS, land cover, geocoding, ML training |

@@ -5157,8 +5157,9 @@ function App({ user }) {
                     full working for authorities, one plain-language line for citizens. */}
                 <HeatStressPanel liveWeather={liveWeather} city={selectedCity} simple={citizen} />
 
-                {/* AUTHORITY ONLY — Agent37 Heat Response Co-Pilot: agent-written Heat Action
-                    Protocol with a labelled rule-based fallback, simulated actions, exec brief. */}
+                {/* AUTHORITY ONLY — AI Heat Response Co-Pilot (Agent37 if an instance is configured,
+                    else Gemini): AI-written Heat Action Protocol with a labelled rule-based
+                    fallback, simulated actions, exec brief. */}
                 {!citizen && (
                   <AppErrorBoundary compact title="Co-Pilot could not be displayed">
                     <HeatCoPilot
