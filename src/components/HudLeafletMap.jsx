@@ -47,6 +47,8 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
   basemapRef.current = basemap
   const fillsRef = useRef(showFills)
   fillsRef.current = showFills
+  const selectedRef = useRef(selectedState)
+  selectedRef.current = selectedState
   dataRef.current = { stateData, resolveStateName, tooltipText, onStateClick }
 
   // ── create the map once ─────────────────────────────────────────────────
@@ -74,7 +76,13 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     const bind = (feature, layer) => {
       layer.on({
         mouseover: e => { e.target.setStyle({ weight: 2.5, color: '#f59e0b' }); e.target.bringToFront() },
-        mouseout: e => { e.target.setStyle(e.target.options.district ? districtStyle(feature) : style(feature)) },
+        // Restore the OUTLINE only — the fill is owned by restyle() (colours toggle, zoom fade),
+        // so resetting the whole style here would re-paint a state the user switched off.
+        mouseout: e => {
+          const name = dataRef.current.resolveStateName(feature)
+          if (e.target.options.district) e.target.setStyle({ color: '#0a1628', weight: 0.5, opacity: 0.6 })
+          else e.target.setStyle(name === selectedRef.current ? { color: '#22d3ee', weight: 2.5, opacity: 0.9 } : { color: '#ffffff', weight: 1.2, opacity: 0.9 })
+        },
         click: () => dataRef.current.onStateClick(dataRef.current.resolveStateName(feature))
       })
       layer.bindTooltip(() => dataRef.current.tooltipText(dataRef.current.resolveStateName(feature)), { sticky: true, direction: 'top', opacity: 0.95, className: 'hud-leaflet-tip' })
