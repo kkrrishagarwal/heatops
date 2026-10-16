@@ -6,8 +6,8 @@ import React, { useEffect, useRef } from 'react'
 // Data: every city in the bulk weather cache that has a live wind reading (Open-Meteo
 // wind_speed_10m km/h, wind_direction_10m ° meteorological = direction the wind blows FROM)
 // plus its temperature and PM10. Vectors are interpolated onto a screen grid by inverse-
-// distance weighting over the nearest stations. Where no station lies within ~4° (≈ 400 km)
-// the cell has NO DATA and particles are not drawn — nothing is invented. If the cache has
+// distance weighting over the nearest stations. Where no city reading lies within ~1.5°
+// (≈ 150 km) the cell has NO DATA and particles are not drawn — nothing is invented. If the cache has
 // no wind at all yet (first refresh after the field was added), the layer draws nothing and
 // the dock says so.
 //
@@ -19,7 +19,8 @@ import React, { useEffect, useRef } from 'react'
 // The animation pauses while the toggle is off, while the tab is hidden, and during a pan
 // or zoom (the grid is rebuilt when the map settles).
 const K_NEAREST = 8
-const MAX_RADIUS_DEG = 4
+const MAX_RADIUS_DEG = 4 // search ring for neighbours
+const MAX_NEAREST_DEG = 1.5 // a cell farther than this (~150 km) from any city has no data
 const CELL_PX = 14
 
 const compass16 = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
@@ -80,7 +81,7 @@ function interpolate(bins, lat, lon) {
   const cosLat = Math.cos((lat * Math.PI) / 180)
   let wsum = 0, u = 0, v = 0, t = 0, tw = 0, pm = 0, pmw = 0
   const near = found.map(s => { const dx = (s.lon - lon) * cosLat, dy = s.lat - lat; return { s, d2: dx * dx + dy * dy } }).sort((a, b) => a.d2 - b.d2).slice(0, K_NEAREST)
-  if (near[0].d2 > MAX_RADIUS_DEG * MAX_RADIUS_DEG) return null
+  if (near[0].d2 > MAX_NEAREST_DEG * MAX_NEAREST_DEG) return null
   for (const { s, d2 } of near) {
     const w = 1 / (d2 + 1e-4)
     wsum += w; u += s.u * w; v += s.v * w
@@ -140,7 +141,7 @@ export default function WindParticleCanvas({ mapCtl, stations, enabled = false, 
       ctx.globalCompositeOperation = 'source-over'
       ctx.lineWidth = 1.3
       ctx.lineCap = 'round'
-      const k = 0.045 * sp * zoomFactor()
+      const k = 0.09 * sp * zoomFactor()
       const pulse = 0.55 + 0.45 * Math.sin(t / 350)
       for (const p of st.particles) {
         const s = sample(p.x, p.y)
