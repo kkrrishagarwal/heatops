@@ -11,7 +11,8 @@ import { fetchJson } from '../utils/fetchJson'
 import { BASEMAPS, gibsSafeDate } from './SatelliteBasemap'
 import HudLeafletMap from './HudLeafletMap'
 import WindParticleCanvas, { windStations, describeProbe, compassOf, thermalColor } from './WindParticleCanvas'
-import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisNationalDayOverlay, lulcOverlay, stateDataFromPoints } from '../utils/hudOverlay'
+import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisNationalDayOverlay, lulcOverlay, stateDataFromPoints, builtUpColor } from '../utils/hudOverlay'
+import { buildDistrictHeat } from '../utils/districtHeat'
 
 // COMMAND CENTER — the map-centric "satellite HUD" layout for the Authority view: the India
 // map fills the viewport (rendered by App through renderMap so zoom/pan state stays in one
@@ -58,6 +59,7 @@ export default function CommandCenterHud({
   const [windMode, setWindMode] = useState('thermal') // thermal | stagnation
   const [windSpeedX, setWindSpeedX] = useState(1) // 1 | 2
   const [probe, setProbe] = useState(null)
+  const [districtFeatures, setDistrictFeatures] = useState(null)
   const stations = useMemo(() => windStations(liveCityCache, cityCoordsData), [liveCityCache, cityCoordsData]) // Live Pass: fill cloudy days from each city's last pass within 14 days
   const LOOKBACK_DAYS = 14 // state fills carry the data; dots are optional detail
   const pickedDefault = useRef(false)
@@ -119,6 +121,19 @@ export default function CommandCenterHud({
     return stateDataFromPoints({ base: liveIndiaData, points: overlay.points, buckets, kind: layer === 'lulc' ? 'builtUp' : 'heat', scrubLabel })
   }, [scrubbed, overlay, layer, mode, year, dateIdx, stateDates, composite, liveIndiaData, buckets])
 
+  // Per-district values from the active layer's points (semantic zoom). Buckets label each
+  // district with the same words the state badge uses.
+  const districtHeat = useMemo(() => {
+    if (!districtFeatures || !overlay?.points) return null
+    const isPct = layer === 'lulc'
+    const colorOf = v => (isPct ? builtUpColor(v) : colorFor(v))
+    const labelOf = v => (isPct ? `BUILT-UP ${Math.round(v)}%` : (buckets.find(b => v >= b.min)?.label || ''))
+    const dh = buildDistrictHeat({ features: districtFeatures, points: overlay.points, resolveState: resolveStateName, colorFor: colorOf })
+    for (const d of Object.values(dh)) if (d.value != null) d.label = labelOf(d.value)
+    dh.__unit = isPct ? '%' : '°C'
+    return dh
+  }, [districtFeatures, overlay, layer, resolveStateName, colorFor, buckets])
+
   const focus = useMemo(() => {
     const c = cityCoordsData?.[`${selectedCity}|${selectedState}`]
     return c && typeof c.lat === 'number' ? { lon: c.lon, lat: c.lat } : null
@@ -175,6 +190,9 @@ export default function CommandCenterHud({
           onZoomChange={setZoom}
           tooltipText={tooltipFor}
           controlRef={mapCtl}
+          districtHeat={districtHeat}
+          onDistrictClick={(c, st) => onSelectCity(c, st)}
+          onGeoLoaded={setDistrictFeatures}
         />
         <WindParticleCanvas mapCtl={mapCtl} stations={stations} enabled={wind && stations.length > 0} mode={windMode} speed={windSpeedX} lite={lite} onProbe={setProbe} />
       </div>

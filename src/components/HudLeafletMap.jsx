@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { fetchJson } from '../utils/fetchJson'
+import { districtKey, districtName } from '../utils/districtHeat'
 
 // Deep-zoom tile map for the Command Center (the classic screen keeps its SVG map). Leaflet,
 // no API key. Zoom 4 (all of India) → 19 (city blocks). Layers, bottom to top:
@@ -38,18 +39,23 @@ function loadGeo() {
   return geoCache
 }
 
-export default function HudLeafletMap({ stateData, resolveStateName, points = [], focus = null, basemap = 'dark', basemapDate = null, selectedState = null, onStateClick = () => {}, onZoomChange = () => {}, showDots = false, showFills = true, tooltipText = () => '', controlRef }) {
+export default function HudLeafletMap({ stateData, resolveStateName, points = [], focus = null, basemap = 'dark', basemapDate = null, selectedState = null, onStateClick = () => {}, onZoomChange = () => {}, showDots = false, showFills = true, tooltipText = () => '', controlRef, districtHeat = null, onDistrictClick = () => {}, onGeoLoaded = () => {}, detailZoom = 6 }) {
   const elRef = useRef(null)
   const mapRef = useRef(null)
   const layersRef = useRef({})
-  const dataRef = useRef({ stateData, resolveStateName, tooltipText, onStateClick })
+  const dataRef = useRef({ stateData, resolveStateName, tooltipText, onStateClick, districtHeat, onDistrictClick })
   const basemapRef = useRef(basemap)
   basemapRef.current = basemap
   const fillsRef = useRef(showFills)
   fillsRef.current = showFills
   const selectedRef = useRef(selectedState)
   selectedRef.current = selectedState
-  dataRef.current = { stateData, resolveStateName, tooltipText, onStateClick }
+  // Semantic zoom: per-district colours and crisp district borders once zoomed to z ≥ detailZoom
+  // or a state is selected; a clean state-level choropleth otherwise.
+  // National zoom: only the SELECTED state shows its districts; from detailZoom every state does.
+  const isDetail = () => { const m = mapRef.current; return !!(m && m.getZoom() >= detailZoom) }
+  const isDetailFor = (feature) => isDetail() || (!!selectedRef.current && dataRef.current.resolveStateName(feature) === selectedRef.current)
+  dataRef.current = { stateData, resolveStateName, tooltipText, onStateClick, districtHeat, onDistrictClick }
 
   // ── create the map once ─────────────────────────────────────────────────
   useEffect(() => {
@@ -84,17 +90,33 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     const districtStyle = (feature) => ({ ...style(feature), color: '#0a1628', weight: 0.5, opacity: 0.6, fillOpacity: 0.35 })
     const bind = (feature, layer) => {
       layer.on({
-        mouseover: e => { e.target.setStyle({ weight: 2.5, color: '#f59e0b' }); e.target.bringToFront() },
+        mouseover: e => {
+          if (isDetailFor(feature)) { e.target.setStyle({ weight: 2.5, color: '#f59e0b', opacity: 1 }); e.target.bringToFront() }
+          else { const sl = layersRef.current.stateByName?.get(dataRef.current.resolveStateName(feature)); if (sl) { sl.setStyle({ color: '#f59e0b', weight: 2.5 }); sl.bringToFront() } }
+        },
         // Restore the OUTLINE only — the fill is owned by restyle() (colours toggle, zoom fade),
         // so resetting the whole style here would re-paint a state the user switched off.
         mouseout: e => {
           const name = dataRef.current.resolveStateName(feature)
-          if (e.target.options.district) e.target.setStyle({ color: '#0a1628', weight: 0.5, opacity: 0.6 })
-          else e.target.setStyle(name === selectedRef.current ? { color: '#22d3ee', weight: 2.5, opacity: 0.9 } : { color: '#ffffff', weight: 1.2, opacity: 0.9 })
+          const sl = layersRef.current.stateByName?.get(name)
+          if (sl) sl.setStyle(name === selectedRef.current ? { color: '#38bdf8', weight: 3 } : { color: '#ffffff', weight: 1.2 })
+          if (e.target.options.district) { const det = isDetailFor(feature); e.target.setStyle({ color: '#0a1628', weight: det ? 0.8 : 0.5, opacity: det ? 0.65 : 0.12 }) }
+          else e.target.setStyle(name === selectedRef.current ? { color: '#38bdf8', weight: 3, opacity: 0.9 } : { color: '#ffffff', weight: 1.2, opacity: 0.9 })
         },
-        click: () => dataRef.current.onStateClick(dataRef.current.resolveStateName(feature))
+        click: () => {
+          const d = layer.options.district && isDetailFor(feature) ? dataRef.current.districtHeat?.[districtKey(feature)] : null
+          if (d?.city) dataRef.current.onDistrictClick(d.city, d.state)
+          else dataRef.current.onStateClick(dataRef.current.resolveStateName(feature))
+        }
       })
-      layer.bindTooltip(() => dataRef.current.tooltipText(dataRef.current.resolveStateName(feature)), { sticky: true, direction: 'top', opacity: 0.95, className: 'hud-leaflet-tip' })
+      layer.bindTooltip(() => {
+        const state = dataRef.current.resolveStateName(feature)
+        const d = layer.options.district && isDetailFor(feature) ? dataRef.current.districtHeat?.[districtKey(feature)] : null
+        if (!d) return dataRef.current.tooltipText(state)
+        const unit = dataRef.current.districtHeat.__unit || '°C'
+        const src = d.method === 'direct' ? `reading from ${d.city}` : d.method === 'nearest' ? `nearest cities: ${d.cities.join(', ')}` : 'no city reading within 150 km in this state'
+        return `<b>${districtName(feature)}</b>, ${state}<br>${d.value == null ? '<span class="t-muted">no reading</span>' : `<b>${d.value}${unit}</b>`} <span class="t-badge" style="background:${d.color}">${d.label || ''}</span><br><span class="t-muted">${src}</span>${d.city ? `<br><span class="t-muted">click to open ${d.city}</span>` : ''}`
+      }, { sticky: true, direction: 'top', opacity: 0.95, className: 'hud-leaflet-tip' })
     }
     loadGeo().then(([states, districts, jk]) => {
       if (mapRef.current !== map) return // this map was torn down (StrictMode double-mount) before the data arrived
@@ -103,8 +125,11 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
       const districtFeatures = { type: 'FeatureCollection', features: (districts.features || []).filter(f => !isJK(f)) }
       const jkFeatures = { type: 'FeatureCollection', features: (jk.features || []) }
       layersRef.current.districts = L.geoJSON(districtFeatures, { pane: 'vectors', style: districtStyle, onEachFeature: (f, l) => { l.options.district = true; bind(f, l) } }).addTo(map)
-      layersRef.current.states = L.geoJSON(stateFeatures, { pane: 'vectors', style: f => ({ ...style(f), fillOpacity: 0 }), onEachFeature: bind }).addTo(map)
-      layersRef.current.jk = L.geoJSON(jkFeatures, { pane: 'vectors', style, onEachFeature: bind }).addTo(map)
+      layersRef.current.states = L.geoJSON(stateFeatures, { pane: 'vectors', interactive: false, style: f => ({ ...style(f), fillOpacity: 0 }) }).addTo(map)
+      layersRef.current.stateByName = new Map()
+      layersRef.current.states.eachLayer(l => layersRef.current.stateByName.set(dataRef.current.resolveStateName(l.feature), l))
+      layersRef.current.jk = L.geoJSON(jkFeatures, { pane: 'vectors', style, onEachFeature: (f, l) => { l.options.district = true; bind(f, l) } }).addTo(map)
+      onGeoLoaded([...districtFeatures.features, ...jkFeatures.features])
       restyle()
     }).catch(err => console.warn('[HudLeafletMap] geo load failed:', err?.message))
 
@@ -123,11 +148,13 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     const z = map ? map.getZoom() : 5
     const fade = z <= 8 ? 1 : z >= 14 ? 0.3 : 1 - ((z - 8) / 6) * 0.7
     const base = fillsRef.current ? (basemapRef.current === 'dark' ? 0.55 : 0.4) : 0
-    districts?.eachLayer(l => l.setStyle({ fillColor: colorOf(l.feature), fillOpacity: base * 0.8 * fade }))
-    jk?.eachLayer(l => l.setStyle({ fillColor: colorOf(l.feature), fillOpacity: base * fade }))
-    states?.eachLayer(l => l.setStyle({ color: dataRef.current.resolveStateName(l.feature) === selectedState ? '#22d3ee' : '#ffffff', weight: dataRef.current.resolveStateName(l.feature) === selectedState ? 2.5 : 1.2 }))
+    const dh = dataRef.current.districtHeat
+    const distColor = (f, det) => (det && dh?.[districtKey(f)] ? dh[districtKey(f)].color : colorOf(f))
+    districts?.eachLayer(l => { const det = isDetailFor(l.feature); l.setStyle({ fillColor: distColor(l.feature, det), fillOpacity: base * 0.85 * fade, opacity: det ? 0.65 : 0.12, weight: det ? 0.8 : 0.5 }) })
+    jk?.eachLayer(l => { const det = isDetailFor(l.feature); l.setStyle({ fillColor: distColor(l.feature, det), fillOpacity: base * fade, opacity: det ? 0.65 : 0.12, weight: det ? 0.8 : 0.5 }) })
+    states?.eachLayer(l => l.setStyle({ color: dataRef.current.resolveStateName(l.feature) === selectedState ? '#38bdf8' : '#ffffff', weight: dataRef.current.resolveStateName(l.feature) === selectedState ? 3 : 1.2 }))
   }
-  useEffect(() => { restyle() }, [stateData, selectedState, showFills]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { restyle() }, [stateData, selectedState, showFills, districtHeat]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── base + reference tiles ──────────────────────────────────────────────
   useEffect(() => {
