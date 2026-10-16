@@ -51,7 +51,8 @@ export default function CommandCenterHud({
   const [showGridNote, setShowGridNote] = useState(false)
   const [showDots, setShowDots] = useState(false)
   const [basemap, setBasemap] = useState('dark') // dark | esri (Google-style imagery) | gibs (NASA daily true colour)
-  const [composite, setComposite] = useState(true) // Live Pass: fill cloudy days from each city's last pass within 14 days
+  const [composite, setComposite] = useState(true)
+  const [showFills, setShowFills] = useState(true) // heat colours on the map; off = borders only // Live Pass: fill cloudy days from each city's last pass within 14 days
   const LOOKBACK_DAYS = 14 // state fills carry the data; dots are optional detail
   const pickedDefault = useRef(false)
 
@@ -159,6 +160,7 @@ export default function CommandCenterHud({
           resolveStateName={resolveStateName}
           points={overlay?.points || []}
           showDots={showDots && !lite}
+          showFills={showFills}
           focus={focus}
           basemap={basemap}
           basemapDate={basemap === 'gibs' ? gibsSafeDate(mode === 'live' && layer === 'modis' && dateIdx >= 0 ? stateDates[dateIdx] : null) : null}
@@ -217,6 +219,10 @@ export default function CommandCenterHud({
           ))}
         </div>
         {basemap === 'gibs' && <div className="mb-2 text-[10px] text-slate-400">Showing NASA's true-colour image of {gibsSafeDate(mode === 'live' && layer === 'modis' && dateIdx >= 0 ? stateDates[dateIdx] : null)} — in Live Pass, the picture follows the date you scrub.</div>}
+        <label className="mb-1 flex cursor-pointer items-center gap-2 text-[11px] text-slate-300">
+          <input type="checkbox" data-testid="toggle-fills" checked={showFills} onChange={e => setShowFills(e.target.checked)} className="accent-amber-400" />
+          Heat colours on the map {showFills ? '' : '(off — borders only)'}
+        </label>
         <label className="mb-2 flex cursor-pointer items-center gap-2 text-[11px] text-slate-300">
           <input type="checkbox" data-testid="toggle-dots" checked={showDots} onChange={e => setShowDots(e.target.checked)} className="accent-amber-400" />
           Show city dots ({overlay?.count ?? 0})

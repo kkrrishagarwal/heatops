@@ -38,13 +38,15 @@ function loadGeo() {
   return geoCache
 }
 
-export default function HudLeafletMap({ stateData, resolveStateName, points = [], focus = null, basemap = 'dark', basemapDate = null, selectedState = null, onStateClick = () => {}, onZoomChange = () => {}, showDots = false, tooltipText = () => '', controlRef }) {
+export default function HudLeafletMap({ stateData, resolveStateName, points = [], focus = null, basemap = 'dark', basemapDate = null, selectedState = null, onStateClick = () => {}, onZoomChange = () => {}, showDots = false, showFills = true, tooltipText = () => '', controlRef }) {
   const elRef = useRef(null)
   const mapRef = useRef(null)
   const layersRef = useRef({})
   const dataRef = useRef({ stateData, resolveStateName, tooltipText, onStateClick })
   const basemapRef = useRef(basemap)
   basemapRef.current = basemap
+  const fillsRef = useRef(showFills)
+  fillsRef.current = showFills
   dataRef.current = { stateData, resolveStateName, tooltipText, onStateClick }
 
   // ── create the map once ─────────────────────────────────────────────────
@@ -103,12 +105,12 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     // roads, so it fades from full strength at z8 to a light wash by z14.
     const z = map ? map.getZoom() : 5
     const fade = z <= 8 ? 1 : z >= 14 ? 0.3 : 1 - ((z - 8) / 6) * 0.7
-    const base = basemapRef.current === 'dark' ? 0.55 : 0.4
+    const base = fillsRef.current ? (basemapRef.current === 'dark' ? 0.55 : 0.4) : 0
     districts?.eachLayer(l => l.setStyle({ fillColor: colorOf(l.feature), fillOpacity: base * 0.8 * fade }))
     jk?.eachLayer(l => l.setStyle({ fillColor: colorOf(l.feature), fillOpacity: base * fade }))
     states?.eachLayer(l => l.setStyle({ color: dataRef.current.resolveStateName(l.feature) === selectedState ? '#22d3ee' : '#ffffff', weight: dataRef.current.resolveStateName(l.feature) === selectedState ? 2.5 : 1.2 }))
   }
-  useEffect(() => { restyle() }, [stateData, selectedState]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { restyle() }, [stateData, selectedState, showFills]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── base + reference tiles ──────────────────────────────────────────────
   useEffect(() => {
