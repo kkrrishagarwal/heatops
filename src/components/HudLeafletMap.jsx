@@ -62,7 +62,16 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     const panes = { base: 100, ref: 350, vectors: 400, points: 450 }
     for (const [name, z] of Object.entries(panes)) { map.createPane(name); map.getPane(name).style.zIndex = String(z) }
     map.on('zoomend', () => { onZoomChange(map.getZoom()); restyle() })
-    if (controlRef) controlRef.current = { zoomIn: () => map.zoomIn(1), zoomOut: () => map.zoomOut(1), reset: () => map.fitBounds(INDIA_BOUNDS, { padding: [10, 10] }), flyTo: (lat, lon, z = 11) => map.flyTo([lat, lon], z, { duration: 1.2 }), getZoom: () => map.getZoom() }
+    if (controlRef) controlRef.current = {
+      zoomIn: () => map.zoomIn(1), zoomOut: () => map.zoomOut(1), reset: () => map.fitBounds(INDIA_BOUNDS, { padding: [10, 10] }), flyTo: (lat, lon, z = 11) => map.flyTo([lat, lon], z, { duration: 1.2 }), getZoom: () => map.getZoom(),
+      // for overlays drawn in screen space (wind particles): geo ↔ container pixels, size, and
+      // a way to follow pans/zooms
+      project: (lat, lon) => { const p = map.latLngToContainerPoint([lat, lon]); return [p.x, p.y] },
+      unproject: (x, y) => { const ll = map.containerPointToLatLng([x, y]); return [ll.lat, ll.lng] },
+      getSize: () => { const sz = map.getSize(); return [sz.x, sz.y] },
+      on: (evt, fn) => { map.on(evt, fn); return () => map.off(evt, fn) },
+      getContainer: () => map.getContainer()
+    }
     onZoomChange(map.getZoom())
 
     // vector layers

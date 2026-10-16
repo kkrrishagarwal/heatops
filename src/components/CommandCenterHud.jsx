@@ -10,6 +10,7 @@ import { loadModisIndex } from '../utils/modisLst'
 import { fetchJson } from '../utils/fetchJson'
 import { BASEMAPS, gibsSafeDate } from './SatelliteBasemap'
 import HudLeafletMap from './HudLeafletMap'
+import WindParticleCanvas, { windStations, describeProbe, compassOf, thermalColor } from './WindParticleCanvas'
 import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisNationalDayOverlay, lulcOverlay, stateDataFromPoints } from '../utils/hudOverlay'
 
 // COMMAND CENTER — the map-centric "satellite HUD" layout for the Authority view: the India
@@ -52,7 +53,12 @@ export default function CommandCenterHud({
   const [showDots, setShowDots] = useState(false)
   const [basemap, setBasemap] = useState('dark') // dark | esri (Google-style imagery) | gibs (NASA daily true colour)
   const [composite, setComposite] = useState(true)
-  const [showFills, setShowFills] = useState(true) // heat colours on the map; off = borders only // Live Pass: fill cloudy days from each city's last pass within 14 days
+  const [showFills, setShowFills] = useState(true) // heat colours on the map; off = borders only
+  const [wind, setWind] = useState(false) // Windy-style particle layer
+  const [windMode, setWindMode] = useState('thermal') // thermal | stagnation
+  const [windSpeedX, setWindSpeedX] = useState(1) // 1 | 2
+  const [probe, setProbe] = useState(null)
+  const stations = useMemo(() => windStations(liveCityCache, cityCoordsData), [liveCityCache, cityCoordsData]) // Live Pass: fill cloudy days from each city's last pass within 14 days
   const LOOKBACK_DAYS = 14 // state fills carry the data; dots are optional detail
   const pickedDefault = useRef(false)
 
@@ -170,7 +176,15 @@ export default function CommandCenterHud({
           tooltipText={tooltipFor}
           controlRef={mapCtl}
         />
+        <WindParticleCanvas mapCtl={mapCtl} stations={stations} enabled={wind && stations.length > 0} mode={windMode} speed={windSpeedX} lite={lite} onProbe={setProbe} />
       </div>
+      {wind && probe && (() => { const d = describeProbe(probe); return (
+        <div data-testid="wind-probe" className="pointer-events-none fixed z-20 rounded-lg border border-sky-500/40 bg-slate-950/90 px-3 py-2 text-[11px] text-slate-100 shadow-xl backdrop-blur-md" style={{ left: Math.min(probe.clientX + 16, window.innerWidth - 270), top: Math.min(probe.clientY + 16, window.innerHeight - 90) }}>
+          <div><span className="text-slate-400">Wind vector:</span> <b>{Math.round(probe.speed)} km/h {compassOf(probe.dir)} ({Math.round(probe.dir)}°)</b>{probe.temp != null && <> · <span style={{ color: thermalColor(probe.temp) }}>{probe.temp.toFixed(1)}°C</span></>}</div>
+          <div><span className="text-slate-400">Advective heat load:</span> {d.heatLoad}</div>
+          <div><span className="text-slate-400">Ventilation index:</span> {d.ventilation}</div>
+          <div className="text-[9px] text-slate-500">interpolated from the nearest city readings · heuristic labels</div>
+        </div>) })()}
 
       {/* ZOOM CONTROLS — top of the map, just left of the right dock (the left dock runs full height) */}
       <div className="absolute top-20 right-[26rem] z-10 flex flex-col gap-1" data-testid="hud-zoom">
@@ -217,6 +231,27 @@ export default function CommandCenterHud({
           {Object.entries(BASEMAPS).map(([k, v]) => (
             <button key={k} type="button" data-testid={`basemap-${k}`} className={basemap === k ? BTN_ON : BTN} onClick={() => setBasemap(k)} title={v.attribution || 'Plain dark surface'}>{v.label}</button>
           ))}
+        </div>
+        <div className="mb-2 rounded-md border border-sky-500/20 bg-slate-900/50 p-2">
+          <label className="flex cursor-pointer items-center gap-2 text-[11px] text-slate-200">
+            <input type="checkbox" data-testid="toggle-wind" checked={wind} onChange={e => setWind(e.target.checked)} className="accent-amber-400" />
+            🌬️ Live wind &amp; heat advection flow
+          </label>
+          {wind && (
+            <>
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                {[['thermal', 'Thermal wind'], ['stagnation', 'Stagnation zones']].map(([k, v]) => <button key={k} type="button" data-testid={`wind-${k}`} className={windMode === k ? BTN_ON : BTN} onClick={() => setWindMode(k)}>{v}</button>)}
+                <span className="ml-auto flex gap-1">{[1, 2].map(x => <button key={x} type="button" data-testid={`wind-speed-${x}`} className={windSpeedX === x ? BTN_ON : BTN} onClick={() => setWindSpeedX(x)}>{x}×</button>)}</span>
+              </div>
+              <div className="mt-1.5 text-[10px] leading-snug text-slate-400">
+                {stations.length === 0
+                  ? 'No wind readings in the cache yet — they arrive with the next weather refresh.'
+                  : windMode === 'thermal'
+                    ? <>Particles follow Open-Meteo 10 m wind from {stations.length} cities, coloured by the air they carry: <span style={{ color: '#38bdf8' }}>■</span> &lt;30 <span style={{ color: '#fbbf24' }}>■</span> 30–38 <span style={{ color: '#f97316' }}>■</span> 38–44 <span style={{ color: '#ef4444' }}>■</span> ≥44 °C. Hover the map for a wind probe.</>
+                    : <>Magenta = wind under 6 km/h where air is above 40 °C or PM10 above 150 µg/m³ — heat and dust the wind is not clearing. {stations.length} cities.</>}
+              </div>
+            </>
+          )}
         </div>
         {basemap === 'gibs' && <div className="mb-2 text-[10px] text-slate-400">Showing NASA's true-colour image of {gibsSafeDate(mode === 'live' && layer === 'modis' && dateIdx >= 0 ? stateDates[dateIdx] : null)} — in Live Pass, the picture follows the date you scrub.</div>}
         <label className="mb-1 flex cursor-pointer items-center gap-2 text-[11px] text-slate-300">
