@@ -9,6 +9,7 @@ import { assessHeatStress } from '../utils/heatStress'
 import { loadModisIndex } from '../utils/modisLst'
 import { fetchJson } from '../utils/fetchJson'
 import { BASEMAPS, gibsSafeDate } from './SatelliteBasemap'
+import HudLeafletMap from './HudLeafletMap'
 import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisNationalDayOverlay, lulcOverlay, stateDataFromPoints } from '../utils/hudOverlay'
 
 // COMMAND CENTER — the map-centric "satellite HUD" layout for the Authority view: the India
@@ -29,11 +30,13 @@ function istNow() {
 }
 
 export default function CommandCenterHud({
-  renderMap, liveIndiaData, liveCityCache, cityCoordsData, lulcReal, liveWeather,
+  liveIndiaData, resolveStateName, onStateClick, liveCityCache, cityCoordsData, lulcReal, liveWeather,
   selectedState, selectedCity, onSelectCity, allCities = [], colorFor, buckets = [], isCoastal = false,
   cacheStatus, cacheStale = false, cacheAgeLabel, audience, onAudienceChange, onOpenClassic, onOpenDashboard, onLogout, userName,
-  teamId = 'B26-0322', lite = false, zoom = 1, onZoom = () => {}
+  teamId = 'B26-0322', lite = false
 }) {
+  const mapCtl = useRef(null)
+  const [zoom, setZoom] = useState(5)
   const [layer, setLayer] = useState('air')
   const [mode, setMode] = useState('live')
   const [year, setYear] = useState(MODIS_YEAR_MAX)
@@ -118,6 +121,19 @@ export default function CommandCenterHud({
   const copilotInput = useMemo(() => buildCopilotInput({ city: selectedCity, state: selectedState, liveWeather, lulcReal, cityCoordsData, isCoastal }), [selectedCity, selectedState, liveWeather, lulcReal, cityCoordsData, isCoastal])
   const act = useMemo(() => activationLevel(copilotInput), [copilotInput])
   const lvl = LEVELS[act.level]
+
+  // Tooltip for a state polygon on the Leaflet map — same facts as the classic tooltip.
+  const tooltipFor = (name) => {
+    const d = (stateData || liveIndiaData)?.[name]
+    if (!name) return ''
+    if (!d) return `<b>${name}</b><br><span class="t-muted">no data</span>`
+    const rb = d.riskBucket
+    const head = d.scrub
+      ? `${d.scrub.unit === '%' ? 'Built-up' : 'Surface / air'}: <b>${d.heatIndex == null ? '—' : `${d.heatIndex}${d.scrub.unit || '°C'}`}</b><br><span class="t-muted">${d.scrub.label} — ${d.scrub.detail}</span>`
+      : `Heat index: <b>${d.heatIndex ?? '—'}°C</b><br><span class="t-muted">${d.heatIndexLive ? `live median of ${d.liveCityCount} cities` : 'estimated — no live city data yet'}</span>`
+    const why = rb ? (d.scrub ? (rb.count ? `${rb.count} of ${d.liveCityCount} cities are ${rb.label}` : 'grey = no reading in this layer') : rb.relative ? `rank today: hotter than ${rb.percentile}% of states` : `${rb.count} of ${d.liveCityCount} cities are ${rb.label}`) : ''
+    return `<b>${name}</b><br>${head}<br><span class="t-badge" style="background:${rb?.color || '#334155'}">${rb?.label || '—'}</span> <span class="t-muted">${why}</span><br><span class="t-muted">click to select · ◎ flies to the city</span>`
+  }
   const stress = useMemo(() => assessHeatStress(liveWeather), [liveWeather])
   const temp = typeof liveWeather?.current?.temp === 'number' ? liveWeather.current.temp : null
   const stateMedian = liveIndiaData?.[selectedState]?.heatIndexLive ? liveIndiaData[selectedState].heatIndex : null
@@ -137,15 +153,30 @@ export default function CommandCenterHud({
   return (
     <div data-screen="hud" className="fixed inset-0 h-screen w-screen overflow-hidden bg-[#050b18] text-slate-100">
       {/* MAP — full viewport, owned by App (zoom / pan / click state lives there) */}
-      <div className="absolute inset-0 z-0 hud-map">{renderMap({ ...overlay, points: showDots ? overlay?.points : [], focus, stateData, basemap, basemapDate: basemap === 'gibs' ? gibsSafeDate(mode === 'live' && layer === 'modis' && dateIdx >= 0 ? stateDates[dateIdx] : null) : null })}</div>
-      {basemap !== 'dark' && <div className="absolute bottom-2 left-3 z-10 text-[9px] text-slate-400" data-testid="basemap-attribution">{BASEMAPS[basemap].attribution}</div>}
+      <div className="absolute inset-0 z-0 hud-map">
+        <HudLeafletMap
+          stateData={stateData || liveIndiaData}
+          resolveStateName={resolveStateName}
+          points={overlay?.points || []}
+          showDots={showDots && !lite}
+          focus={focus}
+          basemap={basemap}
+          basemapDate={basemap === 'gibs' ? gibsSafeDate(mode === 'live' && layer === 'modis' && dateIdx >= 0 ? stateDates[dateIdx] : null) : null}
+          selectedState={selectedState}
+          onStateClick={onStateClick}
+          onZoomChange={setZoom}
+          tooltipText={tooltipFor}
+          controlRef={mapCtl}
+        />
+      </div>
 
       {/* ZOOM CONTROLS — top of the map, just left of the right dock (the left dock runs full height) */}
       <div className="absolute top-20 right-[26rem] z-10 flex flex-col gap-1" data-testid="hud-zoom">
-        <button type="button" aria-label="Zoom in" title="Zoom in (or scroll)" onClick={() => onZoom(1)} disabled={zoom >= 5} className="h-9 w-9 rounded-md border border-slate-600 bg-slate-950/85 text-lg font-bold text-slate-100 backdrop-blur-md hover:border-amber-400 hover:text-amber-300 disabled:opacity-40">+</button>
-        <button type="button" aria-label="Zoom out" title="Zoom out" onClick={() => onZoom(-1)} disabled={zoom <= 1} className="h-9 w-9 rounded-md border border-slate-600 bg-slate-950/85 text-lg font-bold text-slate-100 backdrop-blur-md hover:border-amber-400 hover:text-amber-300 disabled:opacity-40">−</button>
-        <button type="button" aria-label="Reset zoom" title="Fit India to the screen" onClick={() => onZoom(0)} className="h-9 w-9 rounded-md border border-slate-600 bg-slate-950/85 text-sm font-bold text-slate-100 backdrop-blur-md hover:border-amber-400 hover:text-amber-300">↺</button>
-        <div className="text-center text-[9px] text-slate-400">{zoom.toFixed(1)}×</div>
+        <button type="button" aria-label="Zoom in" title="Zoom in (or scroll)" onClick={() => mapCtl.current?.zoomIn()} disabled={zoom >= 19} className="h-9 w-9 rounded-md border border-slate-600 bg-slate-950/85 text-lg font-bold text-slate-100 backdrop-blur-md hover:border-amber-400 hover:text-amber-300 disabled:opacity-40">+</button>
+        <button type="button" aria-label="Zoom out" title="Zoom out" onClick={() => mapCtl.current?.zoomOut()} disabled={zoom <= 4} className="h-9 w-9 rounded-md border border-slate-600 bg-slate-950/85 text-lg font-bold text-slate-100 backdrop-blur-md hover:border-amber-400 hover:text-amber-300 disabled:opacity-40">−</button>
+        <button type="button" aria-label="Reset zoom" title="Fit India to the screen" onClick={() => mapCtl.current?.reset()} className="h-9 w-9 rounded-md border border-slate-600 bg-slate-950/85 text-sm font-bold text-slate-100 backdrop-blur-md hover:border-amber-400 hover:text-amber-300">↺</button>
+        <button type="button" aria-label="Fly to city" title="Fly to the selected city (street level)" onClick={() => focus && mapCtl.current?.flyTo(focus.lat, focus.lon, 13)} disabled={!focus} className="h-9 w-9 rounded-md border border-slate-600 bg-slate-950/85 text-sm font-bold text-slate-100 backdrop-blur-md hover:border-amber-400 hover:text-amber-300 disabled:opacity-40">◎</button>
+        <div className="text-center text-[9px] text-slate-400">z{zoom.toFixed(1)}</div>
       </div>
 
       {/* TOP BAR */}
@@ -205,7 +236,7 @@ export default function CommandCenterHud({
             <ul className="absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-y-auto rounded-md border border-slate-700 bg-slate-950 shadow-xl">
               {results.map(r => (
                 <li key={`${r.city}|${r.state}`}>
-                  <button type="button" className="flex w-full justify-between px-2.5 py-1.5 text-left text-xs hover:bg-slate-800" onClick={() => { onSelectCity(r.city, r.state); setQuery('') }}>
+                  <button type="button" className="flex w-full justify-between px-2.5 py-1.5 text-left text-xs hover:bg-slate-800" onClick={() => { onSelectCity(r.city, r.state); setQuery(''); const c = cityCoordsData?.[`${r.city}|${r.state}`]; if (c && typeof c.lat === 'number') setTimeout(() => mapCtl.current?.flyTo(c.lat, c.lon, 9), 50) }}>
                     <span className="font-semibold">{r.city}</span><span className="text-slate-500">{r.state}</span>
                   </button>
                 </li>

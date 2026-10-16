@@ -3955,41 +3955,10 @@ function App({ user }) {
   if (resolvedScreen === 'hud' && !hudAvailable) setTimeout(() => setScreen('map'), 0)
 
   if (resolvedScreen === 'hud' && hudAvailable) {
-    const mapHandlers = {
-      onWheel: (e) => { e.preventDefault(); const delta = e.deltaY > 0 ? -0.15 : 0.15; setMapScale(prev => { const next = Math.min(Math.max(prev + delta, 1), 5); if (next === 1 && prev !== 1) setMapPos({ x: 0, y: 0 }); return next }) },
-      onMouseDown: (e) => { setIsDragging(true); setDragStart({ x: e.clientX - mapPos.x, y: e.clientY - mapPos.y }) },
-      onMouseMove: (e) => { if (!isDragging) return; const next = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }; liveMapPosRef.current = next; if (mapTransformRef.current) mapTransformRef.current.style.transform = `translate(${next.x}px, ${next.y}px) scale(${mapScale * 0.8})` },
-      onMouseUp: () => { if (isDragging) setMapPos(liveMapPosRef.current); setIsDragging(false) },
-      onMouseLeave: () => { if (isDragging) setMapPos(liveMapPosRef.current); setIsDragging(false) }
-    }
     return (
       <CommandCenterHud
-        renderMap={(overlay) => (
-          <div {...mapHandlers} className={overlay?.basemap && overlay.basemap !== 'dark' ? 'has-basemap' : ''} style={{ position: 'absolute', inset: 0, cursor: isDragging ? 'grabbing' : 'grab', overflow: 'hidden' }}>
-            <div ref={mapTransformRef} style={{ position: 'absolute', inset: '56px 0 0 0', transform: `translate(${mapPos.x}px, ${mapPos.y}px) scale(${mapScale * 0.8})`, transformOrigin: 'center 40%', transition: isDragging ? 'none' : 'transform 0.2s ease' }}>
-              <AppErrorBoundary compact title="Map could not be displayed">
-                <IndiaMap
-                  INDIA_DATA={overlay?.stateData || liveIndiaData}
-                  selectedState={selectedState}
-                  lite={lite}
-                  onStateClick={handleStateClick}
-                  plannerMarkers={plannerMarkers}
-                  onPlannerMarkerClick={(city) => { setPlannerFocusCity(city) }}
-                  scale={1}
-                  pos={{ x: 0, y: 0 }}
-                  isDragging={isDragging}
-                  cacheStatus={liveCacheStatus === 'error' ? 'error' : 'ready'}
-                  cacheStale={false}
-                  cacheAgeLabel={formatAgo(cacheLastUpdated)}
-                  audience={audience}
-                  overlay={overlay}
-                  basemap={{ source: overlay?.basemap || 'dark', date: overlay?.basemapDate, zoom: mapScale * 0.8 }}
-                  portalTooltip
-                />
-              </AppErrorBoundary>
-            </div>
-          </div>
-        )}
+        resolveStateName={(feature) => fixStateName(getRawName(feature))}
+        onStateClick={handleStateClick}
         liveIndiaData={liveIndiaData}
         liveCityCache={liveCityCache}
         cityCoordsData={cityCoordsData}
@@ -4012,8 +3981,6 @@ function App({ user }) {
         onLogout={() => { setUserName(''); setUserEmail(''); setScreen('signin') }}
         userName={userName}
         lite={lite}
-        zoom={mapScale}
-        onZoom={(dir) => { if (dir === 0) { setMapScale(1); setMapPos({ x: 0, y: 0 }); return } setMapScale(prev => { const next = Math.min(Math.max(prev + dir * 0.5, 1), 5); if (next === 1 && prev !== 1) setMapPos({ x: 0, y: 0 }); return next }) }}
       />
     )
   }
