@@ -45,7 +45,9 @@ export default function CommandCenterHud({
   const [query, setQuery] = useState('')
   const [clock, setClock] = useState(istNow)
   const [showGridNote, setShowGridNote] = useState(false)
-  const [showDots, setShowDots] = useState(false) // state fills carry the data; dots are optional detail
+  const [showDots, setShowDots] = useState(false)
+  const [composite, setComposite] = useState(true) // Live Pass: fill cloudy days from each city's last pass within 14 days
+  const LOOKBACK_DAYS = 14 // state fills carry the data; dots are optional detail
   const pickedDefault = useRef(false)
 
   useEffect(() => { const id = setInterval(() => setClock(istNow()), 30000); return () => clearInterval(id) }, [])
@@ -87,11 +89,11 @@ export default function CommandCenterHud({
     if (layer === 'modis') {
       if (!modisIndex) return { points: [], count: 0, caption: modisErr ? 'MODIS index unavailable' : 'Loading NASA MODIS index…' }
       if (mode === 'historical') return yearly ? modisYearOverlay({ yearly, coords: cityCoordsData, colorFor, year }) : { points: [], count: 0, caption: 'Loading MODIS yearly peaks…' }
-      if (mode === 'live' && daily && dateIdx >= 0 && stateDates[dateIdx]) return modisNationalDayOverlay({ daily, coords: cityCoordsData, colorFor, dateIdx })
+      if (mode === 'live' && daily && dateIdx >= 0 && stateDates[dateIdx]) return modisNationalDayOverlay({ daily, coords: cityCoordsData, colorFor, dateIdx, lookbackDays: composite ? LOOKBACK_DAYS : 0 })
       return modisLatestOverlay({ modisIndex, coords: cityCoordsData, colorFor })
     }
     return airOverlay({ liveCityCache, coords: cityCoordsData, colorFor, field: mode === 'forecast' ? 'tempMax' : 'temp' })
-  }, [lite, layer, mode, year, dateIdx, stateDates, daily, modisIndex, modisErr, yearly, lulcReal, liveCityCache, cityCoordsData, colorFor])
+  }, [lite, layer, mode, year, dateIdx, stateDates, daily, composite, modisIndex, modisErr, yearly, lulcReal, liveCityCache, cityCoordsData, colorFor])
 
   // State fills follow the scrubber: everything except "live air temperature" (which is the
   // map's own live colouring already) re-colours the states from the points on screen.
@@ -101,9 +103,9 @@ export default function CommandCenterHud({
     const scrubLabel = layer === 'lulc' ? 'ESA WorldCover 2021 built-up share'
       : mode === 'historical' ? `NASA MODIS ${year} Apr–Jun mean surface temperature`
       : mode === 'forecast' ? "Today's forecast high (Open-Meteo)"
-      : dateIdx >= 0 && stateDates[dateIdx] ? `NASA MODIS day pass, ${stateDates[dateIdx]} (all India)` : 'NASA MODIS latest clear-sky day pass'
+      : dateIdx >= 0 && stateDates[dateIdx] ? (composite ? `NASA MODIS ${LOOKBACK_DAYS}-day composite ending ${stateDates[dateIdx]}` : `NASA MODIS day pass, ${stateDates[dateIdx]} (all India)`) : 'NASA MODIS latest clear-sky day pass'
     return stateDataFromPoints({ base: liveIndiaData, points: overlay.points, buckets, kind: layer === 'lulc' ? 'builtUp' : 'heat', scrubLabel })
-  }, [scrubbed, overlay, layer, mode, year, dateIdx, stateDates, liveIndiaData, buckets])
+  }, [scrubbed, overlay, layer, mode, year, dateIdx, stateDates, composite, liveIndiaData, buckets])
 
   const focus = useMemo(() => {
     const c = cityCoordsData?.[`${selectedCity}|${selectedState}`]
@@ -268,6 +270,10 @@ export default function CommandCenterHud({
               <>
                 <input type="range" min={-1} max={stateDates.length - 1} value={dateIdx} onChange={e => setDateIdx(Number(e.target.value))} className="w-full accent-amber-400" data-testid="scrub-date" />
                 <div className="mt-1 flex justify-between text-[10px] text-slate-400"><span>{stateDates[0]}</span><span className="text-sm font-extrabold text-amber-300">{dateIdx < 0 ? 'Latest pass per city (all India)' : `All India · ${stateDates[dateIdx]}`}</span><span>{stateDates[stateDates.length - 1]}</span></div>
+                <label className="mt-1 flex cursor-pointer items-center gap-2 text-[10px] text-slate-300">
+                  <input type="checkbox" data-testid="toggle-composite" checked={composite} onChange={e => setComposite(e.target.checked)} className="accent-amber-400" />
+                  Fill cloudy days from each city's last clear-sky pass (≤ {LOOKBACK_DAYS} days) — off shows the exact day only
+                </label>
               </>
             ) : (
               <div className="h-5 text-[10px] text-slate-500">{layer === 'modis' ? (daily ? 'No daily passes available.' : 'Loading daily satellite passes for all of India…') : 'Switch the layer to Surface temperature to scrub daily satellite passes.'}</div>

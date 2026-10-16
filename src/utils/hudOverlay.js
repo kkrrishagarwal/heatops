@@ -161,17 +161,25 @@ export function stateDataFromPoints({ base, points, buckets, kind = 'heat', scru
 
 // ── MODIS daily pass, whole country (daily-national.json, built by
 //    scripts/buildModisDailyNational.mjs) ────────────────────────────────────
-export function modisNationalDayOverlay({ daily, coords, colorFor, dateIdx }) {
+export function modisNationalDayOverlay({ daily, coords, colorFor, dateIdx, lookbackDays = 0 }) {
   const date = daily?.dates?.[dateIdx]
   const points = []
-  let total = 0
+  let total = 0, sameDay = 0, filled = 0
   for (const [key, vals] of Object.entries(daily?.cities || {})) {
     total++
-    const v = num(vals?.[dateIdx])
+    let v = num(vals?.[dateIdx]); let back = 0
+    // Composite: fall back to the most recent clear-sky pass within the look-back window.
+    if (v == null && lookbackDays > 0) {
+      for (let k = 1; k <= lookbackDays && dateIdx - k >= 0; k++) { const u = num(vals?.[dateIdx - k]); if (u != null) { v = u; back = k; break } }
+    }
     const xy = coordFor(coords, key)
     if (v == null || !xy) continue
+    if (back) filled++; else sameDay++
     const [city] = key.split('|')
-    points.push({ key, ...xy, value: v, color: colorFor(v), r: 2.6, label: `${city}: surface ${v}°C on ${date} (clear-sky day pass)` })
+    points.push({ key, ...xy, value: v, color: colorFor(v), r: 2.6, back, label: `${city}: surface ${v}°C on ${back ? daily.dates[dateIdx - back] + ` (last clear-sky pass, ${back} day${back > 1 ? 's' : ''} before)` : date}` })
   }
-  return { points, count: points.length, missing: total - points.length, date, caption: `${date} · ${points.length} of ${total} cities had a clear-sky MODIS pass (cloud = no reading)` }
+  const caption = lookbackDays > 0
+    ? `${date} · ${sameDay} cities with a clear-sky pass that day, ${filled} shown from their last pass within ${lookbackDays} days, ${total - sameDay - filled} none (cloud)`
+    : `${date} · ${sameDay} of ${total} cities had a clear-sky MODIS pass (cloud = no reading)`
+  return { points, count: points.length, missing: total - points.length, date, sameDay, filled, caption }
 }
