@@ -5,7 +5,7 @@ import { fetchJson } from '../utils/fetchJson'
 
 // Deep-zoom tile map for the Command Center (the classic screen keeps its SVG map). Leaflet,
 // no API key. Zoom 4 (all of India) → 19 (city blocks). Layers, bottom to top:
-//   base      dark   — CARTO dark (streets appear as you zoom in)
+//   base      dark   — Esri World Dark Gray canvas (streets and labels appear as you zoom in)
 //             esri   — Esri World Imagery (Maxar), native to z19, the Google-Earth look
 //             gibs   — NASA GIBS VIIRS true colour, one image per day (native 250 m, z ≤ 9;
 //                      over-zoomed beyond that, so it is a weather-scale overlay, not a
@@ -26,7 +26,7 @@ const URLS = {
 }
 const INDIA_BOUNDS = L.latLngBounds([5.5, 66.5], [37.6, 98.5])
 const ATTR = {
-  dark: '© <a href="https://carto.com/attributions">CARTO</a> © OpenStreetMap contributors',
+  dark: 'Basemap © Esri, HERE, Garmin, OpenStreetMap contributors',
   esri: 'Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community',
   gibs: 'NASA EOSDIS GIBS / Worldview — VIIRS SNPP true colour'
 }
@@ -43,6 +43,8 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
   const mapRef = useRef(null)
   const layersRef = useRef({})
   const dataRef = useRef({ stateData, resolveStateName, tooltipText, onStateClick })
+  const basemapRef = useRef(basemap)
+  basemapRef.current = basemap
   dataRef.current = { stateData, resolveStateName, tooltipText, onStateClick }
 
   // ── create the map once ─────────────────────────────────────────────────
@@ -55,7 +57,7 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     mapRef.current = map
     const panes = { base: 100, ref: 350, vectors: 400, points: 450 }
     for (const [name, z] of Object.entries(panes)) { map.createPane(name); map.getPane(name).style.zIndex = String(z) }
-    map.on('zoomend', () => onZoomChange(map.getZoom()))
+    map.on('zoomend', () => { onZoomChange(map.getZoom()); restyle() })
     if (controlRef) controlRef.current = { zoomIn: () => map.zoomIn(1), zoomOut: () => map.zoomOut(1), reset: () => map.fitBounds(INDIA_BOUNDS, { padding: [10, 10] }), flyTo: (lat, lon, z = 11) => map.flyTo([lat, lon], z, { duration: 1.2 }), getZoom: () => map.getZoom() }
     onZoomChange(map.getZoom())
 
@@ -94,10 +96,16 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
   // ── recolour vectors when the scrubbed data changes ─────────────────────
   const restyle = () => {
     const { districts, states, jk } = layersRef.current
+    const map = mapRef.current
     const sd = dataRef.current.stateData
     const colorOf = f => sd?.[dataRef.current.resolveStateName(f)]?.riskBucket?.color || NO_DATA_FILL
-    districts?.eachLayer(l => l.setStyle({ fillColor: colorOf(l.feature) }))
-    jk?.eachLayer(l => l.setStyle({ fillColor: colorOf(l.feature) }))
+    // The heat tint carries the data at national scale; at street scale it only hides the
+    // roads, so it fades from full strength at z8 to a light wash by z14.
+    const z = map ? map.getZoom() : 5
+    const fade = z <= 8 ? 1 : z >= 14 ? 0.3 : 1 - ((z - 8) / 6) * 0.7
+    const base = basemapRef.current === 'dark' ? 0.55 : 0.4
+    districts?.eachLayer(l => l.setStyle({ fillColor: colorOf(l.feature), fillOpacity: base * 0.8 * fade }))
+    jk?.eachLayer(l => l.setStyle({ fillColor: colorOf(l.feature), fillOpacity: base * fade }))
     states?.eachLayer(l => l.setStyle({ color: dataRef.current.resolveStateName(l.feature) === selectedState ? '#22d3ee' : '#ffffff', weight: dataRef.current.resolveStateName(l.feature) === selectedState ? 2.5 : 1.2 }))
   }
   useEffect(() => { restyle() }, [stateData, selectedState]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -118,12 +126,14 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
       L0.base = L.tileLayer(`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${basemapDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`, { ...common, maxNativeZoom: 9, attribution: ATTR.gibs }).addTo(map)
       L0.ref = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', { pane: 'ref', maxZoom: 19, maxNativeZoom: 19, minZoom: 11, opacity: 0.9, crossOrigin: true, errorTileUrl: '' }).addTo(map)
     } else {
-      L0.base = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { ...common, subdomains: 'abcd', maxNativeZoom: 19, attribution: ATTR.dark }).addTo(map)
+      // Esri's dark canvas is served to z16; beyond that Leaflet upscales it and the imagery-grade
+      // road/label reference layer takes over the detail. (CARTO's free tiles now watermark
+      // "API KEY REQUIRED" on real domains, so they are not used.)
+      L0.base = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { ...common, maxNativeZoom: 16, attribution: ATTR.dark }).addTo(map)
+      L0.ref = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { pane: 'ref', maxZoom: 19, maxNativeZoom: 16, minZoom: 9, opacity: 0.9, crossOrigin: true, errorTileUrl: '' }).addTo(map)
+      L0.ref2 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', { pane: 'ref', maxZoom: 19, maxNativeZoom: 19, minZoom: 15, opacity: 0.85, crossOrigin: true, errorTileUrl: '' }).addTo(map)
     }
-    // Imagery under the vectors: fills lighter so the ground shows; dark base: a touch stronger.
-    const fo = basemap === 'dark' ? 0.55 : 0.4
-    layersRef.current.districts?.setStyle({ fillOpacity: fo * 0.8 })
-    layersRef.current.jk?.setStyle({ fillOpacity: fo })
+    restyle() // fill strength depends on the base map (lighter over imagery)
   }, [basemap, basemapDate])
 
   // ── points + focus ──────────────────────────────────────────────────────
