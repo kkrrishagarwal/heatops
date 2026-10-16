@@ -11,7 +11,7 @@ import { fetchJson } from '../utils/fetchJson'
 import { BASEMAPS, gibsSafeDate } from './SatelliteBasemap'
 import HudLeafletMap from './HudLeafletMap'
 import WindParticleCanvas, { windStations, describeProbe, compassOf, thermalColor } from './WindParticleCanvas'
-import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisNationalDayOverlay, lulcOverlay, stateDataFromPoints, builtUpColor } from '../utils/hudOverlay'
+import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisNationalDayOverlay, lulcOverlay, stateDataFromPoints, builtUpColor, spectralColor, spectralRgb, spectralGradientCss, SPECTRAL_LEGEND } from '../utils/hudOverlay'
 import { buildDistrictHeat } from '../utils/districtHeat'
 
 // COMMAND CENTER — the map-centric "satellite HUD" layout for the Authority view: the India
@@ -54,6 +54,11 @@ export default function CommandCenterHud({
   const [basemap, setBasemap] = useState('dark') // dark | esri (Google-style imagery) | gibs (NASA daily true colour)
   const [composite, setComposite] = useState(true)
   const [showFills, setShowFills] = useState(true) // heat colours on the map; off = borders only
+  const [palette, setPalette] = useState('spectral') // spectral (continuous) | ndma (6 risk tiers)
+  const [surface, setSurface] = useState('choropleth') // choropleth (polygons) | raster (continuous IDW field)
+  const hex2rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]
+  const colorFn = useMemo(() => (palette === 'spectral' ? spectralColor : colorFor), [palette, colorFor])
+  const rgbOf = useMemo(() => (layer === 'lulc' ? (v => hex2rgb(builtUpColor(v))) : palette === 'spectral' ? spectralRgb : (v => hex2rgb(colorFor(v)))), [layer, palette, colorFor])
   const [wind, setWind] = useState(false) // Windy-style particle layer
   const [windMode, setWindMode] = useState('thermal') // thermal | stagnation
   const [windSpeedX, setWindSpeedX] = useState(1) // 1 | 2
@@ -112,37 +117,38 @@ export default function CommandCenterHud({
     if (layer === 'lulc') return lulcOverlay({ lulcReal })
     if (layer === 'modis') {
       if (!modisIndex) return { points: [], count: 0, caption: modisErr ? 'MODIS index unavailable' : 'Loading NASA MODIS index…' }
-      if (mode === 'historical') return yearly ? modisYearOverlay({ yearly, coords: cityCoordsData, colorFor, year }) : { points: [], count: 0, caption: 'Loading MODIS yearly peaks…' }
-      if (mode === 'live' && daily && dateIdx >= 0 && stateDates[dateIdx]) return modisNationalDayOverlay({ daily, coords: cityCoordsData, colorFor, dateIdx, lookbackDays: composite ? LOOKBACK_DAYS : 0 })
-      return modisLatestOverlay({ modisIndex, coords: cityCoordsData, colorFor })
+      if (mode === 'historical') return yearly ? modisYearOverlay({ yearly, coords: cityCoordsData, colorFor: colorFn, year }) : { points: [], count: 0, caption: 'Loading MODIS yearly peaks…' }
+      if (mode === 'live' && daily && dateIdx >= 0 && stateDates[dateIdx]) return modisNationalDayOverlay({ daily, coords: cityCoordsData, colorFor: colorFn, dateIdx, lookbackDays: composite ? LOOKBACK_DAYS : 0 })
+      return modisLatestOverlay({ modisIndex, coords: cityCoordsData, colorFor: colorFn })
     }
-    return airOverlay({ liveCityCache, coords: cityCoordsData, colorFor, field: mode === 'forecast' ? 'tempMax' : 'temp' })
-  }, [lite, layer, mode, year, dateIdx, stateDates, daily, composite, modisIndex, modisErr, yearly, lulcReal, liveCityCache, cityCoordsData, colorFor])
+    return airOverlay({ liveCityCache, coords: cityCoordsData, colorFor: colorFn, field: mode === 'forecast' ? 'tempMax' : 'temp' })
+  }, [lite, layer, mode, year, dateIdx, stateDates, daily, composite, modisIndex, modisErr, yearly, lulcReal, liveCityCache, cityCoordsData, colorFn])
 
   // State fills follow the scrubber: everything except "live air temperature" (which is the
   // map's own live colouring already) re-colours the states from the points on screen.
   const scrubbed = !(layer === 'air' && mode === 'live')
   const stateData = useMemo(() => {
-    if (!scrubbed || !overlay) return null
+    if (!overlay) return null
+    if (!scrubbed && palette !== 'spectral') return null // live air + NDMA tiers = the map's own colouring
     const scrubLabel = layer === 'lulc' ? 'ESA WorldCover 2021 built-up share'
       : mode === 'historical' ? `NASA MODIS ${year} Apr–Jun mean surface temperature`
       : mode === 'forecast' ? "Today's forecast high (Open-Meteo)"
       : dateIdx >= 0 && stateDates[dateIdx] ? (composite ? `NASA MODIS ${LOOKBACK_DAYS}-day composite ending ${stateDates[dateIdx]}` : `NASA MODIS day pass, ${stateDates[dateIdx]} (all India)`) : 'NASA MODIS latest clear-sky day pass'
-    return stateDataFromPoints({ base: liveIndiaData, points: overlay.points, buckets, kind: layer === 'lulc' ? 'builtUp' : 'heat', scrubLabel })
-  }, [scrubbed, overlay, layer, mode, year, dateIdx, stateDates, composite, liveIndiaData, buckets])
+    return stateDataFromPoints({ base: liveIndiaData, points: overlay.points, buckets, kind: layer === 'lulc' ? 'builtUp' : 'heat', scrubLabel: scrubbed ? scrubLabel : 'Live air temperature (Open-Meteo)', colorOfValue: palette === 'spectral' && layer !== 'lulc' ? spectralColor : null })
+  }, [scrubbed, overlay, layer, mode, year, dateIdx, stateDates, composite, liveIndiaData, buckets, palette])
 
   // Per-district values from the active layer's points (semantic zoom). Buckets label each
   // district with the same words the state badge uses.
   const districtHeat = useMemo(() => {
     if (!districtFeatures || !overlay?.points) return null
     const isPct = layer === 'lulc'
-    const colorOf = v => (isPct ? builtUpColor(v) : colorFor(v))
+    const colorOf = v => (isPct ? builtUpColor(v) : colorFn(v))
     const labelOf = v => (isPct ? `BUILT-UP ${Math.round(v)}%` : (buckets.find(b => v >= b.min)?.label || ''))
     const dh = buildDistrictHeat({ features: districtFeatures, points: overlay.points, resolveState: resolveStateName, colorFor: colorOf })
     for (const d of Object.values(dh)) if (d.value != null) d.label = labelOf(d.value)
     dh.__unit = isPct ? '%' : '°C'
     return dh
-  }, [districtFeatures, overlay, layer, resolveStateName, colorFor, buckets])
+  }, [districtFeatures, overlay, layer, resolveStateName, colorFn, buckets])
 
   const focus = useMemo(() => {
     const c = cityCoordsData?.[`${selectedCity}|${selectedState}`]
@@ -212,6 +218,10 @@ export default function CommandCenterHud({
           districtHeat={districtHeat}
           onDistrictClick={(c, st) => onSelectCity(c, st)}
           onGeoLoaded={setDistrictFeatures}
+          raster={surface === 'raster' && !lite}
+          rasterPoints={overlay?.points || null}
+          rgbOf={rgbOf}
+          fillStrength={0.88}
         />
         <WindParticleCanvas mapCtl={mapCtl} stations={stations} enabled={wind && stations.length > 0} mode={windMode} speed={windSpeedX} lite={lite} onProbe={setProbe} />
       </div>
@@ -268,6 +278,16 @@ export default function CommandCenterHud({
           {Object.entries(BASEMAPS).map(([k, v]) => (
             <button key={k} type="button" data-testid={`basemap-${k}`} className={basemap === k ? BTN_ON : BTN} onClick={() => setBasemap(k)} title={v.attribution || 'Plain dark surface'}>{v.label}</button>
           ))}
+        </div>
+        <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+          <span className="mr-1 uppercase tracking-wider">Colours</span>
+          <button type="button" data-testid="palette-spectral" className={palette === 'spectral' ? BTN_ON : BTN} onClick={() => setPalette('spectral')} title="Continuous violet → red thermal spectrum">🌈 Spectral thermal</button>
+          <button type="button" data-testid="palette-ndma" className={palette === 'ndma' ? BTN_ON : BTN} onClick={() => setPalette('ndma')} title="Six NDMA / IMD risk tiers">🏛️ NDMA risk tiers</button>
+        </div>
+        <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+          <span className="mr-1 uppercase tracking-wider">Surface</span>
+          <button type="button" data-testid="surface-raster" className={surface === 'raster' ? BTN_ON : BTN} onClick={() => setSurface('raster')} title="Smooth interpolated field from the city readings, clipped to India" disabled={lite}>🌈 Continuous spectrum</button>
+          <button type="button" data-testid="surface-choropleth" className={surface === 'choropleth' ? BTN_ON : BTN} onClick={() => setSurface('choropleth')} title="State / district polygons">🏛️ District choropleth</button>
         </div>
         <div className="mb-2 rounded-md border border-sky-500/20 bg-slate-900/50 p-2">
           <label className="flex cursor-pointer items-center gap-2 text-[11px] text-slate-200">
@@ -392,8 +412,14 @@ export default function CommandCenterHud({
           ))}
           <span className="ml-auto flex items-center gap-2 text-[10px] text-slate-400">
             <span>{mode === 'historical' ? 'NASA MODIS Apr–Jun peak season, 2016–2026' : mode === 'live' ? (layer === 'modis' ? 'NASA MODIS daily clear-sky passes' : 'Open-Meteo current readings') : 'Open-Meteo 7-day forecast'}</span>
-            {layer !== 'lulc' && buckets.length > 0 && (
-              <span className="flex items-center gap-1" title="State fill and point colours: air / surface temperature buckets (°C)" data-testid="hud-legend">
+            {layer !== 'lulc' && palette === 'spectral' && (
+              <span className="flex flex-col items-stretch" title="Continuous spectral thermal scale (°C)" data-testid="hud-legend-spectral">
+                <span className="h-2.5 w-44 rounded-sm" style={{ background: spectralGradientCss() }} />
+                <span className="flex justify-between text-[8px] leading-none text-slate-500">{SPECTRAL_LEGEND.map(([t, l]) => <span key={t}>{l}</span>)}</span>
+              </span>
+            )}
+            {layer !== 'lulc' && palette === 'ndma' && buckets.length > 0 && (
+              <span className="flex items-center gap-1" title="NDMA / IMD risk tiers (°C)" data-testid="hud-legend">
                 {[...buckets].reverse().map(b => <span key={b.label} className="h-2.5 w-4 rounded-sm" style={{ background: b.color }} title={b.legend} />)}
                 <span className="ml-1">&lt;25 → 45+ °C</span>
               </span>

@@ -122,7 +122,7 @@ function median(values) {
   return a.length ? Math.round(a[Math.floor(a.length / 2)] * 10) / 10 : null
 }
 
-export function stateDataFromPoints({ base, points, buckets, kind = 'heat', scrubLabel = '' }) {
+export function stateDataFromPoints({ base, points, buckets, kind = 'heat', scrubLabel = '', colorOfValue = null }) {
   const byState = new Map()
   for (const p of points || []) {
     const state = p.key?.split('|')[1]
@@ -150,7 +150,8 @@ export function stateDataFromPoints({ base, points, buckets, kind = 'heat', scru
     out[name] = {
       ...data,
       heatIndex: median(vals), heatIndexLive: true, liveCityCount: total,
-      riskBucket: { label: best.label, color: best.color, min: best.min, count: best.count, share: Math.round((best.count / total) * 100) },
+      // colour: the plurality bucket's colour (NDMA tiers) or a continuous colour of the median
+      riskBucket: { label: best.label, color: colorOfValue ? colorOfValue(median(vals)) : best.color, min: best.min, count: best.count, share: Math.round((best.count / total) * 100) },
       bucketCounts: counts.map(c => ({ ...c, share: Math.round((c.count / total) * 100) })),
       weatherCondition: null,
       scrub: { label: scrubLabel, detail: `median of ${total} ${total === 1 ? 'city' : 'cities'} with a reading in this layer`, unit: '°C' }
@@ -182,4 +183,38 @@ export function modisNationalDayOverlay({ daily, coords, colorFor, dateIdx, look
     ? `${date} · ${sameDay} cities with a clear-sky pass that day, ${filled} shown from their last pass within ${lookbackDays} days, ${total - sameDay - filled} none (cloud)`
     : `${date} · ${sameDay} of ${total} cities had a clear-sky MODIS pass (cloud = no reading)`
   return { points, count: points.length, missing: total - points.length, date, sameDay, filled, caption }
+}
+
+// ── Spectral thermal palette (NOAA / Windy style), continuous ───────────────
+// Piecewise-linear between the stops below; NDMA bucket LABELS are unchanged — this only
+// changes how a temperature is painted. Built-up % keeps its own grey→red ramp.
+const SPECTRAL_STOPS = [
+  [-10, '#7C3AED'], [10, '#2563EB'], [10.001, '#0284C7'], [20, '#06B6D4'], [20.001, '#14B8A6'], [26, '#10B981'],
+  [26.001, '#84CC16'], [32, '#EAB308'], [32.001, '#FACC15'], [37, '#F59E0B'], [37.001, '#F97316'], [41, '#EA580C'],
+  [41.001, '#EF4444'], [45, '#DC2626'], [45.001, '#B91C1C'], [50, '#FF003C']
+]
+const hex2rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]
+const SPECTRAL_RGB = SPECTRAL_STOPS.map(([t, h]) => [t, hex2rgb(h)])
+export function spectralRgb(t) {
+  if (typeof t !== 'number' || !Number.isFinite(t)) return [51, 65, 85]
+  if (t <= SPECTRAL_RGB[0][0]) return SPECTRAL_RGB[0][1]
+  if (t >= SPECTRAL_RGB[SPECTRAL_RGB.length - 1][0]) return SPECTRAL_RGB[SPECTRAL_RGB.length - 1][1]
+  for (let i = 1; i < SPECTRAL_RGB.length; i++) {
+    const [t1, c1] = SPECTRAL_RGB[i]
+    if (t <= t1) {
+      const [t0, c0] = SPECTRAL_RGB[i - 1]
+      const f = t1 === t0 ? 0 : (t - t0) / (t1 - t0)
+      return [0, 1, 2].map(k => Math.round(c0[k] + (c1[k] - c0[k]) * f))
+    }
+  }
+  return [51, 65, 85]
+}
+export function spectralColor(t) {
+  const [r, g, b] = spectralRgb(t)
+  return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`
+}
+export const SPECTRAL_LEGEND = [[-10, '<10'], [10, '10'], [20, '20'], [26, '26'], [32, '32'], [37, '37'], [41, '41'], [45, '45+']]
+export function spectralGradientCss() {
+  const lo = -10, hi = 50
+  return `linear-gradient(90deg, ${SPECTRAL_STOPS.map(([t, h]) => `${h} ${(((t - lo) / (hi - lo)) * 100).toFixed(1)}%`).join(', ')})`
 }

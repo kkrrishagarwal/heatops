@@ -3,6 +3,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { fetchJson } from '../utils/fetchJson'
 import { districtKey, districtName } from '../utils/districtHeat'
+import { drawThermalRaster } from '../utils/thermalRaster'
 
 // Deep-zoom tile map for the Command Center (the classic screen keeps its SVG map). Leaflet,
 // no API key. Zoom 4 (all of India) → 19 (city blocks). Layers, bottom to top:
@@ -39,7 +40,7 @@ function loadGeo() {
   return geoCache
 }
 
-export default function HudLeafletMap({ stateData, resolveStateName, points = [], focus = null, basemap = 'dark', basemapDate = null, selectedState = null, onStateClick = () => {}, onZoomChange = () => {}, showDots = false, showFills = true, tooltipText = () => '', controlRef, districtHeat = null, onDistrictClick = () => {}, onGeoLoaded = () => {}, detailZoom = 6 }) {
+export default function HudLeafletMap({ stateData, resolveStateName, points = [], focus = null, basemap = 'dark', basemapDate = null, selectedState = null, onStateClick = () => {}, onZoomChange = () => {}, showDots = false, showFills = true, tooltipText = () => '', controlRef, districtHeat = null, onDistrictClick = () => {}, onGeoLoaded = () => {}, detailZoom = 6, raster = false, rasterPoints = null, rgbOf = null, fillStrength = 0.88 }) {
   const elRef = useRef(null)
   const mapRef = useRef(null)
   const layersRef = useRef({})
@@ -48,6 +49,10 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
   basemapRef.current = basemap
   const fillsRef = useRef(showFills)
   fillsRef.current = showFills
+  const rasterRef = useRef({ raster, rasterPoints, rgbOf })
+  rasterRef.current = { raster, rasterPoints, rgbOf }
+  const fillStrengthRef = useRef(fillStrength)
+  fillStrengthRef.current = fillStrength
   const selectedRef = useRef(selectedState)
   selectedRef.current = selectedState
   // Semantic zoom: per-district colours and crisp district borders once zoomed to z ≥ detailZoom
@@ -65,9 +70,25 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     map.fitBounds(INDIA_BOUNDS, { padding: [10, 10] })
     map.setMaxBounds(INDIA_BOUNDS.pad(0.6))
     mapRef.current = map
-    const panes = { base: 100, ref: 350, vectors: 400, points: 450 }
+    const panes = { base: 100, raster: 300, ref: 350, vectors: 400, points: 450 }
     for (const [name, z] of Object.entries(panes)) { map.createPane(name); map.getPane(name).style.zIndex = String(z) }
     map.on('zoomend', () => { onZoomChange(map.getZoom()); restyle() })
+    const rc = L.DomUtil.create('canvas', 'hud-raster', map.getPane('raster'))
+    rc.style.position = 'absolute'; rc.style.pointerEvents = 'none'
+    layersRef.current.rasterCanvas = rc
+    const redrawRaster = () => {
+      const { raster: on, rasterPoints: pts, rgbOf: rgb } = rasterRef.current
+      const sz = map.getSize()
+      L.DomUtil.setPosition(rc, map.containerPointToLayerPoint([0, 0]))
+      rc.style.width = `${sz.x}px`; rc.style.height = `${sz.y}px`
+      if (!on || !pts || !rgb) { rc.width = 1; rc.height = 1; return }
+      drawThermalRaster({ canvas: rc, width: sz.x, height: sz.y, points: pts, rgbOf: rgb, maskFeatures: layersRef.current.maskFeatures || [],
+        unproject: (x, y) => { const ll = map.containerPointToLatLng([x, y]); return [ll.lat, ll.lng] },
+        project: (lat, lon) => { const p = map.latLngToContainerPoint([lat, lon]); return [p.x, p.y] } })
+    }
+    layersRef.current.redrawRaster = redrawRaster
+    map.on('moveend', redrawRaster); map.on('resize', redrawRaster)
+    map.on('zoomstart', () => { rc.width = 1; rc.height = 1 })
     if (controlRef) controlRef.current = {
       zoomIn: () => map.zoomIn(1), zoomOut: () => map.zoomOut(1), reset: () => map.fitBounds(INDIA_BOUNDS, { padding: [10, 10] }), flyTo: (lat, lon, z = 11) => map.flyTo([lat, lon], z, { duration: 1.2 }), getZoom: () => map.getZoom(),
       // for overlays drawn in screen space (wind particles): geo ↔ container pixels, size, and
@@ -100,7 +121,7 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
           const name = dataRef.current.resolveStateName(feature)
           const sl = layersRef.current.stateByName?.get(name)
           if (sl) sl.setStyle(name === selectedRef.current ? { color: '#38bdf8', weight: 3 } : { color: '#ffffff', weight: 1.2 })
-          if (e.target.options.district) { const det = isDetailFor(feature); e.target.setStyle({ color: '#0a1628', weight: det ? 0.8 : 0.5, opacity: det ? 0.65 : 0.12 }) }
+          if (e.target.options.district) { const det = isDetailFor(feature); const onR = rasterRef.current.raster; e.target.setStyle({ color: onR ? 'rgba(255,255,255,0.35)' : '#0a1628', weight: det ? 0.8 : 0.5, opacity: det ? 0.65 : (onR ? 0.2 : 0.12) }) }
           else e.target.setStyle(name === selectedRef.current ? { color: '#38bdf8', weight: 3, opacity: 0.9 } : { color: '#ffffff', weight: 1.2, opacity: 0.9 })
         },
         click: () => {
@@ -129,8 +150,9 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
       layersRef.current.stateByName = new Map()
       layersRef.current.states.eachLayer(l => layersRef.current.stateByName.set(dataRef.current.resolveStateName(l.feature), l))
       layersRef.current.jk = L.geoJSON(jkFeatures, { pane: 'vectors', style, onEachFeature: (f, l) => { l.options.district = true; bind(f, l) } }).addTo(map)
-      onGeoLoaded([...districtFeatures.features, ...jkFeatures.features])
-      restyle()
+      layersRef.current.maskFeatures = [...districtFeatures.features, ...jkFeatures.features]
+      onGeoLoaded(layersRef.current.maskFeatures)
+      restyle(); layersRef.current.redrawRaster?.()
     }).catch(err => console.warn('[HudLeafletMap] geo load failed:', err?.message))
 
     return () => { map.remove(); mapRef.current = null; layersRef.current = {} }
@@ -147,14 +169,17 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     // roads, so it fades from full strength at z8 to a light wash by z14.
     const z = map ? map.getZoom() : 5
     const fade = z <= 8 ? 1 : z >= 14 ? 0.3 : 1 - ((z - 8) / 6) * 0.7
-    const base = fillsRef.current ? (basemapRef.current === 'dark' ? 0.55 : 0.4) : 0
+    const onRaster = rasterRef.current.raster
+    const base = !fillsRef.current || onRaster ? 0 : (basemapRef.current === 'dark' ? fillStrengthRef.current : Math.min(0.6, fillStrengthRef.current))
     const dh = dataRef.current.districtHeat
     const distColor = (f, det) => (det && dh?.[districtKey(f)] ? dh[districtKey(f)].color : colorOf(f))
-    districts?.eachLayer(l => { const det = isDetailFor(l.feature); l.setStyle({ fillColor: distColor(l.feature, det), fillOpacity: base * 0.85 * fade, opacity: det ? 0.65 : 0.12, weight: det ? 0.8 : 0.5 }) })
-    jk?.eachLayer(l => { const det = isDetailFor(l.feature); l.setStyle({ fillColor: distColor(l.feature, det), fillOpacity: base * fade, opacity: det ? 0.65 : 0.12, weight: det ? 0.8 : 0.5 }) })
+    const edge = onRaster ? 'rgba(255,255,255,0.35)' : '#0a1628'
+    districts?.eachLayer(l => { const det = isDetailFor(l.feature); l.setStyle({ fillColor: distColor(l.feature, det), fillOpacity: base * 0.9 * fade, color: edge, opacity: det ? 0.65 : (onRaster ? 0.2 : 0.12), weight: det ? 0.8 : 0.5 }) })
+    jk?.eachLayer(l => { const det = isDetailFor(l.feature); l.setStyle({ fillColor: distColor(l.feature, det), fillOpacity: base * fade, color: edge, opacity: det ? 0.65 : (onRaster ? 0.2 : 0.12), weight: det ? 0.8 : 0.5 }) })
     states?.eachLayer(l => l.setStyle({ color: dataRef.current.resolveStateName(l.feature) === selectedState ? '#38bdf8' : '#ffffff', weight: dataRef.current.resolveStateName(l.feature) === selectedState ? 3 : 1.2 }))
   }
-  useEffect(() => { restyle() }, [stateData, selectedState, showFills, districtHeat]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { restyle() }, [stateData, selectedState, showFills, districtHeat, raster, fillStrength]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { layersRef.current.redrawRaster?.() }, [raster, rasterPoints, rgbOf])
 
   // ── base + reference tiles ──────────────────────────────────────────────
   useEffect(() => {
