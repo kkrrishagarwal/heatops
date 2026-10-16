@@ -58,6 +58,7 @@ import { CompareCitiesPanel } from './components/CompareCitiesPanel'
 import ViewModeToggle from './components/ViewModeToggle'
 import AudienceToggle from './components/AudienceToggle'
 import HeatActionChecklist from './components/HeatActionChecklist'
+import CommandCenterHud from './components/CommandCenterHud'
 import HeatStressPanel from './components/HeatStressPanel'
 import HeatCoPilot from './components/HeatCoPilot'
 import { useViewMode } from './hooks/useViewMode'
@@ -1718,7 +1719,7 @@ function MiniGrid({ base, tree = 0, roof = 0, water = 0, size = 15, label, testI
   )
 }
 
-const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, plannerMarkers = [], onPlannerMarkerClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null, lite = false }, transformRef) => {
+const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, plannerMarkers = [], onPlannerMarkerClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null, lite = false, overlay = null }, transformRef) => {
   // Legend is collapsed by default so the map itself stays fully visible (it covered ~60% of the map on phones).
   const [legendOpen, setLegendOpen] = useState(false)
   const { t } = useTranslation()
@@ -1968,6 +1969,27 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
             </circle>
             <circle r={5} fill='#22f6ff' stroke='#ffffff' strokeWidth={1.5} />
           </Marker>
+        </ComposableMap>
+      )}
+
+      {/* LAYER 5a: Command Center point overlay — one circle per real reading (live air temp,
+          NASA MODIS surface temp, or ESA built-up share; see utils/hudOverlay.js), plus a ring
+          on the selected city. Pointer events off so state hover/click still works beneath. */}
+      {overlay?.points?.length > 0 && (
+        <ComposableMap projection={INDIA_MAP_PROJECTION} style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}>
+          {overlay.points.map(p => (
+            <Marker key={p.key} coordinates={[p.lon, p.lat]}>
+              <circle r={p.r || 2.5} fill={p.color} fillOpacity={0.88} stroke="#020617" strokeWidth={0.4} />
+            </Marker>
+          ))}
+          {overlay.focus && (
+            <Marker coordinates={[overlay.focus.lon, overlay.focus.lat]}>
+              <circle r={9} fill="none" stroke="#22d3ee" strokeWidth={2} opacity={0.9}>
+                <animate attributeName="r" values="7;13;7" dur="1.8s" repeatCount="indefinite" />
+              </circle>
+              <circle r={3} fill="#22d3ee" stroke="#fff" strokeWidth={1} />
+            </Marker>
+          )}
         </ComposableMap>
       )}
 
@@ -2881,6 +2903,10 @@ function App({ user }) {
   const [userPassword, setUserPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [mapExpanded, setMapExpanded] = useState(true)
+  // Which map layout to return to from the dashboard: the Command Center HUD (default for the
+  // Authority view on a laptop) or the classic map screen. Citizen and compact layouts always
+  // use the classic screen — the HUD docks would cover a phone.
+  const [mapScreen, setMapScreen] = useState('hud')
   const [mapScale, setMapScale] = useState(1)
   const [mapPos, setMapPos] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
@@ -3490,7 +3516,7 @@ function App({ user }) {
       if(user) {
         setUserName(user.name || "")
         setUserEmail(user.email || "")
-        setScreen(user.role === "admin" ? "admin" : "map")
+        setScreen(user.role === "admin" ? "admin" : "__home__")
       }
     }
   }, [])
@@ -3625,7 +3651,7 @@ function App({ user }) {
     if (user && user.name) {
       setUserName(user.name)
       setUserEmail(user.email || '')
-      setScreen('map')
+      setScreen('__home__')
       addLoginHistory({
         name: user.name,
         email: user.email || 'unknown',
@@ -3877,7 +3903,7 @@ function App({ user }) {
                     }))
                   }
                 }
-                setScreen("map")
+                setScreen("__home__")
                 addLoginHistory({
                   name: userName,
                   email: userEmail || 'unknown',
@@ -3913,14 +3939,89 @@ function App({ user }) {
   // city, since the two screens used to be entirely separate return branches.
   // Visibility is toggled with CSS display instead, so the work only ever happens
   // once per session.
-  if (screen === "map" || screen === "dashboard") {
+  // '__home__' resolves to the HUD for an authority on a laptop, else the classic map.
+  const hudAvailable = audience === 'authority' && viewMode !== 'compact'
+  const resolvedScreen = screen === '__home__' ? (hudAvailable && mapScreen === 'hud' ? 'hud' : 'map') : screen
+  if (resolvedScreen === 'hud' && !hudAvailable) setTimeout(() => setScreen('map'), 0)
+
+  if (resolvedScreen === 'hud' && hudAvailable) {
+    const mapHandlers = {
+      onWheel: (e) => { e.preventDefault(); const delta = e.deltaY > 0 ? -0.15 : 0.15; setMapScale(prev => { const next = Math.min(Math.max(prev + delta, 1), 5); if (next === 1 && prev !== 1) setMapPos({ x: 0, y: 0 }); return next }) },
+      onMouseDown: (e) => { setIsDragging(true); setDragStart({ x: e.clientX - mapPos.x, y: e.clientY - mapPos.y }) },
+      onMouseMove: (e) => { if (!isDragging) return; const next = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }; liveMapPosRef.current = next; if (mapTransformRef.current) mapTransformRef.current.style.transform = `translate(${next.x}px, ${next.y}px) scale(${mapScale * 0.8})` },
+      onMouseUp: () => { if (isDragging) setMapPos(liveMapPosRef.current); setIsDragging(false) },
+      onMouseLeave: () => { if (isDragging) setMapPos(liveMapPosRef.current); setIsDragging(false) }
+    }
+    return (
+      <CommandCenterHud
+        renderMap={(overlay) => (
+          <div {...mapHandlers} style={{ position: 'absolute', inset: 0, cursor: isDragging ? 'grabbing' : 'grab', overflow: 'hidden' }}>
+            <div ref={mapTransformRef} style={{ position: 'absolute', inset: '56px 0 0 0', transform: `translate(${mapPos.x}px, ${mapPos.y}px) scale(${mapScale * 0.8})`, transformOrigin: 'center 40%', transition: isDragging ? 'none' : 'transform 0.2s ease' }}>
+              <AppErrorBoundary compact title="Map could not be displayed">
+                <IndiaMap
+                  INDIA_DATA={liveIndiaData}
+                  selectedState={selectedState}
+                  lite={lite}
+                  onStateClick={handleStateClick}
+                  plannerMarkers={plannerMarkers}
+                  onPlannerMarkerClick={(city) => { setPlannerFocusCity(city) }}
+                  scale={1}
+                  pos={{ x: 0, y: 0 }}
+                  isDragging={isDragging}
+                  cacheStatus={liveCacheStatus === 'error' ? 'error' : 'ready'}
+                  cacheStale={false}
+                  cacheAgeLabel={formatAgo(cacheLastUpdated)}
+                  audience={audience}
+                  overlay={overlay}
+                />
+              </AppErrorBoundary>
+            </div>
+          </div>
+        )}
+        liveIndiaData={liveIndiaData}
+        liveCityCache={liveCityCache}
+        cityCoordsData={cityCoordsData}
+        lulcReal={lulcReal}
+        liveWeather={liveWeather}
+        selectedState={selectedState}
+        selectedCity={selectedCity}
+        onSelectCity={(city, state) => { setSelectedState(state); setSelectedCity(city) }}
+        allCities={ALL_CITIES_FLAT}
+        colorFor={getHeatIndexColor}
+        buckets={HEAT_INDEX_BUCKETS}
+        isCoastal={!!STATE_DATA[selectedState]?.coastal}
+        cacheStatus={liveCacheStatus}
+        cacheStale={isCacheStale(cacheLastUpdated)}
+        cacheAgeLabel={formatAgo(cacheLastUpdated)}
+        audience={audience}
+        onAudienceChange={(a) => { setAudience(a); if (a !== 'authority') setScreen('map') }}
+        onOpenClassic={() => { setMapScreen('map'); setScreen('map') }}
+        onOpenDashboard={() => { if (selectedCity) { setScreen('dashboard'); setAnalyzedCities([...new Set([...analyzedCities, selectedCity])]) } }}
+        onLogout={() => { setUserName(''); setUserEmail(''); setScreen('signin') }}
+        userName={userName}
+        lite={lite}
+      />
+    )
+  }
+
+  if (resolvedScreen === "map" || resolvedScreen === "dashboard") {
     const hottest = liveLeaderBase[0]
 
     const state = STATE_DATA[selectedState]
 
     return (
       <>
-        <div style={{ display: screen === 'map' ? 'contents' : 'none' }}>
+        <div style={{ display: resolvedScreen === 'map' ? 'contents' : 'none' }}>
+      {hudAvailable && resolvedScreen === 'map' && (
+        <button
+          type="button"
+          data-testid="open-hud"
+          onClick={() => { setMapScreen('hud'); setScreen('hud') }}
+          style={{ position: 'fixed', top: 100, right: 24, zIndex: 40, background: 'rgba(2,6,23,0.9)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.6)', borderRadius: 8, padding: '7px 12px', fontSize: 12, fontWeight: 800, letterSpacing: 0.5, cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
+        >
+          ◳ COMMAND CENTER
+        </button>
+      )}
       <div className="map-container">
         {/* Floating AI Assistant restored on the map screen so it's always
             reachable without switching screens. It shows a hint when no city
@@ -4611,7 +4712,7 @@ function App({ user }) {
     }
 
           return (
-            <div style={{ display: screen === 'dashboard' ? 'contents' : 'none' }}>
+            <div style={{ display: resolvedScreen === 'dashboard' ? 'contents' : 'none' }}>
       {/* Theme colour = the selected city's LIVE current temperature; the seeded `lst` is only
           the fallback before the live reading arrives (it was the cause of e.g. Lucknow at 28°C
           showing a red theme because the seed followed the state's bucket). */}
@@ -4658,7 +4759,7 @@ function App({ user }) {
         {/* Dashboard navbar */}
         <nav className="navbar">
           <div className="nav-left">
-            <button onClick={() => setScreen("map")} className="nav-btn">← {t('nav.backToMap', 'Back to Map')}</button>
+            <button onClick={() => setScreen("__home__")} className="nav-btn">← {t('nav.backToMap', 'Back to Map')}</button>
             <h2>{selectedCity}, {selectedState}</h2>
           </div>
           <div className="nav-right">
@@ -5824,7 +5925,7 @@ function App({ user }) {
       <div className="dashboard-container">
         <nav className="navbar">
           <div className="nav-left">
-            <button onClick={() => setScreen("map")} className="nav-btn">← {t('nav.backToMap', 'Back to Map')}</button>
+            <button onClick={() => setScreen("__home__")} className="nav-btn">← {t('nav.backToMap', 'Back to Map')}</button>
             <h2>{t('profile.title', 'My Profile')}</h2>
           </div>
           <div className="nav-right">

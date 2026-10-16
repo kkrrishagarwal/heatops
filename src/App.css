@@ -1965,3 +1965,9 @@ html[data-lite] .navbar { background: #0f172a; }
   font-weight: 700;
   letter-spacing: -0.01em;
 }
+
+/* Command Center HUD: panels inside the docks drop their card chrome so the dock is the card. */
+[data-screen="hud"] .hud-dock .panel { background: transparent; border: none; box-shadow: none; padding: 0; margin: 0; }
+[data-screen="hud"] .hud-dock .panel h3 { font-size: 10px; letter-spacing: 0.12em; color: #94a3b8; margin-bottom: 8px; }
+[data-screen="hud"] input[type="range"] { height: 4px; }
+[data-screen="hud"] .hud-map button[aria-label="Show heat index legend"] { display: none; }

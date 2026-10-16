@@ -72,7 +72,7 @@ export function buildCopilotInput({ city, state, liveWeather, lulcReal, cityCoor
   }
 }
 
-export default function HeatCoPilot({ city, state, liveWeather, lulcReal, cityCoordsData, isCoastal = false }) {
+export default function HeatCoPilot({ city, state, liveWeather, lulcReal, cityCoordsData, isCoastal = false, compact = false }) {
   const [agent, setAgent] = useState(null) // ping result
   const [phase, setPhase] = useState('idle') // idle | running | done
   const [elapsed, setElapsed] = useState(0)
@@ -149,9 +149,9 @@ export default function HeatCoPilot({ city, state, liveWeather, lulcReal, cityCo
   return (
     <section className="panel" data-panel="COPILOT" style={{ borderLeft: `4px solid ${lvl.color}` }}>
       <h3><PanelIcon name="bot" /> AGENT37 HEAT RESPONSE CO-PILOT</h3>
-      <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>
+      {!compact && <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>
         An Agent37-hosted AI agent reads {city}'s live heat readings, heat stress, 7-day IMD-threshold outlook and land cover, and writes a municipal Heat Action Protocol: actions, owners, deadlines, labour timing and the public advisory.
-      </div>
+      </div>}
       <div data-testid="copilot-status" style={{ fontSize: 11, color: status.color, marginBottom: 10 }}>● {status.text}</div>
 
       <div style={{ ...card, marginBottom: 10 }}>
