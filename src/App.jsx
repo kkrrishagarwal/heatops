@@ -1975,9 +1975,9 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
       {/* LAYER 5a: Command Center point overlay — one circle per real reading (live air temp,
           NASA MODIS surface temp, or ESA built-up share; see utils/hudOverlay.js), plus a ring
           on the selected city. Pointer events off so state hover/click still works beneath. */}
-      {overlay?.points?.length > 0 && (
+      {(overlay?.points?.length > 0 || overlay?.focus) && (
         <ComposableMap projection={INDIA_MAP_PROJECTION} style={{ ...INDIA_MAP_LAYER_STYLE, pointerEvents: 'none' }}>
-          {overlay.points.map(p => (
+          {(overlay.points || []).map(p => (
             <Marker key={p.key} coordinates={[p.lon, p.lat]}>
               <circle r={p.r || 2.5} fill={p.color} fillOpacity={0.88} stroke="#020617" strokeWidth={0.4} />
             </Marker>

@@ -45,6 +45,7 @@ export default function CommandCenterHud({
   const [query, setQuery] = useState('')
   const [clock, setClock] = useState(istNow)
   const [showGridNote, setShowGridNote] = useState(false)
+  const [showDots, setShowDots] = useState(false) // state fills carry the data; dots are optional detail
   const pickedDefault = useRef(false)
 
   useEffect(() => { const id = setInterval(() => setClock(istNow()), 30000); return () => clearInterval(id) }, [])
@@ -133,7 +134,7 @@ export default function CommandCenterHud({
   return (
     <div data-screen="hud" className="fixed inset-0 h-screen w-screen overflow-hidden bg-[#050b18] text-slate-100">
       {/* MAP — full viewport, owned by App (zoom / pan / click state lives there) */}
-      <div className="absolute inset-0 z-0 hud-map">{renderMap({ ...overlay, focus, stateData })}</div>
+      <div className="absolute inset-0 z-0 hud-map">{renderMap({ ...overlay, points: showDots ? overlay?.points : [], focus, stateData })}</div>
 
       {/* TOP BAR */}
       <header className="absolute inset-x-0 top-0 z-20 flex h-14 items-center gap-3 border-b border-sky-500/20 bg-slate-950/80 px-4 backdrop-blur-md">
@@ -166,7 +167,11 @@ export default function CommandCenterHud({
             <button key={k} type="button" data-testid={`layer-${k}`} className={layer === k ? BTN_ON : BTN} onClick={() => setLayer(k)} title={v.source}>{v.label}</button>
           ))}
         </div>
-        <div className="mb-3 text-[10px] leading-snug text-slate-400" data-testid="hud-caption">{lite ? 'Point overlays are off in Lite mode.' : overlay?.caption}{HUD_LAYERS[layer] ? ` · ${HUD_LAYERS[layer].source}` : ''}{scrubbed && !lite ? ' · state colours follow this layer (grey = no reading)' : ''}</div>
+        <label className="mb-2 flex cursor-pointer items-center gap-2 text-[11px] text-slate-300">
+          <input type="checkbox" data-testid="toggle-dots" checked={showDots} onChange={e => setShowDots(e.target.checked)} className="accent-amber-400" />
+          Show city dots ({overlay?.count ?? 0})
+        </label>
+        <div className="mb-3 text-[10px] leading-snug text-slate-400" data-testid="hud-caption">{lite ? 'Point overlays are off in Lite mode.' : overlay?.caption}{HUD_LAYERS[layer] ? ` · ${HUD_LAYERS[layer].source}` : ''}{scrubbed && !lite ? ' · state colours follow this layer (grey = no reading)' : ' · state colours = live map'}</div>
 
         <div className={H3}>City</div>
         <div className="relative mb-3">
