@@ -8,7 +8,7 @@ import { activationLevel, LEVELS } from '../utils/heatActionProtocol'
 import { assessHeatStress } from '../utils/heatStress'
 import { loadModisIndex, loadModisStateFile } from '../utils/modisLst'
 import { fetchJson } from '../utils/fetchJson'
-import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisStateDates, modisStateDayOverlay, lulcOverlay } from '../utils/hudOverlay'
+import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisStateDates, modisStateDayOverlay, lulcOverlay, stateDataFromPoints } from '../utils/hudOverlay'
 
 // COMMAND CENTER — the map-centric "satellite HUD" layout for the Authority view: the India
 // map fills the viewport (rendered by App through renderMap so zoom/pan state stays in one
@@ -93,6 +93,18 @@ export default function CommandCenterHud({
     return airOverlay({ liveCityCache, coords: cityCoordsData, colorFor, field: mode === 'forecast' ? 'tempMax' : 'temp' })
   }, [lite, layer, mode, year, dateIdx, stateDates, stateFile, modisIndex, modisErr, yearly, lulcReal, liveCityCache, cityCoordsData, colorFor])
 
+  // State fills follow the scrubber: everything except "live air temperature" (which is the
+  // map's own live colouring already) re-colours the states from the points on screen.
+  const scrubbed = !(layer === 'air' && mode === 'live')
+  const stateData = useMemo(() => {
+    if (!scrubbed || !overlay) return null
+    const scrubLabel = layer === 'lulc' ? 'ESA WorldCover 2021 built-up share'
+      : mode === 'historical' ? `NASA MODIS ${year} Apr–Jun mean surface temperature`
+      : mode === 'forecast' ? "Today's forecast high (Open-Meteo)"
+      : dateIdx >= 0 && stateDates[dateIdx] ? `NASA MODIS day pass, ${stateDates[dateIdx]}` : 'NASA MODIS latest clear-sky day pass'
+    return stateDataFromPoints({ base: liveIndiaData, points: overlay.points, buckets, kind: layer === 'lulc' ? 'builtUp' : 'heat', scrubLabel })
+  }, [scrubbed, overlay, layer, mode, year, dateIdx, stateDates, liveIndiaData, buckets])
+
   const focus = useMemo(() => {
     const c = cityCoordsData?.[`${selectedCity}|${selectedState}`]
     return c && typeof c.lat === 'number' ? { lon: c.lon, lat: c.lat } : null
@@ -121,7 +133,7 @@ export default function CommandCenterHud({
   return (
     <div data-screen="hud" className="fixed inset-0 h-screen w-screen overflow-hidden bg-[#050b18] text-slate-100">
       {/* MAP — full viewport, owned by App (zoom / pan / click state lives there) */}
-      <div className="absolute inset-0 z-0 hud-map">{renderMap({ ...overlay, focus })}</div>
+      <div className="absolute inset-0 z-0 hud-map">{renderMap({ ...overlay, focus, stateData })}</div>
 
       {/* TOP BAR */}
       <header className="absolute inset-x-0 top-0 z-20 flex h-14 items-center gap-3 border-b border-sky-500/20 bg-slate-950/80 px-4 backdrop-blur-md">
@@ -154,7 +166,7 @@ export default function CommandCenterHud({
             <button key={k} type="button" data-testid={`layer-${k}`} className={layer === k ? BTN_ON : BTN} onClick={() => setLayer(k)} title={v.source}>{v.label}</button>
           ))}
         </div>
-        <div className="mb-3 text-[10px] leading-snug text-slate-400" data-testid="hud-caption">{lite ? 'Point overlays are off in Lite mode.' : overlay?.caption}{HUD_LAYERS[layer] ? ` · ${HUD_LAYERS[layer].source}` : ''}</div>
+        <div className="mb-3 text-[10px] leading-snug text-slate-400" data-testid="hud-caption">{lite ? 'Point overlays are off in Lite mode.' : overlay?.caption}{HUD_LAYERS[layer] ? ` · ${HUD_LAYERS[layer].source}` : ''}{scrubbed && !lite ? ' · state colours follow this layer (grey = no reading)' : ''}</div>
 
         <div className={H3}>City</div>
         <div className="relative mb-3">

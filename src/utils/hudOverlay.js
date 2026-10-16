@@ -109,3 +109,52 @@ export function lulcOverlay({ lulcReal }) {
   }
   return { points, count: points.length, missing: 0, caption: `Built-up share within ~5 km of the centre · ${points.length} classified cities (ESA WorldCover 2021)` }
 }
+
+// ── State fills that follow the scrubber ────────────────────────────────────
+// Re-colours every state from the points currently on the map, with the same rule the live
+// map uses: the bucket that the MOST cities fall into wins, ties go to the hotter bucket
+// (`buckets` is HEAT_INDEX_BUCKETS, most severe first). States with no point in this layer
+// are painted neutral and say so in the tooltip — never carried over from live data.
+export const NO_DATA_FILL = '#334155'
+
+function median(values) {
+  const a = [...values].sort((x, y) => x - y)
+  return a.length ? Math.round(a[Math.floor(a.length / 2)] * 10) / 10 : null
+}
+
+export function stateDataFromPoints({ base, points, buckets, kind = 'heat', scrubLabel = '' }) {
+  const byState = new Map()
+  for (const p of points || []) {
+    const state = p.key?.split('|')[1]
+    if (!state) continue
+    if (!byState.has(state)) byState.set(state, [])
+    byState.get(state).push(p.value)
+  }
+  const out = {}
+  for (const [name, data] of Object.entries(base || {})) {
+    const vals = byState.get(name) || []
+    if (!vals.length) {
+      out[name] = { ...data, heatIndex: null, heatIndexLive: false, liveCityCount: 0, riskBucket: { label: 'NO DATA', color: NO_DATA_FILL, count: 0, share: 0 }, bucketCounts: [], weatherCondition: null, scrub: { label: scrubLabel, detail: 'no reading in this layer for this state' } }
+      continue
+    }
+    if (kind === 'builtUp') {
+      const mean = Math.round(vals.reduce((s, v) => s + v, 0) / vals.length)
+      out[name] = { ...data, heatIndex: mean, heatIndexLive: true, liveCityCount: vals.length, riskBucket: { label: `BUILT-UP ${mean}%`, color: builtUpColor(mean), count: vals.length, share: 100 }, bucketCounts: [], weatherCondition: null, scrub: { label: scrubLabel, detail: `mean built-up share of ${vals.length} classified ${vals.length === 1 ? 'city' : 'cities'}`, unit: '%' } }
+      continue
+    }
+    const counts = buckets.map(b => ({ label: b.label, color: b.color, min: b.min, count: 0 }))
+    for (const v of vals) { const i = buckets.findIndex(b => v >= b.min); if (i >= 0) counts[i].count++ }
+    let best = null
+    for (const c of counts) if (!best || c.count > best.count) best = c
+    const total = vals.length
+    out[name] = {
+      ...data,
+      heatIndex: median(vals), heatIndexLive: true, liveCityCount: total,
+      riskBucket: { label: best.label, color: best.color, min: best.min, count: best.count, share: Math.round((best.count / total) * 100) },
+      bucketCounts: counts.map(c => ({ ...c, share: Math.round((c.count / total) * 100) })),
+      weatherCondition: null,
+      scrub: { label: scrubLabel, detail: `median of ${total} ${total === 1 ? 'city' : 'cities'} with a reading in this layer`, unit: '°C' }
+    }
+  }
+  return out
+}

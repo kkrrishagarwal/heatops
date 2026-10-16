@@ -2056,9 +2056,11 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
         >
           <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{tooltip.name}</div>
           <div style={{ marginBottom: 4 }}>
-            🌡️ Heat Index: <strong>{activeData.heatIndex}°C</strong>
+            {activeData.scrub ? <>{activeData.scrub.unit === '%' ? '🏙️ Built-up' : '🛰️ Surface / air'}: <strong>{activeData.heatIndex == null ? '—' : `${activeData.heatIndex}${activeData.scrub.unit || '°C'}`}</strong></> : <>🌡️ Heat Index: <strong>{activeData.heatIndex}°C</strong></>}
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)' }}>
-              {activeData.heatIndexLive
+              {activeData.scrub
+                ? `${activeData.scrub.label} — ${activeData.scrub.detail}`
+                : activeData.heatIndexLive
                 ? (activeData.heatIndexVintage === 'sample'
                     ? `live median of ${activeData.liveCityCount} sampled cities (refreshed minutes ago; opening the state reads all of them)`
                     : activeData.heatIndexVintage === 'live'
@@ -2074,9 +2076,11 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
             </span>
             {activeData.riskBucket && (
               <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>
-                {activeData.riskBucket.relative
-                  ? `colour = rank today: hotter than ${activeData.riskBucket.percentile}% of states (real readings, not an IMD danger level)`
-                  : `colour = most common category: ${activeData.riskBucket.count} of ${activeData.liveCityCount} cities are ${activeData.riskBucket.label}`}
+                {activeData.scrub
+                  ? (activeData.riskBucket.count ? `colour = most common category among ${activeData.liveCityCount} cities in this layer: ${activeData.riskBucket.count} are ${activeData.riskBucket.label}` : 'colour = grey: no reading in this layer')
+                  : activeData.riskBucket.relative
+                    ? `colour = rank today: hotter than ${activeData.riskBucket.percentile}% of states (real readings, not an IMD danger level)`
+                    : `colour = most common category: ${activeData.riskBucket.count} of ${activeData.liveCityCount} cities are ${activeData.riskBucket.label}`}
                 {!activeData.riskBucket.relative && activeData.bucketCounts && ` · ${activeData.bucketCounts.filter(b => b.count > 0 && b.label !== activeData.riskBucket.label).map(b => `${b.count} ${b.label}`).join(' · ')}`}
               </div>
             )}
@@ -3959,7 +3963,7 @@ function App({ user }) {
             <div ref={mapTransformRef} style={{ position: 'absolute', inset: '56px 0 0 0', transform: `translate(${mapPos.x}px, ${mapPos.y}px) scale(${mapScale * 0.8})`, transformOrigin: 'center 40%', transition: isDragging ? 'none' : 'transform 0.2s ease' }}>
               <AppErrorBoundary compact title="Map could not be displayed">
                 <IndiaMap
-                  INDIA_DATA={liveIndiaData}
+                  INDIA_DATA={overlay?.stateData || liveIndiaData}
                   selectedState={selectedState}
                   lite={lite}
                   onStateClick={handleStateClick}
