@@ -72,12 +72,14 @@ async function fetchWeatherBatch(entries) {
   // same batched request Open-Meteo already charges for, not an extra call — to power the
   // map's weather overlay (heavy-cloud tint) without a separate fetch.
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}` +
-    `&current=temperature_2m,cloud_cover&hourly=precipitation_probability&daily=temperature_2m_max&timezone=Asia/Kolkata&forecast_days=1`
+    `&current=temperature_2m,cloud_cover,wind_speed_10m,wind_direction_10m&hourly=precipitation_probability&daily=temperature_2m_max&timezone=Asia/Kolkata&forecast_days=1`
   const data = await fetchWithRetry(url, 'weather batch')
   const arr = Array.isArray(data) ? data : [data]
   return arr.map(d => ({
     temp: d.current ? Math.round(d.current.temperature_2m) : null,
     cloudCover: typeof d.current?.cloud_cover === 'number' ? Math.round(d.current.cloud_cover) : null,
+    windSpeed: typeof d.current?.wind_speed_10m === 'number' ? Math.round(d.current.wind_speed_10m) : null, // km/h
+    windDir: typeof d.current?.wind_direction_10m === 'number' ? Math.round(d.current.wind_direction_10m) : null, // ° meteorological (from)
     rainChance: d.hourly?.precipitation_probability?.[0] ?? null,
     // today's forecast high (same call, no extra request) — shown as "peak" next to "now"
     tempMax: typeof d.daily?.temperature_2m_max?.[0] === 'number' ? Math.round(d.daily.temperature_2m_max[0]) : null
@@ -153,6 +155,8 @@ export async function refreshWeatherCache() {
           rainChance: weatherRes[i]?.rainChance ?? null,
           aqi: aqiRes[i]?.aqi ?? null,
           cloudCover: weatherRes[i]?.cloudCover ?? null,
+          windSpeed: weatherRes[i]?.windSpeed ?? null,
+          windDir: weatherRes[i]?.windDir ?? null,
           tempMax: weatherRes[i]?.tempMax ?? null,
           pm10: aqiRes[i]?.pm10 ?? null,
           observedAt: nowIso,
