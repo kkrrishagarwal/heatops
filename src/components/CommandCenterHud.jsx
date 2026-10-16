@@ -8,6 +8,7 @@ import { activationLevel, LEVELS } from '../utils/heatActionProtocol'
 import { assessHeatStress } from '../utils/heatStress'
 import { loadModisIndex } from '../utils/modisLst'
 import { fetchJson } from '../utils/fetchJson'
+import { BASEMAPS, gibsSafeDate } from './SatelliteBasemap'
 import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisNationalDayOverlay, lulcOverlay, stateDataFromPoints } from '../utils/hudOverlay'
 
 // COMMAND CENTER — the map-centric "satellite HUD" layout for the Authority view: the India
@@ -46,6 +47,7 @@ export default function CommandCenterHud({
   const [clock, setClock] = useState(istNow)
   const [showGridNote, setShowGridNote] = useState(false)
   const [showDots, setShowDots] = useState(false)
+  const [basemap, setBasemap] = useState('dark') // dark | esri (Google-style imagery) | gibs (NASA daily true colour)
   const [composite, setComposite] = useState(true) // Live Pass: fill cloudy days from each city's last pass within 14 days
   const LOOKBACK_DAYS = 14 // state fills carry the data; dots are optional detail
   const pickedDefault = useRef(false)
@@ -135,7 +137,8 @@ export default function CommandCenterHud({
   return (
     <div data-screen="hud" className="fixed inset-0 h-screen w-screen overflow-hidden bg-[#050b18] text-slate-100">
       {/* MAP — full viewport, owned by App (zoom / pan / click state lives there) */}
-      <div className="absolute inset-0 z-0 hud-map">{renderMap({ ...overlay, points: showDots ? overlay?.points : [], focus, stateData })}</div>
+      <div className="absolute inset-0 z-0 hud-map">{renderMap({ ...overlay, points: showDots ? overlay?.points : [], focus, stateData, basemap, basemapDate: basemap === 'gibs' ? gibsSafeDate(mode === 'live' && layer === 'modis' && dateIdx >= 0 ? stateDates[dateIdx] : null) : null })}</div>
+      {basemap !== 'dark' && <div className="absolute bottom-2 left-3 z-10 text-[9px] text-slate-400" data-testid="basemap-attribution">{BASEMAPS[basemap].attribution}</div>}
 
       {/* TOP BAR */}
       <header className="absolute inset-x-0 top-0 z-20 flex h-14 items-center gap-3 border-b border-sky-500/20 bg-slate-950/80 px-4 backdrop-blur-md">
@@ -168,6 +171,13 @@ export default function CommandCenterHud({
             <button key={k} type="button" data-testid={`layer-${k}`} className={layer === k ? BTN_ON : BTN} onClick={() => setLayer(k)} title={v.source}>{v.label}</button>
           ))}
         </div>
+        <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+          <span className="mr-1 uppercase tracking-wider">Base map</span>
+          {Object.entries(BASEMAPS).map(([k, v]) => (
+            <button key={k} type="button" data-testid={`basemap-${k}`} className={basemap === k ? BTN_ON : BTN} onClick={() => setBasemap(k)} title={v.attribution || 'Plain dark surface'}>{v.label}</button>
+          ))}
+        </div>
+        {basemap === 'gibs' && <div className="mb-2 text-[10px] text-slate-400">Showing NASA's true-colour image of {gibsSafeDate(mode === 'live' && layer === 'modis' && dateIdx >= 0 ? stateDates[dateIdx] : null)} — in Live Pass, the picture follows the date you scrub.</div>}
         <label className="mb-2 flex cursor-pointer items-center gap-2 text-[11px] text-slate-300">
           <input type="checkbox" data-testid="toggle-dots" checked={showDots} onChange={e => setShowDots(e.target.checked)} className="accent-amber-400" />
           Show city dots ({overlay?.count ?? 0})

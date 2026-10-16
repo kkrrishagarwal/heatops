@@ -1971,3 +1971,7 @@ html[data-lite] .navbar { background: #0f172a; }
 [data-screen="hud"] .hud-dock .panel h3 { font-size: 10px; letter-spacing: 0.12em; color: #94a3b8; margin-bottom: 8px; }
 [data-screen="hud"] input[type="range"] { height: 4px; }
 [data-screen="hud"] .hud-map button[aria-label="Show heat index legend"] { display: none; }
+/* Command Center with a satellite basemap: let the imagery show through the state colours. */
+[data-screen="hud"] .has-basemap svg path[data-state] { fill-opacity: 0.55; }
+[data-screen="hud"] .has-basemap svg path:not([data-state]) { fill-opacity: 0.55; }
+[data-screen="hud"] .has-basemap svg image { fill-opacity: 1; }

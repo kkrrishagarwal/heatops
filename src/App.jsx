@@ -59,6 +59,7 @@ import ViewModeToggle from './components/ViewModeToggle'
 import AudienceToggle from './components/AudienceToggle'
 import HeatActionChecklist from './components/HeatActionChecklist'
 import CommandCenterHud from './components/CommandCenterHud'
+import SatelliteBasemap from './components/SatelliteBasemap'
 import HeatStressPanel from './components/HeatStressPanel'
 import HeatCoPilot from './components/HeatCoPilot'
 import { useViewMode } from './hooks/useViewMode'
@@ -1719,7 +1720,7 @@ function MiniGrid({ base, tree = 0, roof = 0, water = 0, size = 15, label, testI
   )
 }
 
-const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, plannerMarkers = [], onPlannerMarkerClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null, lite = false, overlay = null }, transformRef) => {
+const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, plannerMarkers = [], onPlannerMarkerClick, scale = 1, pos = { x: 0, y: 0 }, isDragging = false, cacheStatus = 'ready', cacheStale = false, cacheAgeLabel = null, audience = 'authority', selectedState = null, lite = false, overlay = null, basemap = null }, transformRef) => {
   // Legend is collapsed by default so the map itself stays fully visible (it covered ~60% of the map on phones).
   const [legendOpen, setLegendOpen] = useState(false)
   const { t } = useTranslation()
@@ -1920,6 +1921,10 @@ const IndiaMap = React.forwardRef(({ INDIA_DATA: propINDIA_DATA, onStateClick, p
             this large GeoJSON layer to recompute its projection on every hover. */}
         {/* Lite mode: skip the 594-district texture (the heaviest projection on first paint);
             the state layer below still carries the heat colour. */}
+        {/* LAYER 0: optional raster satellite basemap (Command Center), same projection. */}
+        {basemap && basemap.source !== 'dark' && (
+          <SatelliteBasemap projection={INDIA_MAP_PROJECTION} source={basemap.source} date={basemap.date} zoomScale={basemap.zoom || 1} />
+        )}
         {!lite && <DistrictsLayer DATA={DATA} />}
 
       {/* Weather conditions: no full-state fill here any more — the icon badges (LAYER 4, WeatherOverlayIcons) carry it. */}
@@ -3959,7 +3964,7 @@ function App({ user }) {
     return (
       <CommandCenterHud
         renderMap={(overlay) => (
-          <div {...mapHandlers} style={{ position: 'absolute', inset: 0, cursor: isDragging ? 'grabbing' : 'grab', overflow: 'hidden' }}>
+          <div {...mapHandlers} className={overlay?.basemap && overlay.basemap !== 'dark' ? 'has-basemap' : ''} style={{ position: 'absolute', inset: 0, cursor: isDragging ? 'grabbing' : 'grab', overflow: 'hidden' }}>
             <div ref={mapTransformRef} style={{ position: 'absolute', inset: '56px 0 0 0', transform: `translate(${mapPos.x}px, ${mapPos.y}px) scale(${mapScale * 0.8})`, transformOrigin: 'center 40%', transition: isDragging ? 'none' : 'transform 0.2s ease' }}>
               <AppErrorBoundary compact title="Map could not be displayed">
                 <IndiaMap
@@ -3977,6 +3982,7 @@ function App({ user }) {
                   cacheAgeLabel={formatAgo(cacheLastUpdated)}
                   audience={audience}
                   overlay={overlay}
+                  basemap={{ source: overlay?.basemap || 'dark', date: overlay?.basemapDate, zoom: mapScale * 0.8 }}
                 />
               </AppErrorBoundary>
             </div>
