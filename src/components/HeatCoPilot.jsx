@@ -6,6 +6,8 @@ import { getLulcWithFallback } from '../utils/lulcFallback'
 import { cityRiskProfile, riskLabel } from '../utils/mitigationPlanner'
 import { activationLevel, buildFallbackPlan, sanitisePlan, LEVELS } from '../utils/heatActionProtocol'
 import { openExecutiveBrief } from '../utils/executiveBrief'
+import { buildCosting, BUDGET_PRESETS } from '../utils/heatCosting'
+import { fmtINR } from '../utils/mitigationPlanner'
 
 // AI HEAT RESPONSE CO-PILOT (authority view). One button sends the selected city's live
 // readings, heat stress, IMD-threshold outlook and land cover to POST /api/heat-agent, which
@@ -53,12 +55,15 @@ const OUTLOOK_HEADLINE = {
   normal: 'No heatwave conditions in the next 7 days'
 }
 
-export function buildCopilotInput({ city, state, liveWeather, lulcReal, cityCoordsData, isCoastal }) {
+export function buildCopilotInput({ city, state, liveWeather, lulcReal, cityCoordsData, isCoastal, budget = 10000000 }) {
   const { now, peak } = assessHeatStress(liveWeather)
   const outlook = buildOutlook(liveWeather?.forecast, { elevation: liveWeather?.elevation, isCoastal })
   const lulc = lulcReal ? getLulcWithFallback(city, state, lulcReal, cityCoordsData) : null
   const profile = cityRiskProfile({ city, state, temp: liveWeather?.current?.temp ?? null, tempMax: liveWeather?.today?.maxTemp ?? null, modisPeak: null, lulc, facilities: null })
   const hot = outlook?.days?.find(d => ['watch', 'heatwave', 'severe'].includes(d.level))
+  const stressOut = now ? { heatIndex: now.heatIndex, heatIndexBandKey: now.heatIndexBand.key, heatIndexBandLabel: now.heatIndexBand.label, heatIndexEffect: now.heatIndexBand.effect, wetBulb: now.wetBulb, wbgt: now.wbgt, wbgtCat: now.wbgtCategory.cat, workRest: now.wbgtCategory.workRest, peakTime: peak?.time ?? null, peakWbgt: peak?.wbgt ?? null } : {}
+  const level = activationLevel({ current: { temp: liveWeather?.current?.temp ?? null }, today: { maxTemp: liveWeather?.today?.maxTemp ?? null }, stress: stressOut, outlook: { worst: outlook?.worst } }).level
+  const costing = buildCosting({ profile, level, stress: stressOut, outlook, budget })
   return {
     city, state,
     elevation: liveWeather?.elevation ?? null,
@@ -66,9 +71,10 @@ export function buildCopilotInput({ city, state, liveWeather, lulcReal, cityCoor
     today: { maxTemp: liveWeather?.today?.maxTemp ?? null, minTemp: liveWeather?.today?.minTemp ?? null },
     forecast: (liveWeather?.forecast || []).slice(0, 7).map(d => ({ date: d.date, maxTemp: d.maxTemp, minTemp: d.minTemp })),
     outlook: outlook ? { worst: outlook.worst, headline: OUTLOOK_HEADLINE[outlook.worst] || '', threshold: outlook.threshold.t, thresholdKind: outlook.threshold.kind, spell: outlook.spells[0] ? { from: outlook.spells[0].from, to: outlook.spells[0].to, days: outlook.spells[0].days, peak: outlook.spells[0].peak } : null, firstHotDay: hot?.date || null } : {},
-    stress: now ? { heatIndex: now.heatIndex, heatIndexBandKey: now.heatIndexBand.key, heatIndexBandLabel: now.heatIndexBand.label, wetBulb: now.wetBulb, wbgt: now.wbgt, wbgtCat: now.wbgtCategory.cat, workRest: now.wbgtCategory.workRest, peakTime: peak?.time ?? null, peakWbgt: peak?.wbgt ?? null } : {},
+    stress: stressOut,
     landCover: lulc ? { builtUp: lulc.builtUp ?? null, vegetation: lulc.vegetation ?? null, treeCover: lulc.treeCover ?? null, isFallback: !!lulc.isFallback, fallbackCity: lulc.fallbackCity || '' } : {},
     risk: { score: profile.risk ?? null, label: riskLabel(profile.risk).label },
+    costing,
     demo: liveWeather?.demoOverride != null
   }
 }
@@ -79,12 +85,13 @@ export default function HeatCoPilot({ city, state, liveWeather, lulcReal, cityCo
   const [elapsed, setElapsed] = useState(0)
   const [result, setResult] = useState(null) // { source, plan, meta?, reason?, generatedAt }
   const [lang, setLang] = useState('en')
+  const [budget, setBudget] = useState(BUDGET_PRESETS[2]) // seasonal budget the directive plans with
   const [notice, setNotice] = useState('')
   const logKey = `${LOG_PREFIX}${city || ''}|${state || ''}`
   const [log, setLog] = useState(() => readLog(logKey))
   const runRef = useRef(0)
 
-  const input = useMemo(() => buildCopilotInput({ city, state, liveWeather, lulcReal, cityCoordsData, isCoastal }), [city, state, liveWeather, lulcReal, cityCoordsData, isCoastal])
+  const input = useMemo(() => buildCopilotInput({ city, state, liveWeather, lulcReal, cityCoordsData, isCoastal, budget }), [city, state, liveWeather, lulcReal, cityCoordsData, isCoastal, budget])
   const pre = useMemo(() => activationLevel(input), [input])
 
   useEffect(() => { let live = true; pingAgent().then(r => { if (live) setAgent(r) }); return () => { live = false } }, [])
@@ -161,6 +168,20 @@ export default function HeatCoPilot({ city, state, liveWeather, lulcReal, cityCo
         <div style={{ fontSize: 11, color: '#cbd5e1' }}>{pre.reasons.join(' · ')}</div>
       </div>
 
+      <div style={{ ...card, marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <div style={label}>Seasonal budget to plan with</div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {BUDGET_PRESETS.map(b => <button key={b} type="button" data-testid={`budget-${b}`} onClick={() => setBudget(b)} style={{ ...ghost, padding: '2px 8px', fontSize: 11, borderColor: budget === b ? '#f59e0b' : '#334155', color: budget === b ? '#fbbf24' : '#94a3b8' }}>{fmtINR(b)}</button>)}
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: '#cbd5e1', marginTop: 4 }} data-testid="costing-preview">
+          This week's emergency response at the pre-assessed level: <b>{input.costing?.fmt?.emergencyTotal || '₹0'}</b>
+          {input.costing?.seasonal ? <> · the planner would spend <b>{input.costing.fmt.seasonalSpent}</b> of {fmtINR(budget)} for a projected risk {input.costing.seasonal.riskBefore} → {input.costing.seasonal.riskAfter}</> : ' · no seasonal plan (no live reading yet)'}
+          {input.costing?.target && !input.costing.target.unreachable && <> · a {input.costing.target.reductionPct}% risk cut needs ≈ <b>{input.costing.fmt.targetInvestment}</b></>}
+        </div>
+      </div>
+
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         <button type="button" data-testid="copilot-run" onClick={run} disabled={phase === 'running'} style={{ ...btn('#f59e0b'), opacity: phase === 'running' ? 0.6 : 1 }}>
           {phase === 'running' ? 'AI working…' : result ? 'Run the Co-Pilot again' : 'Run AI Co-Pilot'}
@@ -208,6 +229,38 @@ export default function HeatCoPilot({ city, state, liveWeather, lulcReal, cityCo
             <div style={card}>
               <div style={label}>Labour order</div>
               <div style={{ fontSize: 12, color: '#e2e8f0' }}>Outdoor work <b>{plan.labour.shiftWindow}</b> · <b>{plan.labour.restrictHours}</b> · work/rest <b>{plan.labour.workRest}</b></div>
+            </div>
+          )}
+
+          {plan.budget && (
+            <div style={card} data-testid="copilot-budget">
+              <div style={label}>Estimated cost — {city}</div>
+              {plan.budget.emergencyThisWeek.length > 0 && (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, color: '#e2e8f0' }}>
+                  <thead><tr style={{ color: '#94a3b8', fontSize: 10, textAlign: 'left' }}><th style={{ padding: '2px 0' }}>This week</th><th style={{ textAlign: 'right' }}>Qty</th><th style={{ textAlign: 'right' }}>Unit</th><th style={{ textAlign: 'right' }}>Cost</th></tr></thead>
+                  <tbody>
+                    {plan.budget.emergencyThisWeek.map((i, k) => <tr key={k} style={{ borderTop: '1px solid #1e293b' }}><td style={{ padding: '3px 0' }}>{i.item}</td><td style={{ textAlign: 'right' }}>{i.qty}</td><td style={{ textAlign: 'right' }}>{fmtINR(i.unitCost)}</td><td style={{ textAlign: 'right', fontWeight: 700 }}>{fmtINR(i.cost)}</td></tr>)}
+                    <tr style={{ borderTop: '1px solid #334155' }}><td colSpan={3} style={{ padding: '3px 0', fontWeight: 800 }}>Emergency total</td><td style={{ textAlign: 'right', fontWeight: 800, color: '#fbbf24' }}>{fmtINR(plan.budget.emergencyTotal)}</td></tr>
+                  </tbody>
+                </table>
+              )}
+              {plan.budget.seasonal && (
+                <div style={{ fontSize: 12, color: '#e2e8f0', marginTop: 6 }}>
+                  <b>Seasonal investment {fmtINR(plan.budget.seasonal.investment)}</b>{plan.budget.seasonal.riskBefore != null ? ` · composite risk ${plan.budget.seasonal.riskBefore} → ${plan.budget.seasonal.riskAfter} (projected)` : ''}
+                  <div style={{ fontSize: 11, color: '#94a3b8' }}>{plan.budget.seasonal.whatItBuys}</div>
+                </div>
+              )}
+              {plan.budget.notPriced.length > 0 && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>Not priced (no unit cost held): {plan.budget.notPriced.join(', ')}.</div>}
+              {plan.budget.note && <div style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>{plan.budget.note}</div>}
+            </div>
+          )}
+
+          {plan.ifNotControlled && (
+            <div style={{ ...card, borderLeft: '4px solid #dc2626' }} data-testid="copilot-ifnot">
+              <div style={{ ...label, color: '#fca5a5' }}>If this is not controlled</div>
+              <div style={{ fontSize: 12, color: '#e2e8f0' }}>{plan.ifNotControlled.summary}</div>
+              {plan.ifNotControlled.consequences.length > 0 && <ul style={{ margin: '6px 0 0 16px', padding: 0, fontSize: 11, color: '#cbd5e1' }}>{plan.ifNotControlled.consequences.map((c, k) => <li key={k}>{c}</li>)}</ul>}
+              {plan.ifNotControlled.whoIsHitFirst.length > 0 && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>Hit first: {plan.ifNotControlled.whoIsHitFirst.join(' · ')}</div>}
             </div>
           )}
 

@@ -80,7 +80,24 @@ export function sanitiseInput(body) {
     stress: { heatIndex: num(s.heatIndex, -60, 90), heatIndexBandKey: str(s.heatIndexBandKey, 20), heatIndexBandLabel: str(s.heatIndexBandLabel, 30), wetBulb: num(s.wetBulb, -60, 50), wbgt: num(s.wbgt, -60, 50), wbgtCat: num(s.wbgtCat, 0, 5), workRest: str(s.workRest, 40), peakTime: str(s.peakTime, 16), peakWbgt: num(s.peakWbgt, -60, 50) },
     landCover: { builtUp: num(lc.builtUp, 0, 100), vegetation: num(lc.vegetation, 0, 100), treeCover: num(lc.treeCover, 0, 100), isFallback: lc.isFallback === true, fallbackCity: str(lc.fallbackCity, 60) },
     risk: { score: num(body.risk?.score, 0, 100), label: str(body.risk?.label, 20) },
+    costing: sanitiseCosting(body.costing),
     demo: body.demo === true
+  }
+}
+
+const money = v => num(v, 0, 1e11)
+function sanitiseCosting(c) {
+  if (!c || typeof c !== 'object') return null
+  const e = c.emergency || {}
+  const sg = c.seasonal
+  const t = c.target
+  const q = c.consequences || {}
+  return {
+    unitCosts: Array.isArray(c.unitCosts) ? c.unitCosts.slice(0, 10).map(u => ({ item: str(u?.item, 60), unitCost: money(u?.unitCost), unit: str(u?.unit, 20) })) : [],
+    emergency: { items: Array.isArray(e.items) ? e.items.slice(0, 10).map(i => ({ item: str(i?.item, 60), qty: num(i?.qty, 0, 1000), unitCost: money(i?.unitCost), cost: money(i?.cost) })) : [], total: money(e.total) ?? 0, notPriced: Array.isArray(e.notPriced) ? e.notPriced.slice(0, 8).map(x => str(x, 60)) : [] },
+    seasonal: sg && typeof sg === 'object' ? { budget: money(sg.budget), spent: money(sg.spent), riskBefore: num(sg.riskBefore, 0, 100), riskAfter: num(sg.riskAfter, 0, 100), reductionPct: Array.isArray(sg.reductionPct) ? sg.reductionPct.slice(0, 2).map(v => num(v, 0, 100)) : null, roofs: num(sg.roofs, 0, 1e6), hectaresGreen: num(sg.hectaresGreen, 0, 1e5), coolingUnits: num(sg.coolingUnits, 0, 1e4), hectaresReflective: num(sg.hectaresReflective, 0, 1e5), facilities: num(sg.facilities, 0, 1e4), confidence: str(sg.confidence, 10) } : null,
+    target: t && typeof t === 'object' ? { reductionPct: num(t.reductionPct, 0, 100), investment: money(t.investment), unreachable: t.unreachable === true, maxReductionPct: num(t.maxReductionPct, 0, 100), riskBefore: num(t.riskBefore, 0, 100), riskAfter: num(t.riskAfter, 0, 100) } : null,
+    consequences: { hotDaysNext7: num(q.hotDaysNext7, 0, 7), thresholdC: num(q.thresholdC, 20, 50), peakForecastC: num(q.peakForecastC, -40, 60), heatIndexC: num(q.heatIndexC, -60, 90), heatIndexBand: str(q.heatIndexBand, 30), heatIndexEffect: str(q.heatIndexEffect, 160), wetBulbC: num(q.wetBulbC, -60, 50), wbgtCat: num(q.wbgtCat, 0, 5), workHoursLostPerWorkerPerDay: num(q.workHoursLostPerWorkerPerDay, 0, 8), exposureWindow: str(q.exposureWindow, 20) }
   }
 }
 
@@ -93,6 +110,8 @@ STRICT RULES
 - Owners must be district roles, not named people.
 - If a value is missing, say what is missing in "assumptions" rather than guessing.
 - The rule-based pre-assessment below is a guide; you may change the level only with a reason stated in "situation".
+- BUDGET: "budget" must use ONLY the unit costs in DATA.costing.unitCosts and the quantities in DATA.costing.emergency / DATA.costing.seasonal (you may adjust quantities with a stated reason, never prices). Show cost = qty × unitCost. Anything that costs money but has no price in DATA goes in "notPriced" — never estimate it. State in "note" that these are model-based estimates from the platform's published unit costs, not quotations.
+- IF NOT CONTROLLED: "ifNotControlled" must be built only from DATA.costing.consequences (days above the IMD threshold, Heat Index band and its effect, work hours lost per worker, wet-bulb). Never state or imply death or casualty counts. Name who is hit first (worker groups, elderly, infants, patients) in general terms.
 - Do not browse or run tools; answer directly from DATA.
 - Reply with ONE JSON object only — no markdown fences, no text before or after — matching this schema:
 ${PLAN_SCHEMA_TEXT}

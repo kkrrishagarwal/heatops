@@ -6,6 +6,7 @@
 import { LEVELS } from './heatActionProtocol'
 
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+const inr = n => (typeof n !== 'number' ? '—' : n >= 1e7 ? `₹${(n / 1e7).toFixed(2).replace(/\.?0+$/, '')} Cr` : n >= 1e5 ? `₹${(n / 1e5).toFixed(2).replace(/\.?0+$/, '')} L` : `₹${Math.round(n).toLocaleString('en-IN')}`)
 const val = (v, unit = '') => (v == null || v === '' ? '—' : `${esc(v)}${unit}`)
 
 export function buildExecutiveBriefHtml({ city, state, input, result, log = [], now = new Date() }) {
@@ -61,6 +62,8 @@ ${forecast ? `<h2>7-day forecast maxima (Open-Meteo) vs IMD ${val(input.outlook?
 <h2>Actions</h2>
 <table><tr><th>#</th><th>Action</th><th>Owner</th><th>By</th><th>Pri.</th></tr>${rows}</table>
 ${plan.labour ? `<h2>Labour order</h2><p>Outdoor work window <b>${esc(plan.labour.shiftWindow)}</b> · restriction <b>${esc(plan.labour.restrictHours)}</b> · work/rest <b>${esc(plan.labour.workRest)}</b></p>` : ''}
+${plan.budget ? `<h2>Estimated cost</h2>${plan.budget.emergencyThisWeek.length ? `<table><tr><th>This week</th><th>Qty</th><th>Unit cost</th><th>Cost</th></tr>${plan.budget.emergencyThisWeek.map(i => `<tr><td>${esc(i.item)}</td><td>${esc(i.qty)}</td><td>${esc(inr(i.unitCost))}</td><td>${esc(inr(i.cost))}</td></tr>`).join('')}<tr><td colspan="3"><b>Emergency total</b></td><td><b>${esc(inr(plan.budget.emergencyTotal))}</b></td></tr></table>` : ''}${plan.budget.seasonal ? `<p><b>Seasonal investment ${esc(inr(plan.budget.seasonal.investment))}</b>${plan.budget.seasonal.riskBefore != null ? ` · composite risk ${esc(plan.budget.seasonal.riskBefore)} → ${esc(plan.budget.seasonal.riskAfter)} (projected)` : ''}<br><span class="d">${esc(plan.budget.seasonal.whatItBuys)}</span></p>` : ''}${plan.budget.notPriced.length ? `<p class="d">Not priced (no unit cost held): ${esc(plan.budget.notPriced.join(', '))}.</p>` : ''}${plan.budget.note ? `<p class="d">${esc(plan.budget.note)}</p>` : ''}` : ''}
+${plan.ifNotControlled ? `<h2>If this is not controlled</h2><p><b>${esc(plan.ifNotControlled.summary)}</b></p>${plan.ifNotControlled.consequences.length ? `<ul>${plan.ifNotControlled.consequences.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}${plan.ifNotControlled.whoIsHitFirst.length ? `<p class="d">Hit first: ${esc(plan.ifNotControlled.whoIsHitFirst.join(' · '))}</p>` : ''}` : ''}
 <h2>Public advisory (SMS)</h2>
 ${plan.publicAdvisory?.en ? `<div class="sms">${esc(plan.publicAdvisory.en)}</div>` : ''}${plan.publicAdvisory?.hi ? `<div class="sms" lang="hi">${esc(plan.publicAdvisory.hi)}</div>` : ''}
 ${plan.sdmaIncident ? `<h2>SDMA incident</h2><p><b>${esc(plan.sdmaIncident.type)}</b> · severity ${esc(plan.sdmaIncident.severity)}<br>${esc(plan.sdmaIncident.summary)}</p>` : ''}

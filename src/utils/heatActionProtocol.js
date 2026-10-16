@@ -68,10 +68,23 @@ export const PLAN_SCHEMA_TEXT = `{
   "labour": { "restrictHours": string, "shiftWindow": string, "workRest": string } | null,
   "publicAdvisory": { "en": string (SMS, max 300 chars), "hi": string (Hindi SMS, max 300 chars) },
   "sdmaIncident": { "type": string, "severity": "low" | "moderate" | "high" | "severe", "summary": string (max 300 chars) } | null,
+  "budget": {
+    "emergencyThisWeek": [ { "item": string, "qty": number, "unitCost": number (₹, ONLY from DATA.costing.unitCosts), "cost": number (= qty × unitCost) } ],
+    "emergencyTotal": number (₹, the sum of the items above),
+    "seasonal": { "investment": number (₹), "riskBefore": number, "riskAfter": number, "whatItBuys": string (max 200 chars) } | null,
+    "notPriced": [ string ] (things that cost money but DATA holds no price for),
+    "note": string (max 240 chars: where the figures come from and what they are not)
+  },
+  "ifNotControlled": {
+    "summary": string (max 240 chars, ONLY from DATA.costing.consequences — no death or casualty counts),
+    "consequences": [ string ] (3 to 6 items, each traceable to a number in DATA),
+    "whoIsHitFirst": [ string ] (max 4 groups, e.g. "outdoor construction and MGNREGA workers")
+  },
   "assumptions": [ string ] (what you assumed or could not verify, max 6)
 }`
 
 const fmt = v => (v == null ? '—' : `${v}`)
+const fmtINR = n => (n >= 1e7 ? `₹${(n / 1e7).toFixed(2).replace(/\.?0+$/, '')} Cr` : n >= 1e5 ? `₹${(n / 1e5).toFixed(2).replace(/\.?0+$/, '')} L` : `₹${Math.round(n).toLocaleString('en-IN')}`)
 
 export function buildFallbackPlan(input) {
   const city = input?.city || 'this city'
@@ -115,7 +128,6 @@ export function buildFallbackPlan(input) {
     add('P3', 'infrastructure', 'Use the quiet period for long-term cooling', 'Plan cool roofs, tree planting and shade structures for next summer with the Interventions tab planner.', 'Urban Planning / Town Planner', 'this season')
   }
 
-  const hot = level === 'critical' || level === 'alert'
   const labour = hot
     ? { restrictHours: level === 'critical' ? '12:00–16:00 no outdoor work' : '12:00–16:00 no heavy outdoor work', shiftWindow: '06:00–11:00', workRest: s.workRest || '—' }
     : null
@@ -130,6 +142,31 @@ export function buildFallbackPlan(input) {
   const sdmaIncident = hot
     ? { type: level === 'critical' ? 'Heatwave — full Heat Action Plan activation' : 'Heat alert — Heat Action Plan activation', severity: level === 'critical' ? 'severe' : 'high', summary: `${city}${state ? `, ${state}` : ''}: ${reasons.join('; ')}. Heat Index ${fmt(s.heatIndex)}°C, WBGT (shade est.) ${fmt(s.wbgt)}°C.${firstHot ? ` Outlook: above-threshold from ${firstHot}.` : ''}` }
     : null
+
+  // Budget and consequences from the deterministic costing the client computed (if present).
+  const cst = input?.costing || null
+  const budget = cst ? {
+    emergencyThisWeek: (cst.emergency?.items || []).map(i => ({ item: i.item, qty: i.qty, unitCost: i.unitCost, cost: i.cost })),
+    emergencyTotal: cst.emergency?.total ?? 0,
+    seasonal: cst.seasonal ? { investment: cst.seasonal.spent, riskBefore: cst.seasonal.riskBefore, riskAfter: cst.seasonal.riskAfter, whatItBuys: `${cst.seasonal.roofs} cool roofs · ${cst.seasonal.hectaresGreen} ha plantation · ${cst.seasonal.coolingUnits} cooling units${cst.seasonal.hectaresReflective ? ` · ${cst.seasonal.hectaresReflective} ha reflective surfaces` : ''}` } : null,
+    notPriced: cst.emergency?.notPriced || [],
+    note: `Unit costs from the Mitigation Planner's published assumptions (Ahmedabad cool-roof pilot 2017, ₹350 per tree incl. 3-year care, ₹5 L per cooling centre). Model-based estimates, not quotations.${cst.target ? (cst.target.unreachable ? ` A ${cst.target.reductionPct}% risk cut is beyond the model's ceiling (~${cst.target.maxReductionPct}%).` : ` A ${cst.target.reductionPct}% composite-risk cut needs about ${fmtINR(cst.target.investment)}.`) : ''}`
+  } : null
+  const cq = cst?.consequences || null
+  const hot = level === 'critical' || level === 'alert'
+  const ifNotControlled = cq ? {
+    summary: hot
+      ? `Without these measures, ${cq.hotDaysNext7} of the next 7 days stay at or above the ${cq.thresholdC ?? 40}°C IMD threshold${cq.peakForecastC != null ? ` (peak ${cq.peakForecastC}°C)` : ''}, with heat exposure unmanaged in the ${cq.exposureWindow} window.`
+      : `Current readings do not cross an activation threshold; the main cost of inaction is being unprepared when they do.`,
+    consequences: [
+      ...(cq.hotDaysNext7 ? [`${cq.hotDaysNext7} day(s) in the next 7 at or above the IMD threshold with no cooling centres or water points open.`] : []),
+      ...(cq.heatIndexBand ? [`Heat Index ${cq.heatIndexC}°C (${cq.heatIndexBand}): ${cq.heatIndexEffect || 'heat illness risk rises with exposure'}`] : []),
+      ...(cq.workHoursLostPerWorkerPerDay ? [`Outdoor work at WBGT category ${cq.wbgtCat}: ${cq.workHoursLostPerWorkerPerDay} of every 8 working hours must be rest — enforced by order, or paid for in heat casualties and lost output.`] : []),
+      ...(cq.wetBulbC != null && cq.wetBulbC >= 28 ? [`Wet-bulb ${cq.wetBulbC}°C: sweating cools the body less; by ~31°C even healthy adults cannot shed heat (Vecellio et al. 2022).`] : []),
+      ...(hot ? ['Afternoon power demand for cooling peaks while hospitals and water pumping compete for the same feeders.'] : [])
+    ],
+    whoIsHitFirst: hot ? ['Outdoor construction and MGNREGA workers', 'Street vendors and delivery riders', 'Elderly people and infants in top-floor or tin-roof housing', 'Patients in facilities without reliable cooling'] : []
+  } : null
 
   const headline = {
     critical: `${city}: CRITICAL heat — activate the full Heat Action Plan now`,
@@ -151,6 +188,8 @@ export function buildFallbackPlan(input) {
     labour,
     publicAdvisory,
     sdmaIncident,
+    budget,
+    ifNotControlled,
     assumptions: [
       'Rule-based protocol (NDMA heat-wave guidelines, Ahmedabad Heat Action Plan) — not generated by the agent.',
       'No ward, population or facility-location data is held, so zones are described, not named.',
@@ -182,6 +221,21 @@ export function sanitisePlan(raw) {
     : null
   const pa = raw.publicAdvisory && typeof raw.publicAdvisory === 'object' ? raw.publicAdvisory : {}
   const inc = raw.sdmaIncident && typeof raw.sdmaIncident === 'object' ? raw.sdmaIncident : null
+  const money = v => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.round(Math.min(v, 1e11)) : null)
+  const b = raw.budget && typeof raw.budget === 'object' ? raw.budget : null
+  const budget = b ? {
+    emergencyThisWeek: Array.isArray(b.emergencyThisWeek) ? b.emergencyThisWeek.slice(0, 12).map(i => ({ item: str(i?.item, 80), qty: money(i?.qty) ?? 0, unitCost: money(i?.unitCost) ?? 0, cost: money(i?.cost) ?? 0 })).filter(i => i.item) : [],
+    emergencyTotal: money(b.emergencyTotal) ?? 0,
+    seasonal: b.seasonal && typeof b.seasonal === 'object' ? { investment: money(b.seasonal.investment) ?? 0, riskBefore: money(b.seasonal.riskBefore), riskAfter: money(b.seasonal.riskAfter), whatItBuys: str(b.seasonal.whatItBuys, 240) } : null,
+    notPriced: Array.isArray(b.notPriced) ? b.notPriced.slice(0, 8).map(x => str(x, 80)).filter(Boolean) : [],
+    note: str(b.note, 300)
+  } : null
+  const n = raw.ifNotControlled && typeof raw.ifNotControlled === 'object' ? raw.ifNotControlled : null
+  const ifNotControlled = n ? {
+    summary: str(n.summary, 300),
+    consequences: Array.isArray(n.consequences) ? n.consequences.slice(0, 6).map(x => str(x, 240)).filter(Boolean) : [],
+    whoIsHitFirst: Array.isArray(n.whoIsHitFirst) ? n.whoIsHitFirst.slice(0, 4).map(x => str(x, 80)).filter(Boolean) : []
+  } : null
   return {
     level: oneOf(raw.level, Object.keys(LEVELS), 'routine'),
     headline: str(raw.headline, 160),
@@ -190,6 +244,8 @@ export function sanitisePlan(raw) {
     labour: labour && (labour.restrictHours || labour.shiftWindow) ? labour : null,
     publicAdvisory: { en: str(pa.en, 320), hi: str(pa.hi, 320) },
     sdmaIncident: inc ? { type: str(inc.type, 100), severity: oneOf(inc.severity, ['low', 'moderate', 'high', 'severe'], 'moderate'), summary: str(inc.summary, 400) } : null,
+    budget: budget && (budget.emergencyThisWeek.length || budget.seasonal) ? budget : null,
+    ifNotControlled: ifNotControlled && (ifNotControlled.summary || ifNotControlled.consequences.length) ? ifNotControlled : null,
     assumptions: Array.isArray(raw.assumptions) ? raw.assumptions.slice(0, 6).map(a => str(a, 240)).filter(Boolean) : []
   }
 }
