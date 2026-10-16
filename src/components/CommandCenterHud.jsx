@@ -25,7 +25,6 @@ const DOCK = 'absolute z-10 bg-slate-950/85 backdrop-blur-md rounded-xl p-4 text
 const H3 = 'text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-2'
 const BTN = 'rounded-md border border-slate-600 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:border-amber-400 hover:text-amber-300 transition-colors'
 const BTN_ON = 'rounded-md border border-amber-400 bg-amber-400/15 px-2 py-1 text-[11px] font-semibold text-amber-300'
-const DEFAULT_CITY = { city: 'Sri Ganganagar', state: 'Rajasthan' }
 
 function istNow() {
   return new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })
@@ -66,10 +65,21 @@ export default function CommandCenterHud({
 
   useEffect(() => { const id = setInterval(() => setClock(istNow()), 30000); return () => clearInterval(id) }, [])
 
-  // Default city so the docks are never empty on first open.
+  // No default city: the HUD opens on an All-India overview. A city is pre-selected only when
+  // the URL asks for one — ?city=Jaipur, or the first city of a ?demo=City:46,… link.
   useEffect(() => {
-    if (!selectedCity && !pickedDefault.current) { pickedDefault.current = true; onSelectCity(DEFAULT_CITY.city, DEFAULT_CITY.state) }
-  }, [selectedCity, onSelectCity])
+    if (selectedCity || pickedDefault.current || !allCities.length) return
+    pickedDefault.current = true
+    let want = null
+    try {
+      const q = new URLSearchParams(window.location.search)
+      want = q.get('city') || (q.get('demo') || '').split(',')[0].split(':')[0] || null
+      if (want) want = decodeURIComponent(want).trim().toLowerCase()
+    } catch { want = null }
+    if (!want) return
+    const hit = allCities.find(c => c.city.toLowerCase() === want)
+    if (hit) onSelectCity(hit.city, hit.state)
+  }, [selectedCity, onSelectCity, allCities])
 
   // MODIS index loads once the surface layer or the timeline needs it.
   const needModis = layer === 'modis' || mode === 'historical'
@@ -142,7 +152,7 @@ export default function CommandCenterHud({
   // Alert triage from the same inputs the Co-Pilot uses.
   const copilotInput = useMemo(() => buildCopilotInput({ city: selectedCity, state: selectedState, liveWeather, lulcReal, cityCoordsData, isCoastal }), [selectedCity, selectedState, liveWeather, lulcReal, cityCoordsData, isCoastal])
   const act = useMemo(() => activationLevel(copilotInput), [copilotInput])
-  const lvl = LEVELS[act.level]
+  const lvl = selectedCity ? LEVELS[act.level] : { label: 'NATIONAL OVERVIEW', color: '#38bdf8' }
 
   // Tooltip for a state polygon on the Leaflet map — same facts as the classic tooltip.
   const tooltipFor = (name) => {
@@ -161,6 +171,15 @@ export default function CommandCenterHud({
   const stateMedian = liveIndiaData?.[selectedState]?.heatIndexLive ? liveIndiaData[selectedState].heatIndex : null
   const gridBase = temp ?? stateMedian ?? null
   const risk = liveIndiaData?.[selectedState]?.riskBucket?.label || null
+  // National standby figures for the docks when no city is selected.
+  const national = useMemo(() => {
+    const all = Object.values(liveCityCache || {}).filter(c => typeof c?.temp === 'number')
+    if (!all.length) return null
+    const hottest = [...all].sort((a, b) => b.temp - a.temp)[0]
+    const over40 = all.filter(c => typeof c.tempMax === 'number' && c.tempMax >= 40).length
+    const mean = all.reduce((s, c) => s + c.temp, 0) / all.length
+    return { hottest, over40, mean: Math.round(mean * 10) / 10, count: all.length }
+  }, [liveCityCache])
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -221,7 +240,7 @@ export default function CommandCenterHud({
         </div>
         <div className="mx-2 h-6 w-px bg-slate-700" />
         <div className="text-xs text-slate-300">
-          <span className="font-bold text-slate-100">{selectedCity || '—'}</span>{selectedState ? `, ${selectedState}` : ''}
+          <span className="font-bold text-slate-100">{selectedCity || 'All-India National Overview'}</span>{selectedState ? `, ${selectedState}` : ''}
           {risk && <span className="ml-2 rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: liveIndiaData[selectedState].riskBucket.color, color: '#0f172a' }}>{risk}</span>}
         </div>
         <div className="ml-auto flex items-center gap-2 text-[11px]">
@@ -287,7 +306,7 @@ export default function CommandCenterHud({
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder={selectedCity ? `${selectedCity}, ${selectedState}` : 'Search a city…'}
+            placeholder={selectedCity ? `${selectedCity}, ${selectedState}` : 'Click any state on the map or search a city…'}
             data-testid="hud-city-search"
             className="w-full rounded-md border border-slate-600 bg-slate-900/80 px-2.5 py-1.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none"
           />
@@ -304,7 +323,19 @@ export default function CommandCenterHud({
           )}
         </div>
 
-        <div className={H3}>Alert triage</div>
+        <div className={H3}>{selectedCity ? 'Alert triage' : 'National summary'}</div>
+        {!selectedCity && (
+          <div data-testid="hud-national" className="mb-3 rounded-lg border border-slate-600 bg-slate-900/60 p-3 text-[11px] text-slate-200">
+            {national ? (
+              <>
+                <div className="text-sm font-extrabold text-amber-300">Hottest now: {national.hottest.city}, {national.hottest.state} · {national.hottest.temp}°C</div>
+                <div className="mt-1">{national.over40} of {national.count} cities forecast ≥ 40 °C today · national mean {national.mean}°C</div>
+                <div className="mt-1 text-[10px] text-slate-400">Live Open-Meteo cache. Click a state or search a city for its triage and Heat Action Protocol.</div>
+              </>
+            ) : <div className="text-slate-400">Loading the national weather cache…</div>}
+          </div>
+        )}
+        {selectedCity && (
         <div data-testid="hud-alert" className="mb-3 rounded-lg border p-3" style={{ borderColor: lvl.color, background: `${lvl.color}22` }}>
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-2xl font-extrabold" style={{ color: lvl.color }}>{temp != null ? `${temp.toFixed(1)}°C` : stateMedian != null ? `${stateMedian}°C` : '—'}</span>
@@ -316,9 +347,10 @@ export default function CommandCenterHud({
           </div>
           <div className="mt-1 text-[10px] text-slate-400">{act.reasons.join(' · ')}</div>
         </div>
+        )}
 
         <div className={H3}>10 × 10 thermal stress grid</div>
-        {gridBase != null ? (
+        {!selectedCity ? <div className="text-[11px] text-slate-400">Pick a city to see its grid.</div> : gridBase != null ? (
           <>
             <MiniGrid base={gridBase} size={22} numbers testId="hud-grid" />
             <button type="button" className="mt-1 text-[10px] text-slate-400 underline decoration-dotted" onClick={() => setShowGridNote(v => !v)}>{showGridNote ? 'hide note' : 'what is this?'}</button>
@@ -337,7 +369,14 @@ export default function CommandCenterHud({
           <AppErrorBoundary compact title="Co-Pilot could not be displayed">
             <HeatCoPilot city={selectedCity} state={selectedState} liveWeather={liveWeather} lulcReal={lulcReal} cityCoordsData={cityCoordsData} isCoastal={isCoastal} compact />
           </AppErrorBoundary>
-        ) : <div className="text-xs text-slate-400">Pick a city to brief the agent.</div>}
+        ) : (
+          <div data-testid="hud-standby" className="rounded-lg border border-dashed border-slate-600 p-4 text-center text-xs text-slate-300">
+            <div className="text-2xl">🛰️</div>
+            <div className="mt-1 font-semibold">National standby</div>
+            <div className="mt-1 text-slate-400">Select a state or city on the map to generate a localised Heat Action Protocol.</div>
+            {national && <div className="mt-2 text-[10px] text-slate-500">Hottest city right now: {national.hottest.city} ({national.hottest.temp}°C)</div>}
+          </div>
+        )}
         {selectedCity && (
           <div className="mt-3">
             <HeatActionChecklist city={selectedCity} state={selectedState} risk={act.level === 'critical' || act.level === 'alert' ? 'Extreme' : act.level === 'watch' ? 'Medium' : 'Low'} temp={temp} onOpenInterventions={onOpenDashboard} />
@@ -391,7 +430,7 @@ export default function CommandCenterHud({
                 ? (dateIdx >= 0 && daily
                     ? (() => { const v = daily.cities?.[`${selectedCity}|${selectedState}`]?.[dateIdx]; return v != null ? `${selectedCity}: surface ${v}°C on ${stateDates[dateIdx]}` : `${selectedCity}: no clear-sky pass on ${stateDates[dateIdx]} (cloud) — nothing estimated` })()
                     : latestEntry ? `${selectedCity}: latest clear-sky surface ${latestEntry.c}°C on ${latestEntry.date}` : 'No quality-passed MODIS reading for this city in the current period.')
-                : (temp != null ? `${selectedCity}: ${temp}°C now${liveWeather?.current?.humidity != null ? ` · ${liveWeather.current.humidity}% humidity` : ''}${liveWeather?.aqi?.usAQI != null ? ` · AQI ${liveWeather.aqi.usAQI}` : ''}` : 'Waiting for the live reading…')}
+                : (!selectedCity ? (national ? `All India: ${national.count} cities live · mean ${national.mean}°C · hottest ${national.hottest.city} ${national.hottest.temp}°C` : 'All India — loading the live cache…') : temp != null ? `${selectedCity}: ${temp}°C now${liveWeather?.current?.humidity != null ? ` · ${liveWeather.current.humidity}% humidity` : ''}${liveWeather?.aqi?.usAQI != null ? ` · AQI ${liveWeather.aqi.usAQI}` : ''}` : 'Waiting for the live reading…')}
             </div>
           </>
         )}
