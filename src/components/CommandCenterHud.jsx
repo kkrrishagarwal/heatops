@@ -6,9 +6,9 @@ import AppErrorBoundary from './AppErrorBoundary'
 import AudienceToggle from './AudienceToggle'
 import { activationLevel, LEVELS } from '../utils/heatActionProtocol'
 import { assessHeatStress } from '../utils/heatStress'
-import { loadModisIndex, loadModisStateFile } from '../utils/modisLst'
+import { loadModisIndex } from '../utils/modisLst'
 import { fetchJson } from '../utils/fetchJson'
-import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisStateDates, modisStateDayOverlay, lulcOverlay, stateDataFromPoints } from '../utils/hudOverlay'
+import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisNationalDayOverlay, lulcOverlay, stateDataFromPoints } from '../utils/hudOverlay'
 
 // COMMAND CENTER — the map-centric "satellite HUD" layout for the Authority view: the India
 // map fills the viewport (rendered by App through renderMap so zoom/pan state stays in one
@@ -40,7 +40,7 @@ export default function CommandCenterHud({
   const [dateIdx, setDateIdx] = useState(-1) // -1 = latest national pass
   const [modisIndex, setModisIndex] = useState(null)
   const [modisErr, setModisErr] = useState(false)
-  const [stateFile, setStateFile] = useState(null)
+  const [daily, setDaily] = useState(null) // national day-by-day passes, loaded for Live Pass
   const [yearly, setYearly] = useState(null)
   const [query, setQuery] = useState('')
   const [clock, setClock] = useState(istNow)
@@ -71,16 +71,15 @@ export default function CommandCenterHud({
     return () => { live = false }
   }, [mode, yearly])
 
-  // Per-state daily passes for the Live Pass scrubber.
-  const stateFileName = modisIndex?.cities?.[`${selectedCity}|${selectedState}`]?.file || null
+  // National day-by-day passes for the Live Pass scrubber (one ~270 KB gzipped file).
   useEffect(() => {
-    setStateFile(null); setDateIdx(-1)
-    if (!stateFileName || mode !== 'live' || layer !== 'modis') return
+    if (mode !== 'live' || layer !== 'modis' || daily) return
     let live = true
-    loadModisStateFile(stateFileName).then(f => { if (live) setStateFile(f) }).catch(() => {})
+    fetchJson('/data/modis-lst/daily-national.json', { timeoutMs: 30000 }).then(d => { if (live) setDaily(d) }).catch(() => { if (live) setDaily({ dates: [], cities: {} }) })
     return () => { live = false }
-  }, [stateFileName, mode, layer])
-  const stateDates = useMemo(() => modisStateDates(stateFile), [stateFile])
+  }, [mode, layer, daily])
+  useEffect(() => { setDateIdx(-1) }, [mode, layer])
+  const stateDates = daily?.dates || []
 
   const overlay = useMemo(() => {
     if (lite) return null
@@ -88,11 +87,11 @@ export default function CommandCenterHud({
     if (layer === 'modis') {
       if (!modisIndex) return { points: [], count: 0, caption: modisErr ? 'MODIS index unavailable' : 'Loading NASA MODIS index…' }
       if (mode === 'historical') return yearly ? modisYearOverlay({ yearly, coords: cityCoordsData, colorFor, year }) : { points: [], count: 0, caption: 'Loading MODIS yearly peaks…' }
-      if (mode === 'live' && stateFile && dateIdx >= 0 && stateDates[dateIdx]) return modisStateDayOverlay({ stateFile, coords: cityCoordsData, colorFor, date: stateDates[dateIdx] })
+      if (mode === 'live' && daily && dateIdx >= 0 && stateDates[dateIdx]) return modisNationalDayOverlay({ daily, coords: cityCoordsData, colorFor, dateIdx })
       return modisLatestOverlay({ modisIndex, coords: cityCoordsData, colorFor })
     }
     return airOverlay({ liveCityCache, coords: cityCoordsData, colorFor, field: mode === 'forecast' ? 'tempMax' : 'temp' })
-  }, [lite, layer, mode, year, dateIdx, stateDates, stateFile, modisIndex, modisErr, yearly, lulcReal, liveCityCache, cityCoordsData, colorFor])
+  }, [lite, layer, mode, year, dateIdx, stateDates, daily, modisIndex, modisErr, yearly, lulcReal, liveCityCache, cityCoordsData, colorFor])
 
   // State fills follow the scrubber: everything except "live air temperature" (which is the
   // map's own live colouring already) re-colours the states from the points on screen.
@@ -102,7 +101,7 @@ export default function CommandCenterHud({
     const scrubLabel = layer === 'lulc' ? 'ESA WorldCover 2021 built-up share'
       : mode === 'historical' ? `NASA MODIS ${year} Apr–Jun mean surface temperature`
       : mode === 'forecast' ? "Today's forecast high (Open-Meteo)"
-      : dateIdx >= 0 && stateDates[dateIdx] ? `NASA MODIS day pass, ${stateDates[dateIdx]}` : 'NASA MODIS latest clear-sky day pass'
+      : dateIdx >= 0 && stateDates[dateIdx] ? `NASA MODIS day pass, ${stateDates[dateIdx]} (all India)` : 'NASA MODIS latest clear-sky day pass'
     return stateDataFromPoints({ base: liveIndiaData, points: overlay.points, buckets, kind: layer === 'lulc' ? 'builtUp' : 'heat', scrubLabel })
   }, [scrubbed, overlay, layer, mode, year, dateIdx, stateDates, liveIndiaData, buckets])
 
@@ -268,14 +267,16 @@ export default function CommandCenterHud({
             {layer === 'modis' && stateDates.length > 0 ? (
               <>
                 <input type="range" min={-1} max={stateDates.length - 1} value={dateIdx} onChange={e => setDateIdx(Number(e.target.value))} className="w-full accent-amber-400" data-testid="scrub-date" />
-                <div className="mt-1 flex justify-between text-[10px] text-slate-400"><span>{stateDates[0]}</span><span className="text-sm font-extrabold text-amber-300">{dateIdx < 0 ? 'Latest pass (all India)' : `${selectedState} · ${stateDates[dateIdx]}`}</span><span>{stateDates[stateDates.length - 1]}</span></div>
+                <div className="mt-1 flex justify-between text-[10px] text-slate-400"><span>{stateDates[0]}</span><span className="text-sm font-extrabold text-amber-300">{dateIdx < 0 ? 'Latest pass per city (all India)' : `All India · ${stateDates[dateIdx]}`}</span><span>{stateDates[stateDates.length - 1]}</span></div>
               </>
             ) : (
-              <div className="h-5 text-[10px] text-slate-500">{layer === 'modis' ? (stateFileName ? 'Loading daily passes for this state…' : 'No MODIS file for this city.') : 'Switch the layer to Surface temperature to scrub daily satellite passes.'}</div>
+              <div className="h-5 text-[10px] text-slate-500">{layer === 'modis' ? (daily ? 'No daily passes available.' : 'Loading daily satellite passes for all of India…') : 'Switch the layer to Surface temperature to scrub daily satellite passes.'}</div>
             )}
             <div className="mt-1 text-[11px] text-slate-200" data-testid="scrub-readout">
               {layer === 'modis'
-                ? (latestEntry ? `${selectedCity}: latest clear-sky surface ${latestEntry.c}°C on ${latestEntry.date}` : 'No quality-passed MODIS reading for this city in the current period.')
+                ? (dateIdx >= 0 && daily
+                    ? (() => { const v = daily.cities?.[`${selectedCity}|${selectedState}`]?.[dateIdx]; return v != null ? `${selectedCity}: surface ${v}°C on ${stateDates[dateIdx]}` : `${selectedCity}: no clear-sky pass on ${stateDates[dateIdx]} (cloud) — nothing estimated` })()
+                    : latestEntry ? `${selectedCity}: latest clear-sky surface ${latestEntry.c}°C on ${latestEntry.date}` : 'No quality-passed MODIS reading for this city in the current period.')
                 : (temp != null ? `${selectedCity}: ${temp}°C now${liveWeather?.current?.humidity != null ? ` · ${liveWeather.current.humidity}% humidity` : ''}${liveWeather?.aqi?.usAQI != null ? ` · AQI ${liveWeather.aqi.usAQI}` : ''}` : 'Waiting for the live reading…')}
             </div>
           </>

@@ -158,3 +158,20 @@ export function stateDataFromPoints({ base, points, buckets, kind = 'heat', scru
   }
   return out
 }
+
+// ── MODIS daily pass, whole country (daily-national.json, built by
+//    scripts/buildModisDailyNational.mjs) ────────────────────────────────────
+export function modisNationalDayOverlay({ daily, coords, colorFor, dateIdx }) {
+  const date = daily?.dates?.[dateIdx]
+  const points = []
+  let total = 0
+  for (const [key, vals] of Object.entries(daily?.cities || {})) {
+    total++
+    const v = num(vals?.[dateIdx])
+    const xy = coordFor(coords, key)
+    if (v == null || !xy) continue
+    const [city] = key.split('|')
+    points.push({ key, ...xy, value: v, color: colorFor(v), r: 2.6, label: `${city}: surface ${v}°C on ${date} (clear-sky day pass)` })
+  }
+  return { points, count: points.length, missing: total - points.length, date, caption: `${date} · ${points.length} of ${total} cities had a clear-sky MODIS pass (cloud = no reading)` }
+}
