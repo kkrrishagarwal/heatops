@@ -226,7 +226,7 @@ export default function CommandCenterHud({
           districtHeat={districtHeat}
           onDistrictClick={(c, st) => onSelectCity(c, st)}
           onGeoLoaded={setDistrictFeatures}
-          raster={surface === 'raster' && !lite}
+          raster={surface === 'raster' && showFills && !lite}
           rasterPoints={overlay?.points || null}
           rgbOf={rgbOf}
           fillStrength={0.88}
@@ -353,7 +353,7 @@ export default function CommandCenterHud({
         {basemap === 'gibs' && <div className="mb-2 text-[10px] text-slate-400">Showing NASA's true-colour image of {gibsSafeDate(mode === 'live' && layer === 'modis' && dateIdx >= 0 ? stateDates[dateIdx] : null)} — in Live Pass, the picture follows the date you scrub.</div>}
         <label className="mb-1 flex cursor-pointer items-center gap-2 text-[11px] text-slate-300">
           <input type="checkbox" data-testid="toggle-fills" checked={showFills} onChange={e => setShowFills(e.target.checked)} className="accent-amber-400" />
-          Heat colours on the map {showFills ? '' : '(off — borders only)'}
+          Heat colours on the map {showFills ? '' : '(OFF — borders only; tick to see the data)'}
         </label>
         <label className="mb-2 flex cursor-pointer items-center gap-2 text-[11px] text-slate-300">
           <input type="checkbox" data-testid="toggle-dots" checked={showDots} onChange={e => setShowDots(e.target.checked)} className="accent-amber-400" />
