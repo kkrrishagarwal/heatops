@@ -190,8 +190,16 @@ export default function CommandCenterHud({
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
     if (q.length < 2) return []
-    return allCities.filter(c => c.city.toLowerCase().includes(q) || c.state.toLowerCase().includes(q)).slice(0, 8)
+    // prefix matches first (Jaipur before Hojai for "jai"), then word-start, then anywhere
+    const rank = c => { const n = c.city.toLowerCase(); return n.startsWith(q) ? 0 : n.split(/[\s-]/).some(w => w.startsWith(q)) ? 1 : n.includes(q) ? 2 : c.state.toLowerCase().includes(q) ? 3 : 9 }
+    return allCities.map(c => ({ c, r: rank(c) })).filter(x => x.r < 9).sort((a, b) => a.r - b.r || a.c.city.localeCompare(b.c.city)).slice(0, 8).map(x => x.c)
   }, [query, allCities])
+
+  const pickCity = (r) => {
+    onSelectCity(r.city, r.state); setQuery('')
+    const c = cityCoordsData?.[`${r.city}|${r.state}`]
+    if (c && typeof c.lat === 'number') setTimeout(() => mapCtl.current?.flyTo(c.lat, c.lon, 9), 50)
+  }
 
   const forecastDay = liveWeather?.forecast?.[day] || null
   const histEntry = yearly?.cities?.[`${selectedCity}|${selectedState}`]?.find(e => e.year === year) || null
@@ -265,6 +273,38 @@ export default function CommandCenterHud({
         </div>
       </header>
 
+      {/* FLOATING CITY SEARCH — translucent, centred under the top bar so the map stays visible */}
+      <div data-testid="hud-search" className="absolute left-1/2 top-[4.25rem] z-20 w-[26rem] max-w-[calc(100vw-3rem)] -translate-x-1/2">
+        <div className={`flex items-center gap-2 rounded-full border px-4 py-2 shadow-xl backdrop-blur-md transition-colors ${query ? 'border-amber-400/60 bg-slate-950/80' : 'border-sky-500/30 bg-slate-950/45 hover:bg-slate-950/65'}`}>
+          <span className="text-slate-400">🔍</span>
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && results[0]) pickCity(results[0]); if (e.key === 'Escape') setQuery('') }}
+            placeholder={selectedCity ? `${selectedCity}, ${selectedState} — search another city…` : 'Search any of 1,932 cities, or click a state…'}
+            data-testid="hud-city-search"
+            className="w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none"
+          />
+          {query && <button type="button" aria-label="Clear search" onClick={() => setQuery('')} className="text-slate-400 hover:text-slate-100">✕</button>}
+        </div>
+        {results.length > 0 && (
+          <ul className="mt-1 max-h-72 overflow-y-auto rounded-xl border border-slate-700 bg-slate-950/90 shadow-2xl backdrop-blur-md">
+            {results.map((r, i) => {
+              const live = liveCityCache?.[`${r.city}|${r.state}`]
+              return (
+                <li key={`${r.city}|${r.state}`}>
+                  <button type="button" className={`flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-slate-800 ${i === 0 ? 'bg-slate-900/60' : ''}`} onClick={() => pickCity(r)}>
+                    <span><span className="font-semibold text-slate-100">{r.city}</span> <span className="text-slate-500">· {r.state}</span></span>
+                    <span className="font-mono text-xs" style={{ color: typeof live?.temp === 'number' ? colorFn(live.temp) : '#64748b' }}>{typeof live?.temp === 'number' ? `${live.temp}°C` : 'no live data'}</span>
+                  </button>
+                </li>
+              )
+            })}
+            <li className="px-4 py-1 text-[10px] text-slate-500">Enter picks the first result · Esc clears</li>
+          </ul>
+        )}
+      </div>
+
       {/* LEFT DOCK */}
       <aside data-testid="hud-left" className={`${DOCK} left-6 top-20 w-80 max-h-[calc(100vh-10.5rem)] overflow-y-auto border-sky-500/30`}>
         <div className={H3}>Satellite layers</div>
@@ -320,28 +360,6 @@ export default function CommandCenterHud({
           Show city dots ({overlay?.count ?? 0})
         </label>
         <div className="mb-3 text-[10px] leading-snug text-slate-400" data-testid="hud-caption">{lite ? 'Point overlays are off in Lite mode.' : overlay?.caption}{HUD_LAYERS[layer] ? ` · ${HUD_LAYERS[layer].source}` : ''}{scrubbed && !lite ? ' · state colours follow this layer (grey = no reading)' : ' · state colours = live map'}</div>
-
-        <div className={H3}>City</div>
-        <div className="relative mb-3">
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder={selectedCity ? `${selectedCity}, ${selectedState}` : 'Click any state on the map or search a city…'}
-            data-testid="hud-city-search"
-            className="w-full rounded-md border border-slate-600 bg-slate-900/80 px-2.5 py-1.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none"
-          />
-          {results.length > 0 && (
-            <ul className="absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-y-auto rounded-md border border-slate-700 bg-slate-950 shadow-xl">
-              {results.map(r => (
-                <li key={`${r.city}|${r.state}`}>
-                  <button type="button" className="flex w-full justify-between px-2.5 py-1.5 text-left text-xs hover:bg-slate-800" onClick={() => { onSelectCity(r.city, r.state); setQuery(''); const c = cityCoordsData?.[`${r.city}|${r.state}`]; if (c && typeof c.lat === 'number') setTimeout(() => mapCtl.current?.flyTo(c.lat, c.lon, 9), 50) }}>
-                    <span className="font-semibold">{r.city}</span><span className="text-slate-500">{r.state}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
 
         <div className={H3}>{selectedCity ? 'Alert triage' : 'National summary'}</div>
         {!selectedCity && (
