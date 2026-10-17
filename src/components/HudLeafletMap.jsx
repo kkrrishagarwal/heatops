@@ -135,7 +135,7 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
         const d = layer.options.district && isDetailFor(feature) ? dataRef.current.districtHeat?.[districtKey(feature)] : null
         if (!d) return dataRef.current.tooltipText(state)
         const unit = dataRef.current.districtHeat.__unit || '°C'
-        const src = d.method === 'direct' ? `reading from ${d.city}` : d.method === 'nearest' ? `nearest cities: ${d.cities.join(', ')}` : 'no city reading within 150 km in this state'
+        const src = d.method === 'direct' ? `reading from ${d.city}` : d.method === 'nearest' ? `nearest cities: ${d.cities.join(', ')}` : d.method === 'far' ? `estimated (rounded) from ${d.cities.join(', ')} — sparse layer` : 'no city reading within reach'
         return `<b>${districtName(feature)}</b>, ${state}<br>${d.value == null ? '<span class="t-muted">no reading</span>' : `<b>${d.value}${unit}</b>`} <span class="t-badge" style="background:${d.color}">${d.label || ''}</span><br><span class="t-muted">${src}</span>${d.city ? `<br><span class="t-muted">click to open ${d.city}</span>` : ''}`
       }, { sticky: true, direction: 'top', opacity: 0.95, className: 'hud-leaflet-tip' })
     }

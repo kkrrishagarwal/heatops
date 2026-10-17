@@ -11,7 +11,7 @@ import { fetchJson } from '../utils/fetchJson'
 import { BASEMAPS, gibsSafeDate } from './SatelliteBasemap'
 import HudLeafletMap from './HudLeafletMap'
 import WindParticleCanvas, { windStations, describeProbe, compassOf, thermalColor } from './WindParticleCanvas'
-import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisNationalDayOverlay, lulcOverlay, stateDataFromPoints, builtUpColor, spectralColor, spectralRgb, spectralGradientCss, SPECTRAL_LEGEND } from '../utils/hudOverlay'
+import { HUD_LAYERS, MODIS_YEAR_MIN, MODIS_YEAR_MAX, airOverlay, modisLatestOverlay, modisYearOverlay, modisNationalDayOverlay, lulcOverlay, stateDataFromPoints, builtUpColor, BUILT_UP_LEGEND, spectralColor, spectralRgb, spectralGradientCss, SPECTRAL_LEGEND } from '../utils/hudOverlay'
 import { buildDistrictHeat } from '../utils/districtHeat'
 
 // COMMAND CENTER — the map-centric "satellite HUD" layout for the Authority view: the India
@@ -144,7 +144,7 @@ export default function CommandCenterHud({
     const isPct = layer === 'lulc'
     const colorOf = v => (isPct ? builtUpColor(v) : colorFn(v))
     const labelOf = v => (isPct ? `BUILT-UP ${Math.round(v)}%` : (buckets.find(b => v >= b.min)?.label || ''))
-    const dh = buildDistrictHeat({ features: districtFeatures, points: overlay.points, resolveState: resolveStateName, colorFor: colorOf })
+    const dh = buildDistrictHeat({ features: districtFeatures, points: overlay.points, resolveState: resolveStateName, colorFor: colorOf, sparse: overlay.points.length < 500 })
     for (const d of Object.values(dh)) if (d.value != null) d.label = labelOf(d.value)
     dh.__unit = isPct ? '%' : '°C'
     return dh
@@ -430,6 +430,12 @@ export default function CommandCenterHud({
           ))}
           <span className="ml-auto flex items-center gap-2 text-[10px] text-slate-400">
             <span>{mode === 'historical' ? 'NASA MODIS Apr–Jun peak season, 2016–2026' : mode === 'live' ? (layer === 'modis' ? 'NASA MODIS daily clear-sky passes' : 'Open-Meteo current readings') : 'Open-Meteo 7-day forecast'}</span>
+            {layer === 'lulc' && (
+              <span className="flex items-center gap-1" title="Built-up share within ~5 km of the city centre (ESA WorldCover 2021)" data-testid="hud-legend-lulc">
+                {BUILT_UP_LEGEND.map(([c, l]) => <span key={l} className="flex items-center gap-0.5"><span className="h-2.5 w-4 rounded-sm" style={{ background: c }} /><span className="text-[8px]">{l}</span></span>)}
+                <span className="ml-1">% built-up</span>
+              </span>
+            )}
             {layer !== 'lulc' && palette === 'spectral' && (
               <span className="flex flex-col items-stretch" title="Continuous spectral thermal scale (°C)" data-testid="hud-legend-spectral">
                 <span className="h-2.5 w-44 rounded-sm" style={{ background: spectralGradientCss() }} />

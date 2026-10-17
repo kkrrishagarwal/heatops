@@ -4,7 +4,8 @@
 // polygons) so nothing is painted over sea or neighbouring countries. A cell farther than
 // ~150 km from any city is left transparent — nothing is invented.
 const K = 8
-const MAX_DEG = 1.5
+const MAX_DEG = 1.5 // dense layers
+const MAX_DEG_SPARSE = 4 // ~170-city layers reach farther, so the field is continuous over India
 const CELL = 6 // screen px per sample; 1440×900 → ~36k samples, a few ms
 
 function buildBins(points) {
@@ -12,7 +13,7 @@ function buildBins(points) {
   for (const p of points) { if (typeof p.lat !== 'number' || typeof p.value !== 'number') continue; const k = `${Math.floor(p.lat)},${Math.floor(p.lon)}`; if (!bins.has(k)) bins.set(k, []); bins.get(k).push(p) }
   return bins
 }
-function idw(bins, lat, lon) {
+function idw(bins, lat, lon, maxDeg = MAX_DEG) {
   const found = []
   const bl = Math.floor(lat), bo = Math.floor(lon)
   for (let r = 0; r <= 4; r++) {
@@ -25,7 +26,7 @@ function idw(bins, lat, lon) {
   if (!found.length) return null
   const cosLat = Math.cos((lat * Math.PI) / 180)
   const near = found.map(p => { const dx = (p.lon - lon) * cosLat, dy = p.lat - lat; return { p, d2: dx * dx + dy * dy } }).sort((a, b) => a.d2 - b.d2).slice(0, K)
-  if (near[0].d2 > MAX_DEG * MAX_DEG) return null
+  if (near[0].d2 > maxDeg * maxDeg) return null
   let w = 0, v = 0
   for (const { p, d2 } of near) { const ww = 1 / (d2 + 2e-4); w += ww; v += p.value * ww }
   return v / w
@@ -39,6 +40,7 @@ export function drawThermalRaster({ canvas, width, height, points, unproject, pr
   ctx.clearRect(0, 0, width, height)
   if (!points?.length) return { samples: 0, filled: 0 }
   const bins = buildBins(points)
+  const maxDeg = points.length < 500 ? MAX_DEG_SPARSE : MAX_DEG
   const cols = Math.ceil(width / CELL) + 1, rows = Math.ceil(height / CELL) + 1
   const small = document.createElement('canvas'); small.width = cols; small.height = rows
   const sctx = small.getContext('2d')
@@ -46,7 +48,7 @@ export function drawThermalRaster({ canvas, width, height, points, unproject, pr
   let filled = 0
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
     const [lat, lon] = unproject(c * CELL, r * CELL)
-    const v = idw(bins, lat, lon)
+    const v = idw(bins, lat, lon, maxDeg)
     const i = (r * cols + c) * 4
     if (v == null) { img.data[i + 3] = 0; continue }
     const [R, G, B] = rgbOf(v)

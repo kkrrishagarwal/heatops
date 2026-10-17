@@ -4,11 +4,14 @@
 //                 district's alias names): the district shows that city's reading
 //   2. nearest  — otherwise the distance-weighted mean of the 2 nearest cities in the same
 //                 state to the district centroid, within 150 km; the nearer city dominates
-//   3. none     — no city reading in the state within reach: grey, labelled "no reading"
+//   3. far      — sparse layers only: the 2 nearest cities in ANY state within 400 km, the
+//                 value rounded to a whole number and labelled "estimated from X (n km)"
+//   4. none     — nothing within reach: grey, labelled "no reading"
 // Values are whatever the layer carries (live air °C, forecast high, MODIS surface °C, or
 // built-up %), coloured with the layer's own scale. Pure functions, memoised by the caller.
 const NO_DATA_FILL = '#334155'
-const MAX_KM = 150
+const MAX_KM = 150 // same-state neighbours (dense layers: live air, forecast)
+const FAR_KM = 400 // sparse layers (MODIS yearly / built-up, ~170 cities): any state, rounded, labelled estimated
 const norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ')
 
 function centroid(geometry) {
@@ -45,7 +48,7 @@ function aliases(feature) {
 
 // points: [{ key: "City|State", lat, lon, value, color }] from the active layer
 // features: district GeoJSON features; resolveState(feature) → canonical state name
-export function buildDistrictHeat({ features, points, resolveState, colorFor }) {
+export function buildDistrictHeat({ features, points, resolveState, colorFor, sparse = false }) {
   const byState = new Map()
   for (const p of points || []) {
     const [city, state] = String(p.key || '').split('|')
@@ -60,14 +63,26 @@ export function buildDistrictHeat({ features, points, resolveState, colorFor }) 
     const state = resolveState(f)
     const s = byState.get(state)
     const key = districtKey(f)
-    if (!s) { out[key] = { value: null, color: NO_DATA_FILL, method: 'none', state }; continue }
     let hit = null
-    for (const a of aliases(f)) { if (s.byName.has(a)) { hit = s.byName.get(a); break } }
+    if (s) for (const a of aliases(f)) { if (s.byName.has(a)) { hit = s.byName.get(a); break } }
     if (hit) { out[key] = { value: hit.value, color: colorFor(hit.value), method: 'direct', city: hit.city, state }; continue }
     const c = centroid(f.geometry)
     if (!c) { out[key] = { value: null, color: NO_DATA_FILL, method: 'none', state }; continue }
-    const near = s.list.map(p => ({ p, km: haversineKm(c, p) })).sort((a, b) => a.km - b.km).slice(0, 2).filter(n => n.km <= MAX_KM)
+    let near = s ? s.list.map(p => ({ p, km: haversineKm(c, p) })).sort((a, b) => a.km - b.km).slice(0, 2).filter(n => n.km <= MAX_KM) : []
+    let far = false
+    if (!near.length && sparse) {
+      // sparse layer: reach across state lines, up to FAR_KM
+      near = (points || []).filter(p => typeof p.lat === 'number').map(p => ({ p: { ...p, city: String(p.key || '').split('|')[0] }, km: haversineKm(c, p) })).sort((a, b) => a.km - b.km).slice(0, 2).filter(n => n.km <= FAR_KM)
+      far = near.length > 0
+    }
     if (!near.length) { out[key] = { value: null, color: NO_DATA_FILL, method: 'none', state }; continue }
+    if (far) {
+      let wsum = 0, v = 0
+      for (const { p, km } of near) { const w = 1 / (km + 5); wsum += w; v += p.value * w }
+      const value = Math.round(v / wsum)
+      out[key] = { value, color: colorFor(value), method: 'far', city: near[0].p.city, km: Math.round(near[0].km), cities: near.map(n => `${n.p.city} (${Math.round(n.km)} km)`), state }
+      continue
+    }
     let wsum = 0, v = 0
     for (const { p, km } of near) { const w = 1 / (km + 5); wsum += w; v += p.value * w }
     const value = Math.round((v / wsum) * 10) / 10

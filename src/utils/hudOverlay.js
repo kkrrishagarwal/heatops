@@ -17,14 +17,16 @@ export const HUD_LAYERS = {
 export const MODIS_YEAR_MIN = 2016
 export const MODIS_YEAR_MAX = 2026
 
-// Built-up % → grey → amber → red ramp (not a heat scale; labelled separately).
+// Built-up % → green (open land) → yellow → orange → red (dense) — not a heat scale, and no
+// greys, so a low built-up district never looks like "no reading" (dark slate is reserved for that).
+export const BUILT_UP_LEGEND = [['#16a34a', '<15'], ['#84cc16', '15–30'], ['#f59e0b', '30–50'], ['#ea580c', '50–70'], ['#b91c1c', '≥70']]
 export function builtUpColor(pct) {
-  if (pct == null) return '#475569'
+  if (pct == null) return '#334155'
   if (pct >= 70) return '#b91c1c'
   if (pct >= 50) return '#ea580c'
   if (pct >= 30) return '#f59e0b'
-  if (pct >= 15) return '#a3a3a3'
-  return '#64748b'
+  if (pct >= 15) return '#84cc16'
+  return '#16a34a'
 }
 
 function coordFor(coords, key) {
