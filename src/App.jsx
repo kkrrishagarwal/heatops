@@ -59,6 +59,7 @@ import ViewModeToggle from './components/ViewModeToggle'
 import AudienceToggle from './components/AudienceToggle'
 import HeatActionChecklist from './components/HeatActionChecklist'
 import CommandCenterHud from './components/CommandCenterHud'
+import DashboardShell from './components/DashboardShell'
 import SatelliteBasemap from './components/SatelliteBasemap'
 import { createPortal } from 'react-dom'
 import HeatStressPanel from './components/HeatStressPanel'
@@ -3018,8 +3019,10 @@ function App({ user }) {
 
   // Dashboard always opens on the Overview tab for a newly selected city
   useEffect(() => {
-    setActiveTab('Overview')
-  }, [selectedCity])
+    // Keep the current workspace when the city changes (the shell's search, a district click);
+    // only fall back to Overview if the current tab does not exist for this audience.
+    setActiveTab(prev => (citizen ? ['Overview', 'What to do', 'Compare'] : ['Overview', 'Prediction', 'Analysis', 'Compare', 'Interventions', 'AI + Export']).includes(prev) ? prev : 'Overview')
+  }, [selectedCity]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Live weather (Open-Meteo) — single source of truth for current temp/humidity/wind/AQI,
   // replacing the old per-city estimated values for the selected city and comparison city.
@@ -4737,7 +4740,28 @@ function App({ user }) {
           />
         )}
 
-        {/* Dashboard navbar */}
+        <DashboardShell
+          enabled={viewMode !== 'compact'}
+          activeTab={activeTab}
+          onTab={setActiveTab}
+          citizen={citizen}
+          city={selectedCity}
+          state={selectedState}
+          coords={cityCoordsData?.[`${selectedCity}|${selectedState}`] || null}
+          elevation={liveWeather?.elevation}
+          status={liveWeather?.demoOverride != null ? 'demo' : liveCacheStatus === 'error' ? 'offline' : isCacheStale(cacheLastUpdated) ? 'cached' : 'live'}
+          statusAge={formatAgo(cacheLastUpdated)}
+          demoTemp={liveWeather?.demoOverride}
+          allCities={ALL_CITIES_FLAT}
+          liveCityCache={liveCityCache}
+          onSelectCity={(c, st) => { setSelectedState(st); setSelectedCity(c) }}
+          onBack={() => setScreen("__home__")}
+          onSignOut={() => { setScreen("signin"); setUserName("") }}
+          userName={userName}
+          controls={<><AudienceToggle audience={audience} onChange={setAudience} /><LanguageDropdown /></>}
+        >
+        {viewMode === 'compact' && (<>
+        {/* Dashboard navbar (phone layout only — the laptop layout uses DashboardShell) */}
         <nav className="navbar">
           <div className="nav-left">
             <button onClick={() => setScreen("__home__")} className="nav-btn">← {t('nav.backToMap', 'Back to Map')}</button>
@@ -4823,6 +4847,7 @@ function App({ user }) {
           )}
         </div>
         )}
+        </>)}
 
         <div className="dashboard-scroll">
           {(activeTab === 'Overview' || activeTab === 'What to do') && (
@@ -5885,6 +5910,7 @@ function App({ user }) {
             </div>
           )}
         </div>
+        </DashboardShell>
       </div>
             </div>
           )
