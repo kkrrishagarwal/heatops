@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import { fetchJson } from '../utils/fetchJson'
 import { districtKey, districtName } from '../utils/districtHeat'
 import { drawThermalRaster } from '../utils/thermalRaster'
+import { JK_STATE_BOUNDARIES } from '../utils/jkStateBoundaries'
 
 // Deep-zoom tile map for the Command Center (the classic screen keeps its SVG map). Leaflet,
 // no API key. Zoom 4 (all of India) → 19 (city blocks). Layers, bottom to top:
@@ -142,14 +143,18 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     loadGeo().then(([states, districts, jk]) => {
       if (mapRef.current !== map) return // this map was torn down (StrictMode double-mount) before the data arrived
       const isJK = f => /jammu|kashmir|ladakh/i.test(dataRef.current.resolveStateName(f) || '')
-      const stateFeatures = { type: 'FeatureCollection', features: (states.features || []).filter(f => !isJK(f)) }
+      const nonJkStates = (states.features || []).filter(f => !isJK(f))
+      const stateFeatures = {
+        type: 'FeatureCollection',
+        features: [...nonJkStates, ...(JK_STATE_BOUNDARIES.features || [])]
+      }
       const districtFeatures = { type: 'FeatureCollection', features: (districts.features || []).filter(f => !isJK(f)) }
       const jkFeatures = { type: 'FeatureCollection', features: (jk.features || []) }
       layersRef.current.districts = L.geoJSON(districtFeatures, { pane: 'vectors', style: districtStyle, onEachFeature: (f, l) => { l.options.district = true; bind(f, l) } }).addTo(map)
+      layersRef.current.jk = L.geoJSON(jkFeatures, { pane: 'vectors', style, onEachFeature: (f, l) => { l.options.district = true; bind(f, l) } }).addTo(map)
       layersRef.current.states = L.geoJSON(stateFeatures, { pane: 'vectors', interactive: false, style: f => ({ ...style(f), fillOpacity: 0 }) }).addTo(map)
       layersRef.current.stateByName = new Map()
       layersRef.current.states.eachLayer(l => layersRef.current.stateByName.set(dataRef.current.resolveStateName(l.feature), l))
-      layersRef.current.jk = L.geoJSON(jkFeatures, { pane: 'vectors', style, onEachFeature: (f, l) => { l.options.district = true; bind(f, l) } }).addTo(map)
       layersRef.current.maskFeatures = [...districtFeatures.features, ...jkFeatures.features]
       onGeoLoaded(layersRef.current.maskFeatures)
       restyle(); layersRef.current.redrawRaster?.()

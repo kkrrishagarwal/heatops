@@ -1,6 +1,8 @@
+# HeatOps Memory
 # BhaskarOps Memory
 
 ## 1. Project Identity
+HeatOps is the India-focused urban heat intelligence platform built to monitor, compare, and mitigate heat risk across cities and states.
 BhaskarOps is the India-focused urban heat intelligence platform built to monitor, compare, and mitigate heat risk across cities and states.
 
 ## 2. Core Product Lens
@@ -12,6 +14,13 @@ This project is not simply a weather dashboard. It is a planning and decision-su
 - intervention simulation
 - AI explanation and recommendations
 
+## 3. Core Technical Facts
+- Frontend: React + Vite
+- Data and backend support: Flask app and serverless functions
+- Map rendering: react-simple-maps and GeoJSON assets
+- Visualization: Recharts, charts, and dashboard components
+- Security: AI API key stays server-side
+- Languages: English + 10+ Indian languages supported in the UI
 ## 3. Core Technical Facts (as of 1 Sept 2026)
 - Frontend: React 18 + Vite, deployed on Vercel at https://heatops.vercel.app; the Flask app is a legacy prototype, not deployed
 - Coverage: 1,956 cities / 28 states + 8 UTs; 1,932 with validated coordinates and live readings; 24 hamlet names honestly blank
@@ -38,15 +47,23 @@ This project is not simply a weather dashboard. It is a planning and decision-su
 - Local context and language support matter for usability in India.
 - AI is best used as a guide and explainer, not as a black-box authority.
 - Freshness and source transparency are critical to credibility.
+- Simulated values should be avoided; estimated values must be labeled.
 - Simulated values should be avoided; estimated values must be labeled. Enforced in code: "NO LIVE DATA" badges, carried-forward flags, grid base-temperature line, "baseline" labels, "(estimated)" tags.
 - Auto-detection that silently changes the look (Lite mode from memory/core counts) is a mistake — make such things opt-in.
 - The 30 % canopy target (3-30-300 rule) is about tree canopy; ESA "vegetation" (trees + grass + crops) overstates it several-fold in Indian cities, so measure tree cover specifically.
 
 ## 6. Operational Notes
+- Live refresh jobs keep weather cache content current.
 - Live refresh jobs keep weather cache content current (see PROJECT_EXPLAINED.md §8.9, §8.15 and REFRESH_BEFORE_JUDGING.md).
 - GeoJSON and cached data files are core project assets.
 - The system architecture should be built to handle national coverage without sacrificing responsiveness.
 
+## 7. Future Direction Memory
+HeatOps should continue to evolve toward a stronger public-interest climate operations tool by improving:
+- intervention quality and modeling
+- municipal reporting flows
+- AI groundedness and explanation quality
+- data freshness and production resilience
 ## 7. Strategic Direction
 BhaskarOps should continue to evolve toward a stronger public-interest climate operations tool by improving:
 - real-time data automation
@@ -54,5 +71,7 @@ BhaskarOps should continue to evolve toward a stronger public-interest climate o
 - clear climate adaptation workflows
 - policy-relevant intervention simulations
 
+## 8. Persistent Working Principle
+HeatOps should remain a platform that helps people understand the why behind urban heat and turn that understanding into practical mitigation decisions.
 ## 8. Final Product North Star
 BhaskarOps should remain a platform that helps people understand the why behind urban heat and turn that understanding into practical mitigation decisions.

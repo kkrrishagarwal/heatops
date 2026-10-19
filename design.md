@@ -1,6 +1,8 @@
+# HeatOps Design
 # BhaskarOps Design
 
 ## 1. Design Goals
+HeatOps is designed to look authoritative, technical, and actionable without becoming unreadable. The interface should communicate urgency and precision while remaining approachable for non-specialists.
 BhaskarOps is designed to look authoritative, technical, and actionable without becoming unreadable. The interface should communicate urgency and precision while remaining approachable for non-specialists.
 
 ### Core design principles
@@ -13,6 +15,11 @@ BhaskarOps is designed to look authoritative, technical, and actionable without 
 
 ## 2. Visual Language
 ### Theme
+The application uses a dark mission-control palette with:
+- deep navy / charcoal backgrounds
+- bright cyan and green accents
+- warm orange/red risk signals for severity spikes
+- subtle glow and highlight effects for emphasis
 The application uses a dark civic-tech palette (redesigned 28 Aug 2026 away from the earlier neon green/cyan look):
 - deep slate backgrounds (`#0f172a` / `#1e293b`)
 - a single amber accent (`#d97706`) for actions and emphasis
@@ -28,6 +35,10 @@ The look is meant to suggest climate intelligence, monitoring, and operational p
 The first major user action is geographic discovery: the user sees the India map and chooses a location or city of interest.
 
 ### Drill-down flow
+1. National map overview
+2. State selection
+3. City selection
+4. Dashboard context and action panels
 1. One-time "Who are you?" — Citizen or Government / Planner (changeable later from the profile menu; independent of the Mobile / Laptop layout toggle)
 2. National map overview — each state coloured by the risk category most of its cities are in (plurality; ties → more severe); a single 🌫️ / 🌧️ / ☁️ badge where a weather condition crosses its threshold
 3. State selection — its cities refresh live in one call; the side panel shows the per-category city counts behind the colour and the live median, not a seed
@@ -67,6 +78,7 @@ Users can jump directly to major cities using quick-pick controls instead of sea
 The interface communicates data freshness, risk levels, and source quality so users understand whether the information is live, cached, or estimated.
 
 ### Honesty states
+Where data is incomplete or estimated, the product does not hide it behind false precision. The design reinforces trust by showing caveats and labels clearly.
 Where data is incomplete or estimated, the product does not hide it behind false precision. Concretely: "NO LIVE DATA" badges instead of guessed temperatures, "carried forward" flags on stale readings, a base-temperature line under the Analysis grid, "baseline" labels on illustrative indices, "(estimated)" tags in AGNI answers, and a green dot on rows refreshed in the last few minutes.
 
 ### Citizen essentials
@@ -101,10 +113,17 @@ The citizen top strip carries only: city, temperature, a plain-language risk bad
 - Simplify complex charts with textual context
 
 ## 8. Design System Notes
+### Risk color scale
+- Low: cool/blue-green tones
+- Moderate: yellow to amber
+- High: orange
+- Extreme: red / magenta
 ### Risk color scale (map, six tiers)
 - Low < 25 °C: green · Low-Moderate 25–30: olive · Moderate 30–35: yellow · High 35–40: amber-brown · Very High 40–45: orange · Extreme 45+: red
 - Semantic colours never double as the accent; the amber accent is reserved for actions
 
+### Typography
+- Use a modern dashboard style with emphasis on numeric clarity
 ### Typography (4 Sept 2026)
 - Panel titles are small tracked overlines in muted slate; the icon carries the accent
 - Archivo for display-size numbers, Inter + Indic fallbacks for body, IBM Plex Mono for the AGNI terminal; `tabular-nums` everywhere digits line up

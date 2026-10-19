@@ -1,6 +1,8 @@
+# HeatOps PRD
 # BhaskarOps PRD
 
 ## 1. Product Summary
+HeatOps is an India-wide urban heat intelligence and intervention planning platform. It helps citizens, planners, and policy teams understand where heat risk is high, why it is happening, and what actions can reduce exposure and cooling demand.
 BhaskarOps is an India-wide urban heat intelligence and intervention planning platform. It helps citizens, planners, and policy teams understand where heat risk is high, why it is happening, and what actions can reduce exposure and cooling demand.
 
 The product combines live weather, AQI, satellite-derived land cover metrics, urban morphology data, and AI-based interpretation into a single decision-support dashboard. It is built for the Indian context, with state and district coverage, multi-language access, and actionable planning tools.
@@ -71,6 +73,10 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 
 ## 7. Functional Requirements
 ### 7.1 Map and Discovery
+- Show a national India heat map with state and district-level geographic structure.
+- Allow drill-down from state to city level.
+- Use color-coded heat severity categories.
+- Support quick-pick city navigation.
 - Show a national India heat map with state and district-level geographic structure (1,956 cities, 28 states and 8 UTs; 1,932 with live readings).
 - Colour each state by the risk category that most of its cities are in (plurality over live readings; ties → the more severe category); show the per-category counts and the median as detail; show one weather-condition badge per affected state.
 - Allow drill-down from state to city level; opening a state refreshes its cities live.
@@ -84,6 +90,9 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 - Show city comparison and historical context.
 
 ### 7.3 Decision Support
+- Provide city-to-city comparisons.
+- Simulate cooling interventions.
+- Estimate how changes may reduce heat exposure.
 - Provide city-to-city comparisons (radar vs up to 4 cities; available to citizens too).
 - Simulate cooling interventions on a heatmap grid based on the city's live temperature.
 - Recommend a plan per city: tree canopy (ESA WorldCover class 10) vs the 30 % target of the 3-30-300 rule, cool-roof share by built-up density, one-click apply.
@@ -91,6 +100,7 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 - Citizen view: plain-language risk badge, Safe hours today, WhatsApp share, "how you can help your neighbourhood".
 
 ### 7.4 AI Analyst
+- Support natural-language questions about city heat conditions.
 - Support natural-language questions about city heat conditions, with conversation memory.
 - Return structured explanations for heatwave risk, vulnerability, intervention impact, and multi-city comparisons.
 - India-only by design: never make global/international claims; answer ranking questions from a real India-wide ranking of the cache; the selected city is never a default answer.
@@ -102,10 +112,12 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 - Maintain the same product behavior across languages.
 
 ## 8. Non-Functional Requirements
+- The interface should feel responsive and interactive on standard desktop browsers.
 - The interface should feel responsive and interactive on standard desktop browsers, and usable on low-end phones via Lite mode (no WebGL, states-only map, no blur/animations).
 - The map rendering should remain smooth even when large geographic datasets are loaded.
 - Data sources and limitations should be visible to users.
 - The app should remain understandable to a non-technical audience.
+- Daily refresh mechanisms should minimize stale information.
 - Refresh every 3 hours (GitHub Actions) with a daily cron fallback; readings that could not be refreshed are carried forward and flagged, never shown as fresh.
 
 ## 9. Success Metrics
@@ -116,6 +128,7 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 - The platform is used across multiple Indian-language experiences.
 
 ## 10. Risks and Constraints
+- External API availability and rate limits.
 - External API availability and rate limits (Open-Meteo weighted quota; Gemini free tier ≈ 20 requests/day per model — a paid key is recommended for judging).
 - Incomplete or inconsistent geo data for some local areas.
 - Model uncertainty for unseen cities or sparse contexts.
@@ -125,4 +138,5 @@ A user asks the AGNI assistant questions like “Why is my city hot?” or “Wh
 This project is scoped as a decision-support dashboard and AI assistant for heat-risk analysis, not as a fully integrated climate operations command center.
 
 ## 12. Product Positioning
+HeatOps is positioned as an actionable, real-data, India-first heat intelligence platform that blends monitoring, comparison, planning, and plain-language AI explanation into one experience.
 BhaskarOps is positioned as an actionable, real-data, India-first heat intelligence platform that blends monitoring, comparison, planning, and plain-language AI explanation into one experience.
