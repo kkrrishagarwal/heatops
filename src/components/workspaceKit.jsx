@@ -112,3 +112,51 @@ export function downloadText(filename, text, type = 'text/csv') {
 }
 export const csvCell = v => { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s }
 export const toCsv = (rows) => rows.map(r => r.map(csvCell).join(',')).join('\n')
+
+// ── Chart helpers: every workspace chart uses round ticks, labelled axes and one tooltip style ──
+// niceScale: a [lo, hi] domain on whole steps that always contains the data (and any
+// reference values passed in `include`, e.g. the IMD threshold), plus the tick list.
+export function niceScale(values, { step = 2, include = [], pad = 1, min = -Infinity, max = Infinity } = {}) {
+  const v = [...values, ...include].filter(x => typeof x === 'number' && Number.isFinite(x))
+  if (!v.length) return { domain: [0, 10], ticks: [0, 5, 10] }
+  let lo = Math.floor((Math.min(...v) - pad) / step) * step
+  let hi = Math.ceil((Math.max(...v) + pad) / step) * step
+  lo = Math.max(lo, min); hi = Math.min(hi, max); if (hi <= lo) hi = lo + step
+  // keep the axis to at most ~7 ticks
+  let s = step; while ((hi - lo) / s > 7) s *= 2
+  lo = Math.floor(lo / s) * s; hi = Math.ceil(hi / s) * s
+  const ticks = []; for (let t = lo; t <= hi + 1e-9; t += s) ticks.push(Math.round(t * 10) / 10)
+  return { domain: [lo, hi], ticks }
+}
+export const axisTick = { fill: C.muted, fontSize: 10 }
+export const yLabel = text => ({ value: text, angle: -90, position: 'insideLeft', offset: 2, style: { fill: C.muted, fontSize: 10, textAnchor: 'middle' } })
+export const xLabel = text => ({ value: text, position: 'insideBottom', offset: -2, style: { fill: C.muted, fontSize: 10 } })
+export const tipStyle = { contentStyle: { background: '#0B1325', border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 11, color: C.text, boxShadow: '0 8px 24px rgba(0,0,0,0.45)' }, labelStyle: { color: C.text, fontWeight: 800, marginBottom: 4 }, itemStyle: { padding: 0 } }
+export const shortDate = iso => { try { return new Date(`${String(iso).slice(0, 10)}T00:00:00+05:30`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' }) } catch { return iso } }
+export const shortWeekday = iso => { try { return new Date(`${String(iso).slice(0, 10)}T00:00:00+05:30`).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', timeZone: 'Asia/Kolkata' }) } catch { return iso } }
+
+// One plain-language line under a chart: what it shows and what to take from it.
+export function ChartRead({ children }) {
+  return <div style={{ fontSize: 11, color: C.text, background: 'rgba(56,189,248,0.06)', border: `1px solid rgba(56,189,248,0.2)`, borderRadius: 7, padding: '6px 9px', lineHeight: 1.45 }}><b style={{ color: C.cyan }}>How to read: </b>{children}</div>
+}
+// Legend chips drawn by us (Recharts' default legend is easy to miss and mislabels areas).
+export function ChartKey({ items }) {
+  return (
+    <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 10.5, color: C.muted }}>
+      {items.map(([kind, color, text]) => (
+        <span key={text} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+          {kind === 'band' && <span style={{ width: 16, height: 9, background: `${color}44`, border: `1px solid ${color}66`, borderRadius: 2 }} />}
+          {kind === 'line' && <span style={{ width: 16, height: 3, background: color, borderRadius: 2 }} />}
+          {kind === 'dash' && <span style={{ width: 16, borderTop: `2px dashed ${color}` }} />}
+          {kind === 'dot' && <span style={{ width: 9, height: 9, background: color, borderRadius: '50%' }} />}
+          {kind === 'bar' && <span style={{ width: 10, height: 10, background: color, borderRadius: 2 }} />}
+          {text}
+        </span>
+      ))}
+    </div>
+  )
+}
+// Centered message over an empty or all-zero chart, so it never looks broken.
+export function ChartOverlay({ children }) {
+  return <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', pointerEvents: 'none' }}><div style={{ background: 'rgba(6,11,20,0.88)', border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', fontSize: 11.5, color: C.text, maxWidth: '80%', textAlign: 'center', lineHeight: 1.4 }}>{children}</div></div>
+}

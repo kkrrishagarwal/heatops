@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from 'recharts'
+import { niceScale, yLabel, tipStyle } from './workspaceKit'
 import PanelIcon from './PanelIcon'
 import { fetchJson } from '../utils/fetchJson'
 
@@ -31,9 +32,16 @@ export default function CityTrendPanel({ city, state, liveTemp }) {
   }, [city, state])
 
   const data = (rows || []).filter(p => typeof p.temp === 'number').map(p => ({
-    date: p.date, label: fmtDay(p.date), temp: p.temp, carried: !!p.carried, aqi: p.aqi ?? null
+    date: p.date, ts: Date.parse(`${p.date}T00:00:00+05:30`), label: fmtDay(p.date), temp: p.temp, carried: !!p.carried, aqi: p.aqi ?? null
   }))
   const temps = data.map(d => d.temp)
+  // insert empty days so the line breaks where the archive has no reading
+  const series = []
+  for (let i = 0; i < data.length; i++) {
+    series.push(data[i])
+    const next = data[i + 1]
+    if (next && next.ts - data[i].ts > 1.5 * 86400000) series.push({ ts: data[i].ts + 86400000, temp: null, label: 'no reading' })
+  }
   const stats = temps.length ? {
     min: Math.min(...temps), max: Math.max(...temps),
     avg: Math.round((temps.reduce((a, b) => a + b, 0) / temps.length) * 10) / 10,
@@ -56,23 +64,25 @@ export default function CityTrendPanel({ city, state, liveTemp }) {
             {typeof liveTemp === 'number' && <span>{t('trend.now', 'Now')}: <strong>{liveTemp}°C</strong></span>}
             <span>{data.length} {t('trend.days', 'days')}{stats.carried ? ` · ${stats.carried} ${t('trend.carried', 'carried forward (hollow)')}` : ''}</span>
           </div>
-          <div style={{ width: '100%', height: 150 }}>
+          <div style={{ width: '100%', height: 180 }}>
             <ResponsiveContainer>
-              <LineChart data={data} margin={{ top: 6, right: 10, left: -18, bottom: 0 }}>
-                <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#94a3b8' }} interval="preserveStartEnd" minTickGap={28} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} domain={['dataMin - 2', 'dataMax + 2']} axisLine={false} tickLine={false} width={40} />
+              <LineChart data={series} margin={{ top: 10, right: 12, left: 4, bottom: 0 }}>
+                <CartesianGrid stroke="#1F2937" strokeDasharray="3 3" vertical={false} />
+                {/* time axis, so days missing from the archive show as real gaps instead of being squeezed out */}
+                <XAxis dataKey="ts" type="number" scale="time" domain={['dataMin', 'dataMax']} tickFormatter={v => fmtDay(new Date(v).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }))} tick={{ fontSize: 10, fill: '#94a3b8' }} tickCount={6} axisLine={false} tickLine={false} />
+                {(() => { const sc = niceScale([...temps, liveTemp], { step: 2 }); return <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} domain={sc.domain} ticks={sc.ticks} tickFormatter={v => `${v}°`} axisLine={false} tickLine={false} width={58} label={yLabel('Temperature (°C)')} /> })()}
                 <Tooltip
-                  contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 6, fontSize: 11 }}
+                  {...tipStyle}
                   formatter={(v, _n, p) => [`${v}°C${p?.payload?.carried ? ' (carried forward)' : ''}`, t('trend.temp', 'Temperature')]}
-                  labelFormatter={l => l}
+                  labelFormatter={(l, p) => p?.[0]?.payload?.label || ''}
                 />
-                {typeof liveTemp === 'number' && <ReferenceLine y={liveTemp} stroke="rgba(217,119,6,0.55)" strokeDasharray="4 3" />}
+                {typeof liveTemp === 'number' && <ReferenceLine y={liveTemp} stroke="#38BDF8" strokeDasharray="5 4" label={{ value: `Now ${liveTemp}°C`, fill: '#38BDF8', fontSize: 10.5, fontWeight: 700, position: 'insideTopRight' }} />}
                 <Line
-                  type="monotone" dataKey="temp" stroke="#d97706" strokeWidth={2} isAnimationActive={false}
+                  type="monotone" dataKey="temp" connectNulls={false} stroke="#d97706" strokeWidth={2} isAnimationActive={false}
                   dot={(props) => {
                     const { cx, cy, payload } = props
-                    if (cx == null || cy == null) return null
-                    return <circle key={payload.date} cx={cx} cy={cy} r={3} fill={payload.carried ? '#0f172a' : '#d97706'} stroke="#d97706" strokeWidth={1.5} />
+                    if (cx == null || cy == null || payload.temp == null) return null
+                    return <circle key={payload.ts} cx={cx} cy={cy} r={3} fill={payload.carried ? '#0f172a' : '#d97706'} stroke="#d97706" strokeWidth={1.5} />
                   }}
                   activeDot={{ r: 4 }}
                 />
@@ -80,7 +90,7 @@ export default function CityTrendPanel({ city, state, liveTemp }) {
             </ResponsiveContainer>
           </div>
           <div style={{ fontSize: 10, color: '#64748b', marginTop: 6 }}>
-            {t('trend.source', 'Source: BhaskarOps daily archive (one Open-Meteo reading per day, taken at each refresh) — hollow dots are days the refresh could not reach this city and carried the previous reading forward. Dashed line = current live reading.')}
+            {t('trend.source', 'Source: BhaskarOps daily archive (one Open-Meteo reading per day, taken at each refresh) — hollow dots are days the refresh could not reach this city and carried the previous reading forward. Dashed blue line = current live reading. Gaps in the line are days missing from the archive.')}
           </div>
         </>
       )}

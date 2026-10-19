@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine, Legend } from 'recharts'
-import { C, card, label, num, Prov, Section, Pills, WorkspaceHeader, DetailsDrawer, wsRoot, btn } from './workspaceKit'
+import { C, card, label, num, Prov, Section, Pills, WorkspaceHeader, DetailsDrawer, wsRoot, btn, niceScale, axisTick, yLabel, tipStyle, ChartRead, ChartKey } from './workspaceKit'
 import LocationImage from './LocationImage'
 import { fetchMultiCityDaily } from '../utils/ensembleForecast'
 import { getLulcWithFallback } from '../utils/lulcFallback'
@@ -183,21 +183,33 @@ export default function CompareWorkspace({ city, state, liveCityCache, cityCoord
         </Section>
 
         <Section no="02" title="7-day forecast highs" testId="cmp-forecast" right={<Prov k="forecast" title="Open-Meteo deterministic daily maximum" />}>
-          <div style={{ height: 200 }}>
-            {fcChart.length ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={fcChart} margin={{ top: 6, right: 10, left: -16, bottom: 0 }}>
-                  <CartesianGrid stroke={C.border} strokeDasharray="3 3" />
-                  <XAxis dataKey="day" tick={{ fill: C.muted, fontSize: 10 }} />
-                  <YAxis unit="°" domain={['dataMin - 2', 'dataMax + 2']} tick={{ fill: C.muted, fontSize: 10 }} />
-                  <Tooltip contentStyle={tip} formatter={v => (v == null ? 'n/a' : `${v}°C`)} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <ReferenceLine y={40} stroke={C.red} strokeDasharray="4 3" label={{ value: 'IMD plains 40°C', fill: C.red, fontSize: 9, position: 'insideTopRight' }} />
-                  {rows.map(r => <Line key={r.city} dataKey={r.city} stroke={r.color} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />)}
-                </LineChart>
-              </ResponsiveContainer>
-            ) : <div style={{ height: '100%', display: 'grid', placeItems: 'center', fontSize: 11, color: C.muted }}>{fc.status === 'error' ? `Forecast UNAVAILABLE: ${fc.error}` : 'Fetching forecasts…'}</div>}
-          </div>
+          {(() => {
+            const vals = fcChart.flatMap(d => rows.map(r => d[r.city]))
+            const top = Math.max(...vals.filter(v => typeof v === 'number'), -99)
+            const showTh = 40 - top <= 8
+            const sc = niceScale(vals, { step: 2, include: showTh ? [40] : [] })
+            const hottest = fc.rows.map(r => ({ city: r.city, peak: Math.max(...r.max.filter(v => v != null)) })).filter(r => Number.isFinite(r.peak)).sort((a, b) => b.peak - a.peak)
+            return (
+              <>
+                <div style={{ height: 210 }}>
+                  {fcChart.length ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={fcChart} margin={{ top: 10, right: 14, left: 4, bottom: 4 }}>
+                        <CartesianGrid stroke={C.border} strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="day" tick={axisTick} tickLine={false} />
+                        <YAxis domain={sc.domain} ticks={sc.ticks} tickFormatter={v => `${v}°`} tick={axisTick} width={58} label={yLabel('Daily max (°C)')} />
+                        <Tooltip {...tipStyle} formatter={v => (v == null ? 'n/a' : `${v}°C`)} itemSorter={it => -(it.value ?? -99)} />
+                        {showTh && <ReferenceLine y={40} stroke={C.red} strokeWidth={1.5} strokeDasharray="6 4" label={{ value: 'Heatwave threshold 40°C (IMD plains)', fill: C.red, fontSize: 10.5, fontWeight: 700, position: 'insideTopLeft' }} />}
+                        {rows.map(r => <Line key={r.city} dataKey={r.city} stroke={r.color} strokeWidth={2.5} dot={{ r: 2.5, fill: r.color }} connectNulls isAnimationActive={false} />)}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : <div style={{ height: '100%', display: 'grid', placeItems: 'center', fontSize: 11, color: C.muted }}>{fc.status === 'error' ? `Forecast UNAVAILABLE: ${fc.error}` : 'Fetching forecasts…'}</div>}
+                </div>
+                <ChartKey items={[...rows.map(r => ['line', r.color, r.city]), ...(showTh ? [['dash', C.red, 'IMD 40°C threshold']] : [])]} />
+                {hottest.length > 1 && <ChartRead><b>{hottest[0].city}</b> runs hottest this week (peak {hottest[0].peak}°C){hottest[0].peak < 40 ? ', still below the 40°C plains heatwave line' : ', at or above the 40°C plains heatwave line'}. Coastal and hill cities use lower thresholds (37°C and 30°C).</ChartRead>}
+              </>
+            )
+          })()}
         </Section>
       </div>
 

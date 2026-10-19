@@ -58,6 +58,13 @@ export default function ConsequenceChart({ exposure, thresholdC, labourWindow = 
           <line x1={padL} x2={W - padR} y1={y(0)} y2={y(0)} stroke={C.muted} strokeWidth={1} />
           <text x={padL} y={14} fontSize={9} fill={C.muted}>hours inside 12:00–16:00 per worker</text>
         </svg>
+        {totalNo === 0 && (
+          <div data-testid="consequence-zero" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', pointerEvents: 'none' }}>
+            <div style={{ background: 'rgba(2,6,23,0.9)', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', fontSize: 11.5, color: C.ink, textAlign: 'center', maxWidth: '80%', lineHeight: 1.4 }}>
+              ✅ <b>0 hours at risk this week.</b> No forecast day reaches "Extreme Caution", so outdoor workers face no danger-window exposure even without action.
+            </div>
+          </div>
+        )}
         {hover != null && (
           <div style={{ position: 'absolute', left: `${Math.min(70, 8 + (hover / days.length) * 100)}%`, top: 24, background: '#020617', border: '1px solid #334155', borderRadius: 6, padding: '6px 8px', fontSize: 10, color: C.ink, pointerEvents: 'none', maxWidth: 190 }}>
             <b>{days[hover].date}</b><br />

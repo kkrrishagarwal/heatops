@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine, Legend } from 'recharts'
-import { C, card, num, Prov, Kpi, Section, SubHead, Pills, WorkspaceHeader, DetailsDrawer, wsRoot, btn, downloadText, toCsv } from './workspaceKit'
+import { C, card, num, Prov, Kpi, Section, SubHead, Pills, WorkspaceHeader, DetailsDrawer, wsRoot, btn, downloadText, toCsv, niceScale, axisTick, yLabel, tipStyle, shortDate, ChartRead, ChartKey } from './workspaceKit'
 import HeatCoPilot, { buildCopilotInput } from './HeatCoPilot'
 import { loadInterventionStatuses, STATUSES } from './InterventionsWorkspace'
 import { activationLevel, buildFallbackPlan, LEVELS } from '../utils/heatActionProtocol'
@@ -64,7 +64,7 @@ export default function AIExportWorkspace({ city, state, liveWeather, lulcReal, 
   const actionRows = plan.actions.map(a => ({ ...a, status: statuses.statuses[`${a.priority}:${a.title}`]?.status || 'Recommended' })).concat(statuses.custom.map(a => ({ ...a, status: statuses.statuses[`${a.priority}:${a.title}`]?.status || 'Recommended' })))
   const reportTitle = `${kind === 'daily' ? 'Daily' : kind === 'weekly' ? 'Weekly' : 'Custom-period'} heat report · ${city}, ${state}`
   const generated = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-  const chart = rows.map(p => ({ date: p.date.slice(5), temp: p.isCarriedForward ? null : p.temp, high: p.isCarriedForward ? null : p.tempMax }))
+  const chart = rows.map(p => ({ date: shortDate(p.date), temp: p.isCarriedForward ? null : p.temp, high: p.isCarriedForward ? null : p.tempMax }))
 
   const exportCsv = () => {
     const meta = [['Report', reportTitle], ['Period', `${range.from} to ${range.to}`], ['Generated (IST)', generated], ['History source', hist.source || 'unavailable'], ['Note', 'temp = reading at the refresh time; tempMax = that day\'s forecast high; carried-forward rows repeat an earlier reading because the refresh failed']]
@@ -130,26 +130,38 @@ export default function AIExportWorkspace({ city, state, liveWeather, lulcReal, 
               <Kpi title="Highest day high" value={stats.maxHigh != null ? `${stats.maxHigh}°C` : '—'} prov={stats.maxHigh != null ? 'history' : 'na'} sub={`${stats.hotDays} day(s) ≥ ${threshold.t}°C`} />
               <Kpi title="Mean AQI" value={stats.aqiMean ?? '—'} prov={stats.aqiMean != null ? 'history' : 'na'} sub={stats.aqiMax != null ? `max ${stats.aqiMax}` : ''} />
             </div>
-            <div style={{ height: 160 }}>
-              {chart.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chart} margin={{ top: 6, right: 10, left: -18, bottom: 0 }}>
-                    <CartesianGrid stroke={C.border} strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tick={{ fill: C.muted, fontSize: 9 }} />
-                    <YAxis unit="°" tick={{ fill: C.muted, fontSize: 9 }} domain={['dataMin - 2', 'dataMax + 2']} />
-                    <Tooltip contentStyle={tip} formatter={(v, n) => (v == null ? ['carried forward', n] : [`${v}°C`, n])} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} />
-                    <ReferenceLine y={threshold.t} stroke={C.red} strokeDasharray="4 3" />
-                    <Line name="Day high" dataKey="high" stroke={C.red} strokeWidth={2} dot={false} isAnimationActive={false} />
-                    <Line name="Air temp at refresh" dataKey="temp" stroke={C.cyan} strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div style={{ height: '100%', display: 'grid', placeItems: 'center', fontSize: 11, color: C.muted, textAlign: 'center' }}>
-                  {hist.status === 'loading' ? 'Loading recorded readings…' : hist.status === 'error' ? `Recorded history UNAVAILABLE: ${hist.error}` : rows.length === 1 ? `One recorded reading: ${rows[0].temp}°C at refresh, day high ${rows[0].tempMax}°C.` : 'No recorded readings in this period.'}
-                </div>
-              )}
-            </div>
+            {(() => {
+              const vals = chart.flatMap(d => [d.temp, d.high])
+              const top = Math.max(...vals.filter(v => typeof v === 'number'), -99)
+              const showTh = threshold.t - top <= 8
+              const sc = niceScale(vals, { step: 2, include: showTh ? [threshold.t] : [] })
+              const hottest = recorded.filter(p => typeof p.tempMax === 'number').sort((a, b) => b.tempMax - a.tempMax)[0]
+              return (
+                <>
+                  <div style={{ height: 190 }}>
+                    {chart.length > 1 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chart} margin={{ top: 10, right: 12, left: 4, bottom: 4 }}>
+                          <CartesianGrid stroke={C.border} strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="date" tick={axisTick} tickLine={false} interval="preserveStartEnd" minTickGap={18} />
+                          <YAxis tick={axisTick} domain={sc.domain} ticks={sc.ticks} tickFormatter={v => `${v}°`} width={58} label={yLabel('Temperature (°C)')} />
+                          <Tooltip {...tipStyle} formatter={(v, n) => (v == null ? ['no reading (carried forward)', n] : [`${v}°C`, n])} />
+                          {showTh && <ReferenceLine y={threshold.t} stroke={C.red} strokeWidth={1.5} strokeDasharray="6 4" label={{ value: `Heatwave threshold ${threshold.t}°C`, fill: C.red, fontSize: 10.5, fontWeight: 700, position: 'insideTopLeft' }} />}
+                          <Line name="Day's high" dataKey="high" stroke={C.amber} strokeWidth={2.5} dot={chart.length <= 14 ? { r: 3, fill: C.amber } : false} connectNulls={false} isAnimationActive={false} />
+                          <Line name="Reading at refresh time" dataKey="temp" stroke={C.cyan} strokeWidth={1.8} dot={false} connectNulls={false} isAnimationActive={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div style={{ height: '100%', display: 'grid', placeItems: 'center', fontSize: 11, color: C.muted, textAlign: 'center' }}>
+                        {hist.status === 'loading' ? 'Loading recorded readings…' : hist.status === 'error' ? `Recorded history UNAVAILABLE: ${hist.error}` : rows.length === 1 ? `One recorded reading: ${rows[0].temp}°C at refresh, day high ${rows[0].tempMax}°C.` : 'No recorded readings in this period.'}
+                      </div>
+                    )}
+                  </div>
+                  <ChartKey items={[['line', C.amber, "Day's high"], ['line', C.cyan, 'Reading at refresh time'], ...(showTh ? [['dash', C.red, `IMD ${threshold.t}°C`]] : [])]} />
+                  {chart.length > 1 && <ChartRead>The orange line is each day's high; the blue line is the single reading taken when the archive refreshed, so it is usually lower. {hottest ? <>Hottest day: <b>{shortDate(hottest.date)} at {hottest.tempMax}°C</b>{hottest.tempMax < threshold.t ? `, below the ${threshold.t}°C heatwave line.` : `, at or above the ${threshold.t}°C heatwave line.`}</> : null} Gaps are days with no recorded reading.</ChartRead>}
+                </>
+              )
+            })()}
             <SubHead>Report contents</SubHead>
             <ul style={{ margin: 0, paddingLeft: 16, fontSize: 10.5, color: C.muted, lineHeight: 1.5 }}>
               <li>Current reading and activation level <Prov k={demo ? 'demo' : 'live'} /></li>

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid, BarChart, Bar, Cell } from 'recharts'
-import { C, card, num, Prov, Kpi, Section, SubHead, Pills, WorkspaceHeader, DetailsDrawer, wsRoot } from './workspaceKit'
+import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid, BarChart, Bar, Cell, LabelList } from 'recharts'
+import { C, card, num, Prov, Kpi, Section, SubHead, Pills, WorkspaceHeader, DetailsDrawer, wsRoot, niceScale, axisTick, yLabel, tipStyle, shortWeekday, ChartRead, ChartKey, ChartOverlay } from './workspaceKit'
 import { fetchEnsemble, fetchEnsembleHourly, fetchMultiCityDaily, ENSEMBLE_MODEL } from '../utils/ensembleForecast'
 import { buildOutlook, classifyDay, terrainThreshold, LEVEL_COLOR, IMD_RULE } from '../utils/heatwaveOutlook'
 import { spectralColor } from '../utils/hudOverlay'
@@ -58,7 +58,7 @@ export default function PredictionWorkspace({ city, state, liveWeather, liveCity
 
   const e = ens.data
   const detDays = outlook?.days || []
-  const chart7 = useMemo(() => (e?.days || []).map((d, i) => ({ day: shortDay(d.date), band: d.p10 != null ? [d.p10, d.p90] : null, p50: d.p50, det: typeof detDays[i]?.maxTemp === 'number' ? detDays[i].maxTemp : null, pAbove: d.pAbove == null ? null : Math.round(d.pAbove * 100), n: d.n })), [e, detDays])
+  const chart7 = useMemo(() => (e?.days || []).map((d, i) => ({ day: shortWeekday(d.date), band: d.p10 != null ? [d.p10, d.p90] : null, p50: d.p50, det: typeof detDays[i]?.maxTemp === 'number' ? detDays[i].maxTemp : null, pAbove: d.pAbove == null ? null : Math.round(d.pAbove * 100), n: d.n })), [e, detDays])
   const chart72 = useMemo(() => {
     const hrs = hourly.data?.hours || []
     // The deterministic hourly list holds today's 24 hours from 00:00 IST, the same start as
@@ -92,49 +92,73 @@ export default function PredictionWorkspace({ city, state, liveWeather, liveCity
       <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 10, alignItems: 'start' }}>
         <Section no="01" title={horizon === '72h' ? 'Hourly temperature · next 72 hours' : 'Daily maximum · next 7 days'} testId="pred-band"
           right={<Prov k="ensemble" title="Shaded band = 10th–90th percentile of the members; line = median; dashed = deterministic forecast" />}>
-          <div style={{ height: 270 }}>
-            {(horizon === '7d' ? ens.status : hourly.status) === 'ready' ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={horizon === '7d' ? chart7 : chart72} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
-                  <CartesianGrid stroke={C.border} strokeDasharray="3 3" />
-                  <XAxis dataKey={horizon === '7d' ? 'day' : 'hour'} tick={{ fill: C.muted, fontSize: 10 }} interval={horizon === '7d' ? 0 : 11} />
-                  <YAxis tick={{ fill: C.muted, fontSize: 10 }} domain={['dataMin - 2', 'dataMax + 2']} unit="°" />
-                  <Tooltip contentStyle={tip} formatter={(v, n) => (Array.isArray(v) ? [`${v[0]}–${v[1]}°C`, '10–90th percentile'] : [`${v}°C`, n === 'p50' ? 'ensemble median' : 'deterministic'])} />
-                  <Area dataKey="band" stroke="none" fill={C.cyan} fillOpacity={0.18} isAnimationActive={false} />
-                  <Line dataKey="p50" stroke={C.cyan} strokeWidth={2} dot={horizon === '7d'} isAnimationActive={false} />
-                  <Line dataKey="det" stroke={C.amber} strokeWidth={1.5} strokeDasharray="5 4" dot={false} connectNulls isAnimationActive={false} />
-                  {horizon === '7d' && <ReferenceLine y={threshold.t} stroke={C.red} strokeDasharray="4 3" label={{ value: `IMD ${threshold.t}°C`, fill: C.red, fontSize: 10, position: 'insideTopRight' }} />}
-                </ComposedChart>
-              </ResponsiveContainer>
-            ) : (
-              <div style={{ height: '100%', display: 'grid', placeItems: 'center', color: C.muted, fontSize: 12, textAlign: 'center' }}>
-                {(horizon === '7d' ? ens.status : hourly.status) === 'error' ? `Ensemble forecast UNAVAILABLE: ${(horizon === '7d' ? ens.error : hourly.error) || 'request failed'}. The deterministic forecast is still shown on Overview.` : 'Fetching the ensemble…'}
-              </div>
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: 14, fontSize: 10, color: C.muted, flexWrap: 'wrap' }}>
-            <span><span style={{ display: 'inline-block', width: 14, height: 8, background: `${C.cyan}44`, marginRight: 4 }} />10–90th percentile of members</span>
-            <span><span style={{ display: 'inline-block', width: 14, height: 2, background: C.cyan, marginRight: 4, verticalAlign: 'middle' }} />ensemble median</span>
-            <span><span style={{ display: 'inline-block', width: 14, borderTop: `2px dashed ${C.amber}`, marginRight: 4, verticalAlign: 'middle' }} />deterministic forecast{horizon === '72h' ? ' (first 24 h only)' : ''}</span>
-          </div>
+          {(() => {
+            const st = horizon === '7d' ? ens.status : hourly.status
+            const data = horizon === '7d' ? chart7 : chart72
+            const vals = data.flatMap(d => [d.band?.[0], d.band?.[1], d.p50, d.det])
+            const top = Math.max(...vals.filter(v => typeof v === 'number'), -99)
+            const showTh = horizon === '7d' && threshold.t - top <= 8
+            const sc = niceScale(vals, { step: 2, include: showTh ? [threshold.t] : [] })
+            return (
+              <>
+                <div style={{ height: 270, position: 'relative' }}>
+                  {st === 'ready' ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={data} margin={{ top: 10, right: 14, left: 4, bottom: 4 }}>
+                        <CartesianGrid stroke={C.border} strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey={horizon === '7d' ? 'day' : 'hour'} tick={axisTick} interval={horizon === '7d' ? 0 : 11} tickLine={false} />
+                        <YAxis tick={axisTick} domain={sc.domain} ticks={sc.ticks} tickFormatter={v => `${v}°`} width={58} label={yLabel(horizon === '7d' ? 'Daily max (°C)' : 'Temperature (°C)')} />
+                        <Tooltip {...tipStyle} formatter={(v, n) => (Array.isArray(v) ? [`${v[0]} – ${v[1]}°C`, 'Likely range (8 in 10 runs)'] : [`${v}°C`, n === 'p50' ? 'Middle forecast' : 'Standard forecast'])} />
+                        <Area dataKey="band" stroke={C.cyan} strokeOpacity={0.35} fill={C.cyan} fillOpacity={0.2} isAnimationActive={false} />
+                        <Line dataKey="p50" stroke={C.cyan} strokeWidth={2.5} dot={horizon === '7d' ? { r: 3.5, fill: C.cyan } : false} isAnimationActive={false}>
+                          {horizon === '7d' && <LabelList dataKey="p50" position="top" offset={8} formatter={v => `${Math.round(v)}°`} style={{ fill: C.text, fontSize: 10.5, fontWeight: 700 }} />}
+                        </Line>
+                        <Line dataKey="det" stroke={C.amber} strokeWidth={1.8} strokeDasharray="5 4" dot={false} connectNulls isAnimationActive={false} />
+                        {showTh && <ReferenceLine y={threshold.t} stroke={C.red} strokeWidth={1.5} strokeDasharray="6 4" label={{ value: `Heatwave threshold ${threshold.t}°C (IMD ${threshold.kind})`, fill: C.red, fontSize: 10.5, fontWeight: 700, position: 'insideTopLeft' }} />}
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div style={{ height: '100%', display: 'grid', placeItems: 'center', color: C.muted, fontSize: 12, textAlign: 'center' }}>
+                      {st === 'error' ? `Ensemble forecast UNAVAILABLE: ${(horizon === '7d' ? ens.error : hourly.error) || 'request failed'}. The deterministic forecast is still shown on Overview.` : 'Fetching the ensemble…'}
+                    </div>
+                  )}
+                </div>
+                <ChartKey items={[['band', C.cyan, 'Likely range (8 in 10 runs)'], ['line', C.cyan, 'Middle forecast'], ['dash', C.amber, `Standard forecast${horizon === '72h' ? ' (today only)' : ''}`], ...(showTh ? [['dash', C.red, `IMD threshold ${threshold.t}°C`]] : [])]} />
+                {st === 'ready' && (
+                  <ChartRead>
+                    {horizon === '7d'
+                      ? <>The middle forecast peaks at <b>{peakEns?.p50}°C</b> on {peakEns ? shortWeekday(peakEns.date) : '—'}. {showTh ? (top < threshold.t ? <>The whole range stays <b>below the red {threshold.t}°C heatwave line</b>, so no heatwave is expected this week.</> : <>Where the shaded range crosses the red line, a heatwave day is possible.</>) : <>The {threshold.t}°C heatwave threshold is far above this week's range ({Math.round(top)}°C at most), so no heatwave is expected.</>} The dashed orange line is a separate single-run forecast and can sit outside the range.</>
+                      : <>Each hour shows the likely range across 31 runs. A narrow band means the runs agree. The dashed line covers today only.</>}
+                  </ChartRead>
+                )}
+              </>
+            )
+          })()}
         </Section>
 
-        <Section no="02" title="Chance of reaching the IMD threshold, per day" testId="pred-prob" right={<Prov k="ensemble" />}>
+        <Section no="02" title="Chance of a heatwave-level day" testId="pred-prob" right={<Prov k="ensemble" />}>
           {ens.status === 'ready' ? (
             <>
-              <div style={{ height: 150 }}>
+              <div style={{ height: 160, position: 'relative' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chart7} margin={{ top: 6, right: 6, left: -22, bottom: 0 }}>
-                    <XAxis dataKey="day" tick={{ fill: C.muted, fontSize: 9 }} interval={0} tickFormatter={v => v.split(',')[0]} />
-                    <YAxis domain={[0, 100]} tick={{ fill: C.muted, fontSize: 9 }} unit="%" />
-                    <Tooltip contentStyle={tip} formatter={(v, n, p) => [`${v}% of ${p.payload.n} members`, `max ≥ ${threshold.t}°C`]} />
-                    <Bar dataKey="pAbove" isAnimationActive={false}>{chart7.map((d, i) => <Cell key={i} fill={d.pAbove >= 60 ? C.red : d.pAbove >= 30 ? C.amber : d.pAbove > 0 ? '#EAB308' : C.green} />)}</Bar>
+                  <BarChart data={chart7} margin={{ top: 18, right: 6, left: 4, bottom: 0 }}>
+                    <CartesianGrid stroke={C.border} strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="day" tick={axisTick} interval={0} tickLine={false} />
+                    <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tick={axisTick} tickFormatter={v => `${v}%`} width={58} label={yLabel('Chance')} />
+                    <Tooltip {...tipStyle} formatter={(v, n, p) => [`${v}% (${Math.round((v / 100) * p.payload.n)} of ${p.payload.n} runs)`, `Max ≥ ${threshold.t}°C`]} />
+                    <Bar dataKey="pAbove" radius={[4, 4, 0, 0]} minPointSize={2} isAnimationActive={false}>
+                      {chart7.map((d, i) => <Cell key={i} fill={d.pAbove >= 60 ? C.red : d.pAbove >= 30 ? C.amber : d.pAbove > 0 ? '#EAB308' : C.green} />)}
+                      <LabelList dataKey="pAbove" position="top" formatter={v => `${v}%`} style={{ fill: C.text, fontSize: 10.5, fontWeight: 700 }} />
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                {chart7.every(d => !d.pAbove) && <ChartOverlay>✅ <b>0% on every day.</b> None of the {e.validMembers} forecast runs reach {threshold.t}°C this week.</ChartOverlay>}
               </div>
-              <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.45 }}>
-                <b style={{ color: C.text }}>Criterion:</b> {e.criterion}. Probability = members meeting it ÷ valid members ({e.validMembers} of {e.members}). This is ensemble agreement, not a calibrated probability and not an IMD warning; the IMD "departure from normal" rule is not applied because the project holds no per-city climatological normal.
-              </div>
+              <ChartRead>Each bar is the share of the {e.validMembers} forecast runs that reach the {threshold.t}°C heatwave threshold that day. Green 0%, yellow under 30%, amber 30–60%, red over 60%.</ChartRead>
+              <details style={{ fontSize: 10.5, color: C.muted }}>
+                <summary style={{ cursor: 'pointer' }}>Exact criterion and limits</summary>
+                <div style={{ marginTop: 4, lineHeight: 1.45 }}>{e.criterion}. Probability = members meeting it ÷ valid members ({e.validMembers} of {e.members}). This is agreement between runs, not a calibrated probability and not an IMD warning. The IMD departure-from-normal rule is not applied because the project holds no per-city normal.</div>
+              </details>
             </>
           ) : <div style={{ fontSize: 11, color: C.muted }}>{ens.status === 'error' ? `UNAVAILABLE: ${ens.error}` : 'Fetching…'}</div>}
           <SubHead prov="forecast" provTitle="Open-Meteo deterministic daily maxima, classified with the IMD threshold and absolute rules">Deterministic outlook</SubHead>
