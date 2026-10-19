@@ -128,6 +128,7 @@ export function buildFallbackPlan(input) {
     add('P3', 'infrastructure', 'Use the quiet period for long-term cooling', 'Plan cool roofs, tree planting and shade structures for next summer with the Interventions tab planner.', 'Urban Planning / Town Planner', 'this season')
   }
 
+  const hot = level === 'critical' || level === 'alert'
   const labour = hot
     ? { restrictHours: level === 'critical' ? '12:00–16:00 no outdoor work' : '12:00–16:00 no heavy outdoor work', shiftWindow: '06:00–11:00', workRest: s.workRest || '—' }
     : null
@@ -153,7 +154,6 @@ export function buildFallbackPlan(input) {
     note: `Unit costs from the Mitigation Planner's published assumptions (Ahmedabad cool-roof pilot 2017, ₹350 per tree incl. 3-year care, ₹5 L per cooling centre). Model-based estimates, not quotations.${cst.target ? (cst.target.unreachable ? ` A ${cst.target.reductionPct}% risk cut is beyond the model's ceiling (~${cst.target.maxReductionPct}%).` : ` A ${cst.target.reductionPct}% composite-risk cut needs about ${fmtINR(cst.target.investment)}.`) : ''}`
   } : null
   const cq = cst?.consequences || null
-  const hot = level === 'critical' || level === 'alert'
   const ifNotControlled = cq ? {
     summary: hot
       ? `Without these measures, ${cq.hotDaysNext7} of the next 7 days stay at or above the ${cq.thresholdC ?? 40}°C IMD threshold${cq.peakForecastC != null ? ` (peak ${cq.peakForecastC}°C)` : ''}, with heat exposure unmanaged in the ${cq.exposureWindow} window.`

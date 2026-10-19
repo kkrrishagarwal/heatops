@@ -60,6 +60,7 @@ import AudienceToggle from './components/AudienceToggle'
 import HeatActionChecklist from './components/HeatActionChecklist'
 import CommandCenterHud from './components/CommandCenterHud'
 import DashboardShell from './components/DashboardShell'
+import OverviewWorkspace from './components/OverviewWorkspace'
 import SatelliteBasemap from './components/SatelliteBasemap'
 import { createPortal } from 'react-dom'
 import HeatStressPanel from './components/HeatStressPanel'
@@ -3696,10 +3697,7 @@ function App({ user }) {
     const stateHeat = liveIndiaData[selectedState]?.heatIndexLive ? liveIndiaData[selectedState].heatIndex : state.avgLST
     if(stateHeat > 45) newAlerts.push({id:1,icon:'🔴',text:t('alerts.extremeHeat', 'EXTREME heat: LST > 45°C'),color:'#dc2626'})
     if(liveWeather?.aqi?.usAQI > 300) newAlerts.push({id:2,icon:'🟠',text:t('alerts.highAqi', 'HIGH AQI: > 300'),color:'#ea580c'})
-    if(state.ndbi > 0.5) newAlerts.push({id:3,icon:'🟡',text:t('alerts.moderateHeat', 'MODERATE urban heat'),color:'#eab308'})
-    if(marineHeatwave && ['Gujarat','Maharashtra','Kerala','Tamil Nadu'].includes(selectedState)) {
-      newAlerts.push({id:4,icon:'🔵',text:t('alerts.marineHeatwave', 'Marine heatwave active'),color:'#3b82f6'})
-    }
+    // (Removed 19 Oct 2026: the 'Marine heatwave active' alert was hardcoded for four coastal states and the 'MODERATE urban heat' alert read a baseline NDBI, neither live.)
     if(polarVortex === 'DISRUPTED') newAlerts.push({id:5,icon:'🟣',text:t('alerts.polarVortexWatch', 'WATCH: Polar vortex disrupted'),color:'#9d4edd'})
     if(newAlerts.length === 0) newAlerts.push({id:6,icon:'🟢',text:t('alerts.allNormal', 'All values normal'),color:'#22c55e'})
 
@@ -4850,7 +4848,7 @@ function App({ user }) {
         </>)}
 
         <div className="dashboard-scroll">
-          {(activeTab === 'Overview' || activeTab === 'What to do') && (
+          {(activeTab === 'Overview' || activeTab === 'What to do') && (() => { const overviewContent = (
             <div className="dashboard-content" data-citizen-tab={citizen ? activeTab : undefined}>
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 {/* CITIZEN ONLY — share today's summary with family on WhatsApp (wa.me link,
@@ -5357,33 +5355,28 @@ function App({ user }) {
                   </section>
                 )}
 
-                {/* PANEL J: Climate Oscillations */}
-                <section className="panel" data-panel="J">
-                  <h3><PanelIcon name="globe" /> {t('panels.climateOscillations', 'GLOBAL CLIMATE SYSTEMS')}</h3>
-                  <div className="climate-grid">
-                    <div className="climate-card">
-                      <strong>{t('climate.enso', 'ENSO')}:</strong> {t(`climate.values.${ensoPhase}`, ensoPhase)}
-                    </div>
-                    <div className="climate-card">
-                      <strong>{t('climate.iod', 'IOD')}:</strong> {t('climate.values.Positive Phase', 'Positive Phase')}
-                    </div>
-                    <div className="climate-card">
-                      <strong>{t('climate.mjo', 'MJO')}:</strong> Phase {mjoPhase}
-                    </div>
-                    <div className="climate-card">
-                      <strong>{t('climate.pdo', 'PDO')}:</strong> {t('climate.values.Warm Phase', 'Warm Phase')}
-                    </div>
-                    <div className="climate-card">
-                      <strong>{t('climate.nao', 'NAO')}:</strong> Positive +1.2
-                    </div>
-                    <div className="climate-card">
-                      <strong>{t('climate.polarVortex', 'Polar Vortex')}:</strong> {t(`climate.values.${polarVortex}`, polarVortex)}
-                    </div>
-                  </div>
-                </section>
+                {/* (The fixed-text 'Global Climate Systems' panel was removed on 19 Oct 2026: its ENSO/IOD/MJO/PDO/NAO/polar-vortex values were hardcoded, not live.) */}
               </div>
             </div>
-          )}
+          ); return (viewMode !== 'compact' && !citizen) ? (
+            <OverviewWorkspace
+              city={selectedCity}
+              state={selectedState}
+              liveWeather={liveWeather}
+              liveCityCache={liveCityCache}
+              liveIndiaData={liveIndiaData}
+              cityCoordsData={cityCoordsData}
+              lulcReal={lulcReal}
+              isCoastal={!!STATE_DATA[selectedState]?.coastal}
+              buckets={HEAT_INDEX_BUCKETS}
+              resolveStateName={(feature) => fixStateName(getRawName(feature))}
+              onSelectCity={(c, st) => { setSelectedState(st); setSelectedCity(c) }}
+              alerts={alerts}
+              cacheStatus={liveCacheStatus}
+              cacheAgeLabel={formatAgo(cacheLastUpdated)}
+              lite={lite}
+            >{overviewContent}</OverviewWorkspace>
+          ) : overviewContent })()}
 
           {activeTab === 'Analysis' && (
             <div className="dashboard-content">

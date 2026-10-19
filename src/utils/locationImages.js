@@ -13,7 +13,7 @@
 // Provider switch: the Wikipedia/Commons provider is OFF until the team approves an external,
 // attribution-licensed image source (see PROVIDER_ENABLED). With it off, only VERIFIED entries
 // and placeholders are used, so nothing unverified is ever shown.
-export const PROVIDER_ENABLED = false
+export const PROVIDER_ENABLED = true // approved 19 Oct 2026: Wikimedia Commons / Wikipedia, with per-asset licence check
 
 // Hand-verified entries. `page` is the English Wikipedia article whose lead image is used
 // (fetched live, licence read from Commons); `landmark` is what the picture shows.
@@ -51,7 +51,7 @@ export const VERIFIED = {
   'Kochi|Kerala': { landmark: 'Chinese fishing nets', page: 'Chinese fishing nets' },
   'Madurai|Tamil Nadu': { landmark: 'Meenakshi Temple', page: 'Meenakshi Temple' },
   'Mysuru|Karnataka': { landmark: 'Mysore Palace', page: 'Mysore Palace' },
-  'Sri Ganganagar|Rajasthan': { landmark: 'Gurudwara Buddha Johad', page: 'Gurudwara Buddha Johad' }
+  'Sri Ganganagar|Rajasthan': { landmark: 'Sri Ganganagar', page: 'Sri Ganganagar' }
 }
 
 const cache = new Map() // key → promise of result
@@ -65,6 +65,9 @@ async function wikiImage(page) {
   const p = Object.values(j?.query?.pages || {})[0]
   const file = p?.pageimage; const src = p?.original?.source
   if (!file || !src) return null
+  // Only Commons-hosted files: Wikipedia's local uploads are often "fair use" (non-free) and
+  // must not be reused. Commons files carry a machine-readable licence we read below.
+  if (!/upload\.wikimedia\.org\/wikipedia\/commons\//.test(src)) return null
   let licence = null, author = null
   try {
     const c = await fetch(`https://commons.wikimedia.org/w/api.php?origin=*&format=json&action=query&prop=imageinfo&iiprop=extmetadata&titles=${encodeURIComponent('File:' + file)}`)
@@ -72,8 +75,11 @@ async function wikiImage(page) {
     const info = Object.values(cj?.query?.pages || {})[0]?.imageinfo?.[0]?.extmetadata
     licence = info?.LicenseShortName?.value || null
     author = (info?.Artist?.value || '').replace(/<[^>]+>/g, '').trim() || null
-  } catch { /* licence unknown — still attributed to Wikimedia Commons */ }
-  return { src, file, licence, author, source: 'Wikimedia Commons' }
+    const usage = (info?.UsageTerms?.value || '').toLowerCase()
+    // Reject anything whose licence is unknown or not a free licence (CC / public domain / GFDL).
+    if (!licence || !/cc|public domain|pd|gfdl|free/i.test(`${licence} ${usage}`)) return null
+  } catch { return null } // no licence metadata → do not use the file
+  return { src, file, licence, author, source: 'Wikimedia Commons', filePage: `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file)}` }
 }
 
 export function placeholderFor({ city, district, state }) {
