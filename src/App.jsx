@@ -61,6 +61,11 @@ import HeatActionChecklist from './components/HeatActionChecklist'
 import CommandCenterHud from './components/CommandCenterHud'
 import DashboardShell from './components/DashboardShell'
 import OverviewWorkspace from './components/OverviewWorkspace'
+import PredictionWorkspace from './components/PredictionWorkspace'
+import AnalysisWorkspace from './components/AnalysisWorkspace'
+import CompareWorkspace from './components/CompareWorkspace'
+import InterventionsWorkspace from './components/InterventionsWorkspace'
+import AIExportWorkspace from './components/AIExportWorkspace'
 import SatelliteBasemap from './components/SatelliteBasemap'
 import { createPortal } from 'react-dom'
 import HeatStressPanel from './components/HeatStressPanel'
@@ -5378,7 +5383,7 @@ function App({ user }) {
             >{overviewContent}</OverviewWorkspace>
           ) : overviewContent })()}
 
-          {activeTab === 'Analysis' && (
+          {activeTab === 'Analysis' && (() => { const legacy = (
             <div className="dashboard-content">
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 {/* PANEL E: Heatmap Grid with Dynamic Updates */}
@@ -5472,9 +5477,9 @@ function App({ user }) {
 
               </div>
             </div>
-          )}
+          ); return (viewMode !== 'compact' && !citizen) ? (<AnalysisWorkspace city={selectedCity} state={selectedState} liveCityCache={liveCityCache} liveIndiaData={liveIndiaData} cityCoordsData={cityCoordsData} lulcReal={lulcReal} buckets={HEAT_INDEX_BUCKETS} resolveStateName={(f) => fixStateName(getRawName(f))} onSelectCity={(c, st) => { setSelectedState(st); setSelectedCity(c) }} liveWeather={liveWeather}>{legacy}</AnalysisWorkspace>) : legacy })()}
 
-          {activeTab === 'Compare' && (
+          {activeTab === 'Compare' && (() => { const legacy = (
             <div className="dashboard-content">
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 <CompareCitiesPanel
@@ -5485,9 +5490,9 @@ function App({ user }) {
                 />
               </div>
             </div>
-          )}
+          ); return (viewMode !== 'compact' && !citizen) ? (<CompareWorkspace city={selectedCity} state={selectedState} liveCityCache={liveCityCache} cityCoordsData={cityCoordsData} lulcReal={lulcReal} allCities={ALL_CITIES_FLAT} onSelectCity={(c, st) => { setSelectedState(st); setSelectedCity(c) }}>{legacy}</CompareWorkspace>) : legacy })()}
 
-          {activeTab === 'Interventions' && (
+          {activeTab === 'Interventions' && (() => { const legacy = (
             <div className="dashboard-content">
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 {/* Recommended plan: how far this city's green cover is from the 30 % canopy
@@ -5731,9 +5736,9 @@ function App({ user }) {
                 </section>
               </div>
             </div>
-          )}
+          ); return (viewMode !== 'compact' && !citizen) ? (<InterventionsWorkspace city={selectedCity} state={selectedState} liveWeather={liveWeather} liveCityCache={liveCityCache} lulcReal={lulcReal} cityCoordsData={cityCoordsData} isCoastal={!!STATE_DATA[selectedState]?.coastal} cityPlan={cityPlan} userName={userName}>{legacy}</InterventionsWorkspace>) : legacy })()}
 
-          {activeTab === 'Prediction' && !citizen && (
+          {activeTab === 'Prediction' && !citizen && (() => { const legacy = (
             <div className="dashboard-content" style={{ display: 'block' }}>
               <PredictionBrief
                 city={selectedCity}
@@ -5751,9 +5756,9 @@ function App({ user }) {
                 onGoTo={(tab) => setActiveTab(tab)}
               />
             </div>
-          )}
+          ); return (viewMode !== 'compact' && !citizen) ? (<PredictionWorkspace city={selectedCity} state={selectedState} liveWeather={liveWeather} liveCityCache={liveCityCache} cityCoordsData={cityCoordsData} isCoastal={!!STATE_DATA[selectedState]?.coastal}>{legacy}</PredictionWorkspace>) : legacy })()}
 
-          {activeTab === 'AI + Export' && (
+          {activeTab === 'AI + Export' && (() => { const legacy = (
             <div className="dashboard-content">
               <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
                 {/* PANEL N: AI Analyst — logic lives in shared AIAnalystPanel (also used by
@@ -5901,7 +5906,7 @@ function App({ user }) {
                 </section>
               </div>
             </div>
-          )}
+          ); return (viewMode !== 'compact' && !citizen) ? (<AIExportWorkspace city={selectedCity} state={selectedState} liveWeather={liveWeather} lulcReal={lulcReal} cityCoordsData={cityCoordsData} isCoastal={!!STATE_DATA[selectedState]?.coastal} cacheStatus={liveCacheStatus} userName={userName}>{legacy}</AIExportWorkspace>) : legacy })()}
         </div>
         </DashboardShell>
       </div>

@@ -98,7 +98,7 @@ export default function OverviewWorkspace({ city, state, liveWeather, liveCityCa
     return districtFeatures.filter(f => resolveStateName(f) === state).map(f => ({ name: districtName(f), ...(districtHeat[districtKey(f)] || {}) })).filter(d => d.value != null).sort((a, b) => b.value - a.value)
   }, [districtFeatures, districtHeat, resolveStateName, state])
   const districtCount = useMemo(() => (districtFeatures ? districtFeatures.filter(f => resolveStateName(f) === state).length : null), [districtFeatures, resolveStateName, state])
-  useEffect(() => { if (coords && mapCtl.current && typeof coords.lat === 'number') mapCtl.current.flyTo(coords.lat, coords.lon, 7) }, [coords, districtFeatures])
+  useEffect(() => { if (typeof coords?.lat !== 'number') return; const t = setTimeout(() => mapCtl.current?.flyTo(coords.lat, coords.lon, 7), 300); return () => clearTimeout(t) }, [coords, districtFeatures])
 
   // State context: hottest cities, the city's rank, state median.
   const stateCities = useMemo(() => Object.values(liveCityCache || {}).filter(c => c.state === state && typeof c.temp === 'number').sort((a, b) => b.temp - a.temp), [liveCityCache, state])

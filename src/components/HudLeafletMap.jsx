@@ -71,6 +71,10 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     map.fitBounds(INDIA_BOUNDS, { padding: [10, 10] })
     map.setMaxBounds(INDIA_BOUNDS.pad(0.6))
     mapRef.current = map
+    // The workspaces lay maps out in CSS grids whose final height is known only after the
+    // first paint (and changes when drawers open), so keep Leaflet's size in step with its box.
+    let ro = null
+    if (typeof ResizeObserver !== 'undefined') { ro = new ResizeObserver(() => { try { map.invalidateSize({ pan: false }) } catch { /* removed */ } }); ro.observe(elRef.current) }
     const panes = { base: 100, raster: 300, ref: 350, vectors: 400, points: 450 }
     for (const [name, z] of Object.entries(panes)) { map.createPane(name); map.getPane(name).style.zIndex = String(z) }
     map.on('zoomend', () => { onZoomChange(map.getZoom()); restyle() })
@@ -91,7 +95,7 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     map.on('moveend', redrawRaster); map.on('resize', redrawRaster)
     map.on('zoomstart', () => { rc.width = 1; rc.height = 1 })
     if (controlRef) controlRef.current = {
-      zoomIn: () => map.zoomIn(1), zoomOut: () => map.zoomOut(1), reset: () => map.fitBounds(INDIA_BOUNDS, { padding: [10, 10] }), flyTo: (lat, lon, z = 11) => map.flyTo([lat, lon], z, { duration: 1.2 }), getZoom: () => map.getZoom(),
+      zoomIn: () => map.zoomIn(1), zoomOut: () => map.zoomOut(1), reset: () => map.fitBounds(INDIA_BOUNDS, { padding: [10, 10] }), flyTo: (lat, lon, z = 11) => { map.invalidateSize({ pan: false }); const sz = map.getSize(); if (!sz.x || !sz.y) map.setView([lat, lon], z, { animate: false }); else map.flyTo([lat, lon], z, { duration: 1.2 }) }, getZoom: () => map.getZoom(),
       // for overlays drawn in screen space (wind particles): geo ↔ container pixels, size, and
       // a way to follow pans/zooms
       project: (lat, lon) => { const p = map.latLngToContainerPoint([lat, lon]); return [p.x, p.y] },
@@ -127,7 +131,7 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
         },
         click: () => {
           const d = layer.options.district && isDetailFor(feature) ? dataRef.current.districtHeat?.[districtKey(feature)] : null
-          if (d?.city) dataRef.current.onDistrictClick(d.city, d.state)
+          if (d?.city) dataRef.current.onDistrictClick(d.city, d.state, { district: districtName(feature), state: dataRef.current.resolveStateName(feature), entry: d })
           else dataRef.current.onStateClick(dataRef.current.resolveStateName(feature))
         }
       })
@@ -160,7 +164,7 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
       restyle(); layersRef.current.redrawRaster?.()
     }).catch(err => console.warn('[HudLeafletMap] geo load failed:', err?.message))
 
-    return () => { map.remove(); mapRef.current = null; layersRef.current = {} }
+    return () => { if (ro) ro.disconnect(); map.remove(); mapRef.current = null; layersRef.current = {} }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
