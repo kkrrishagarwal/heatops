@@ -87,6 +87,22 @@ export default function AnalysisWorkspace({ city, state, liveCityCache, liveIndi
     return out
   }, [lulcReal, liveCityCache, state])
   const r = pearson(scatter.map(p => p.x), scatter.map(p => p.y))
+  const [showAll, setShowAll] = useState(false)
+  // Built-up bands: the average high in each band, and the same cities compared with the
+  // typical (median) town in their OWN state from the 1,932-city live cache. The second number
+  // strips out climate (hill towns, coast, desert), which drives most of the raw gap.
+  const bands = useMemo(() => {
+    const byState = {}
+    for (const c of Object.values(liveCityCache || {})) if (typeof c?.tempMax === 'number') (byState[c.state] ||= []).push(c.tempMax)
+    const med = a => { const b = [...a].sort((x, y) => x - y); return b[Math.floor(b.length / 2)] }
+    const stateMed = Object.fromEntries(Object.entries(byState).filter(([, v]) => v.length >= 5).map(([k, v]) => [k, med(v)]))
+    const avg = a => (a.length ? Math.round((a.reduce((x, y) => x + y, 0) / a.length) * 10) / 10 : null)
+    return [[0, 20, 'Under 20%'], [20, 40, '20–40%'], [40, 60, '40–60%'], [60, 101, '60% or more']].map(([lo, hi, name]) => {
+      const g = scatter.filter(p => p.x >= lo && p.x < hi)
+      const fair = g.filter(p => stateMed[p.state] != null).map(p => p.y - stateMed[p.state])
+      return { name, lo, hi, n: g.length, avg: avg(g.map(p => p.y)), vsState: avg(fair), hasCity: g.some(p => p.city === city && p.state === state), stateCities: g.filter(p => p.inState).map(p => p.city) }
+    }).filter(b => b.n > 0)
+  }, [scatter, liveCityCache, city, state])
   // least-squares trend line for the scatter
   const fit = useMemo(() => {
     const n = scatter.length; if (n < 3) return null
@@ -200,30 +216,59 @@ export default function AnalysisWorkspace({ city, state, liveCityCache, liveIndi
           <div style={{ fontSize: 10, color: C.muted }}>{withValue.length} of {districts.length} districts have a value · median {median ?? '—'}{L.unit}.</div>
         </Section>
 
-        <Section no="02" title="Do more built-up cities run hotter?" testId="an-scatter" right={<Prov k="estimate" title="Descriptive correlation across cities; not a causal estimate" />}>
-          {(() => {
+        <Section no="02" title="Do more built-up cities run hotter?" testId="an-scatter" right={<span style={{ display: 'flex', gap: 6, alignItems: 'center' }}><Pills value={showAll ? 'all' : 'bands'} onChange={v => setShowAll(v === 'all')} options={[['bands', 'Summary'], ['all', 'Every city']]} /><Prov k="estimate" title="Descriptive comparison across cities; not a causal estimate" /></span>}>
+          {!showAll ? (() => {
+            const lowB = bands[0], highB = bands[bands.length - 1]
+            const sc = niceScale(bands.map(b => b.avg), { step: 10, pad: 0 })
+            const myBand = bands.find(b => b.hasCity)
+            return bands.length > 1 ? (
+              <>
+                <div style={{ fontSize: 13, fontWeight: 800, lineHeight: 1.35 }}>
+                  Built-up cities are hotter, <span style={{ color: C.amber }}>{lowB.avg}°C → {highB.avg}°C</span>, but mostly because of where they are.
+                </div>
+                <div style={{ height: 170 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={bands} margin={{ top: 20, right: 8, left: 4, bottom: 14 }} barCategoryGap="28%">
+                      <CartesianGrid stroke={C.border} strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" tick={axisTick} tickLine={false} label={xLabel('Share of land built up (around the city centre)')} />
+                      <YAxis domain={[0, Math.max(40, sc.domain[1])]} ticks={[0, 10, 20, 30, 40].filter(t => t <= Math.max(40, sc.domain[1]))} tickFormatter={v => `${v}°`} tick={axisTick} width={58} label={yLabel('Average high (°C)')} />
+                      <Tooltip {...tipStyle} cursor={{ fill: 'rgba(148,163,184,0.08)' }} content={({ active, payload }) => active && payload?.[0] ? (() => { const d = payload[0].payload; return <div style={{ ...tipStyle.contentStyle, padding: '7px 10px' }}><b>{d.name} built up</b> · {d.n} cities<br />Average high today: <b>{d.avg}°C</b><br />Compared with towns in their own state: <b>{d.vsState > 0 ? '+' : ''}{d.vsState}°C</b>{d.stateCities.length ? <><br /><span style={{ color: C.amber }}>{state}: {d.stateCities.slice(0, 4).join(', ')}{d.stateCities.length > 4 ? '…' : ''}</span></> : null}</div> })() : null} />
+                      <Bar dataKey="avg" radius={[4, 4, 0, 0]} isAnimationActive={false}>
+                        {bands.map((b, i) => <Cell key={i} fill={b.hasCity ? C.amber : '#475569'} />)}
+                        <LabelList dataKey="avg" position="top" formatter={v => `${v}°`} style={{ fill: C.text, fontSize: 11, fontWeight: 800 }} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                {/* the fair comparison, right under each bar's band */}
+                <div style={{ display: 'grid', gridTemplateColumns: `58px repeat(${bands.length}, 1fr)`, gap: 4, alignItems: 'center' }}>
+                  <div style={{ fontSize: 9, color: C.muted, lineHeight: 1.2 }}>vs towns in the same state</div>
+                  {bands.map(b => <div key={b.name} style={{ textAlign: 'center', fontSize: 12, fontWeight: 800, color: C.text, background: C.raised, borderRadius: 6, padding: '3px 0', ...num }}>{b.vsState == null ? '—' : `${b.vsState > 0 ? '+' : ''}${b.vsState}°C`}<div style={{ fontSize: 9, fontWeight: 500, color: C.muted }}>{b.n} cities</div></div>)}
+                </div>
+                <ChartKey items={[...(myBand ? [['bar', C.amber, `Band that includes ${city}`]] : []), ['bar', '#475569', 'Other bands']]} />
+                <ChartRead>The bars rise from {lowB.avg}°C to {highB.avg}°C, but many lightly built cities are cool hill towns. Compared fairly with other towns in the <b>same state</b>, the most built-up cities are only <b>{highB.vsState > 0 ? '+' : ''}{highB.vsState}°C</b> warmer today. Daytime air temperature hides most urban heat; the satellite surface layer and night-time readings show it more clearly.</ChartRead>
+              </>
+            ) : <div style={{ fontSize: 11, color: C.muted }}>Needs land-cover and live data.</div>
+          })() : (() => {
             const sc = niceScale(scatter.map(p => p.y), { step: 5, pad: 0.5 })
-            const strength = r == null ? null : Math.abs(r) < 0.2 ? 'no clear link' : Math.abs(r) < 0.4 ? 'a weak link' : Math.abs(r) < 0.7 ? 'a moderate link' : 'a strong link'
             return (
               <>
-                <div style={{ height: 180 }}>
-                  {scatter.length ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ScatterChart margin={{ top: 8, right: 12, left: 4, bottom: 14 }}>
-                        <CartesianGrid stroke={C.border} strokeDasharray="3 3" />
-                        <XAxis type="number" dataKey="x" name="Built-up" domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 100]} tickFormatter={v => `${v}%`} tick={axisTick} label={xLabel('Built-up area within ~5 km of the centre')} />
-                        <YAxis type="number" dataKey="y" name="Today's high" domain={sc.domain} ticks={sc.ticks} tickFormatter={v => `${v}°`} tick={axisTick} width={58} label={yLabel("Today's high (°C)")} />
-                        <ZAxis range={[28, 28]} />
-                        <Tooltip {...tipStyle} cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => active && payload?.[0] ? (() => { const d = payload[0].payload; return <div style={{ ...tipStyle.contentStyle, padding: '6px 9px' }}><b>{d.city}</b>, {d.state}<br />{d.x}% built-up · high {d.y}°C</div> })() : null} />
-                        {fit && <ReferenceLine segment={[{ x: 0, y: fit.b }, { x: 100, y: fit.b + fit.m * 100 }]} stroke={C.cyan} strokeWidth={1.5} strokeDasharray="6 4" ifOverflow="hidden" />}
-                        <Scatter data={scatter.filter(p => !p.inState)} fill="#64748B" fillOpacity={0.7} isAnimationActive={false} />
-                        <Scatter data={scatter.filter(p => p.inState)} fill={C.amber} isAnimationActive={false} />
-                      </ScatterChart>
-                    </ResponsiveContainer>
-                  ) : <div style={{ fontSize: 11, color: C.muted }}>Needs land-cover and live data.</div>}
+                <div style={{ height: 200 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ScatterChart margin={{ top: 8, right: 12, left: 4, bottom: 14 }}>
+                      <CartesianGrid stroke={C.border} strokeDasharray="3 3" />
+                      <XAxis type="number" dataKey="x" name="Built-up" domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 100]} tickFormatter={v => `${v}%`} tick={axisTick} label={xLabel('Share of land built up (around the city centre)')} />
+                      <YAxis type="number" dataKey="y" name="Today's high" domain={sc.domain} ticks={sc.ticks} tickFormatter={v => `${v}°`} tick={axisTick} width={58} label={yLabel("Today's high (°C)")} />
+                      <ZAxis range={[36, 36]} />
+                      <Tooltip {...tipStyle} cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => active && payload?.[0] ? (() => { const d = payload[0].payload; return <div style={{ ...tipStyle.contentStyle, padding: '6px 9px' }}><b>{d.city}</b>, {d.state}<br />{d.x}% built up · high {d.y}°C</div> })() : null} />
+                      {fit && <ReferenceLine segment={[{ x: 0, y: fit.b }, { x: 100, y: fit.b + fit.m * 100 }]} stroke={C.cyan} strokeWidth={2} strokeDasharray="6 4" ifOverflow="hidden" />}
+                      <Scatter data={scatter.filter(p => !p.inState)} fill="#64748B" fillOpacity={0.55} isAnimationActive={false} />
+                      <Scatter data={scatter.filter(p => p.inState)} fill={C.amber} stroke="#0B1325" strokeWidth={2} isAnimationActive={false} />
+                    </ScatterChart>
+                  </ResponsiveContainer>
                 </div>
-                <ChartKey items={[['dot', C.amber, `${state} cities`], ['dot', '#64748B', 'Other cities'], ['dash', C.cyan, 'Trend line']]} />
-                {strength && <ChartRead>Across {scatter.length} cities there is <b>{strength}</b> (r = {r}){fit ? <>: on average, each extra 10% of built-up area goes with about <b>{Math.abs(Math.round(fit.m * 10 * 10) / 10)}°C {fit.m >= 0 ? 'higher' : 'lower'}</b> highs</> : null}. Climate zone, altitude and the coast matter more, so treat this as a pattern, not proof.</ChartRead>}
+                <ChartKey items={[['dot', C.amber, `${state} cities`], ['dot', '#64748B', 'Other cities'], ['dash', C.cyan, 'Average trend']]} />
+                <ChartRead>One dot per city ({scatter.length} cities). Hover a dot for its name. The dashed line is the average trend; the wide spread around it shows that built-up share explains only a small part of the difference (r = {r}).</ChartRead>
               </>
             )
           })()}
