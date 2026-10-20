@@ -2,12 +2,13 @@
 
 **Hackyard Build 2026 · IIT Guwahati · Team B26-0322**
 
-BhaskarOps (earlier name HeatOps) is a web platform that monitors urban heat across India and helps a district administration decide what to do about it: live readings for 1,932 cities, NASA satellite surface temperature, land cover, an AI-written Heat Action Protocol with its cost, and a budget planner.
+BhaskarOps (earlier name HeatOps) is a web platform that monitors urban heat across India and helps a district administration decide what to do about it: live readings for 1,932 cities, NASA satellite surface temperature, land cover, a probabilistic heatwave forecast, an AI-written Heat Action Protocol with its cost, a budget planner, an action tracker, and exportable reports.
 
 This guide is written from the base level. It assumes no prior knowledge of meteorology, satellites or the code, and it explains each term the first time it is used.
 
 - Live site: https://heatops.vercel.app
-- Written from the code as deployed on 17 October 2026. Where a number on screen is an estimate, this guide says so, because the app says so.
+- Written from the code as deployed on 20 October 2026, for the Grand Finale panel (24–25 October 2026). Where a number on screen is an estimate, this guide says so, because the app says so.
+- New since the 17 October edition: the six-workspace dashboard (section 9), the ensemble heatwave probability (sections 9.2 and 11.11), the action tracker (9.5), the report builder (9.6), photographs for every city and district (section 17), and charts that state their own takeaway.
 
 ## Contents
 
@@ -27,6 +28,7 @@ This guide is written from the base level. It assumes no prior knowledge of mete
 14. Limits and known gaps
 15. Demo script and judge questions
 16. Glossary
+17. Location photographs
 
 ---
 
@@ -154,7 +156,7 @@ The original screen: the India map on the left, an information panel on the righ
 
 ### 5.4 The city dashboard
 
-Tabbed analysis of one city. Authority tabs: Overview, Prediction, Analysis, Compare, Interventions, AI + Export. Citizen tabs: Overview, What to do, Compare. Section 9 walks through each panel.
+On a laptop in the Authority view, the dashboard is an executive workspace. A left sidebar lists six numbered workspaces: Overview, Prediction, Analysis, Compare, Interventions, AI + Export. A shared header shows the city's photograph, coordinates and elevation, a LIVE / CACHED / DEMO / OFFLINE status, the IST clock, a city search, and the audience and language controls. The selected city is kept when you switch workspaces. Citizens, and anyone on a phone, keep the simpler tab layout (Overview, What to do, Compare). Section 9 walks through each workspace.
 
 ### 5.5 AGNI
 
@@ -317,43 +319,72 @@ Each city's "priority core" is a 1 km radius (about 314 ha). Candidate packages 
 
 ---
 
-## 9. The city dashboard, tab by tab
+## 9. The city dashboard, workspace by workspace
 
-### 9.1 Overview (both views)
+Every workspace follows the same pattern: a numbered header, a row of headline tiles, analytical sections, and a "Show detail panels" drawer at the bottom that keeps every earlier panel intact. Every number carries a coloured provenance label: LIVE, CACHED, DEMO, FORECAST, ENSEMBLE, SATELLITE, RECORDED, ESTIMATE, RULE-BASED, AI-GENERATED, SELF-REPORTED or UNAVAILABLE. Every chart has labelled axes with units, the relevant IMD threshold line, and a "How to read" line that states the takeaway in plain words. A chart with nothing to show says so (for example "0% on every day") instead of looking empty.
 
-| Panel | What it shows | Source |
+### 9.1 Overview: City Intelligence Command Center
+
+| Part | What it shows | Source |
 |---|---|---|
-| Weather Conditions | Temperature, feels-like, max/min, humidity, wind, pressure, visibility, UV, cloud, sunrise/sunset, AQI with PM2.5/PM10/NO₂/O₃, 7-day and 12-hour forecasts | Open-Meteo, live |
-| How dangerous is the heat? | "Feels like X °C" with a danger word (Safe / Take care / Be very careful / Dangerous / Extremely dangerous), what outdoor workers should do, the worst hour of the next 24. "Show the science (for experts)" reveals Heat Index, wet-bulb, WBGT and every formula with today's numbers substituted | Formulas on live temperature + humidity |
-| AI Heat Response Co-Pilot (authority) | Section 7 | |
-| Heatwave Action Checklist (authority) | NDMA / Ahmedabad HAP steps that adapt to severity: 5 activation steps at Extreme/High risk; 3 preparedness steps at Medium; a 4-step cold-weather list below 10 °C; "routine monitoring" otherwise. Ticks are time-stamped and kept per city; the panel calls itself "an operational aid, not an official record" | Rules |
-| 7-Day Heatwave Outlook | Seven bars of forecast maxima against the IMD threshold for the terrain, with any multi-day spell named | Open-Meteo + IMD rules |
-| 30-Day Temperature Trend | Line chart from the app's own daily archive | Archive |
-| Satellite Indices | Modelled surface temperature, vegetation / built-up / water %, elevation | Open-Meteo, ESA, SRTM |
-| Heat Risk Gauge, Today's High vs Low, Active Alerts, Health & Safety Precautions | Rule-based summaries | Live readings |
-| Safe hours today, Share with family, How you can help (citizen) | A 24-hour bar coloured by feels-like (green < 35, yellow 35–39, red ≥ 40), a WhatsApp message, a static help list | Open-Meteo hourly |
+| Photographic hero | The city's landmark photograph with its licence and creator (section 17), district count, coordinates, elevation and how many of the state's cities are live | Wikimedia Commons; app data |
+| Headline tiles | Current temperature and feels-like; Heat Risk Index (0–100 ring); People at risk, shown as **UNAVAILABLE** because no approved population dataset is held; active alerts by severity | Open-Meteo; composite model; rules |
+| 01 City climate map | The state's districts coloured by live air temperature, MODIS surface temperature, or satellite imagery; click a district to open its city | Open-Meteo, NASA MODIS, Esri |
+| 02 Urban morphology | Land-cover bars, 7-day forecast highs, highest-reading districts, hottest cities in the state | ESA WorldCover, Open-Meteo |
+| 03 Composite risk and triage | Risk ring, activation level, priority alerts, key insights, the top three rule-based actions, and Economic impact shown as **UNAVAILABLE** | Rules on live data |
+| Detail panels | Weather conditions, "How dangerous is the heat?", AI Co-Pilot, checklist, 7-day outlook, 30-day trend (gaps shown where the archive has no reading), satellite indices, precautions | As in earlier editions |
 
-### 9.2 Prediction (authority)
+Every alert on this screen is derived from data. The fixed "Global Climate Systems" panel and the hardcoded "Marine heatwave active" and "MODERATE urban heat" alerts were removed on 19 October 2026.
 
-The District Brief: when the heat is coming (spell dates), how bad today (composite risk), what changes if you act (risk before → after); the 7-day outlook with "if nothing is done" against "with the plan"; the checklist as a table with an owner and a due-by per step; the budget split; and two 10 × 10 grids, today versus with the plan.
+### 9.2 Prediction: Forecast Intelligence
 
-### 9.3 Analysis (authority)
+The deterministic forecast says what one model run expects. The **ensemble** asks how sure we are: the same weather model (NOAA GFS, served by Open-Meteo) is run 31 times from slightly different starting conditions.
 
-The temperature heat grid; the NASA MODIS panel (latest clear-sky day and night, hottest surface this season, weekly chart with cloud gaps, year-by-year peak-season chart back to 2016); the Random Forest model scorecard; land use / land cover; urban morphology (live building count); the data pipeline list.
+| Part | What it shows |
+|---|---|
+| Heatwave probability | The share of the 31 runs that meet the IMD threshold rule for this terrain on 2 days in a row, or reach 45 °C on any day, within 7 days. Example: "0% · 0 of 31 runs meet the criterion". |
+| Forecast peak and uncertainty | The middle forecast's peak, the range 8 in 10 runs fall inside, and the average spread (±°C). |
+| 01 Daily maximum chart | Shaded likely range, the middle forecast with its values, the standard single-run forecast as a dashed line, and the red IMD threshold. A 72-hour hourly view is one click away. |
+| 02 Chance of a heatwave-level day | One bar per day: the share of runs reaching the threshold. |
+| 03 District risk timeline | Seven days × up to eight cities (the selected city and the state's hottest), each cell coloured by IMD class. Each city stands in for its district, and the panel says so. |
+| 04 How to read this forecast | The method and what is not included. |
+| Detail panels | The District Magistrate's weekly brief, budget plan and outlook from earlier editions. |
 
-> **About the machine-learning model.** It is a research prototype and the panel says so: a scikit-learn Random Forest trained on 341 rows from 20 global megacities (not India) to predict surface temperature from vegetation, built-up and elevation. On a random split it scores R² 0.95; when five whole cities are held out it scores R² −0.39, meaning it does not generalise to unseen cities. The app shows both numbers and uses the model for nothing on screen. This honesty is itself a feature: the panel exists to show what was tried and why it is not trusted.
+This is agreement between runs, not a calibrated probability and not an IMD warning. The IMD "departure from normal" rule is not applied because the project holds no per-city climatological normal. The ensemble is fetched live, cached for 30 minutes, and used under Open-Meteo's non-commercial terms.
 
-### 9.4 Compare (both views)
+### 9.3 Analysis: Geospatial Heat Intelligence
 
-Up to four cities on a radar chart: surface temperature, AQI and wind are live; NDVI, NDBI and NDWI are illustrative baselines and the panel says so.
+A GIS-style layout: a layer rail on the left (air temperature now, today's forecast high, MODIS surface temperature, built-up share), a basemap switch (dark or satellite) and an opacity slider; the state's district map in the centre; and a district drill-down on the right. Clicking a district shows its photograph, its value and how it was derived (own city or nearest cities), its rank in the state, the nearest city's live readings and land cover, and a button to open that city.
 
-### 9.5 Interventions (authority)
+Three diagnostics sit under the map:
 
-A recommended plan against the 30 % canopy target; sliders for greening, cool roofs and water bodies with a before/after grid; the Cool Roof ROI calculator (lime-wash ₹0.5–2 per sq ft, premium ₹15–30; AC savings at 0.09 kWh per sq ft per month × ₹7 per kWh over eight cooling months; payback period); the physics cards; the city-level Mitigation Planner; wind and atmosphere.
+- **How the districts compare:** a histogram of district values with the hottest and coolest named.
+- **Do more built-up cities run hotter?** Cities are grouped by built-up share (under 20%, 20–40%, 40–60%, 60% or more). Bars show each group's average high; under each bar is the same group compared with the typical town in its own state. Today this reads: built-up cities have higher highs (about 28 °C → 33 °C), but compared fairly within their own state the most built-up cities are under 1 °C warmer, because many lightly built cities are cool hill towns. The full 171-city scatter is one click away. This is a descriptive pattern, not proof of cause.
+- **Data coverage:** how many districts have their own reading, a nearest-city value, a sparse estimate, or none.
 
-### 9.6 AI + Export (authority)
+The detail panels keep the MODIS panel, the Random Forest scorecard (see the note below), land cover, urban morphology, the heat grid and the data pipeline.
 
-AGNI chat; points and badges; glossary; copy summary, WhatsApp share, CSV download, printable PDF report.
+> **About the machine-learning model.** It is a research prototype and the panel says so: a scikit-learn Random Forest trained on 341 rows from 20 global megacities (not India) to predict surface temperature from vegetation, built-up and elevation. On a random split it scores R² 0.95; when five whole cities are held out it scores R² −0.39, meaning it does not generalise to unseen cities. The app shows both numbers and uses the model for nothing on screen.
+
+### 9.4 Compare: Multi-City Intelligence
+
+Any two to four of the 1,932 cities side by side. The first column follows the city selected in the header; the others are remembered on this browser. Each city card shows its photograph and credit, air temperature now, today's high, Heat Risk Index, AQI, built-up share and the MODIS season peak, each with its label. Below: a side-by-side bar for any chosen metric; the 7-day forecast highs of every city on one chart with the 40 °C line; synchronised satellite maps (zooming one zooms all, with a dashed ring for the ~5 km land-cover sample); and an optional AI summary written by Gemini from the numbers on screen only. The older radar panel remains in the drawer.
+
+### 9.5 Interventions: Heat Action & Resource Planning
+
+| Part | What it shows |
+|---|---|
+| Action tracker | The rule-based actions for the city's activation level (NDMA / Ahmedabad Heat Action Plan), each with priority, owner, deadline, a note field and a status: **Recommended, Planned, In progress, Completed, Marked verified (self-reported)**. Officers can add local actions. Filters: all, open, P1, P2, P3. |
+| Status board | Counts per status and a priority × open/done table. |
+| Budget allocation | The existing optimiser at ₹25 L, ₹50 L, ₹1 Cr or ₹5 Cr: spend by intervention type and the projected risk change. Economic loss avoided is **UNAVAILABLE**. |
+| Activity log | Who changed which action, from what to what, and when. |
+| Export | The whole tracker as CSV. |
+
+A notice on the screen states where statuses live: in this browser only. They are not sent to a server, not visible to other officers, and are lost if site data is cleared. "Marked verified" is the officer's own declaration; the app does not check field work. The earlier panels (green-cover plan, sliders, Cool Roof calculator, city planner, outlook, wind) are in the drawer.
+
+### 9.6 AI + Export: Decision Support
+
+The AI Heat Co-Pilot (section 7) sits beside a report builder. Choose **Daily, Weekly or Custom** (any date range in the last 366 days). The report uses recorded daily readings from the app's own archive (`/api/weather-history`), today's live reading and the forecast. Headline tiles show days with data (and how many are missing), the highest day high and days at or above the threshold, and mean and maximum AQI. Exports: **CSV** of every row behind the report, and a **printable report** that the browser saves as PDF, with the current situation, recorded readings, the 7-day forecast and every action with its status. A snapshot of action statuses from the Interventions workspace sits below. AGNI chat, quick share, glossary and team details are in the drawer.
 
 ---
 
@@ -439,6 +470,23 @@ u = −speed·sin(dir),  v = −speed·cos(dir)
 
 ≤ 50 Good · ≤ 100 Moderate · ≤ 150 Unhealthy for Sensitive Groups · ≤ 200 Unhealthy · ≤ 300 Very Unhealthy · > 300 Hazardous.
 
+### 11.11 Ensemble heatwave probability
+
+For each of the 31 runs, take its daily maxima for the next 7 days. A run **qualifies** if it has 2 consecutive days at or above the terrain threshold T (40 °C plains, 37 °C coast, 30 °C hills at 900 m or more), or any day at 45 °C or more.
+
+```
+probability = qualifying runs ÷ runs with at least 2 valid days
+per-day chance = runs with max ≥ T that day ÷ runs with a value that day
+likely range = 10th to 90th percentile of the runs' daily maxima (linear interpolation)
+uncertainty  = ½ × mean(90th − 10th percentile) over the week
+```
+
+Missing values are dropped and the counts are shown, for example "27 of 31 runs".
+
+### 11.12 Built-up comparison within the same state
+
+For each classified city: `difference = its forecast high − median forecast high of all live cities in its state` (states with at least 5 live cities). The value under each built-up band is the average difference of its cities. Comparing within the state removes most of the climate effect (hills, coast, desert) that dominates the raw averages.
+
 ---
 
 ## 12. Real, estimated, or fixed? The honesty rule
@@ -458,9 +506,18 @@ u = −speed·sin(dir),  v = −speed·cos(dir)
 - The WBGT ("shade estimate"), the wind probe's heat-load and ventilation labels ("heuristic"), the 14-day satellite composite.
 - Demo-link temperatures (banner: "this browser only, not real data").
 
-### Fixed text with no live source (candidates for removal before judging)
+### Self-reported, and labelled as such
 
-- The Global Climate Systems panel (ENSO "El Niño", IOD, MJO, PDO, NAO, Polar Vortex), the ticker items "El Niño Active" and "Sat Pass: Next 16:45 IST", the pills HEAT HIGH / CLIMATE EL NIÑO / SYSTEM OPS, the "AGENT ONLINE" and "SAT ACTIVE" badges, the "Marine heatwave active" alert for four coastal states, and the progress tracker.
+- Intervention statuses, notes and added actions (Interventions workspace): set by the officer on one browser, never verified by the app.
+
+### Not available, and shown as UNAVAILABLE
+
+- People at risk (no approved population dataset) and economic impact (no validated source). Nothing is substituted.
+
+### Fixed text with no live source (still to label or remove)
+
+- On the classic-map ticker: "El Niño Active" and "Sat Pass: Next 16:45 IST"; the "SAT ACTIVE" and "AGENT ONLINE" badges; the progress tracker in the AI + Export drawer.
+- Removed on 19 October 2026: the Global Climate Systems panel, the "Marine heatwave active" alert and the baseline "MODERATE urban heat" alert.
 
 ---
 
@@ -473,8 +530,10 @@ u = −speed·sin(dir),  v = −speed·cos(dir)
 | Secrets | Only server-side environment variables: `GEMINI_API_KEY`; optional `AGENT37_API_KEY` / `AGENT37_INSTANCE_ID`; `GITHUB_TOKEN` and `CRON_SECRET` for the refresh. No key is ever shipped to the browser. All map and weather services used by the browser need no key at all. |
 | Data refresh | GitHub Actions (hourly by day, three-hourly at night) commits the bulk cache and a daily snapshot; the commit redeploys the site. |
 | Offline behaviour | Map, cached readings, satellite archive, land cover, planner, heat stress, the Co-Pilot's rule-based protocol, the brief and exports all work without internet. Live fetches, AI calls, imagery tiles and the wind layer need it; each fails to a labelled fallback, never to a blank screen (error boundaries wrap the app and the map). |
+| Images | Location photographs come from Wikimedia Commons, then Openverse, then a branded placeholder, with licence checks and attribution (section 17). Openverse's anonymous limit (5 searches an hour) is respected in the browser; an offline builder fills the rest. |
+| Tests | `npm test` runs 11 unit tests for the image resolver (licence and evidence rules, source order, switches, broken-link fallthrough, rate-limit budget). `npm run build` is the production build. |
 | Validation | Every AI reply is parsed, validated and clamped before it reaches the page; URL parameters are strictly parsed (junk values are ignored, never coerced); rate limits protect the AI routes. |
-| Storage | Accounts, settings, checklist ticks, action logs and last-known weather live in the browser's local storage. Nothing about users is sent to a server. |
+| Storage | Accounts, settings, checklist ticks, intervention statuses, compare choices, action logs and last-known weather live in the browser's local storage. Nothing about users is sent to a server. |
 
 ---
 
@@ -487,7 +546,11 @@ u = −speed·sin(dir),  v = −speed·cos(dir)
 - Accounts are browser-only; the inner sign-in screen after logout accepts any non-empty credentials.
 - Agent37 is integrated but not active in production (no instance), so the Co-Pilot runs on Gemini; the team cannot claim Agent37 use.
 - Several fixed-text widgets remain (section 12) and should be labelled or removed before judging.
-- Open-Meteo's free tier can rate-limit a single IP after very heavy use; the app then shows cached readings, labelled.
+- Open-Meteo's free tier can rate-limit a single IP after very heavy use; the app then shows cached readings, labelled. The ensemble forecast is free for non-commercial use only.
+- Intervention statuses are stored in one browser; there is no shared backend for them yet.
+- The district risk timeline uses each district's city forecast; no per-district forecast is held.
+- The report's archive has gaps on days the refresh failed (for example 21 of 30 days for Jaipur in a 30-day report); the report counts them.
+- Photographs: 80 of 619 districts still show a placeholder, and Openverse could not be checked on 20 October because its API was down (section 17).
 
 ---
 
@@ -495,10 +558,11 @@ u = −speed·sin(dir),  v = −speed·cos(dir)
 
 ### A three-minute walkthrough
 
-1. **0:00–0:40, the problem.** Open https://heatops.vercel.app, sign in. "India loses thousands of lives to heat every year; a district officer has an IMD bulletin and a phone. This is the All-India view: 1,932 cities live, satellite surface temperature, and the hottest city right now."
-2. **0:40–1:20, the data.** Switch to Satellite, then Surface temperature; drag Historical to 2019, then 2024: "real NASA readings, year by year". Switch to Live Pass with NASA true colour: "the actual photograph of that day". Zoom into a state: per-district colours; hover a district: "reading from Unnao".
-3. **1:20–2:20, operations.** Open the rehearsal link (`?demoTemp=46`) and pick a city: the triage turns CRITICAL. Run the AI Co-Pilot: actions with owners and deadlines, the labour order, the SMS in Hindi, the cost in rupees from published unit costs, and the red "if this is not controlled" chart. Click Simulate SMS and Log to SDMA; export the brief.
-4. **2:20–3:00, defence.** "Every number has its source next to it. Show the science: the Heat Index formula with today's values. The planner's unit costs come from the Ahmedabad pilot. What we don't have, we say: no ward data, no death model. Open-source maps, no paid keys; it runs on a laptop without Wi-Fi except for the live calls."
+1. **0:00–0:40, the problem.** Open https://heatops.vercel.app and sign in as Government / Planner. "India loses thousands of lives to heat every year; a district officer has an IMD bulletin and a phone. This is the All-India view: 1,932 cities live, satellite surface temperature, and the hottest city right now."
+2. **0:40–1:10, the data.** Switch to Satellite, then Surface temperature; drag Historical to 2019, then 2024: "real NASA readings, year by year". Zoom into a state: per-district colours; hover a district: "reading from Unnao".
+3. **1:10–1:40, the city.** Click "Full dashboard". Overview: the landmark photo with its licence, the risk ring, and "People at risk: UNAVAILABLE. We don't invent numbers we don't hold." Open **Prediction**: "31 forecast runs; this is the chance of a heatwave, and this is how sure we are."
+4. **1:40–2:30, operations.** Use the rehearsal link (`?demo=Jaipur:46`): the triage turns CRITICAL. In **AI + Export**, run the Co-Pilot: actions with owners and deadlines, the labour order, the SMS in Hindi, the cost in rupees, and the "if this is not controlled" chart. In **Interventions**, set one action to In progress and one to Marked verified, then export the tracker.
+5. **2:30–3:00, defence.** Show the weekly report and its PDF. "Every number has its source label. Every chart says what it means. What we don't have, we say. Open-source maps, no paid keys."
 
 ### Questions to expect, and the honest answers
 
@@ -509,6 +573,9 @@ u = −speed·sin(dir),  v = −speed·cos(dir)
 | Why are the hills red in the satellite view? | Because MODIS measures the ground at 10:30 am; bare high-altitude rock gets hotter than the air. The tooltip says "surface", and the long-record cities in J&K are on the Jammu side. |
 | Where are the ward boundaries? | There is no public dataset for them; we show real roads and buildings and never label anything a ward. |
 | How many deaths will this prevent? | We don't estimate deaths; no validated India-wide model exists. We show exposure hours and work hours lost, which are measurable, and cite the Ahmedabad plan's published effect. |
+| What does "heatwave probability 0%" mean? | None of the 31 ensemble runs reaches the IMD threshold on two days in a row this week. It is agreement between runs, not an IMD warning; the method is on screen. |
+| Are built-up cities really hotter? | On raw averages yes (about 28 °C → 33 °C), but compared with towns in their own state the gap is under 1 °C today; daytime air temperature hides most urban heat, which shows more in the satellite surface layer and at night. |
+| Is the intervention tracker an official record? | No. It is a working aid stored on the officer's browser, labelled self-reported, and exportable to CSV for filing. |
 | Can a government deploy this? | Yes: open-source stack, no paid keys, server-side secrets, IMD or CPCB feeds can replace Open-Meteo behind the same interface; Open-Meteo itself can be self-hosted for a paid deployment. |
 
 ---
@@ -523,6 +590,7 @@ u = −speed·sin(dir),  v = −speed·cos(dir)
 | Composite | A satellite layer built from each location's most recent clear-sky reading within a window. |
 | Dew point | The temperature at which the air's moisture would condense; a measure of absolute humidity. |
 | Elevation | Height above sea level, metres. |
+| Ensemble | Many runs of the same weather model from slightly different starting conditions; their spread shows how certain the forecast is. |
 | Heat Action Plan (HAP) | A city or district's pre-agreed set of heatwave measures (Ahmedabad's is the Indian model). |
 | Heat Index | NWS "feels like" temperature from air temperature and humidity. |
 | IDW | Inverse-distance weighting: interpolation that weights nearer readings more. |
@@ -530,7 +598,9 @@ u = −speed·sin(dir),  v = −speed·cos(dir)
 | LST | Land surface temperature, the ground's temperature as seen by a satellite. |
 | MODIS | NASA's Moderate Resolution Imaging Spectroradiometer on the Terra and Aqua satellites; daily 1 km LST. |
 | NDMA | National Disaster Management Authority, author of India's heatwave guidelines. |
+| Openverse | A search engine for openly licensed images and audio, run by WordPress.org. |
 | Open-Meteo | A free weather API aggregating national weather models; no key required. |
+| Provenance label | The coloured tag beside a number saying where it comes from (LIVE, FORECAST, ESTIMATE, UNAVAILABLE…). |
 | PM2.5 / PM10 | Airborne particles under 2.5 / 10 micrometres. |
 | SDMA / DDMA | State / District Disaster Management Authority. |
 | SRTM | NASA's Shuttle Radar Topography Mission, the global elevation survey. |
@@ -541,3 +611,29 @@ u = −speed·sin(dir),  v = −speed·cos(dir)
 | Wet-bulb temperature | The lowest temperature reachable by evaporative cooling; the physical limit of sweating. |
 
 Sources named in the app: NWS Heat Index (Rothfusz 1990); Stull, J. Appl. Meteor. Climatol. 50 (2011); ISO 7243:2017; US Army TB MED 507; Vecellio et al., J. Appl. Physiol. 132 (2022); IMD heatwave criteria; NDMA heat-wave guidelines; Ahmedabad Heat Action Plan; NASA LP DAAC MOD11A1.061; ESA WorldCover 2021; NASA GIBS; Open-Meteo.
+
+---
+
+## 17. Location photographs
+
+Every city and district has an identity photograph, a labelled auto-resolved photograph, or a branded placeholder. A photograph is never shown as a measurement, and an unrelated picture is never used.
+
+**Order of sources:**
+
+1. **Verified:** 34 hand-picked landmarks (for example India Gate, Hawa Mahal, Rumi Darwaza), fetched from Wikimedia Commons with their licence and author.
+2. **Auto · Wikimedia Commons:** the lead image of the place's Wikipedia article, only if the file is hosted on Commons under a free licence, and not a map, flag, seal or SVG diagram.
+3. **Auto · Openverse:** an openly licensed photograph found by Openverse search. Accepted licences are CC BY, CC BY-SA, CC0 and the Public Domain Mark; non-commercial and no-derivatives licences are rejected. A result needs a licence link, a creator for attribution licences, an HTTPS photo URL, a source page and a minimum size. The place must be named and corroborated by a second signal (the state or "India" in the title or tags, or the name in both); a title match alone is never accepted.
+4. **Placeholder:** a branded card that says no verified photograph exists.
+
+Auto-resolved photographs carry the label **"Auto-resolved · Not hand-verified"**. Every photograph shows its creator, licence and a link to its source page. If an image fails to load, the next source is tried. Openverse can be switched off on its own (`VITE_OPENVERSE_ENABLED=false`), as can its live lookup (`VITE_OPENVERSE_LIVE=false`).
+
+**Measured coverage on 20 October 2026** (`node scripts/imageCoverageReport.mjs`, all 619 districts the map draws, district-level lookup):
+
+| Status | Districts | Share |
+|---|---:|---:|
+| Verified | 21 | 3.4% |
+| Auto-resolved · Wikimedia Commons | 518 | 83.7% |
+| Auto-resolved · Openverse | 0 | 0% |
+| Placeholder | 80 | 12.9% |
+
+Every district was checked against Wikimedia. Openverse was not measured for the 80 placeholders because its API was down that day (its own health check reported a database outage). Coverage is therefore not complete, and the report says so. The full per-district list is in `docs/IMAGE_COVERAGE.md`.
