@@ -66,6 +66,7 @@ import AnalysisWorkspace from './components/AnalysisWorkspace'
 import CompareWorkspace from './components/CompareWorkspace'
 import InterventionsWorkspace from './components/InterventionsWorkspace'
 import AIExportWorkspace from './components/AIExportWorkspace'
+import HeatPowerWorkspace from './components/HeatPowerWorkspace'
 import SatelliteBasemap from './components/SatelliteBasemap'
 import { createPortal } from 'react-dom'
 import HeatStressPanel from './components/HeatStressPanel'
@@ -2976,7 +2977,7 @@ function App({ user }) {
   useEffect(() => {
     // Keep the active tab valid when the audience changes in either direction.
     if (!citizen && activeTab === 'What to do') setActiveTab('Overview')
-    if (citizen && ['Prediction', 'Analysis', 'Interventions', 'AI + Export'].includes(activeTab)) setActiveTab('Overview')
+    if (citizen && ['Prediction', 'Analysis', 'Interventions', 'AI + Export', 'Heat + Power'].includes(activeTab)) setActiveTab('Overview')
   }, [citizen, activeTab])
   // Dashboard tab bar overflow-fade hints (mobile: OVERVIEW/ANALYSIS/COMPARE/
   // INTERVENTIONS/AI+EXPORT don't all fit under ~500px). Measured via ref rather
@@ -3027,7 +3028,7 @@ function App({ user }) {
   useEffect(() => {
     // Keep the current workspace when the city changes (the shell's search, a district click);
     // only fall back to Overview if the current tab does not exist for this audience.
-    setActiveTab(prev => (citizen ? ['Overview', 'What to do', 'Compare'] : ['Overview', 'Prediction', 'Analysis', 'Compare', 'Interventions', 'AI + Export']).includes(prev) ? prev : 'Overview')
+    setActiveTab(prev => (citizen ? ['Overview', 'What to do', 'Compare'] : ['Overview', 'Prediction', 'Analysis', 'Compare', 'Interventions', 'AI + Export', 'Heat + Power']).includes(prev) ? prev : 'Overview')
   }, [selectedCity]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Live weather (Open-Meteo) — single source of truth for current temp/humidity/wind/AQI,
@@ -4687,7 +4688,7 @@ function App({ user }) {
     // Citizens get Compare too — "is my city hotter than my parents' city?" is exactly the
     // question residents ask; the technical tabs (Analysis, Interventions, AI + Export) stay
     // Authority-only. AGNI is still reachable for citizens via the floating button.
-    const TABS = citizen ? ['Overview', 'What to do', 'Compare'] : ['Overview', 'Prediction', 'Analysis', 'Compare', 'Interventions', 'AI + Export']
+    const TABS = citizen ? ['Overview', 'What to do', 'Compare'] : ['Overview', 'Prediction', 'Analysis', 'Compare', 'Interventions', 'AI + Export', 'Heat + Power']
     const TAB_LABELS = {
       'What to do': t('tabs.whatToDo', 'WHAT TO DO'),
       'Overview': t('tabs.overview', 'OVERVIEW'),
@@ -4695,7 +4696,8 @@ function App({ user }) {
       'Analysis': t('tabs.analysis', 'ANALYSIS'),
       'Compare': t('tabs.compare', 'COMPARE'),
       'Interventions': t('tabs.interventions', 'INTERVENTIONS'),
-      'AI + Export': t('tabs.aiExport', 'AI + EXPORT')
+      'AI + Export': t('tabs.aiExport', 'AI + EXPORT'),
+      'Heat + Power': t('tabs.heatPower', 'HEAT + POWER')
     }
 
           return (
@@ -5907,6 +5909,12 @@ function App({ user }) {
               </div>
             </div>
           ); return (viewMode !== 'compact' && !citizen) ? (<AIExportWorkspace city={selectedCity} state={selectedState} liveWeather={liveWeather} lulcReal={lulcReal} cityCoordsData={cityCoordsData} isCoastal={!!STATE_DATA[selectedState]?.coastal} cacheStatus={liveCacheStatus} userName={userName}>{legacy}</AIExportWorkspace>) : legacy })()}
+
+          {activeTab === 'Heat + Power' && !citizen && (
+            <div className="dashboard-content" style={{ display: 'block' }}>
+              <HeatPowerWorkspace city={selectedCity} state={selectedState} liveWeather={liveWeather} liveCityCache={liveCityCache} liveIndiaData={liveIndiaData} cityCoordsData={cityCoordsData} lulcReal={lulcReal} buckets={HEAT_INDEX_BUCKETS} resolveStateName={(f) => fixStateName(getRawName(f))} onSelectCity={(c, st) => { setSelectedState(st); setSelectedCity(c) }} cacheStatus={liveCacheStatus} />
+            </div>
+          )}
         </div>
         </DashboardShell>
       </div>

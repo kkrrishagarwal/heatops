@@ -13,7 +13,8 @@ export const WORKSPACES = [
   { id: 'Analysis', label: 'Analysis', sub: 'Geospatial Heat Intelligence', icon: '◈' },
   { id: 'Compare', label: 'Compare', sub: 'Multi-City Intelligence', icon: '⫼' },
   { id: 'Interventions', label: 'Interventions', sub: 'Heat Action & Resource Planning', icon: '⚒' },
-  { id: 'AI + Export', label: 'AI + Export', sub: 'Decision Support Workspace', icon: '✦' }
+  { id: 'AI + Export', label: 'AI + Export', sub: 'Decision Support Workspace', icon: '✦' },
+  { id: 'Heat + Power', label: 'Heat + Power', sub: 'Electricity Grid Stress', icon: '⚡' }
 ]
 const CITIZEN_WORKSPACES = [
   { id: 'Overview', label: 'Overview', sub: 'Today in your city', icon: '◧' },

@@ -41,7 +41,7 @@ function loadGeo() {
   return geoCache
 }
 
-export default function HudLeafletMap({ stateData, resolveStateName, points = [], focus = null, basemap = 'dark', basemapDate = null, selectedState = null, onStateClick = () => {}, onZoomChange = () => {}, showDots = false, showFills = true, tooltipText = () => '', controlRef, districtHeat = null, onDistrictClick = () => {}, onGeoLoaded = () => {}, detailZoom = 6, raster = false, rasterPoints = null, rgbOf = null, fillStrength = 0.88 }) {
+export default function HudLeafletMap({ stateData, resolveStateName, points = [], focus = null, basemap = 'dark', basemapDate = null, selectedState = null, onStateClick = () => {}, onZoomChange = () => {}, showDots = false, showFills = true, tooltipText = () => '', controlRef, districtHeat = null, onDistrictClick = () => {}, onGeoLoaded = () => {}, detailZoom = 6, raster = false, rasterPoints = null, rgbOf = null, fillStrength = 0.88, overlay = null, onOverlayClick = () => {} }) {
   const elRef = useRef(null)
   const mapRef = useRef(null)
   const layersRef = useRef({})
@@ -95,7 +95,8 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
     map.on('moveend', redrawRaster); map.on('resize', redrawRaster)
     map.on('zoomstart', () => { rc.width = 1; rc.height = 1 })
     if (controlRef) controlRef.current = {
-      zoomIn: () => map.zoomIn(1), zoomOut: () => map.zoomOut(1), reset: () => map.fitBounds(INDIA_BOUNDS, { padding: [10, 10] }), flyTo: (lat, lon, z = 11) => { map.invalidateSize({ pan: false }); const sz = map.getSize(); if (!sz.x || !sz.y) map.setView([lat, lon], z, { animate: false }); else map.flyTo([lat, lon], z, { duration: 1.2 }) }, getZoom: () => map.getZoom(),
+      __map: map,
+      zoomIn: () => map.zoomIn(1), zoomOut: () => map.zoomOut(1), reset: () => map.fitBounds(INDIA_BOUNDS, { padding: [10, 10] }), flyTo: (lat, lon, z = 11) => { if (mapRef.current !== map) return; try { map.invalidateSize({ pan: false }); const sz = map.getSize(); if (!sz.x || !sz.y) map.setView([lat, lon], z, { animate: false }); else map.flyTo([lat, lon], z, { duration: 1.2 }) } catch { /* map torn down mid-call */ } }, getZoom: () => map.getZoom(),
       // for overlays drawn in screen space (wind particles): geo ↔ container pixels, size, and
       // a way to follow pans/zooms
       project: (lat, lon) => { const p = map.latLngToContainerPoint([lat, lon]); return [p.x, p.y] },
@@ -164,7 +165,7 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
       restyle(); layersRef.current.redrawRaster?.()
     }).catch(err => console.warn('[HudLeafletMap] geo load failed:', err?.message))
 
-    return () => { if (ro) ro.disconnect(); map.remove(); mapRef.current = null; layersRef.current = {} }
+    return () => { if (ro) ro.disconnect(); map.stop?.(); map.remove(); mapRef.current = null; layersRef.current = {}; if (controlRef && controlRef.current?.__map === map) controlRef.current = null }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -225,6 +226,22 @@ export default function HudLeafletMap({ stateData, resolveStateName, points = []
       L0.points = L.layerGroup(points.map(p => L.circleMarker([p.lat, p.lon], { pane: 'points', radius: 3.5, color: '#020617', weight: 0.6, fillColor: p.color, fillOpacity: 0.9 }).bindTooltip(p.label, { direction: 'top', className: 'hud-leaflet-tip' }))).addTo(map)
     }
   }, [points, showDots])
+  // ── optional overlay (e.g. Heat + Power grid infrastructure) ──────────────
+  // overlay: { features: GeoJSON Feature[] } with properties { kind, label, color, weight,
+  // dash, radius, fill } — drawn in the points pane above the districts; tooltips use `label`.
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return
+    const L0 = layersRef.current
+    if (L0.overlay) { map.removeLayer(L0.overlay); L0.overlay = null }
+    const feats = overlay?.features || []
+    if (!feats.length) return
+    L0.overlay = L.geoJSON({ type: 'FeatureCollection', features: feats }, {
+      pane: 'points',
+      style: f => ({ color: f.properties.color || '#38BDF8', weight: f.properties.weight ?? 1.4, opacity: f.properties.opacity ?? 0.9, dashArray: f.properties.dash || null, fillColor: f.properties.fill || f.properties.color, fillOpacity: f.properties.fillOpacity ?? 0.18 }),
+      pointToLayer: (f, ll) => L.circleMarker(ll, { pane: 'points', radius: f.properties.radius || 4, color: '#020617', weight: 1, fillColor: f.properties.color || '#F59E0B', fillOpacity: 0.95 }),
+      onEachFeature: (f, l) => { if (f.properties.label) l.bindTooltip(f.properties.label, { direction: 'top', className: 'hud-leaflet-tip', sticky: f.geometry.type !== 'Point' }); l.on('click', () => onOverlayClick(f)) }
+    }).addTo(map)
+  }, [overlay]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const map = mapRef.current; if (!map) return
     const L0 = layersRef.current
