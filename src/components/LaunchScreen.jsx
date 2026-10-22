@@ -1,24 +1,23 @@
-import React, { useEffect, useRef, useState, Component } from 'react'
-import Globe from 'react-globe.gl'
-import { AmbientLight, DirectionalLight } from 'three'
-import IntroGlobe from './IntroGlobe'
+import React, { useEffect, useRef, useState, Component, Suspense, lazy } from 'react'
+import { Flame, Eye, EyeOff } from 'lucide-react'
+import SpaceScene from './SpaceScene'
 import { readLite } from '../utils/liteMode'
+import './LaunchScreen.css'
 
-// Lite mode (low-end devices): no WebGL globe at all — the sign-in card stands on its own.
+// The three.js / react-globe.gl bundle is fetched only when the 3D globe will actually be used.
+const IntroGlobe = lazy(() => import('./IntroGlobe'))
+
+// Sign-in / registration screen. The authentication logic below (validation, local account
+// store, sign-in hand-off to App3D) is unchanged from the previous version; only the layout,
+// accessibility and the decorative space scene are new. The scene is aria-hidden artwork and
+// is never required to sign in: if WebGL is missing, the context is lost, the globe throws, or
+// Lite mode is on, a static Earth image is shown instead and the form works the same.
+
+// Lite mode (low-end devices): no WebGL globe at all — the static Earth stands in.
 const LITE_AT_LOAD = readLite()
-
-// Texture copied from three-globe's bundled examples into public/textures —
-// three-globe's package.json "exports" map blocks importing it directly via
-// JS import, so it's served as a plain static asset instead.
-//
-// earth-dark.jpg (the previous texture) is a near-black monochrome map meant
-// for a night-mode look — with no scene lights of its own to compensate, that
-// rendered as a barely-visible black globe. earth-blue-marble.jpg is NASA's
-// Blue Marble imagery — real-looking blue oceans and green/brown landmasses.
-const earthTexture = '/textures/earth-blue-marble.jpg'
-
-// Centroid of India — used to place the highlight ring/point on the globe.
-const INDIA_COORDS = { lat: 20.5937, lng: 78.9629 }
+// ?globe=3d forces the WebGL globe (skips the software-renderer check and the frame-rate
+// watchdog) and ?globe=static forces the static Earth — for testing and for demos.
+const GLOBE_PARAM = (() => { try { return new URLSearchParams(window.location.search).get('globe') } catch { return null } })()
 
 const USERS_KEY = 'heatops_users'
 
@@ -46,12 +45,8 @@ function saveStoredUsers(users) {
   localStorage.setItem(USERS_KEY, JSON.stringify(users))
 }
 
-// react-globe.gl's WebGLRenderer throws synchronously if WebGL can't be
-// created (seen for real in VSCode's embedded "Simple Browser" webview, which
-// has no GPU context) — and with no boundary, that uncaught error unmounts
-// the ENTIRE app, not just the globe, since React 18 tears down the whole
-// tree on an uncaught render/effect error. This boundary scopes the failure
-// to just the globe so the rest of the login screen still works.
+// react-globe.gl's WebGLRenderer throws synchronously if WebGL can't be created; this boundary
+// scopes that failure to the globe so the rest of the login screen still works.
 class GlobeErrorBoundary extends Component {
   constructor(props) {
     super(props)
@@ -62,6 +57,7 @@ class GlobeErrorBoundary extends Component {
   }
   componentDidCatch(error) {
     console.warn('3D globe failed to render (likely no WebGL support), falling back:', error.message)
+    this.props.onFail?.()
   }
   render() {
     return this.state.failed ? this.props.fallback : this.props.children
@@ -77,12 +73,72 @@ function isWebGLAvailable() {
   }
 }
 
+// A WebGL context that is really the CPU pretending to be a GPU (SwiftShader, llvmpipe,
+// Microsoft Basic Render Driver, Mesa softpipe). Measured on this screen: the 3D globe kept the
+// main thread busy 100 % of the time and the page ran at 3 fps on SwiftShader, against 6 % busy
+// with the static Earth. Read from the renderer string, not the user-agent.
+function isSoftwareRenderer() {
+  try {
+    const gl = document.createElement('canvas').getContext('webgl')
+    if (!gl) return false
+    const ext = gl.getExtension('WEBGL_debug_renderer_info')
+    const name = String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER) || '')
+    gl.getExtension('WEBGL_lose_context')?.loseContext()
+    return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(name)
+  } catch {
+    return false
+  }
+}
+
+// Watch the real frame rate once the globe is up; if it cannot hold ~20 fps, report it so the
+// static Earth takes over. Runs for 3 s only, then stops (no permanent rAF loop).
+function watchFrameRate(onSlow, { ms = 3000, minFps = 20 } = {}) {
+  let n = 0, raf = 0, stop = false
+  const t0 = performance.now()
+  const tick = () => {
+    if (stop) return
+    n++
+    const dt = performance.now() - t0
+    if (dt < ms) raf = requestAnimationFrame(tick)
+    else if (n / (dt / 1000) < minFps && !document.hidden) onSlow(Math.round(n / (dt / 1000)))
+  }
+  raf = requestAnimationFrame(tick)
+  return () => { stop = true; cancelAnimationFrame(raf) }
+}
+
+// prefers-reduced-motion and tab visibility, as state (changes rarely; never per frame).
+function useMotionPrefs() {
+  const [reduce, setReduce] = useState(() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches } catch { return false } })
+  const [hidden, setHidden] = useState(() => typeof document !== 'undefined' && document.hidden)
+  useEffect(() => {
+    let mq = null
+    try { mq = window.matchMedia('(prefers-reduced-motion: reduce)') } catch { /* old browser */ }
+    const onMq = e => setReduce(e.matches)
+    const onVis = () => setHidden(document.hidden)
+    mq?.addEventListener?.('change', onMq)
+    document.addEventListener('visibilitychange', onVis)
+    return () => { mq?.removeEventListener?.('change', onMq); document.removeEventListener('visibilitychange', onVis) }
+  }, [])
+  return { reduce, hidden }
+}
+
+// Earth diameter from the viewport (recomputed on resize only).
+function earthSizeFor(w, h) {
+  if (w <= 560) return Math.round(Math.max(120, Math.min(h * 0.2, w * 0.42)))
+  if (w <= 900) return Math.round(Math.max(160, Math.min(h * 0.27, 300)))
+  const stageW = w * 0.56
+  return Math.round(Math.max(260, Math.min(stageW * 0.58, h * 0.6, 620)))
+}
+// The globe camera sits 2.1 radii above the surface (fov 50°), so the sphere fills ~73 % of the
+// canvas height; the canvas is sized so the sphere matches the orbit artwork and static Earth.
+const SPHERE_FILL = 0.73
+
 const LaunchScreen = ({ onSignIn }) => {
-  const canvasRef = useRef(null)
-  const globeRef = useRef(null)
-  const starAnimRef = useRef(null)
-  const [globeSize, setGlobeSize] = useState(380)
-  const [webglOk] = useState(isWebGLAvailable)
+  const [webglOk] = useState(() => GLOBE_PARAM !== 'static' && isWebGLAvailable() && (GLOBE_PARAM === '3d' || !isSoftwareRenderer()))
+  const [globeFailed, setGlobeFailed] = useState(false)
+  const [globeReady, setGlobeReady] = useState(false)
+  const [viewport, setViewport] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }))
+  const { reduce, hidden } = useMotionPrefs()
   const [authTab, setAuthTab] = useState('login')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -91,170 +147,24 @@ const LaunchScreen = ({ onSignIn }) => {
   const [authError, setAuthError] = useState('')
   const [authSuccess, setAuthSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [wideScreen, setWideScreen] = useState(false)
+  const firstField = useRef(null)
 
   useEffect(() => {
-    const updateScreen = () => setWideScreen(window.innerWidth > 768)
-    updateScreen()
-    window.addEventListener('resize', updateScreen)
-    return () => window.removeEventListener('resize', updateScreen)
+    let raf = 0
+    const onResize = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => setViewport({ w: window.innerWidth, h: window.innerHeight })) }
+    window.addEventListener('resize', onResize)
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onResize) }
   }, [])
 
-  // Starfield background, always drawn. When WebGL isn't available (or the
-  // <Globe> below throws), this also draws the original hand-drawn wireframe
-  // globe + orbiting satellite as a fallback, per the explicit instruction to
-  // keep that as a backup rather than show nothing.
+  // Adaptive fallback: a globe that renders too slowly on this device is swapped for the
+  // static Earth (checked once, after it first appears and while the tab is visible).
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-
-    const resize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-    }
-    resize()
-    window.addEventListener('resize', resize)
-
-    const stars = Array.from({ length: 200 }, () => ({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      r: Math.random() * 1.5 + 0.5,
-      o: Math.random() * 0.7 + 0.3
-    }))
-
-    let frame = 0
-    let animId
-
-    const draw = () => {
-      const W = canvas.width
-      const H = canvas.height
-      ctx.clearRect(0, 0, W, H)
-
-      stars.forEach((s) => {
-        ctx.beginPath()
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(255,255,255,${s.o})`
-        ctx.fill()
-      })
-
-      if (!webglOk) {
-        const cx = W * 0.62
-        const cy = H * 0.52
-        const R = Math.min(W, H) * 0.22
-
-        for (let lat = -80; lat <= 80; lat += 20) {
-          const y = R * Math.sin((lat * Math.PI) / 180)
-          const rx = Math.sqrt(Math.max(0, R * R - y * y))
-          ctx.beginPath()
-          ctx.ellipse(cx, cy + y, rx, rx * 0.3, 0, 0, Math.PI * 2)
-          ctx.strokeStyle = 'rgba(217,119,6,0.35)'
-          ctx.lineWidth = 0.8
-          ctx.stroke()
-        }
-
-        for (let i = 0; i < 12; i += 1) {
-          const angle = (i / 12) * Math.PI * 2 + frame * 0.008
-          ctx.beginPath()
-          for (let t = 0; t <= Math.PI * 2; t += 0.05) {
-            const x3d = R * Math.cos(t) * Math.cos(angle)
-            const y3d = R * Math.sin(t)
-            const x2d = cx + x3d
-            const y2d = cy + y3d * 0.5
-            if (t === 0) ctx.moveTo(x2d, y2d)
-            else ctx.lineTo(x2d, y2d)
-          }
-          ctx.strokeStyle = `rgba(217,119,6,${Math.cos(angle) > 0 ? 0.4 : 0.15})`
-          ctx.lineWidth = 0.8
-          ctx.stroke()
-        }
-
-        ctx.beginPath()
-        ctx.arc(cx, cy, R, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(217,119,6,0.5)'
-        ctx.lineWidth = 1.5
-        ctx.stroke()
-
-        const orbitA = R * 1.45
-        const orbitB = R * 0.55
-        const satAngle = frame * 0.025
-        const sx = cx + orbitA * Math.cos(satAngle)
-        const sy = cy + orbitB * Math.sin(satAngle)
-
-        ctx.save()
-        ctx.translate(sx, sy)
-        ctx.rotate(satAngle + Math.PI / 4)
-        ctx.fillStyle = '#d97706'
-        ctx.fillRect(-8, -3, 16, 6)
-        ctx.fillStyle = '#22c55e'
-        ctx.fillRect(-22, -2, 12, 4)
-        ctx.fillRect(10, -2, 12, 4)
-        ctx.restore()
-
-        ctx.beginPath()
-        ctx.setLineDash([4, 8])
-        ctx.ellipse(cx, cy, orbitA, orbitB, 0, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(217,119,6,0.15)'
-        ctx.lineWidth = 1
-        ctx.stroke()
-        ctx.setLineDash([])
-      }
-
-      frame += 1
-      // Lite mode: draw the stars once; no per-frame loop on low-end devices
-      if (!LITE_AT_LOAD) animId = requestAnimationFrame(draw)
-      // expose the current animation id so parent handlers (sign-in) can cancel
-      // the starfield loop immediately when transitioning screens.
-      starAnimRef.current = animId
-    }
-
-    draw()
-
-    return () => {
-      cancelAnimationFrame(animId)
-      starAnimRef.current = null
-      window.removeEventListener('resize', resize)
-    }
-  }, [webglOk])
-
-  // Size the globe relative to viewport, same general footprint as the old canvas globe.
-  useEffect(() => {
-    const updateGlobeSize = () => {
-      const size = Math.min(window.innerWidth, window.innerHeight) * (wideScreen ? 0.42 : 0.6)
-      setGlobeSize(Math.max(240, Math.min(480, size)))
-    }
-    updateGlobeSize()
-    window.addEventListener('resize', updateGlobeSize)
-    return () => window.removeEventListener('resize', updateGlobeSize)
-  }, [wideScreen])
-
-  // Slow auto-rotation so the globe feels alive without requiring user interaction.
-  // Explicit pauseAnimation() on cleanup as a belt-and-suspenders measure
-  // alongside the library's own unmount destructor (see handleSubmit for the
-  // main fix — pausing as soon as sign-in starts, not on eventual unmount).
-  useEffect(() => {
-    const globe = globeRef.current
-    if (!globe) return
-    const controls = globe.controls()
-    controls.autoRotate = true
-    controls.autoRotateSpeed = 0.6
-    controls.enableZoom = false
-    globe.pointOfView({ lat: 15, lng: 78, altitude: 2.2 })
-
-    // react-globe.gl/three-render-objects default to NO scene lights (lights: []),
-    // so with the earth-dark.jpg texture this rendered as an almost-unlit black
-    // sphere. A strong ambient light keeps the whole globe visible regardless of
-    // which side currently faces the (auto-rotating) camera, and a soft
-    // directional light adds gentle shading so it still reads as 3D rather than
-    // flat. Intensities use the Math.PI scaling three.js's physically-correct
-    // lighting expects (same convention globe.gl's own internal default uses).
-    globe.lights([
-      new AmbientLight(0xffffff, 2.2 * Math.PI),
-      new DirectionalLight(0xffffff, 0.6 * Math.PI)
-    ])
-
-    return () => globe.pauseAnimation?.()
-  }, [])
+    if (!globeReady || globeFailed || GLOBE_PARAM === '3d') return
+    let stopWatch = null
+    // wait 1 s so texture upload and first-frame work are not counted
+    const t = setTimeout(() => { stopWatch = watchFrameRate(fps => { console.info(`[LaunchScreen] globe at ${fps} fps — switching to the static Earth`); setGlobeFailed(true) }) }, 1000)
+    return () => { clearTimeout(t); stopWatch?.() }
+  }, [globeReady, globeFailed])
 
   const handleSubmit = () => {
     if (!email || !password || (authTab === 'register' && !name)) {
@@ -304,281 +214,109 @@ const LaunchScreen = ({ onSignIn }) => {
       return
     }
 
+    // isLoading also pauses the globe and the scene, so no GPU work competes with the
+    // dashboard transition (measured earlier: the globe kept the GPU busy otherwise).
     setIsLoading(true)
-    // Stop the globe's render loop the instant sign-in starts, rather than
-    // waiting for it to unmount ~3s later when createLoadingScreen's overlay
-    // finishes — measured via a CDP trace that GPUTask stayed pegged at
-    // 850-1000ms/sec for several seconds into the dashboard transition, and
-    // the globe (invisible behind the opaque loading overlay this whole time
-    // anyway) was the cause, confirmed by an A/B trace with it disabled.
-    // stop any active animations immediately to avoid background CPU/GPU
-    // work during the dashboard transition (starfield + three-globe loop).
-    try { if (starAnimRef.current) cancelAnimationFrame(starAnimRef.current) } catch (e) {}
-    starAnimRef.current = null
-    globeRef.current?.pauseAnimation?.()
     setTimeout(() => {
       setIsLoading(false)
       onSignIn({ name: existing.name, email: existing.email })
     }, 800)
   }
 
+  const switchTab = (tab) => { setAuthTab(tab); setAuthError(''); setAuthSuccess('') }
+  const onSubmit = (e) => { e.preventDefault(); if (!isLoading) handleSubmit() }
+
+  const motion = hidden || isLoading ? 'paused' : reduce ? 'still' : 'full'
+  const compact = viewport.w <= 900
+  const earthSize = earthSizeFor(viewport.w, viewport.h)
+  const useGlobe = webglOk && (!LITE_AT_LOAD || GLOBE_PARAM === '3d') && !globeFailed
+  const canvasSize = Math.round(earthSize / SPHERE_FILL)
+  const staticEarth = <img className="ss-earth-static" data-testid="earth-static" src="/space/earth-india-720.webp" alt="" width="720" height="720" decoding="async" fetchpriority="high" onError={e => { e.currentTarget.removeAttribute('src') }} />
+  const errId = authError ? 'auth-error' : undefined
+  const invalid = authError ? 'true' : undefined
+
   return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      position: 'relative',
-      overflow: 'hidden',
-      background: '#030712',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: wideScreen ? 'flex-start' : 'center'
-    }}>
-      <canvas ref={canvasRef} style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 0,
-        opacity: wideScreen ? 1 : 0.4
-      }}/>
-
-      {webglOk && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '52%',
-            left: '62%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1,
-            opacity: wideScreen ? 1 : 0.4,
-            pointerEvents: 'none'
-          }}
-        >
-          <GlobeErrorBoundary fallback={null}>
-            {LITE_AT_LOAD ? null : <IntroGlobe
-              active={!isLoading}
-              width={globeSize}
-              height={globeSize}
-              style={{ filter: 'drop-shadow(0 0 32px rgba(217,119,6,0.2))' }}
-            />}
-          </GlobeErrorBoundary>
-        </div>
-      )}
-
-      <div style={{
-        position: 'relative',
-        zIndex: 10,
-        width: '100%',
-        maxWidth: '420px',
-        background: 'rgba(13,21,40,0.92)',
-        border: '1px solid #1a2a4a',
-        borderRadius: '16px',
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
-        margin: wideScreen ? '0 0 0 8%' : '0 16px'
-      }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          width: '100%',
-          padding: '32px',
-          boxSizing: 'border-box'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: 8 }}>
-            <div style={{ fontSize: 28, fontWeight: 'bold', color: '#d97706', letterSpacing: 1 }}>BHASKAR OPS</div>
-            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 }}>
-              BHASKAR — Bharat Heat Analysis, Surveillance, Knowledge & Assessment Resource
-            </div>
-            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 18, lineHeight: 1.5 }}>
-              OPS — Optimization &amp; Planning System
-            </div>
-            <div style={{ fontSize: 10, color: '#94a3b8', fontFamily: 'monospace', letterSpacing: 2, marginTop: 6 }}>
-              URBAN HEAT ISLAND MONITORING SYSTEM
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: 0, background: '#0a0f1e', borderRadius: 8, padding: 4 }}>
-            <button
-              type="button"
-              onClick={() => { setAuthTab('login'); setAuthError(''); setAuthSuccess('') }}
-              style={{
-                flex: 1,
-                padding: '8px',
-                borderRadius: 6,
-                border: 'none',
-                background: authTab === 'login' ? 'var(--theme-accent)' : 'transparent',
-                color: authTab === 'login' ? '#000' : '#64748b',
-                cursor: 'pointer',
-                fontSize: 13,
-                transition: 'background 0.4s ease'
-              }}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => { setAuthTab('register'); setAuthError(''); setAuthSuccess('') }}
-              style={{
-                flex: 1,
-                padding: '8px',
-                borderRadius: 6,
-                border: 'none',
-                background: authTab === 'register' ? 'var(--theme-accent)' : 'transparent',
-                color: authTab === 'register' ? '#000' : '#64748b',
-                cursor: 'pointer',
-                fontSize: 13,
-                transition: 'background 0.4s ease'
-              }}
-            >
-              Register
-            </button>
-          </div>
-
-          {authTab === 'register' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>FULL NAME</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your name"
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  background: '#0d1528',
-                  border: '1px solid #1a2a4a',
-                  borderRadius: 8,
-                  color: '#e2e8f0',
-                  fontSize: 14,
-                  boxSizing: 'border-box',
-                  outline: 'none'
-                }}
+    <main className="ls-root" data-testid="launch-screen" data-motion={motion} data-earth={useGlobe ? (globeReady ? 'globe' : 'loading') : 'static'}>
+      <SpaceScene motion={motion} compact={compact} earthSize={earthSize}>
+        {/* Static Earth first: shown at once, and kept if the 3D globe is unavailable. */}
+        <div style={{ position: 'absolute', inset: 0, opacity: useGlobe && globeReady ? 0 : 1, transition: 'opacity 0.6s ease' }}>{staticEarth}</div>
+        {useGlobe && (
+          <div style={{ position: 'absolute', left: '50%', top: '50%', width: canvasSize, height: canvasSize, transform: 'translate(-50%, -50%)', opacity: globeReady ? 1 : 0, transition: 'opacity 0.6s ease' }}>
+            <GlobeErrorBoundary fallback={null} onFail={() => setGlobeFailed(true)}>
+              <Suspense fallback={null}>
+              <IntroGlobe
+                active={motion !== 'paused'}
+                still={motion === 'still'}
+                width={canvasSize}
+                height={canvasSize}
+                onReady={() => setGlobeReady(true)}
+                onFail={() => setGlobeFailed(true)}
               />
-            </div>
-          )}
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>EMAIL <span style={{ color: '#475569', textTransform: 'none' }}>· a full address, e.g. name@example.com</span></label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              autoComplete="email"
-              inputMode="email"
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                background: '#0d1528',
-                border: '1px solid #1a2a4a',
-                borderRadius: 8,
-                color: '#e2e8f0',
-                fontSize: 14,
-                boxSizing: 'border-box',
-                outline: 'none'
-              }}
-            />
+              </Suspense>
+            </GlobeErrorBoundary>
           </div>
+        )}
+      </SpaceScene>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>PASSWORD</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                background: '#0d1528',
-                border: '1px solid #1a2a4a',
-                borderRadius: 8,
-                color: '#e2e8f0',
-                fontSize: 14,
-                boxSizing: 'border-box',
-                outline: 'none'
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#64748b',
-                cursor: 'pointer',
-                fontSize: 14,
-                textAlign: 'left',
-                padding: 0
-              }}
-            >
-              {showPassword ? 'HIDE PASSWORD' : 'SHOW PASSWORD'}
-            </button>
-          </div>
+      {compact && <div className="ls-hero-spacer" aria-hidden="true" />}
 
-          {authError && (
-            <div style={{ color: '#dc2626', fontSize: 12, textAlign: 'center', fontFamily: 'monospace' }}>
-              {authError}
-            </div>
-          )}
-
-          {authSuccess && (
-            <div style={{ color: '#22c55e', fontSize: 12, textAlign: 'center', fontFamily: 'monospace' }}>
-              {authSuccess}
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={handleSubmit}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: 'linear-gradient(90deg, var(--theme-accent), #cc7a1a)',
-              border: 'none',
-              borderRadius: 8,
-              color: '#000',
-              fontSize: 15,
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              marginTop: 4,
-              boxShadow: '0 0 20px var(--theme-glow)',
-              transition: 'background 0.4s ease, box-shadow 0.4s ease'
-            }}
-          >
-            {authTab === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}
-          </button>
-
-          <div style={{ textAlign: 'center', fontSize: 12, color: '#64748b' }}>
-            {authTab === 'login' ? (
-              <>
-                Don't have an account?{' '}
-                <button
-                  type="button"
-                  onClick={() => { setAuthTab('register'); setAuthError(''); setAuthSuccess('') }}
-                  style={{ background: 'none', border: 'none', padding: 0, color: '#d97706', cursor: 'pointer', fontSize: 12, fontWeight: 'bold' }}
-                >
-                  Register here
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{' '}
-                <button
-                  type="button"
-                  onClick={() => { setAuthTab('login'); setAuthError(''); setAuthSuccess('') }}
-                  style={{ background: 'none', border: 'none', padding: 0, color: '#d97706', cursor: 'pointer', fontSize: 12, fontWeight: 'bold' }}
-                >
-                  Sign In here
-                </button>
-              </>
-            )}
+      <section className="ls-panel" aria-labelledby="ls-title">
+        <div className="ls-brand">
+          <div className="ls-emblem" aria-hidden="true"><Flame size={24} strokeWidth={2.2} /></div>
+          <div>
+            <h1 id="ls-title" className="ls-name" style={{ margin: 0 }}>BHASKAR OPS</h1>
+            <div className="ls-tag">URBAN HEAT ISLAND MONITORING SYSTEM</div>
           </div>
         </div>
-      </div>
-    </div>
+        <p className="ls-desc">Heat-risk intelligence for Indian districts: <b>live readings for 1,932 cities</b>, NASA satellite surface temperature, a probabilistic heatwave forecast and an AI-written heat action plan.</p>
+        <p className="ls-acronym">BHASKAR — Bharat Heat Analysis, Surveillance, Knowledge &amp; Assessment Resource · OPS — Optimization &amp; Planning System</p>
+
+        <div className="ls-card">
+          <div className="ls-tabs" role="tablist" aria-label="Account">
+            <button type="button" role="tab" id="tab-login" aria-selected={authTab === 'login'} aria-controls="auth-form" className="ls-tab" onClick={() => switchTab('login')}>Sign In</button>
+            <button type="button" role="tab" id="tab-register" aria-selected={authTab === 'register'} aria-controls="auth-form" className="ls-tab" onClick={() => switchTab('register')}>Register</button>
+          </div>
+
+          <form id="auth-form" className="ls-form" role="tabpanel" aria-labelledby={authTab === 'login' ? 'tab-login' : 'tab-register'} onSubmit={onSubmit} noValidate aria-busy={isLoading || undefined}>
+            {authTab === 'register' && (
+              <div className="ls-field">
+                <label className="ls-label" htmlFor="auth-name">FULL NAME</label>
+                <input id="auth-name" ref={firstField} className="ls-input" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your name" autoComplete="name" aria-invalid={invalid} aria-describedby={errId} />
+              </div>
+            )}
+
+            <div className="ls-field">
+              <label className="ls-label" htmlFor="auth-email">EMAIL <span className="ls-hint">· a full address, e.g. name@example.com</span></label>
+              <input id="auth-email" className="ls-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" autoComplete="email" inputMode="email" aria-invalid={invalid} aria-describedby={errId} />
+            </div>
+
+            <div className="ls-field">
+              <label className="ls-label" htmlFor="auth-password">PASSWORD <span className="ls-hint">· at least 6 characters</span></label>
+              <div className="ls-input-wrap">
+                <input id="auth-password" className="ls-input ls-input-pw" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete={authTab === 'register' ? 'new-password' : 'current-password'} aria-invalid={invalid} aria-describedby={errId} />
+                <button type="button" className="ls-eye" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} data-testid="toggle-password">
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {authError && <div id="auth-error" role="alert" className="ls-msg ls-error">{authError}</div>}
+            {authSuccess && <div role="status" className="ls-msg ls-success">{authSuccess}</div>}
+
+            <button type="submit" className="ls-submit" disabled={isLoading}>
+              {isLoading ? <><span className="ls-spin" aria-hidden="true" />SIGNING IN…</> : authTab === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}
+            </button>
+
+            <div className="ls-switch">
+              {authTab === 'login'
+                ? <>Don't have an account? <button type="button" className="ls-link" onClick={() => switchTab('register')}>Register here</button></>
+                : <>Already have an account? <button type="button" className="ls-link" onClick={() => switchTab('login')}>Sign In here</button></>}
+            </div>
+          </form>
+        </div>
+        <p className="ls-foot">Accounts are stored in this browser only. Space artwork is decorative; satellite positions are not live.</p>
+      </section>
+    </main>
   )
 }
 

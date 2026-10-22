@@ -1,0 +1,185 @@
+/* Sign-in screen: cinematic space backdrop + authentication panel.
+   Budget: no backdrop-filter, no large blurs, no animated shadows; only transform/opacity are
+   animated, and every animation stops under prefers-reduced-motion, when the tab is hidden
+   (.ss-paused) and in Lite mode. */
+
+.ls-root {
+  --ls-bg: #060B14; --ls-panel: #0B1325; --ls-raised: #111827; --ls-border: #1F2937;
+  --ls-cyan: #38BDF8; --ls-blue: #2563EB; --ls-amber: #F59E0B; --ls-red: #EF4444; --ls-green: #10B981;
+  --ls-text: #E6EDF7; --ls-muted: #93A4B8;
+  --stage-left: 44%;
+  position: relative; width: 100vw; height: 100vh; height: 100dvh; overflow: hidden;
+  background: var(--ls-bg); color: var(--ls-text);
+  display: flex; align-items: center;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ── Space scene ─────────────────────────────────────────────────────────── */
+.ss-root { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.ss-root img { max-width: none; }
+.ss-nebula { position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 55% 45% at 72% 48%, rgba(37,99,235,0.16), transparent 70%),
+    radial-gradient(ellipse 35% 30% at 88% 18%, rgba(168,85,247,0.10), transparent 70%),
+    radial-gradient(ellipse 40% 35% at 60% 92%, rgba(56,189,248,0.07), transparent 70%),
+    radial-gradient(ellipse 50% 60% at 8% 50%, rgba(11,19,37,0.9), transparent 75%),
+    linear-gradient(180deg, #050912 0%, #060B14 55%, #070d19 100%); }
+.ss-stars { position: absolute; left: 0; top: 0; width: 1px; height: 1px; border-radius: 50%; background: transparent; }
+.ss-far { width: 1px; height: 1px; }
+.ss-mid { width: 1.5px; height: 1.5px; }
+.ss-near { width: 2px; height: 2px; }
+.ss-tw { width: 2px; height: 2px; opacity: 0.2; animation: ss-twinkle 5.5s ease-in-out infinite; will-change: opacity; }
+.ss-tw2 { animation-duration: 7s; animation-delay: -2.4s; }
+.ss-tw3 { animation-duration: 9s; animation-delay: -5s; }
+@keyframes ss-twinkle { 0%, 100% { opacity: 0.15 } 50% { opacity: 1 } }
+
+.ss-meteor { position: absolute; top: 10%; left: 70%; width: 140px; height: 1.5px; border-radius: 2px; opacity: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(186,230,253,0.9));
+  transform: rotate(-32deg) translateX(0); animation: ss-meteor 17s linear infinite; will-change: transform, opacity; }
+.ss-m2 { top: 26%; left: 86%; width: 100px; animation-duration: 29s; animation-delay: -11s; }
+@keyframes ss-meteor {
+  0%, 94% { opacity: 0; transform: rotate(-32deg) translateX(0) }
+  95% { opacity: 1 }
+  99% { opacity: 0.9 }
+  100% { opacity: 0; transform: rotate(-32deg) translateX(-360px) }
+}
+
+/* The stage is the right-hand region the Earth sits in. */
+.ss-stage { position: absolute; top: 0; bottom: 0; right: 0; left: var(--stage-left); display: flex; align-items: center; justify-content: center; }
+.ss-earth-slot { position: relative; flex: 0 0 auto; }
+.ss-earth { position: absolute; inset: 0; z-index: 2; border-radius: 50%; }
+.ss-orbits { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); overflow: visible; }
+.ss-back { z-index: 1; }
+.ss-front { z-index: 3; }
+.ss-orbit { fill: none; stroke: rgba(56,189,248,0.22); stroke-width: 0.6; vector-effect: non-scaling-stroke; }
+.ss-orbit-front { stroke: rgba(56,189,248,0.42); }
+.ss-orbit-dash { stroke-dasharray: 3 5; }
+.ss-orbit-moon { stroke: rgba(148,163,184,0.12); stroke-dasharray: 1 6; }
+.ss-graticule { fill: none; stroke: rgba(79,179,255,0.10); stroke-width: 0.5; vector-effect: non-scaling-stroke; stroke-dasharray: 2 4; }
+.ss-graticule-2 { stroke: rgba(79,179,255,0.06); }
+.ss-blink { animation: ss-blink 2.4s steps(1) infinite; }
+@keyframes ss-blink { 0%, 70% { opacity: 1 } 71%, 100% { opacity: 0.2 } }
+
+.ss-planet { position: absolute; display: block; }
+.ss-giant { right: 6%; top: 7%; width: clamp(60px, 8.5vmin, 110px); height: clamp(60px, 8.5vmin, 110px); opacity: 0.9; }
+.ss-giant img { width: 100%; height: 100%; display: block; }
+.ss-ring { position: absolute; left: -45%; top: 22%; width: 190%; height: 56%; transform: rotate(-18deg); }
+.ss-red { left: 6%; bottom: 10%; width: clamp(26px, 3.6vmin, 46px); height: auto; opacity: 0.85; }
+.ss-asteroid { position: absolute; width: 3px; height: 2px; border-radius: 40%; background: #8b8f98; opacity: 0.55; }
+.ss-a1 { right: 18%; bottom: 18%; } .ss-a2 { right: 21%; bottom: 21%; width: 2px; } .ss-a3 { right: 15%; bottom: 23%; width: 4px; height: 3px; }
+
+/* Moving bodies (see SpaceScene): plane = tilt + squash, arm = rotation, body = counter. */
+.ss-plane { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: 3;
+  transform: rotate(var(--tilt)) scaleY(var(--k)); animation: ss-z var(--dur) linear var(--delay) infinite; }
+.ss-plane-moon { animation: none; z-index: 3; }
+.ss-arm { position: absolute; left: 0; top: 0; width: 0; height: 0; animation: ss-spin var(--dur) linear var(--delay) infinite; will-change: transform; }
+.ss-body { position: absolute; left: var(--rx); top: 0; width: var(--size); height: var(--size); margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  animation: ss-counter var(--dur) linear var(--delay) infinite; will-change: transform; }
+.ss-sat, .ss-moon { width: 100%; height: 100%; display: block; }
+.ss-moon { opacity: 0.92; }
+@keyframes ss-spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+/* body transform = R(-θ) · S(1/k) · R(-tilt): exactly undoes plane and arm, so it stays upright */
+@keyframes ss-counter {
+  from { transform: rotate(0deg) scaleY(calc(1 / var(--k))) rotate(calc(-1 * var(--tilt))) }
+  to { transform: rotate(-360deg) scaleY(calc(1 / var(--k))) rotate(calc(-1 * var(--tilt))) }
+}
+/* near half (0–180°, screen-down side of the tilted plane) in front of the Earth, far half behind */
+@keyframes ss-z { 0%, 49.9% { z-index: 3 } 50%, 100% { z-index: 1 } }
+
+/* Static Earth (no WebGL, software GL, Lite mode, context lost, or while the globe loads):
+   a pre-rendered sphere centred on India (scripts/buildSpaceAssets.py). The image carries its
+   own atmosphere halo, so the disc fills 91.8 % of it — hence the 109 % size. */
+.ss-earth-static { position: absolute; left: 50%; top: 50%; width: 109%; height: 109%; max-width: none; transform: translate(-50%, -50%); display: block;
+  border-radius: 50%; background: radial-gradient(circle at 38% 35%, #1d4f86, #0b2a4a 60%, #06152a); }
+
+/* Motion modes */
+.ss-still *, .ss-paused *, html[data-lite] .ss-root * { animation-play-state: paused !important; }
+.ss-still .ss-meteor, html[data-lite] .ss-meteor { display: none; }
+.ss-still .ss-tw { opacity: 0.6; }
+@media (prefers-reduced-motion: reduce) {
+  .ss-root *, .ls-root * { animation: none !important; transition: none !important; }
+  .ss-meteor { display: none; }
+  .ss-tw { opacity: 0.6; }
+}
+
+/* ── Authentication panel ────────────────────────────────────────────────── */
+.ls-panel { position: relative; z-index: 10; width: min(440px, calc(100vw - 32px)); margin-left: clamp(24px, 7vw, 120px);
+  display: flex; flex-direction: column; gap: 18px; }
+.ls-brand { display: flex; align-items: center; gap: 12px; }
+.ls-emblem { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex: 0 0 auto;
+  background: radial-gradient(circle at 50% 60%, rgba(245,158,11,0.28), rgba(245,158,11,0.06) 70%); border: 1px solid rgba(245,158,11,0.45); color: var(--ls-amber); }
+.ls-name { font-size: 26px; font-weight: 900; letter-spacing: 0.08em; color: var(--ls-amber); line-height: 1; }
+.ls-tag { font-size: 10.5px; letter-spacing: 0.22em; color: var(--ls-cyan); margin-top: 6px; font-weight: 700; }
+.ls-desc { font-size: 13px; line-height: 1.55; color: var(--ls-muted); margin: 0; max-width: 420px; }
+.ls-desc b { color: var(--ls-text); font-weight: 600; }
+.ls-acronym { font-size: 10.5px; color: #64748b; line-height: 1.5; margin: -8px 0 0; }
+
+.ls-card { background: rgba(11,19,37,0.94); border: 1px solid rgba(56,189,248,0.22); border-radius: 16px; padding: 22px 24px 20px;
+  box-shadow: 0 0 0 1px rgba(6,11,20,0.6), 0 18px 44px rgba(0,0,0,0.45), inset 0 1px 0 rgba(56,189,248,0.08); }
+.ls-tabs { display: flex; background: var(--ls-bg); border: 1px solid var(--ls-border); border-radius: 10px; padding: 4px; margin-bottom: 16px; }
+.ls-tab { flex: 1; padding: 9px 8px; border: 0; border-radius: 7px; background: transparent; color: var(--ls-muted); font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.ls-tab[aria-selected="true"] { background: rgba(56,189,248,0.14); color: var(--ls-text); box-shadow: inset 0 0 0 1px rgba(56,189,248,0.45); }
+.ls-tab:hover:not([aria-selected="true"]) { color: var(--ls-text); }
+
+.ls-form { display: flex; flex-direction: column; gap: 14px; }
+.ls-field { display: flex; flex-direction: column; gap: 6px; }
+.ls-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--ls-muted); }
+.ls-hint { font-weight: 500; letter-spacing: 0; color: #64748b; }
+.ls-input-wrap { position: relative; }
+.ls-input { width: 100%; box-sizing: border-box; padding: 11px 14px; background: var(--ls-raised); border: 1px solid var(--ls-border); border-radius: 9px;
+  color: var(--ls-text); font-size: 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+.ls-input::placeholder { color: #536175; }
+.ls-input:hover { border-color: #334155; }
+.ls-input:focus { border-color: var(--ls-cyan); box-shadow: 0 0 0 3px rgba(56,189,248,0.22); }
+.ls-input[aria-invalid="true"] { border-color: rgba(239,68,68,0.7); }
+.ls-input-pw { padding-right: 46px; }
+.ls-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border: 0; border-radius: 7px; background: transparent; color: var(--ls-muted); cursor: pointer; display: grid; place-items: center; }
+.ls-eye:hover { color: var(--ls-text); background: rgba(148,163,184,0.1); }
+
+.ls-msg { font-size: 12.5px; line-height: 1.4; border-radius: 8px; padding: 8px 10px; }
+.ls-error { color: #fecaca; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4); }
+.ls-success { color: #a7f3d0; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.4); }
+
+.ls-submit { width: 100%; padding: 12px; border: 0; border-radius: 10px; background: linear-gradient(180deg, #FBBF24, var(--ls-amber) 55%, #D97706); color: #111827;
+  font-size: 14.5px; font-weight: 900; letter-spacing: 0.08em; cursor: pointer; margin-top: 2px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 6px 18px rgba(245,158,11,0.28); transition: filter 0.15s, transform 0.15s; }
+.ls-submit:hover { filter: brightness(1.06); }
+.ls-submit:active { transform: translateY(1px); }
+.ls-submit[disabled] { cursor: progress; filter: saturate(0.7) brightness(0.9); }
+.ls-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(17,24,39,0.3); border-top-color: #111827; animation: ls-spin 0.8s linear infinite; }
+@keyframes ls-spin { to { transform: rotate(360deg) } }
+.ls-switch { text-align: center; font-size: 12.5px; color: var(--ls-muted); }
+.ls-link { background: none; border: 0; padding: 0; color: var(--ls-amber); font-weight: 800; cursor: pointer; font-size: 12.5px; }
+.ls-foot { font-size: 10.5px; color: #536175; line-height: 1.5; margin: 0; }
+
+/* Visible keyboard focus everywhere on this screen */
+.ls-root :is(button, input):focus-visible { outline: 2px solid var(--ls-cyan); outline-offset: 2px; }
+.ls-input:focus-visible { outline: none; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+/* Short laptop screens: tighten spacing, drop the acronym line, keep the button on screen. */
+@media (max-height: 760px) and (min-width: 901px) {
+  .ls-panel { gap: 12px; }
+  .ls-acronym { display: none; }
+  .ls-card { padding: 16px 20px 16px; }
+  .ls-form { gap: 10px; }
+  .ls-input { padding: 9px 12px; }
+}
+@media (max-height: 620px) and (min-width: 901px) { .ls-desc { display: none; } }
+
+/* Tablet and phone: the scene becomes a header band, the form takes the page. */
+@media (max-width: 900px) {
+  .ls-root { --stage-left: 0%; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; }
+  .ss-root { position: fixed; }
+  .ss-stage { bottom: auto; height: 34vh; min-height: 200px; }
+  .ls-hero-spacer { height: 34vh; min-height: 200px; flex: 0 0 auto; }
+  .ls-panel { margin: 0 auto 28px; }
+  .ss-giant { top: 4%; right: 4%; }
+}
+@media (max-width: 560px) {
+  .ss-stage { height: 26vh; min-height: 150px; }
+  .ls-hero-spacer { height: 26vh; min-height: 150px; }
+  .ls-name { font-size: 22px; }
+  .ls-card { padding: 18px 16px 16px; }
+  .ls-acronym { display: none; }
+}

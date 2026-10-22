@@ -2,37 +2,29 @@ import React, { useEffect, useRef, useState } from 'react'
 import Globe from 'react-globe.gl'
 import { AmbientLight, DirectionalLight } from 'three'
 
-const earthTexture = '/textures/earth-blue-marble.jpg'
+// 2048 px WebP of NASA Blue Marble (public/space, built by scripts/buildSpaceAssets.py) —
+// a quarter of the 4096 px original's pixels, 172 KB instead of 1.46 MB.
+const DEFAULT_TEXTURE = '/space/earth-2k.webp'
+const DEFAULT_BUMP = '/space/earth-bump-1k.jpg'
 const INDIA_COORDS = { lat: 20.5937, lng: 78.9629 }
 
-// A real error boundary (the previous function-component version could never
-// catch anything). If WebGL/three.js throws while rendering the globe, the
-// login screen keeps working and shows `fallback` instead of going blank.
-class GlobeErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { failed: false }
-  }
-  static getDerivedStateFromError() {
-    return { failed: true }
-  }
-  componentDidCatch(error) {
-    console.warn('[IntroGlobe] globe failed to render, using fallback:', error?.message)
-  }
-  render() {
-    return this.state.failed ? (this.props.fallback ?? null) : this.props.children
-  }
-}
-
-// Decorative auto-rotating globe on the sign-in screen. It used to carry a
-// "Skip" button and an intro zoom-to-India; the zoom was never triggered and
-// Skip only stopped the spin, so both were removed (5 Sept 2026).
+// Decorative auto-rotating globe on the sign-in screen (react-globe.gl / three.js).
+//   active   — rotate and render; false pauses the render loop entirely (tab hidden, signing in)
+//   still    — render, but do not rotate (prefers-reduced-motion)
+//   onFail   — called if the WebGL context is lost, so the parent can show the static Earth
+// The India marker is a decorative highlight, not a measurement.
 const IntroGlobe = ({
   active = true,
+  still = false,
   style,
   className,
   width = 380,
   height = 380,
+  textureUrl = DEFAULT_TEXTURE,
+  bumpUrl = DEFAULT_BUMP,
+  atmosphereColor = '#4FB3FF',
+  onFail,
+  onReady,
 }) => {
   const globeRef = useRef(null)
   const [mounted, setMounted] = useState(false)
@@ -42,61 +34,74 @@ const IntroGlobe = ({
     return () => setMounted(false)
   }, [])
 
+  // One-time renderer setup: lights, camera on India, capped pixel ratio, context-loss watch.
   useEffect(() => {
     const globe = globeRef.current
     if (!globe || !mounted) return
-
     const controls = globe.controls()
-    controls.autoRotate = active
-    controls.autoRotateSpeed = 0.6
     controls.enableZoom = false
     controls.enablePan = false
-
+    controls.enableRotate = false
     globe.lights([
-      new AmbientLight(0xffffff, 2.2 * Math.PI),
-      new DirectionalLight(0xffffff, 0.6 * Math.PI),
+      new AmbientLight(0xffffff, 1.7 * Math.PI),
+      new DirectionalLight(0xffffff, 1.0 * Math.PI),
     ])
+    globe.pointOfView({ lat: 16, lng: 80, altitude: 2.1 }, 0)
+    let renderer = null
+    try {
+      renderer = globe.renderer()
+      // A 3× phone or 2× laptop screen would otherwise render 4–9× the pixels; 1.5 is sharp
+      // enough for a decorative globe and keeps integrated GPUs cool.
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
+    } catch { /* renderer not ready */ }
+    const canvas = renderer?.domElement
+    const lost = e => { e.preventDefault?.(); onFail?.('context lost') }
+    canvas?.addEventListener('webglcontextlost', lost)
+    return () => canvas?.removeEventListener('webglcontextlost', lost)
+  }, [mounted]) // eslint-disable-line react-hooks/exhaustive-deps
 
-    globe.pointOfView({ lat: 12, lng: 50, altitude: 2.2 }, 1200)
-
-    return () => globe.pauseAnimation?.()
-  }, [active, mounted])
+  // Motion: rotate slowly, hold still, or stop the render loop.
+  useEffect(() => {
+    const globe = globeRef.current
+    if (!globe || !mounted) return
+    const controls = globe.controls()
+    controls.autoRotate = active && !still
+    controls.autoRotateSpeed = 0.35
+    if (active) globe.resumeAnimation?.()
+    else globe.pauseAnimation?.()
+  }, [active, still, mounted])
 
   if (!mounted) return null
 
   return (
     <div
       className={className}
-      style={{
-        pointerEvents: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...style,
-      }}
+      style={{ pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', ...style }}
     >
       <Globe
         ref={globeRef}
+        onGlobeReady={() => onReady?.()}
         width={width}
         height={height}
-        globeImageUrl={earthTexture}
+        globeImageUrl={textureUrl}
+        bumpImageUrl={bumpUrl}
         backgroundColor="rgba(0,0,0,0)"
-        atmosphereColor="#d97706"
-        atmosphereAltitude={0.18}
+        atmosphereColor={atmosphereColor}
+        atmosphereAltitude={0.2}
         rendererConfig={{ antialias: false, powerPreference: 'low-power' }}
         pointsData={[INDIA_COORDS]}
         pointLat="lat"
         pointLng="lng"
-        pointColor={() => '#d97706'}
+        pointColor={() => '#F59E0B'}
         pointAltitude={0.01}
         pointRadius={0.5}
         ringsData={[INDIA_COORDS]}
         ringLat="lat"
         ringLng="lng"
-        ringColor={() => (t) => `rgba(217,119,6,${1 - t})`}
+        ringColor={() => (t) => `rgba(245,158,11,${1 - t})`}
         ringMaxRadius={6}
-        ringPropagationSpeed={2}
-        ringRepeatPeriod={1400}
+        ringPropagationSpeed={still ? 0 : 1.6}
+        ringRepeatPeriod={1600}
       />
     </div>
   )
