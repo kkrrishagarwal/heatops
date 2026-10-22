@@ -38,12 +38,23 @@ function MiniSatMap({ lat, lon, zoom, onZoom, color }) {
   return <div ref={el} style={{ height: 150, borderRadius: 8, overflow: 'hidden', background: C.raised }} />
 }
 
-export default function CompareWorkspace({ city, state, liveCityCache, cityCoordsData, lulcReal, allCities = [], onSelectCity, children }) {
-  const [list, setList] = useState(() => {
+export default function CompareWorkspace({ city, state, liveCityCache, cityCoordsData, lulcReal, allCities = [], onSelectCity, children, jurisdiction = null }) {
+  // State administrators: primary slots are locked to their own state (intra-state transparency)
+  // plus exactly ONE read-only benchmark slot for a city outside the state. Central: unrestricted.
+  const scoped = jurisdiction?.type === 'state' ? jurisdiction.state : null
+  const normalise = arr => {
+    const seen = new Set(); const uniq = arr.filter(([c, s]) => { const k = `${c}|${s}`; if (!c || seen.has(k)) return false; seen.add(k); return true })
+    if (!scoped) return uniq.slice(0, MAX)
+    return [...uniq.filter(([, s]) => s === scoped).slice(0, MAX - 1), ...uniq.filter(([, s]) => s !== scoped).slice(0, 1)]
+  }
+  const ownDefaults = () => Object.values(liveCityCache || {}).filter(c => c.state === scoped && c.city !== city && typeof c.tempMax === 'number').sort((a, b) => b.tempMax - a.tempMax).slice(0, 2).map(c => [c.city, c.state])
+  const [list, setListRaw] = useState(() => {
     const stored = readStored()
-    const base = stored && stored.length ? stored : DEFAULTS.slice(0, 3)
-    return [[city, state], ...base.filter(([c, s]) => !(c === city && s === state))].slice(0, MAX)
+    const base = scoped ? ownDefaults() : (stored && stored.length ? stored : DEFAULTS.slice(0, 3))
+    return normalise([[city, state], ...base])
   })
+  const setList = f => setListRaw(prev => normalise(typeof f === 'function' ? f(prev) : f))
+  const [qx, setQx] = useState('')
   const [q, setQ] = useState('')
   const [metric, setMetric] = useState('tempMax')
   const [zoom, setZoom] = useState(11)
@@ -53,7 +64,9 @@ export default function CompareWorkspace({ city, state, liveCityCache, cityCoord
 
   // Keep the dashboard's selected city as the first column.
   useEffect(() => { setList(prev => [[city, state], ...prev.filter(([c, s]) => !(c === city && s === state))].slice(0, MAX)) }, [city, state])
-  useEffect(() => { try { window.localStorage.setItem(STORE, JSON.stringify(list.slice(1))) } catch { /* private mode */ } }, [list])
+  useEffect(() => { if (scoped) return; try { window.localStorage.setItem(STORE, JSON.stringify(list.slice(1))) } catch { /* private mode */ } }, [list, scoped])
+  const ownCount = list.filter(([, s]) => !scoped || s === scoped).length
+  const external = scoped ? list.find(([, s]) => s !== scoped) || null : null
   const key = list.map(x => x.join('|')).join(';')
   useEffect(() => { setAi({ status: 'idle', text: '', error: null, at: null }) }, [key])
 
@@ -78,9 +91,16 @@ export default function CompareWorkspace({ city, state, liveCityCache, cityCoord
   const results = useMemo(() => {
     const s = q.trim().toLowerCase(); if (s.length < 2) return []
     const rank = c => { const n = c.city.toLowerCase(); return n.startsWith(s) ? 0 : n.includes(s) ? 1 : 9 }
-    return allCities.map(c => ({ c, r: rank(c) })).filter(x => x.r < 9 && !list.some(([a, b]) => a === x.c.city && b === x.c.state)).sort((a, b) => a.r - b.r || a.c.city.localeCompare(b.c.city)).slice(0, 7).map(x => x.c)
-  }, [q, allCities, list])
-  const add = (c, s) => { setList(p => (p.length >= MAX ? p : [...p, [c, s]])); setQ('') }
+    return allCities.filter(c => !scoped || c.state === scoped).map(c => ({ c, r: rank(c) })).filter(x => x.r < 9 && !list.some(([a, b]) => a === x.c.city && b === x.c.state)).sort((a, b) => a.r - b.r || a.c.city.localeCompare(b.c.city)).slice(0, 7).map(x => x.c)
+  }, [q, allCities, list, scoped])
+  const resultsX = useMemo(() => {
+    const s = qx.trim().toLowerCase(); if (!scoped || s.length < 2) return []
+    const rank = c => { const n = c.city.toLowerCase(); return n.startsWith(s) ? 0 : n.includes(s) ? 1 : 9 }
+    return allCities.filter(c => c.state !== scoped).map(c => ({ c, r: rank(c) })).filter(x => x.r < 9).sort((a, b) => a.r - b.r || a.c.city.localeCompare(b.c.city)).slice(0, 7).map(x => x.c)
+  }, [qx, allCities, scoped])
+  const primaryMax = scoped ? MAX - 1 : MAX
+  const add = (c, s) => { setList(p => [...p, [c, s]]); setQ('') }
+  const addExternal = (c, s) => { setList(p => [...p.filter(([, st]) => st === scoped), [c, s]]); setQx('') }
   const remove = i => setList(p => p.filter((_, j) => j !== i))
 
   const METRICS = {
@@ -117,9 +137,10 @@ export default function CompareWorkspace({ city, state, liveCityCache, cityCoord
   return (
     <div data-testid="compare-workspace" style={wsRoot}>
       <WorkspaceHeader no="04" title="Multi-city intelligence" sub={`Compare up to ${MAX} cities. The first column follows the city selected in the header; your other choices are remembered on this browser.`}
-        right={
-          <div style={{ position: 'relative', width: 280 }}>
-            <input value={q} onChange={e => setQ(e.target.value)} disabled={list.length >= MAX} placeholder={list.length >= MAX ? `Maximum ${MAX} cities` : 'Add a city to compare…'} data-testid="cmp-search" aria-label="Add a city to compare"
+        right={<>
+          {scoped && <span data-testid="cmp-scope" style={{ fontSize: 10, fontWeight: 800, color: C.amber, border: `1px solid ${C.amber}66`, borderRadius: 6, padding: '3px 8px' }}>INTRA-STATE: {scoped.toUpperCase()}</span>}
+          <div style={{ position: 'relative', width: 260 }}>
+            <input value={q} onChange={e => setQ(e.target.value)} disabled={ownCount >= primaryMax} placeholder={ownCount >= primaryMax ? `Maximum ${primaryMax} ${scoped ? `${scoped} cities` : 'cities'}` : scoped ? `Add a ${scoped} city…` : 'Add a city to compare…'} data-testid="cmp-search" aria-label="Add a city to compare"
               onKeyDown={e => { if (e.key === 'Enter' && results[0]) add(results[0].city, results[0].state) }}
               style={{ width: '100%', background: C.raised, border: `1px solid ${C.border}`, color: C.text, borderRadius: 8, padding: '7px 10px', fontSize: 12 }} />
             {results.length > 0 && (
@@ -128,7 +149,19 @@ export default function CompareWorkspace({ city, state, liveCityCache, cityCoord
               </ul>
             )}
           </div>
-        } />
+          {scoped && (
+            <div style={{ position: 'relative', width: 270 }}>
+              <input value={qx} onChange={e => setQx(e.target.value)} disabled={!!external} placeholder={external ? '1 external benchmark added' : '+ Add 1 External State District (Benchmark)'} data-testid="cmp-search-external" aria-label="Add one city outside your state as a benchmark"
+                onKeyDown={e => { if (e.key === 'Enter' && resultsX[0]) addExternal(resultsX[0].city, resultsX[0].state) }}
+                style={{ width: '100%', background: C.raised, border: `1px dashed ${C.amber}88`, color: C.text, borderRadius: 8, padding: '7px 10px', fontSize: 12 }} />
+              {resultsX.length > 0 && (
+                <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 60, margin: '4px 0 0', padding: 0, listStyle: 'none', background: C.card, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+                  {resultsX.map(r => <li key={`${r.city}|${r.state}`}><button type="button" onClick={() => addExternal(r.city, r.state)} style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', color: C.text, padding: '6px 10px', fontSize: 12, cursor: 'pointer' }}>{r.city} <span style={{ color: C.muted }}>· {r.state}</span></button></li>)}
+                </ul>
+              )}
+            </div>
+          )}
+        </>} />
 
       {/* CITY CARDS */}
       <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 10 }} data-testid="cmp-cards">
@@ -159,9 +192,10 @@ export default function CompareWorkspace({ city, state, liveCityCache, cityCoord
                   </div>
                 ))}
               </div>
+              {scoped && r.state !== scoped && <div data-testid="cmp-readonly" style={{ margin: '0 10px 6px', fontSize: 9.5, fontWeight: 800, border: `1px solid ${C.amber}88`, background: 'rgba(245,158,11,0.08)', padding: '4px 6px', borderRadius: 5, color: C.amber, textAlign: 'center' }}>🔒 Read-Only Benchmark — Outside State Jurisdiction</div>}
               {r.lulc?.isFallback && <div style={{ fontSize: 9, color: C.muted, padding: '0 10px 6px' }}>Land cover estimated from {r.lulc.fallbackCity}.</div>}
               <div style={{ display: 'flex', gap: 6, padding: '0 10px 10px' }}>
-                {i > 0 && <button type="button" onClick={() => onSelectCity(r.city, r.state)} style={{ ...btn('transparent', C.muted), fontSize: 10, padding: '4px 8px' }}>Make primary</button>}
+                {i > 0 && !(scoped && r.state !== scoped) && <button type="button" onClick={() => onSelectCity(r.city, r.state)} style={{ ...btn('transparent', C.muted), fontSize: 10, padding: '4px 8px' }}>Make primary</button>}
               </div>
             </div>
           )

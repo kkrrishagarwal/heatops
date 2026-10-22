@@ -56,7 +56,11 @@ import { AIAnalystPanel } from './components/AIAnalystPanel'
 import { FloatingAIAssistant } from './components/FloatingAIAssistant'
 import { CompareCitiesPanel } from './components/CompareCitiesPanel'
 import ViewModeToggle from './components/ViewModeToggle'
-import AudienceToggle from './components/AudienceToggle'
+import AudienceToggle from './components/AudienceToggle' // eslint-disable-line no-unused-vars
+import ModeToggle from './components/ModeToggle'
+import { useOpsMode } from './hooks/useOpsMode'
+import { STATE_HQ, jurisdictionLabel } from './utils/jurisdiction'
+import PowerSummaryStrip from './components/PowerSummaryStrip'
 import HeatActionChecklist from './components/HeatActionChecklist'
 import CommandCenterHud from './components/CommandCenterHud'
 import DashboardShell from './components/DashboardShell'
@@ -2374,8 +2378,6 @@ const UserAvatarMenu = ({ currentUser, isAdmin, setScreen, onLogout, audience = 
             {[
               { icon: '👤', label: 'My Profile', fn: () => { setScreen?.('profile'); setOpen(false) } },
               { icon: '🏆', label: 'My Badges', fn: () => { setScreen?.('profile'); setOpen(false) } },
-              // Discreet audience switch — deliberately here, not in the header
-              { icon: '👁️', label: `View: ${audience === 'citizen' ? 'Citizen' : 'Authority'} ⚙️ · switch to ${audience === 'citizen' ? 'Authority' : 'Citizen'}`, fn: () => { onAudienceChange?.(audience === 'citizen' ? 'authority' : 'citizen'); setOpen(false) } },
               { icon: '⚡', label: `Lite mode: ${lite ? 'On' : 'Off'} · ${lite ? 'switch off' : 'for slower phones / connections'}`, fn: () => { onLiteChange?.(!lite); setOpen(false) } },
               ...(isAdmin ? [{ icon: '🛡️', label: 'Admin Panel', fn: () => { setScreen?.('admin'); setOpen(false) } }] : [])
             ].map(item => (
@@ -2812,7 +2814,7 @@ const CompactNavbar = ({ currentUser, setScreen, scrollToMap, onLogout, leaderBa
             above), so this just needs to not get individually squished. */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
           {/* Audience (citizen/authority) and density (mobile/laptop) — two independent toggles */}
-          <AudienceToggle audience={audience} onChange={onAudienceChange} />
+          <ModeToggle />
           <ViewModeToggle mode={viewMode} onChange={onViewModeChange} />
 
           <LiveClock />
@@ -2948,6 +2950,9 @@ function App({ user }) {
   // Map & Selection
   const [selectedState, setSelectedState] = useState(null)
   const [selectedCity, setSelectedCity] = useState(null)
+  // Sign-in jurisdiction (utils/jurisdiction.js): { type: 'central' } | { type: 'state', state } | null
+  const [jurisdiction, setJurisdiction] = useState(() => user?.jurisdiction || null)
+  const [opsMode] = useOpsMode()
   // Stable reference (useCallback) so IndiaMap's memoized interactive layers don't see a
   // "new" onStateClick prop — and re-render their full GeoJSON — every time App re-renders
   // for an unrelated reason (e.g. live weather polling) while the map screen is showing.
@@ -2973,7 +2978,10 @@ function App({ user }) {
       setSelectedCity(defaultCity)
     }
   }, [])
-  const [activeTab, setActiveTab] = useState('Overview')
+  const [activeTab, setActiveTab] = useState(() => { try { return localStorage.getItem('bhaskarops_ops_mode') === 'power' ? 'Heat + Power' : 'Overview' } catch { return 'Overview' } })
+  // Operating mode → workspace: Power Grid opens Heat + Power, Disaster Command returns to Overview.
+  const opsModeFirst = useRef(true)
+  useEffect(() => { if (opsModeFirst.current) { opsModeFirst.current = false; return } setActiveTab(opsMode === 'power' ? 'Heat + Power' : 'Overview') }, [opsMode])
   useEffect(() => {
     // Keep the active tab valid when the audience changes in either direction.
     if (!citizen && activeTab === 'What to do') setActiveTab('Overview')
@@ -3672,6 +3680,14 @@ function App({ user }) {
       setUserName(user.name)
       setUserEmail(user.email || '')
       setScreen('__home__')
+      const j = user.jurisdiction || null
+      setJurisdiction(j)
+      if (j?.type === 'state') {
+        // State admin lands on their own state, at the state HQ city
+        const cities = INDIA_DATA[j.state]?.cities || []
+        setSelectedState(j.state)
+        setSelectedCity(cities.includes(STATE_HQ[j.state]) ? STATE_HQ[j.state] : (cities[0] || null))
+      } else if (j?.type === 'central') { setSelectedState(null); setSelectedCity(null) }
       addLoginHistory({
         name: user.name,
         email: user.email || 'unknown',
@@ -3985,9 +4001,11 @@ function App({ user }) {
         onAudienceChange={(a) => { setAudience(a); if (a !== 'authority') setScreen('map') }}
         onOpenClassic={() => { setMapScreen('map'); setScreen('map') }}
         onOpenDashboard={() => { if (selectedCity) { setScreen('dashboard'); setAnalyzedCities([...new Set([...analyzedCities, selectedCity])]) } }}
-        onLogout={() => { setUserName(''); setUserEmail(''); setScreen('signin') }}
+        onLogout={() => { setUserName(''); setUserEmail(''); setJurisdiction(null); setScreen('signin') }}
         userName={userName}
         lite={lite}
+        jurisdiction={jurisdiction}
+        opsMode={opsMode}
       />
     )
   }
@@ -4763,7 +4781,8 @@ function App({ user }) {
           onBack={() => setScreen("__home__")}
           onSignOut={() => { setScreen("signin"); setUserName("") }}
           userName={userName}
-          controls={<><AudienceToggle audience={audience} onChange={setAudience} /><LanguageDropdown /></>}
+          jurisdiction={jurisdiction}
+          controls={<><ModeToggle /><LanguageDropdown /></>}
         >
         {viewMode === 'compact' && (<>
         {/* Dashboard navbar (phone layout only — the laptop layout uses DashboardShell) */}
@@ -4773,7 +4792,7 @@ function App({ user }) {
             <h2>{selectedCity}, {selectedState}</h2>
           </div>
           <div className="nav-right">
-            <AudienceToggle audience={audience} onChange={setAudience} size="md" />
+            <ModeToggle size="md" />
             <ViewModeToggle mode={viewMode} onChange={setViewMode} size="md" />
             <LanguageDropdown />
             <div className="avatar">{userName[0]?.toUpperCase() || 'K'}</div>
@@ -5365,7 +5384,8 @@ function App({ user }) {
                 {/* (The fixed-text 'Global Climate Systems' panel was removed on 19 Oct 2026: its ENSO/IOD/MJO/PDO/NAO/polar-vortex values were hardcoded, not live.) */}
               </div>
             </div>
-          ); return (viewMode !== 'compact' && !citizen) ? (
+          ); return (viewMode !== 'compact' && !citizen) ? (<>
+            <PowerSummaryStrip city={selectedCity} state={selectedState} cityCoordsData={cityCoordsData} onOpen={() => setActiveTab('Heat + Power')} />
             <OverviewWorkspace
               city={selectedCity}
               state={selectedState}
@@ -5383,7 +5403,7 @@ function App({ user }) {
               cacheAgeLabel={formatAgo(cacheLastUpdated)}
               lite={lite}
             >{overviewContent}</OverviewWorkspace>
-          ) : overviewContent })()}
+          </>) : overviewContent })()}
 
           {activeTab === 'Analysis' && (() => { const legacy = (
             <div className="dashboard-content">
@@ -5479,7 +5499,7 @@ function App({ user }) {
 
               </div>
             </div>
-          ); return (viewMode !== 'compact' && !citizen) ? (<AnalysisWorkspace city={selectedCity} state={selectedState} liveCityCache={liveCityCache} liveIndiaData={liveIndiaData} cityCoordsData={cityCoordsData} lulcReal={lulcReal} buckets={HEAT_INDEX_BUCKETS} resolveStateName={(f) => fixStateName(getRawName(f))} onSelectCity={(c, st) => { setSelectedState(st); setSelectedCity(c) }} liveWeather={liveWeather}>{legacy}</AnalysisWorkspace>) : legacy })()}
+          ); return (viewMode !== 'compact' && !citizen) ? (<><PowerSummaryStrip city={selectedCity} state={selectedState} cityCoordsData={cityCoordsData} onOpen={() => setActiveTab('Heat + Power')} /><AnalysisWorkspace city={selectedCity} state={selectedState} liveCityCache={liveCityCache} liveIndiaData={liveIndiaData} cityCoordsData={cityCoordsData} lulcReal={lulcReal} buckets={HEAT_INDEX_BUCKETS} resolveStateName={(f) => fixStateName(getRawName(f))} onSelectCity={(c, st) => { setSelectedState(st); setSelectedCity(c) }} liveWeather={liveWeather}>{legacy}</AnalysisWorkspace></>) : legacy })()}
 
           {activeTab === 'Compare' && (() => { const legacy = (
             <div className="dashboard-content">
@@ -5492,7 +5512,7 @@ function App({ user }) {
                 />
               </div>
             </div>
-          ); return (viewMode !== 'compact' && !citizen) ? (<CompareWorkspace city={selectedCity} state={selectedState} liveCityCache={liveCityCache} cityCoordsData={cityCoordsData} lulcReal={lulcReal} allCities={ALL_CITIES_FLAT} onSelectCity={(c, st) => { setSelectedState(st); setSelectedCity(c) }}>{legacy}</CompareWorkspace>) : legacy })()}
+          ); return (viewMode !== 'compact' && !citizen) ? (<CompareWorkspace jurisdiction={jurisdiction} city={selectedCity} state={selectedState} liveCityCache={liveCityCache} cityCoordsData={cityCoordsData} lulcReal={lulcReal} allCities={ALL_CITIES_FLAT} onSelectCity={(c, st) => { setSelectedState(st); setSelectedCity(c) }}>{legacy}</CompareWorkspace>) : legacy })()}
 
           {activeTab === 'Interventions' && (() => { const legacy = (
             <div className="dashboard-content">
@@ -5758,7 +5778,7 @@ function App({ user }) {
                 onGoTo={(tab) => setActiveTab(tab)}
               />
             </div>
-          ); return (viewMode !== 'compact' && !citizen) ? (<PredictionWorkspace city={selectedCity} state={selectedState} liveWeather={liveWeather} liveCityCache={liveCityCache} cityCoordsData={cityCoordsData} isCoastal={!!STATE_DATA[selectedState]?.coastal}>{legacy}</PredictionWorkspace>) : legacy })()}
+          ); return (viewMode !== 'compact' && !citizen) ? (<><PowerSummaryStrip city={selectedCity} state={selectedState} cityCoordsData={cityCoordsData} onOpen={() => setActiveTab('Heat + Power')} /><PredictionWorkspace city={selectedCity} state={selectedState} liveWeather={liveWeather} liveCityCache={liveCityCache} cityCoordsData={cityCoordsData} isCoastal={!!STATE_DATA[selectedState]?.coastal}>{legacy}</PredictionWorkspace></>) : legacy })()}
 
           {activeTab === 'AI + Export' && (() => { const legacy = (
             <div className="dashboard-content">
@@ -5943,7 +5963,7 @@ function App({ user }) {
             <h2>{t('profile.title', 'My Profile')}</h2>
           </div>
           <div className="nav-right">
-            <AudienceToggle audience={audience} onChange={setAudience} size="md" />
+            <ModeToggle size="md" />
             <ViewModeToggle mode={viewMode} onChange={setViewMode} size="md" />
             <button onClick={() => {setScreen("signin"); setUserName("")}} className="nav-btn">{t('nav.signOut', 'Sign Out')}</button>
           </div>

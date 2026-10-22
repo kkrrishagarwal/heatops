@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, Component, Suspense, lazy } from 'r
 import { Flame, Eye, EyeOff } from 'lucide-react'
 import SpaceScene from './SpaceScene'
 import { readLite } from '../utils/liteMode'
+import { parseJurisdiction, demoPasswordOk, DEMO_CREDENTIALS, jurisdictionName } from '../utils/jurisdiction'
 import './LaunchScreen.css'
 
 // The three.js / react-globe.gl bundle is fetched only when the 3D globe will actually be used.
@@ -166,7 +167,27 @@ const LaunchScreen = ({ onSignIn }) => {
     return () => { clearTimeout(t); stopWatch?.() }
   }, [globeReady, globeFailed])
 
+  // Jurisdiction demo accounts (central@ / up@ / rj@ … — see utils/jurisdiction.js) sign in
+  // directly; every other email goes through the existing local account store below.
+  const signInJurisdiction = (rawEmail, rawPassword) => {
+    const j = parseJurisdiction(rawEmail)
+    if (!j) return false
+    if (!demoPasswordOk(rawPassword)) { setAuthError('Password must be at least 4 characters'); return true }
+    setAuthError(''); setAuthSuccess('')
+    setIsLoading(true)
+    setTimeout(() => {
+      setIsLoading(false)
+      onSignIn({ name: jurisdictionName(j), email: rawEmail.trim().toLowerCase(), jurisdiction: j })
+    }, 600)
+    return true
+  }
+  const useCredential = (c) => {
+    setAuthTab('login'); setEmail(c.email); setPassword(c.password); setAuthError(''); setAuthSuccess('')
+    signInJurisdiction(c.email, c.password)
+  }
+
   const handleSubmit = () => {
+    if (authTab === 'login' && /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/.test(email.trim()) && signInJurisdiction(email, password)) return
     if (!email || !password || (authTab === 'register' && !name)) {
       setAuthError('Please fill out all fields')
       return
@@ -314,6 +335,20 @@ const LaunchScreen = ({ onSignIn }) => {
             </div>
           </form>
         </div>
+        <details className="ls-creds" open data-testid="demo-credentials">
+          <summary>Demo credentials for judges · click a row to sign in</summary>
+          <table>
+            <thead><tr><th>Role</th><th>Email</th><th>Password</th></tr></thead>
+            <tbody>
+              {DEMO_CREDENTIALS.map(c => (
+                <tr key={c.email} tabIndex={0} role="button" aria-label={`Sign in as ${c.label}`} onClick={() => useCredential(c)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); useCredential(c) } }} data-testid={`cred-${c.email.split('@')[0]}`}>
+                  <td>{c.label}</td><td><code>{c.email}</code></td><td><code>{c.password}</code></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="ls-creds-note">Any state code also works, e.g. <code>mh@gmail.com</code> or <code>gj@bhaskarops.gov.in</code>. Master password <code>bhaskar2026</code>; demo accounts accept any password of 4+ characters.</div>
+        </details>
         <p className="ls-foot">Accounts are stored in this browser only. Space artwork is decorative; satellite positions are not live.</p>
       </section>
     </main>

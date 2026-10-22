@@ -42,8 +42,11 @@ export function applyAudienceAttr(mode) {
 export function useAudienceMode() {
   // null = never chosen; since 8 Sept 2026 the product is authority-first, so an unchosen
   // visitor gets the Government / Planner view (Citizen stays a one-click toggle).
-  const [stored, setStored] = useState(readStoredAudience)
-  const audience = stored || 'authority'
+  // 22 Oct 2026: the Citizen view is retired — BhaskarOps is an administrative platform, so the
+  // audience is always 'authority' whatever was stored or passed in ?view=. (Citizen code paths
+  // remain in the codebase but are unreachable.)
+  const [stored, setStored] = useState(readStoredAudience) // eslint-disable-line no-unused-vars
+  const audience = 'authority'
 
   useEffect(() => { applyAudienceAttr(audience) }, [audience])
 

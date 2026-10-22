@@ -3,7 +3,10 @@ import { MiniGrid } from './MiniGridPair'
 import HeatCoPilot, { buildCopilotInput } from './HeatCoPilot'
 import HeatActionChecklist from './HeatActionChecklist'
 import AppErrorBoundary from './AppErrorBoundary'
-import AudienceToggle from './AudienceToggle'
+import ModeToggle from './ModeToggle'
+import CapAlertButton from './CapAlertButton'
+import { jurisdictionLabel } from '../utils/jurisdiction'
+import { fetchGrid, gridOverlay } from '../utils/heatPower'
 import { activationLevel, LEVELS } from '../utils/heatActionProtocol'
 import { assessHeatStress } from '../utils/heatStress'
 import { loadModisIndex } from '../utils/modisLst'
@@ -34,7 +37,7 @@ export default function CommandCenterHud({
   liveIndiaData, resolveStateName, onStateClick, liveCityCache, cityCoordsData, lulcReal, liveWeather,
   selectedState, selectedCity, onSelectCity, allCities = [], colorFor, buckets = [], isCoastal = false,
   cacheStatus, cacheStale = false, cacheAgeLabel, audience, onAudienceChange, onOpenClassic, onOpenDashboard, onLogout, userName,
-  teamId = 'B26-0322', lite = false
+  teamId = 'B26-0322', lite = false, jurisdiction = null, opsMode = 'disaster'
 }) {
   const mapCtl = useRef(null)
   const [zoom, setZoom] = useState(5)
@@ -158,6 +161,37 @@ export default function CommandCenterHud({
   // Alert triage from the same inputs the Co-Pilot uses.
   const copilotInput = useMemo(() => buildCopilotInput({ city: selectedCity, state: selectedState, liveWeather, lulcReal, cityCoordsData, isCoastal }), [selectedCity, selectedState, liveWeather, lulcReal, cityCoordsData, isCoastal])
   const act = useMemo(() => activationLevel(copilotInput), [copilotInput])
+
+  // Jurisdiction landing: a state administrator's map flies to their state once on arrival.
+  const landed = useRef(false)
+  useEffect(() => {
+    if (landed.current || jurisdiction?.type !== 'state' || !districtFeatures) return
+    const pts = Object.entries(cityCoordsData || {}).filter(([k, c]) => k.endsWith(`|${jurisdiction.state}`) && typeof c?.lat === 'number').map(([, c]) => c)
+    if (!pts.length) return
+    landed.current = true
+    const lat = pts.reduce((a, c) => a + c.lat, 0) / pts.length, lon = pts.reduce((a, c) => a + c.lon, 0) / pts.length
+    const span = Math.max(Math.max(...pts.map(c => c.lat)) - Math.min(...pts.map(c => c.lat)), Math.max(...pts.map(c => c.lon)) - Math.min(...pts.map(c => c.lon)))
+    setTimeout(() => mapCtl.current?.flyTo(lat, lon, span > 8 ? 5.5 : span > 4 ? 6.25 : span > 1.5 ? 7.25 : 8.5), 300)
+  }, [jurisdiction, districtFeatures, cityCoordsData])
+  // State executive summary (state admins): readings from the live cache only.
+  const stateSummary = useMemo(() => {
+    if (jurisdiction?.type !== 'state') return null
+    const cs = Object.values(liveCityCache || {}).filter(c => c.state === jurisdiction.state)
+    const t = cs.map(c => c.temp).filter(v => typeof v === 'number'), mx = cs.map(c => c.tempMax).filter(v => typeof v === 'number')
+    return { n: cs.length, avg: t.length ? Math.round((t.reduce((a, b) => a + b, 0) / t.length) * 10) / 10 : null, hot40: mx.filter(v => v >= 40).length, hot37: mx.filter(v => v >= 37).length, cold10: t.filter(v => v < 10).length, peak: mx.length ? Math.max(...mx) : null }
+  }, [jurisdiction, liveCityCache])
+  // Power Grid mode: OpenStreetMap grid around the selected city on the command map.
+  const [grid, setGrid] = useState(null)
+  useEffect(() => {
+    setGrid(null)
+    if (opsMode !== 'power' || !selectedCity) return
+    const c = cityCoordsData?.[`${selectedCity}|${selectedState}`]
+    if (typeof c?.lat !== 'number') return
+    let live = true
+    fetchGrid({ city: selectedCity, state: selectedState, lat: c.lat, lon: c.lon }).then(g => { if (live) setGrid(g) }).catch(() => { if (live) setGrid({ error: true }) })
+    return () => { live = false }
+  }, [opsMode, selectedCity, selectedState, cityCoordsData])
+  const gridLayer = useMemo(() => (opsMode === 'power' && grid && !grid.error ? gridOverlay(grid) : null), [opsMode, grid])
   const lvl = selectedCity ? LEVELS[act.level] : { label: 'NATIONAL OVERVIEW', color: '#38bdf8' }
 
   // Tooltip for a state polygon on the Leaflet map — same facts as the classic tooltip.
@@ -229,7 +263,8 @@ export default function CommandCenterHud({
           raster={surface === 'raster' && showFills && !lite}
           rasterPoints={overlay?.points || null}
           rgbOf={rgbOf}
-          fillStrength={0.88}
+          fillStrength={gridLayer ? 0.45 : 0.88}
+          overlay={gridLayer}
         />
         <WindParticleCanvas mapCtl={mapCtl} stations={stations} enabled={wind && stations.length > 0} mode={windMode} speed={windSpeedX} lite={lite} onProbe={setProbe} />
       </div>
@@ -261,18 +296,20 @@ export default function CommandCenterHud({
           <span className="font-bold text-slate-100">{selectedCity || 'All-India National Overview'}</span>{selectedState ? `, ${selectedState}` : ''}
           {risk && <span className="ml-2 rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: liveIndiaData[selectedState].riskBucket.color, color: '#0f172a' }}>{risk}</span>}
         </div>
-        <div className="ml-auto flex items-center gap-2 text-[11px]">
+        <div className="ml-auto flex items-center gap-2 whitespace-nowrap text-[11px]">
           <span data-testid="hud-status" title="Age of the bulk weather cache the map is drawn from" className={`rounded px-2 py-0.5 font-bold ${cacheStatus === 'error' ? 'bg-red-900/60 text-red-200' : cacheStatus === 'loading' ? 'bg-slate-800 text-slate-300' : cacheStale ? 'bg-amber-900/50 text-amber-300' : 'bg-emerald-900/50 text-emerald-300'}`}>
             {cacheStatus === 'error' ? 'OFFLINE · cached' : cacheStatus === 'loading' ? 'LOADING' : cacheStale ? `CACHED · ${cacheAgeLabel || ''}` : `LIVE · ${cacheAgeLabel || ''}`}
           </span>
           <span className="font-mono text-slate-300">{clock} IST</span>
-          <AudienceToggle audience={audience} onChange={onAudienceChange} />
+          <ModeToggle />
+          <CapAlertButton city={selectedCity} state={selectedState} level={act.level} tempNow={temp} tempMax={liveWeather?.today?.maxTemp ?? null} reasons={act.reasons} className={`${BTN} border-red-700 text-red-200`} />
           <button type="button" className={BTN} onClick={onOpenClassic}>Classic map</button>
           <button type="button" className={BTN} onClick={onOpenDashboard} disabled={!selectedCity}>Full dashboard →</button>
           <button type="button" className={`${BTN} border-red-800 text-red-300`} onClick={onLogout}>Logout</button>
         </div>
       </header>
 
+      {jurisdiction && <div data-testid="hud-jurisdiction" className={`absolute left-6 top-[3.75rem] z-20 whitespace-nowrap rounded border bg-slate-950/85 px-2 py-0.5 text-[9.5px] font-extrabold tracking-wide ${jurisdiction.type === 'central' ? 'border-sky-500/50 text-sky-300' : 'border-amber-500/50 text-amber-300'}`}>{jurisdictionLabel(jurisdiction)}</div>}
       {/* FLOATING CITY SEARCH — translucent, centred under the top bar so the map stays visible */}
       <div data-testid="hud-search" className="absolute left-1/2 top-[4.25rem] z-20 w-[26rem] max-w-[calc(100vw-3rem)] -translate-x-1/2">
         <div className={`flex items-center gap-2 rounded-full border px-4 py-2 shadow-xl backdrop-blur-md transition-colors ${query ? 'border-amber-400/60 bg-slate-950/80' : 'border-sky-500/30 bg-slate-950/45 hover:bg-slate-950/65'}`}>
@@ -306,7 +343,27 @@ export default function CommandCenterHud({
       </div>
 
       {/* LEFT DOCK */}
-      <aside data-testid="hud-left" className={`${DOCK} left-6 top-20 w-80 max-h-[calc(100vh-10.5rem)] overflow-y-auto border-sky-500/30`}>
+      <aside data-testid="hud-left" className={`${DOCK} left-6 ${jurisdiction ? 'top-[5.4rem]' : 'top-20'} w-80 max-h-[calc(100vh-10.5rem)] overflow-y-auto border-sky-500/30`}>
+        {stateSummary && (
+          <div data-testid="hud-state-summary" className="mb-3 rounded-lg border border-amber-500/40 bg-slate-900/70 p-3 text-[11px] text-slate-200">
+            <div className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-amber-300">State executive summary · {jurisdiction.state}</div>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+              <span className="text-slate-400">Average air temp</span><b className="text-right">{stateSummary.avg ?? '—'}°C <span className="text-[9px] text-emerald-400">LIVE</span></b>
+              <span className="text-slate-400">Cities ≥ 40 °C today</span><b className="text-right">{stateSummary.hot40} of {stateSummary.n} <span className="text-[9px] text-sky-400">FCST</span></b>
+              <span className="text-slate-400">Cities ≥ 37 °C today</span><b className="text-right">{stateSummary.hot37}</b>
+              <span className="text-slate-400">Hottest forecast</span><b className="text-right">{stateSummary.peak ?? '—'}°C</b>
+              {stateSummary.cold10 > 0 && <><span className="text-slate-400">Cities below 10 °C</span><b className="text-right text-sky-300">{stateSummary.cold10}</b></>}
+              <span className="text-slate-400">Grid demand (MW)</span><b className="text-right text-slate-500">UNAVAILABLE</b>
+              <span className="text-slate-400">SDRF budget</span><b className="text-right text-slate-500">UNAVAILABLE</b>
+            </div>
+            <div className="mt-1 text-[9.5px] leading-snug text-slate-500">Live state demand: vidyutpravah.in (Ministry of Power). SDRF allocation: MHA / state finance department — not connected.</div>
+          </div>
+        )}
+        {opsMode === 'power' && (
+          <div data-testid="hud-power-note" className="mb-3 rounded-lg border border-sky-500/40 bg-slate-900/70 p-2 text-[10.5px] text-slate-300">
+            ⚡ <b>Power Grid mode.</b> {!selectedCity ? 'Pick a city to draw its substations and lines.' : grid == null ? 'Loading OpenStreetMap grid…' : grid.error ? 'Grid geometry UNAVAILABLE (OpenStreetMap service not answering).' : `${grid.substations.length} substations · ${grid.lines.length} line segments around ${selectedCity} (OpenStreetMap; loading not available).`} Open the dashboard for the Heat + Power workspace.
+          </div>
+        )}
         <div className={H3}>Satellite layers</div>
         <div className="mb-3 flex flex-wrap gap-1.5">
           {Object.entries(HUD_LAYERS).map(([k, v]) => (

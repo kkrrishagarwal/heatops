@@ -152,6 +152,18 @@
 .ls-link { background: none; border: 0; padding: 0; color: var(--ls-amber); font-weight: 800; cursor: pointer; font-size: 12.5px; }
 .ls-foot { font-size: 10.5px; color: #536175; line-height: 1.5; margin: 0; }
 
+/* Judge credentials card */
+.ls-creds { background: rgba(11,19,37,0.9); border: 1px solid var(--ls-border); border-radius: 12px; padding: 8px 12px; font-size: 11px; color: var(--ls-muted); }
+.ls-creds summary { cursor: pointer; font-weight: 800; color: var(--ls-cyan); letter-spacing: 0.04em; padding: 2px 0; }
+.ls-creds table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+.ls-creds th { text-align: left; font-weight: 700; color: #64748b; font-size: 10px; padding: 2px 4px; }
+.ls-creds td { padding: 4px; border-top: 1px solid var(--ls-border); color: var(--ls-text); }
+.ls-creds tbody tr { cursor: pointer; }
+.ls-creds tbody tr:hover, .ls-creds tbody tr:focus-visible { background: rgba(56,189,248,0.10); outline: none; }
+.ls-creds code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ls-amber); font-size: 10.5px; }
+.ls-creds-note { margin-top: 6px; font-size: 10px; line-height: 1.45; }
+@media (max-height: 900px) and (min-width: 901px) { .ls-desc { display: none; } .ls-acronym { display: none; } }
+
 /* Visible keyboard focus everywhere on this screen */
 .ls-root :is(button, input):focus-visible { outline: 2px solid var(--ls-cyan); outline-offset: 2px; }
 .ls-input:focus-visible { outline: none; }

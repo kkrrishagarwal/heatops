@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import LocationImage from './LocationImage'
+import { jurisdictionLabel } from '../utils/jurisdiction'
 
 // Executive Intelligence Dashboard shell: persistent left sidebar (the six workspaces, in the
 // brief's order) + shared header (identity, metadata, status, search, return to the Command
@@ -26,7 +27,7 @@ function istClock() { return new Date().toLocaleString('en-IN', { timeZone: 'Asi
 
 export default function DashboardShell({
   enabled = true, children, activeTab, onTab, citizen = false, city, state, coords, elevation,
-  status = 'live', statusAge = '', demoTemp = null, allCities = [], liveCityCache = {}, onSelectCity, onBack, onSignOut, userName = '', controls = null
+  status = 'live', statusAge = '', demoTemp = null, allCities = [], liveCityCache = {}, onSelectCity, onBack, onSignOut, userName = '', controls = null, jurisdiction = null
 }) {
   const [clock, setClock] = useState(istClock)
   const [q, setQ] = useState('')
@@ -34,8 +35,10 @@ export default function DashboardShell({
   const results = useMemo(() => {
     const s = q.trim().toLowerCase(); if (s.length < 2) return []
     const rank = c => { const n = c.city.toLowerCase(); return n.startsWith(s) ? 0 : n.split(/[\s-]/).some(w => w.startsWith(s)) ? 1 : n.includes(s) ? 2 : c.state.toLowerCase().includes(s) ? 3 : 9 }
-    return allCities.map(c => ({ c, r: rank(c) })).filter(x => x.r < 9).sort((a, b) => a.r - b.r || a.c.city.localeCompare(b.c.city)).slice(0, 8).map(x => x.c)
-  }, [q, allCities])
+    // a state administrator sees their own state's cities first
+    const own = c => (jurisdiction?.type === 'state' && c.state !== jurisdiction.state ? 1 : 0)
+    return allCities.map(c => ({ c, r: rank(c) })).filter(x => x.r < 9).sort((a, b) => own(a.c) - own(b.c) || a.r - b.r || a.c.city.localeCompare(b.c.city)).slice(0, 8).map(x => x.c)
+  }, [q, allCities, jurisdiction])
   if (!enabled) return <>{children}</>
 
   const ws = citizen ? CITIZEN_WORKSPACES : WORKSPACES
@@ -80,17 +83,18 @@ export default function DashboardShell({
       <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
         <header style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '8px 18px', background: C.card, borderBottom: `1px solid ${C.border}`, minHeight: 56 }}>
           <LocationImage city={city} state={state} size="chip" />
-          <div style={{ minWidth: 0 }}>
+          <div style={{ minWidth: 0, flex: '0 1 auto', maxWidth: 260 }}>
             <div style={{ fontSize: 15, fontWeight: 800, lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{city}<span style={{ color: C.muted, fontWeight: 500 }}>, {state}</span></div>
             <div style={{ fontSize: 10, color: C.muted, fontVariantNumeric: 'tabular-nums' }}>
               {coords && typeof coords.lat === 'number' ? `${coords.lat.toFixed(3)}°N ${coords.lon.toFixed(3)}°E` : 'coordinates unavailable'}{typeof elevation === 'number' ? ` · ${Math.round(elevation)} m elevation (SRTM)` : ''}
             </div>
           </div>
+          {jurisdiction && <span data-testid="shell-jurisdiction" title={jurisdiction.type === 'state' ? 'Orders and plans apply to this state; other states are read-only benchmarks' : 'Unrestricted all-India access'} style={{ fontSize: 9.5, fontWeight: 900, letterSpacing: '0.06em', padding: '3px 8px', borderRadius: 6, whiteSpace: 'nowrap', border: `1px solid ${jurisdiction.type === 'central' ? 'rgba(56,189,248,0.5)' : 'rgba(245,158,11,0.5)'}`, color: jurisdiction.type === 'central' ? C.cyan : C.amber, background: jurisdiction.type === 'central' ? 'rgba(56,189,248,0.08)' : 'rgba(245,158,11,0.08)' }}>{jurisdictionLabel(jurisdiction)}</span>}
           <span data-testid="shell-status" style={{ fontSize: 10, fontWeight: 800, padding: '3px 9px', borderRadius: 999, background: pill.bg, color: pill.fg, border: `1px solid ${pill.border}`, whiteSpace: 'nowrap' }}>{pill.text}</span>
-          <span style={{ fontSize: 11, color: C.muted, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{clock} IST</span>
-          <div style={{ position: 'relative', marginLeft: 'auto', width: 300, maxWidth: '30vw' }}>
+          {!jurisdiction && <span style={{ fontSize: 11, color: C.muted, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{clock} IST</span>}
+          <div style={{ position: 'relative', marginLeft: 'auto', width: jurisdiction ? 200 : 300, maxWidth: '30vw', flex: '0 1 auto' }}>
             <input value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && results[0]) { onSelectCity(results[0].city, results[0].state); setQ('') } if (e.key === 'Escape') setQ('') }}
-              placeholder="Search another city…" data-testid="shell-search" aria-label="Search cities"
+              placeholder={jurisdiction?.type === 'state' ? `Search ${jurisdiction.state} first…` : 'Search another city…'} data-testid="shell-search" aria-label="Search cities"
               style={{ width: '100%', background: C.raised, border: `1px solid ${C.border}`, color: C.text, borderRadius: 8, padding: '7px 10px', fontSize: 12 }} />
             {results.length > 0 && (
               <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, margin: '4px 0 0', padding: 0, listStyle: 'none', background: '#0B1325', border: `1px solid ${C.border}`, borderRadius: 8, boxShadow: '0 12px 30px rgba(0,0,0,0.5)', maxHeight: 280, overflowY: 'auto' }}>
