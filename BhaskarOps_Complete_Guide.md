@@ -2,12 +2,13 @@
 
 **Hackyard Build 2026 · IIT Guwahati · Team B26-0322**
 
-BhaskarOps (earlier name HeatOps) is a web platform that monitors urban heat across India and helps a district administration decide what to do about it: live readings for 1,932 cities, NASA satellite surface temperature, land cover, a probabilistic heatwave forecast, an AI-written Heat Action Protocol with its cost, a budget planner, an action tracker, and exportable reports.
+BhaskarOps (earlier name HeatOps) is a web platform that monitors urban heat across India and helps a district administration decide what to do about it: live readings for 1,932 cities, NASA satellite surface temperature, land cover, a probabilistic heatwave forecast, an AI-written Heat Action Protocol with its cost, a budget planner, an action tracker, exportable reports, and a Heat + Power workspace for electricity-grid stress under heat. Central and state administrators sign in to their own jurisdiction.
 
 This guide is written from the base level. It assumes no prior knowledge of meteorology, satellites or the code, and it explains each term the first time it is used.
 
 - Live site: https://heatops.vercel.app
-- Written from the code as deployed on 20 October 2026, for the Grand Finale panel (24–25 October 2026). Where a number on screen is an estimate, this guide says so, because the app says so.
+- Written from the code as deployed on 22 October 2026, for the Grand Finale panel (24–25 October 2026). Where a number on screen is an estimate, this guide says so, because the app says so.
+- New on 22 October: jurisdiction sign-in for central and state administrators with judge demo credentials (section 5.1, and `JUDGE_CREDENTIALS.md`), the Disaster Command / Power Grid mode switch (5.5), the CAP alert draft (5.6), intra-state Compare (9.4), the Heat + Power workspace (9.7), and the cinematic space sign-in screen (5.1). The Citizen view is retired.
 - New since the 17 October edition: the six-workspace dashboard (section 9), the ensemble heatwave probability (sections 9.2 and 11.11), the action tracker (9.5), the report builder (9.6), photographs for every city and district (section 17), and charts that state their own takeaway.
 
 ## Contents
@@ -48,14 +49,15 @@ The gap is operational. A district officer on a hot morning has the IMD bulletin
 
 **BHASKAR** stands for Bharat Heat Analysis, Surveillance, Knowledge & Assessment Resource; **OPS** for Optimization & Planning System. It is a website (React, runs in any modern browser) with a small server behind it for the AI calls and the data refresh.
 
-### Two audiences, two views
+### Who signs in
 
-| View | Who | What they see |
+BhaskarOps is an administrative platform. The Citizen view was retired on 22 October 2026; everyone now uses the full administrative dashboard, scoped by jurisdiction:
+
+| Sign-in | Who | What they get |
 |---|---|---|
-| Authority | District Magistrate, Municipal Commissioner, DDMA control room, health and labour officers, planners | The full platform: the Command Center map, the AI Co-Pilot with costs and consequences, the Mitigation Planner, satellite data, the city dashboard with all tabs |
-| Citizen | Residents and families | A plain-language view: how hot it feels, a danger word, safe hours today, what to do, a WhatsApp share, and a simple chat with the AI |
-
-Authority is the default; the toggle is in the top bar. Everything in the citizen view is also in the authority view.
+| Central Command | NDMA, national ministries | All-India view; any state, district or city; unrestricted comparison |
+| State administrator | SDMA, state departments | Their state first: the map flies to it, a State Executive Summary, own-state search results first, and Compare locked to their state plus one read-only external benchmark |
+| Ordinary account | Anyone who registers | The full dashboard with no jurisdiction scope |
 
 > **The one rule the whole app follows.** A number that was not measured is labelled: "(estimated)", "illustrative", "model-based estimate", "no reading", or "no live data". The app never invents a reading for a city it has no data for, never estimates deaths, and never says "Agent37" or "satellite" about something that is not. When a judge asks "where does this number come from?", the answer is on the screen next to the number.
 
@@ -144,9 +146,40 @@ The app has readings at 1,932 points, but a map needs a value everywhere. **Inve
 
 ### 5.1 Sign-in
 
-Register with any name, email and password (6+ characters), then sign in. Accounts live only in the browser's local storage; there is no server-side user database, which is deliberate for a demo and stated in the guide's limits. After sign-in an Authority user on a laptop lands on the Command Center; a Citizen, or any phone, lands on the classic map.
+**The screen.** A cinematic space scene: Earth centred on India (3D globe, or a pre-rendered image on slower devices), orbit paths, two satellites, the Moon, distant planets, stars and occasional meteors. All of it is decorative, and a footnote says the satellite positions are not live. The sign-in card sits on the left. The scene pauses when the tab is hidden, holds still when the device asks for reduced motion, and switches to the static Earth automatically on software graphics or when the globe falls below 20 frames a second.
 
-### 5.2 The Command Center (Authority, laptop)
+**Jurisdiction accounts.** The part of the email before the @ decides the jurisdiction:
+
+| Email prefix | Jurisdiction |
+|---|---|
+| `central`, `india`, `admin` (or any `@ndma.gov.in`) | Central Command, all-India |
+| A state code or name: `up`, `rj`, `delhi`/`dl`, `assam`/`as`, `leh`/`ld`, `mh`, `gj`, `tn`, `ka`, `wb`… | That state's administrator |
+
+Both `@gmail.com` and `@bhaskarops.gov.in` work. The judge demo accounts are listed on the sign-in screen; clicking a row fills it in and signs in:
+
+| Role | Email | Password |
+|---|---|---|
+| Central Admin (All-India) | `central@gmail.com` | `admin2026` |
+| Uttar Pradesh | `up@gmail.com` | `up2026` |
+| Rajasthan | `rj@gmail.com` | `rj2026` |
+| Delhi NCR | `delhi@gmail.com` | `delhi2026` |
+| Assam (IIT Guwahati host) | `assam@gmail.com` | `assam2026` |
+| Ladakh (cold-mode demo) | `leh@gmail.com` | `leh2026` |
+
+So that a judge is never locked out by a typo, these accounts also accept the master password `bhaskar2026` or any password of 4 or more characters. This is a demo rule, not security; a real deployment needs government single sign-on with server-side role checks.
+
+**Ordinary accounts.** Any other email still uses Register, then Sign In (password of 6+ characters). Accounts live in the browser's local storage; there is no server-side user database.
+
+**After sign-in.** A laptop lands on the Command Center; a phone lands on the classic map. Central Command opens on the All-India National Overview with nothing selected. A state administrator's map flies to their state, its main city (for example Lucknow for Uttar Pradesh) is selected, and a **State Executive Summary** sits at the top of the left panel:
+
+- average air temperature across the state's cities (LIVE)
+- cities at or above 40 °C and 37 °C today, and the hottest forecast (FORECAST)
+- cities below 10 °C, shown in cold weather
+- grid demand (MW) and SDRF budget, shown as UNAVAILABLE because neither feed is connected; live state demand can be read from vidyutpravah.in
+
+A badge under the top bar shows the jurisdiction: **🇮🇳 CENTRAL COMMAND // ALL-INDIA JURISDICTION** or **🏛️ STATE ADMIN: \<STATE\> // INTRA-STATE TRANSPARENCY ACTIVE**. The same badge appears in the dashboard header.
+
+### 5.2 The Command Center (laptop)
 
 A full-screen map with three floating panels and no page scrolling. It opens on an **All-India National Overview** with nothing selected: the left panel shows the hottest city right now, how many cities are forecast at or above 40 °C today, and the national mean; the right panel waits in standby. Clicking a state, clicking a district, or searching a city selects it and both panels switch to that locality. Section 6 covers every control.
 
@@ -156,13 +189,26 @@ The original screen: the India map on the left, an information panel on the righ
 
 ### 5.4 The city dashboard
 
-On a laptop in the Authority view, the dashboard is an executive workspace. A left sidebar lists six numbered workspaces: Overview, Prediction, Analysis, Compare, Interventions, AI + Export. A shared header shows the city's photograph, coordinates and elevation, a LIVE / CACHED / DEMO / OFFLINE status, the IST clock, a city search, and the audience and language controls. The selected city is kept when you switch workspaces. Citizens, and anyone on a phone, keep the simpler tab layout (Overview, What to do, Compare). Section 9 walks through each workspace.
+On a laptop, the dashboard is an executive workspace. A left sidebar lists seven numbered workspaces: Overview, Prediction, Analysis, Compare, Interventions, AI + Export, and Heat + Power. A shared header shows the city's photograph, coordinates and elevation, the jurisdiction badge, a LIVE / CACHED / DEMO / OFFLINE status, a city search (own state first for state administrators), and the mode and language controls. The selected city is kept when you switch workspaces. On a phone, the same workspaces are in a dropdown at the top. Section 9 walks through each workspace.
 
-### 5.5 AGNI
+### 5.5 Operating mode: Disaster Command or Power Grid
+
+The switch in every header replaces the old Citizen / Authority toggle:
+
+- **🏛️ Disaster Command (SDMA/NDMA):** heat-risk triage, alerts and interventions. The dashboard opens on Overview.
+- **⚡ Power Grid & Electricity Load:** the dashboard opens on the Heat + Power workspace (section 9.7), and the Command Center draws the selected city's OpenStreetMap substations and power lines on the map.
+
+The choice is remembered on the browser.
+
+### 5.6 Push CAP SMS Alert
+
+The **📢 Push CAP SMS Alert** button on the Command Center drafts an alert in CAP 1.2 (Common Alerting Protocol), the format NDMA's SACHET system ingests, together with the SMS text. Severity, urgency and certainty follow the activation level; the instruction text follows the NDMA heat (or cold) advisory. The draft has status **Exercise** and can be copied or downloaded as XML. It is not transmitted: no CAP or SMS gateway is connected, and the dialog says so.
+
+### 5.7 AGNI
 
 The AI analyst, reachable from a floating button on every screen and from the AI + Export tab. Section 10.
 
-### 5.6 Profile
+### 5.8 Profile
 
 Name, email, current view with a switch, points and badges, recent sign-ins.
 
@@ -368,6 +414,9 @@ The detail panels keep the MODIS panel, the Random Forest scorecard (see the not
 
 ### 9.4 Compare: Multi-City Intelligence
 
+**Jurisdiction rule.** Central Command compares any cities in India. A state administrator gets up to three cities **inside their state**, for transparent intra-state comparison of heat, SDRF allocation and electricity load, plus exactly **one** slot labelled **+ Add 1 External State District (Benchmark)**. The external card is marked **🔒 Read-Only Benchmark — Outside State Jurisdiction** and has no "Make primary" button, so no order or plan is made outside the state.
+
+
 Any two to four of the 1,932 cities side by side. The first column follows the city selected in the header; the others are remembered on this browser. Each city card shows its photograph and credit, air temperature now, today's high, Heat Risk Index, AQI, built-up share and the MODIS season peak, each with its label. Below: a side-by-side bar for any chosen metric; the 7-day forecast highs of every city on one chart with the 40 °C line; synchronised satellite maps (zooming one zooms all, with a dashed ring for the ~5 km land-cover sample); and an optional AI summary written by Gemini from the numbers on screen only. The older radar panel remains in the drawer.
 
 ### 9.5 Interventions: Heat Action & Resource Planning
@@ -385,6 +434,43 @@ A notice on the screen states where statuses live: in this browser only. They ar
 ### 9.6 AI + Export: Decision Support
 
 The AI Heat Co-Pilot (section 7) sits beside a report builder. Choose **Daily, Weekly or Custom** (any date range in the last 366 days). The report uses recorded daily readings from the app's own archive (`/api/weather-history`), today's live reading and the forecast. Headline tiles show days with data (and how many are missing), the highest day high and days at or above the threshold, and mean and maximum AQI. Exports: **CSV** of every row behind the report, and a **printable report** that the browser saves as PDF, with the current situation, recorded readings, the 7-day forecast and every action with its status. A snapshot of action statuses from the Interventions workspace sits below. AGNI chat, quick share, glossary and team details are in the drawer.
+
+### 9.7 Heat + Power: Electricity Grid Stress
+
+The seventh workspace (⚡ in the sidebar) asks how heat stresses the electricity grid. It shares the selected city with every other workspace. A compact Heat + Power strip (demand, predicted peak, grid stress, a +3 °C / +20 % AC what-if, and evening solar against cooling) also sits at the top of Overview, Prediction and Analysis.
+
+**What is real and what is not:**
+
+| Data | Status |
+|---|---|
+| Air temperature, hourly temperature and solar radiation (7 days) | LIVE / FORECAST (Open-Meteo) |
+| Surface temperature | SATELLITE (NASA MODIS) |
+| Land cover | SATELLITE (ESA WorldCover) |
+| Substations, power lines by voltage, industrial land | OpenStreetMap geometry; pre-loaded for Jaipur and Lucknow, fetched live elsewhere when the service answers |
+| Live electricity demand, substation loading and capacity, population exposure | **UNAVAILABLE**: no SLDC, DISCOM SCADA or census feed is connected |
+| Every MW figure | **DEMO** until the officer enters their network's reference peak, capacity and installed solar; then **ESTIMATE** |
+
+**Tabs:**
+
+- **Overview:** five headline tiles (air temperature, electricity demand, surface temperature, predicted peak, Heat Impact Score), the grid map with layer toggles and the city photo, grid-stress alerts with recommendations, the simulator, solar against cooling, urban zones and a metric summary.
+- **Grid Simulator:** sliders for temperature increase, AC demand increase and solar decrease, a demand-sensitivity assumption, the officer's network figures, scenario shortcuts, and the projected evening peak for each of the next seven days against capacity.
+- **Solar vs Cooling:** hourly solar generation and cooling-related demand for any of the next seven days, with 6–9 PM highlighted: solar is close to zero exactly when cooling demand peaks.
+- **Industrial Zones:** OpenStreetMap industrial land around the city, and the most built-up against the greenest cities in the state.
+- **Alerts & Actions:** every alert, key insights, the metric summary, the method and the feeds still missing.
+
+**The model** (ESTIMATE, all assumptions editable or shown on screen):
+
+```
+evening peak = reference peak × (1 + 3 % × °C above the reference day) × (1 + 35 % × AC increase)
+afternoon net load = 90 % of the evening peak − installed solar × 0.78 × 0.9 kW/m² × (1 − solar decrease)
+grid stress = projected peak ÷ capacity: < 80 % normal, 80–95 % high, 95–100 % critical, > 100 % overload risk
+```
+
+The **Heat Impact Score** (0–100, RULE-BASED) weights the forecast maximum (35 %), night minimum (20 %), satellite surface temperature (15 %), built-up share (15 %) and scenario grid utilisation (15 %); missing parts are dropped and the weights re-normalised.
+
+**Alerts** come only from the forecast, the model and the map: the evening-peak risk, warm nights, line thermal derating on days at or above 40 °C, and low-solar days. Substation loading is shown as UNAVAILABLE. Every action is labelled a recommendation; BhaskarOps never operates the grid.
+
+**Where real demand data would come from:** Vidyut PRAVAH (live state demand, Ministry of Power), Grid-India daily reports (state peak demand met), state SLDC websites, CEA monthly reports, and DISCOM SCADA (substation and feeder loading, needs an agreement with the utility). Except for Delhi, which is a state, these report demand per state, not per city.
 
 ---
 
@@ -512,7 +598,14 @@ For each classified city: `difference = its forecast high − median forecast hi
 
 ### Not available, and shown as UNAVAILABLE
 
-- People at risk (no approved population dataset) and economic impact (no validated source). Nothing is substituted.
+- People at risk (no approved population dataset) and economic impact (no validated source).
+- Live electricity demand, substation loading and capacity, and the state SDRF budget.
+
+Nothing is substituted for any of them.
+
+### Demo, and labelled DEMO
+
+- Heat + Power network figures (reference peak 1,000 MW, capacity 1,200 MW, solar 150 MW) until an officer enters real ones.
 
 ### Fixed text with no live source (still to label or remove)
 
@@ -548,6 +641,9 @@ For each classified city: `difference = its forecast high − median forecast hi
 - Several fixed-text widgets remain (section 12) and should be labelled or removed before judging.
 - Open-Meteo's free tier can rate-limit a single IP after very heavy use; the app then shows cached readings, labelled. The ensemble forecast is free for non-commercial use only.
 - Intervention statuses are stored in one browser; there is no shared backend for them yet.
+- Jurisdiction demo accounts accept any password of 4+ characters; this is for judging only.
+- Heat + Power grid geometry is pre-loaded only for Jaipur and Lucknow; other cities depend on the public OpenStreetMap Overpass service, which was failing on 22 October. A one-time India OpenStreetMap extract (Geofabrik) would cover every city.
+- No electricity-demand feed is connected; MW figures are model estimates from entered or demo figures.
 - The district risk timeline uses each district's city forecast; no per-district forecast is held.
 - The report's archive has gaps on days the refresh failed (for example 21 of 30 days for Jaipur in a 30-day report); the report counts them.
 - Photographs: 80 of 619 districts still show a placeholder, and Openverse could not be checked on 20 October because its API was down (section 17).
@@ -558,11 +654,12 @@ For each classified city: `difference = its forecast high − median forecast hi
 
 ### A three-minute walkthrough
 
-1. **0:00–0:40, the problem.** Open https://heatops.vercel.app and sign in as Government / Planner. "India loses thousands of lives to heat every year; a district officer has an IMD bulletin and a phone. This is the All-India view: 1,932 cities live, satellite surface temperature, and the hottest city right now."
-2. **0:40–1:10, the data.** Switch to Satellite, then Surface temperature; drag Historical to 2019, then 2024: "real NASA readings, year by year". Zoom into a state: per-district colours; hover a district: "reading from Unnao".
-3. **1:10–1:40, the city.** Click "Full dashboard". Overview: the landmark photo with its licence, the risk ring, and "People at risk: UNAVAILABLE. We don't invent numbers we don't hold." Open **Prediction**: "31 forecast runs; this is the chance of a heatwave, and this is how sure we are."
-4. **1:40–2:30, operations.** Use the rehearsal link (`?demo=Jaipur:46`): the triage turns CRITICAL. In **AI + Export**, run the Co-Pilot: actions with owners and deadlines, the labour order, the SMS in Hindi, the cost in rupees, and the "if this is not controlled" chart. In **Interventions**, set one action to In progress and one to Marked verified, then export the tracker.
-5. **2:30–3:00, defence.** Show the weekly report and its PDF. "Every number has its source label. Every chart says what it means. What we don't have, we say. Open-source maps, no paid keys."
+1. **0:00–0:30, the problem.** Open https://heatops.vercel.app. Click **Central Admin** in the demo credentials box: "This is the national command view: 1,932 cities live, satellite surface temperature, and the hottest city right now."
+2. **0:30–1:00, the data.** Switch to Satellite, then Surface temperature; drag Historical to 2019, then 2024. Zoom into a state: per-district colours.
+3. **1:00–1:30, jurisdiction.** Log out and click **Uttar Pradesh**: the map flies to the state with its executive summary. Open Compare: "state officers compare only their own districts, plus one read-only benchmark from outside."
+4. **1:30–2:15, operations.** Use the rehearsal link (`?demo=Lucknow:46`): the triage turns CRITICAL. Run the AI Co-Pilot, then press **📢 Push CAP SMS Alert** to show the CAP draft.
+5. **2:15–2:45, power.** Switch to **⚡ Power Grid**: Lucknow's substations and lines appear. In Heat + Power, move the +3 °C and +20 % AC sliders and show 6–9 PM solar against cooling.
+6. **2:45–3:00, defence.** "Every number has its source label. What we don't have, such as live grid load, we show as UNAVAILABLE."
 
 ### Questions to expect, and the honest answers
 
@@ -575,6 +672,9 @@ For each classified city: `difference = its forecast high − median forecast hi
 | How many deaths will this prevent? | We don't estimate deaths; no validated India-wide model exists. We show exposure hours and work hours lost, which are measurable, and cite the Ahmedabad plan's published effect. |
 | What does "heatwave probability 0%" mean? | None of the 31 ensemble runs reaches the IMD threshold on two days in a row this week. It is agreement between runs, not an IMD warning; the method is on screen. |
 | Are built-up cities really hotter? | On raw averages yes (about 28 °C → 33 °C), but compared with towns in their own state the gap is under 1 °C today; daytime air temperature hides most urban heat, which shows more in the satellite surface layer and at night. |
+| Is the grid demand real? | No feed is connected, so live demand reads UNAVAILABLE. The simulator uses the officer's own reference peak (or labelled demo figures) and forecast weather; it is ready to plug into SLDC or DISCOM SCADA data. |
+| Where do the substations come from? | OpenStreetMap, community-mapped geometry. It shows where the infrastructure is, not how loaded it is. |
+| Can a state officer see other states? | Yes, but only as one read-only benchmark in Compare; their own state is always first. |
 | Is the intervention tracker an official record? | No. It is a working aid stored on the officer's browser, labelled self-reported, and exportable to CSV for filing. |
 | Can a government deploy this? | Yes: open-source stack, no paid keys, server-side secrets, IMD or CPCB feeds can replace Open-Meteo behind the same interface; Open-Meteo itself can be self-hosted for a paid deployment. |
 
@@ -589,6 +689,7 @@ For each classified city: `difference = its forecast high − median forecast hi
 | Choropleth | A map that colours areas by a value. |
 | Composite | A satellite layer built from each location's most recent clear-sky reading within a window. |
 | Dew point | The temperature at which the air's moisture would condense; a measure of absolute humidity. |
+| CAP | Common Alerting Protocol, the international standard format for public warnings; NDMA's SACHET system uses it. |
 | Elevation | Height above sea level, metres. |
 | Ensemble | Many runs of the same weather model from slightly different starting conditions; their spread shows how certain the forecast is. |
 | Heat Action Plan (HAP) | A city or district's pre-agreed set of heatwave measures (Ahmedabad's is the Indian model). |
@@ -602,7 +703,10 @@ For each classified city: `difference = its forecast high − median forecast hi
 | Open-Meteo | A free weather API aggregating national weather models; no key required. |
 | Provenance label | The coloured tag beside a number saying where it comes from (LIVE, FORECAST, ESTIMATE, UNAVAILABLE…). |
 | PM2.5 / PM10 | Airborne particles under 2.5 / 10 micrometres. |
+| SCADA | Supervisory control and data acquisition: the utility system that measures substation and feeder loading. |
 | SDMA / DDMA | State / District Disaster Management Authority. |
+| SDRF | State Disaster Response Fund, the state's budget for disaster relief. |
+| SLDC | State Load Despatch Centre, which runs a state's grid and publishes its demand. |
 | SRTM | NASA's Shuttle Radar Topography Mission, the global elevation survey. |
 | UHI | Urban heat island: a city warmer than its surroundings. |
 | ULB | Urban local body (municipal corporation or council). |
