@@ -165,6 +165,14 @@ export function fetchGrid({ city, state, lat, lon }) {
     const m = await loadGridManifest()
     const pre = m?.cities?.[key]
     if (pre?.grid) return { ...pre.grid, source: 'prebuilt', fetchedAt: pre.fetchedAt }
+    // 1st: our server route (different network, CDN-cached per city for a day)
+    try {
+      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 58000)
+      const r = await fetch(`/api/osm-grid?lat=${lat.toFixed(3)}&lon=${lon.toFixed(3)}`, { signal: ctl.signal })
+      clearTimeout(t)
+      const ct = r.headers.get('content-type') || ''
+      if (r.ok && ct.includes('json')) { const g = await r.json(); if (Array.isArray(g.substations)) return { ...g, source: 'live', fetchedAt: g.fetchedAt } }
+    } catch { /* fall through to the browser's own Overpass request */ }
     const q = overpassQuery(lat, lon)
     let lastErr = null
     for (const url of OVERPASS) {
