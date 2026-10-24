@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 // "📢 Push CAP SMS Alert" — drafts a Common Alerting Protocol (CAP 1.2, OASIS) heat alert, the
 // format India's SACHET / NDMA alert system ingests. No CAP or SMS gateway is connected, so the
@@ -81,8 +82,8 @@ export default function CapAlertButton({ city, state, level, tempNow, tempMax, r
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} data-testid="cap-alert" className={className} style={style} title="Draft a CAP 1.2 alert (SACHET format) for review">📢 Push CAP SMS Alert</button>
-      {open && (
-        <div role="dialog" aria-modal="true" aria-label="CAP alert draft" onClick={e => { if (e.target === e.currentTarget) setOpen(false) }} style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(2,6,23,0.7)', display: 'grid', placeItems: 'center', padding: 16 }}>
+      {open && createPortal((
+        <div role="dialog" aria-modal="true" aria-label="CAP alert draft" onClick={e => { if (e.target === e.currentTarget) setOpen(false) }} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(2,6,23,0.82)', display: 'grid', placeItems: 'center', padding: 16 }}>
           <div style={{ width: 'min(720px, 100%)', maxHeight: '90vh', overflowY: 'auto', background: '#0B1325', border: '1px solid #1F2937', borderRadius: 12, padding: 16, color: '#E6EDF7', fontSize: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <b style={{ fontSize: 15 }}>📢 CAP alert draft · {[city, state].filter(Boolean).join(', ') || 'All-India'}</b>
@@ -99,15 +100,17 @@ export default function CapAlertButton({ city, state, level, tempNow, tempMax, r
               <button type="button" data-testid="voice-en" disabled={voice.status === 'loading'} onClick={() => speak(sms.replace(/-BhaskarOps \(DRAFT\)/, ''), 'en')} style={{ background: 'transparent', color: '#E6EDF7', border: '1px solid #1F2937', borderRadius: 7, padding: '6px 12px', fontWeight: 800, cursor: 'pointer' }}>🔊 English</button>
               <span data-testid="voice-note" style={{ fontSize: 10.5, color: '#93A4B8' }}>{voice.status === 'loading' ? 'Generating voice…' : voice.note || 'Voice by ElevenLabs (IVR / public-address preview)'}</span>
             </div>
-            <div style={{ fontSize: 10, color: '#93A4B8', letterSpacing: '0.1em', fontWeight: 700 }}>CAP 1.2 XML</div>
+            <details style={{ margin: '0 0 10px' }}>
+            <summary style={{ fontSize: 10.5, color: '#38BDF8', letterSpacing: '0.08em', fontWeight: 800, cursor: 'pointer' }}>SHOW CAP 1.2 XML (NDMA SACHET format)</summary>
             <pre style={{ background: '#060B14', border: '1px solid #1F2937', borderRadius: 7, padding: 9, fontSize: 10.5, overflowX: 'auto', whiteSpace: 'pre-wrap' }} data-testid="cap-xml">{xml}</pre>
+            </details>
             <div style={{ display: 'flex', gap: 8 }}>
               <button type="button" onClick={() => { navigator.clipboard?.writeText(xml).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500) }).catch(() => {}) }} style={{ background: '#38BDF8', color: '#0f172a', border: 'none', borderRadius: 7, padding: '6px 12px', fontWeight: 800, cursor: 'pointer' }}>{copied ? 'Copied ✓' : 'Copy XML'}</button>
               <button type="button" onClick={download} style={{ background: '#F59E0B', color: '#0f172a', border: 'none', borderRadius: 7, padding: '6px 12px', fontWeight: 800, cursor: 'pointer' }}>Download .xml</button>
             </div>
           </div>
         </div>
-      )}
+), document.body)}
     </>
   )
 }
