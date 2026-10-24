@@ -17,6 +17,15 @@
     },
     "api/osm-grid.js": {
       "maxDuration": 60
+    },
+    "api/mobile.js": {
+      "includeFiles": "src/data/cityCoordinates.json"
+    },
+    "api/voice-alert.js": {
+      "maxDuration": 30
+    },
+    "api/grid-demand.js": {
+      "maxDuration": 30
     }
   },
   "crons": [

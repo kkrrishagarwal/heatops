@@ -13,6 +13,7 @@
 //   3. 'fallback' — the deterministic rule-based protocol (src/utils/heatActionProtocol.js)
 // Never-fail contract: every outcome except bad input (400) and rate limiting (429) returns
 // 200 with a usable plan and `source` + `reason` saying which tier produced it and why.
+import { gatewayChat, gatewayConfig } from './llmGateway.js'
 import { buildFallbackPlan, sanitisePlan, PLAN_SCHEMA_TEXT, activationLevel } from '../../src/utils/heatActionProtocol.js'
 
 export class HeatAgentError extends Error {
@@ -188,6 +189,15 @@ async function callAgent37(cfg, input) {
   }
 }
 
+// Tier 2: Hackyard LLM Gateway (OpenAI-compatible), when configured.
+async function callGateway(input) {
+  const prompt = buildPrompt(input).replace('Do not browse or run tools; answer directly from DATA.', 'Answer directly from DATA.')
+  const out = await gatewayChat({ messages: [{ role: 'user', content: prompt }], json: true, maxTokens: GEMINI_MAX_TOKENS })
+  if (!out.ok) return out
+  const plan = sanitisePlan(extractJson(out.text))
+  return plan ? { ok: true, plan, meta: out.meta } : { ok: false, reason: 'Hackyard LLM Gateway answered, but not with a valid plan.' }
+}
+
 async function callGemini(input) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return { ok: false, reason: 'GEMINI_API_KEY is not set on this server.' }
@@ -239,6 +249,12 @@ export async function handleHeatAgent({ body, clientKey }) {
     agentReason = out.reason
     console.warn('[heat-agent] Agent37 failed, trying Gemini:', out.reason)
   }
+  if (gatewayConfig()) {
+    const gw = await callGateway(input)
+    if (gw.ok) return { source: 'gateway', plan: gw.plan, meta: gw.meta, generatedAt, agentReason }
+    agentReason = `${agentReason} ${gw.reason}`
+    console.warn('[heat-agent] Hackyard gateway failed, trying Gemini:', gw.reason)
+  }
   const g = await callGemini(input)
   if (g.ok) return { source: 'gemini', plan: g.plan, meta: g.meta, generatedAt, agentReason }
   console.warn('[heat-agent] falling back to the rule-based protocol:', g.reason)
@@ -250,11 +266,12 @@ export async function handleHeatAgent({ body, clientKey }) {
 export async function pingHeatAgent() {
   const cfg = agentConfig()
   const gemini = !!process.env.GEMINI_API_KEY
-  if (!cfg) return { configured: false, reachable: false, gemini }
+  const gateway = !!gatewayConfig()
+  if (!cfg) return { configured: false, reachable: false, gemini, gateway }
   try {
     const res = await fetchWithTimeout(`${cfg.base}/v1/health`, { headers: { 'X-Agent37-Key': cfg.key } }, PING_TIMEOUT_MS)
-    return { configured: true, reachable: res.ok, status: res.status, instance: cfg.instance, gemini }
+    return { configured: true, reachable: res.ok, status: res.status, instance: cfg.instance, gemini, gateway }
   } catch (err) {
-    return { configured: true, reachable: false, waking: err?.name === 'AbortError', instance: cfg.instance, gemini }
+    return { configured: true, reachable: false, waking: err?.name === 'AbortError', instance: cfg.instance, gemini, gateway }
   }
 }

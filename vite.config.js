@@ -134,7 +134,7 @@ function heatAgentDevMiddleware(mode) {
     name: 'heat-agent-dev-middleware',
     configureServer(server) {
       const env = loadEnv(mode, process.cwd(), '')
-      for (const k of ['AGENT37_API_KEY', 'AGENT37_INSTANCE_ID', 'AGENT37_TIMEOUT_MS']) {
+      for (const k of ['AGENT37_API_KEY', 'AGENT37_INSTANCE_ID', 'AGENT37_TIMEOUT_MS', 'LLM_GATEWAY_URL', 'LLM_GATEWAY_KEY', 'LLM_GATEWAY_MODEL']) {
         if (env[k] && !process.env[k]) process.env[k] = env[k]
       }
       server.middlewares.use('/api/heat-agent', async (req, res) => {
@@ -192,8 +192,36 @@ function weatherHistoryDevMiddleware(mode) {
   }
 }
 
+// Dev-only loader for the simple Vercel functions (api/<name>.js with a default
+// handler(req, res)): gives `npm run dev` the same routes with a minimal req/res shim.
+function vercelFunctionsDevMiddleware(mode) {
+  const ROUTES = ['voice-alert', 'grid-demand', 'mobile', 'integrations', 'osm-grid']
+  return {
+    name: 'vercel-functions-dev-middleware',
+    configureServer(server) {
+      const env = loadEnv(mode, process.cwd(), '')
+      for (const k of ['ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID', 'ELEVENLABS_MODEL', 'BROWSER_USE_API_KEY', 'BROWSER_USE_API_BASE', 'LLM_GATEWAY_URL', 'LLM_GATEWAY_KEY', 'LLM_GATEWAY_MODEL']) if (env[k] && !process.env[k]) process.env[k] = env[k]
+      server.middlewares.use(async (req, res, next) => {
+        const m = /^\/api\/([a-z-]+)(\?.*)?$/.exec(req.url || '')
+        if (!m || !ROUTES.includes(m[1])) return next()
+        try {
+          const chunks = []; for await (const c of req) chunks.push(c)
+          const raw = Buffer.concat(chunks).toString('utf8')
+          req.query = Object.fromEntries(new URL(req.url, 'http://localhost').searchParams)
+          try { req.body = raw ? JSON.parse(raw) : {} } catch { req.body = raw }
+          res.status = code => { res.statusCode = code; return res }
+          res.json = obj => { if (!res.getHeader('Content-Type')) res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(obj)); return res }
+          res.send = buf => { res.end(buf); return res }
+          const mod = await server.ssrLoadModule(`/api/${m[1]}.js`)
+          await mod.default(req, res)
+        } catch (err) { res.statusCode = 500; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ error: err.message })) }
+      })
+    }
+  }
+}
+
 export default defineConfig(({ mode }) => ({
-  plugins: [malformedUrlGuard(), react(), askAIDevMiddleware(mode), heatAgentDevMiddleware(mode), weatherHistoryDevMiddleware(mode), geoJsonCompressionMiddleware()],
+  plugins: [malformedUrlGuard(), react(), askAIDevMiddleware(mode), heatAgentDevMiddleware(mode), weatherHistoryDevMiddleware(mode), vercelFunctionsDevMiddleware(mode), geoJsonCompressionMiddleware()],
   build: {
     outDir: 'dist',
     sourcemap: false,

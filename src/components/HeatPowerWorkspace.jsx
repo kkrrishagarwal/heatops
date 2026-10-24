@@ -43,6 +43,26 @@ function NumInput({ label: l, value, placeholder, onChange, testId }) {
 
 export default function HeatPowerWorkspace({ city, state, liveWeather, liveCityCache, liveIndiaData, cityCoordsData, lulcReal, buckets = [], resolveStateName, onSelectCity, cacheStatus = 'ready' }) {
   const [tab, setTab] = useState('overview')
+  // Live state demand: Vidyut PRAVAH read by a Browser Use agent (/api/grid-demand). State level only.
+  const [demand, setDemand] = useState({ status: 'idle', configured: null })
+  useEffect(() => { fetch('/api/grid-demand').then(r => r.json()).then(d => setDemand(x => ({ ...x, configured: !!d.configured }))).catch(() => setDemand(x => ({ ...x, configured: false }))) }, [])
+  useEffect(() => { setDemand(x => ({ status: 'idle', configured: x.configured })) }, [state])
+  const pollRef = useRef(0)
+  const fetchDemand = async () => {
+    const run = ++pollRef.current
+    setDemand(x => ({ ...x, status: 'running', error: null }))
+    try {
+      let r = await fetch(`/api/grid-demand?state=${encodeURIComponent(state)}`); let d = await r.json()
+      const t0 = Date.now()
+      while (d.status === 'running' && Date.now() - t0 < 240000) {
+        await new Promise(res => setTimeout(res, 5000)); if (run !== pollRef.current) return
+        r = await fetch(`/api/grid-demand?state=${encodeURIComponent(state)}&task=${encodeURIComponent(d.task)}`); d = await r.json()
+      }
+      if (run !== pollRef.current) return
+      if (d.status === 'finished') setDemand(x => ({ ...x, status: 'ready', data: d }))
+      else setDemand(x => ({ ...x, status: 'error', error: d.error || (d.status === 'running' ? 'The agent is still working; try again in a minute.' : 'No figure returned') }))
+    } catch (e) { if (run === pollRef.current) setDemand(x => ({ ...x, status: 'error', error: e.message })) }
+  }
   // Stack the columns below 1200 px (laptops at high zoom, tablets, phones).
   const [vw, setVw] = useState(() => window.innerWidth)
   useEffect(() => { let raf = 0; const on = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => setVw(window.innerWidth)) }; window.addEventListener('resize', on); return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', on) } }, [])
@@ -313,7 +333,9 @@ export default function HeatPowerWorkspace({ city, state, liveWeather, liveCityC
   const kpis = (
     <div style={{ display: 'grid', gridTemplateColumns: narrow ? 'repeat(auto-fit, minmax(190px, 1fr))' : 'repeat(5, minmax(0, 1fr))', gap: 10 }}>
       <Kpi title="Air temperature" value={temp != null ? `${temp}°C` : '—'} color={temp != null ? spectralColor(temp) : C.text} prov={demo ? 'demo' : cacheStatus === 'error' || liveWeather?.isPartial ? 'cached' : 'live'} sub={refTempC != null ? `Today's high ${refTempC}°C · night ${days[0]?.min ?? '—'}°C` : 'waiting for reading'} />
-      <Kpi title="Electricity demand" value="UNAVAILABLE" color={C.muted} prov="na" provTitle="No SLDC / DISCOM real-time feed connected" sub="Connect an SLDC or DISCOM feed to show live MW" />
+      {demand.status === 'ready' && demand.data
+        ? <Kpi title={`${state} demand`} value={fmtMW(demand.data.demandMW ?? demand.data.peakMW)} color={C.cyan} prov="live" provTitle={demand.data.source} sub={`${demand.data.demandMW != null ? 'current' : 'peak met'} · state total${demand.data.asOf ? ` · ${demand.data.asOf}` : ''}`} />
+        : <Kpi title="Electricity demand" value={demand.status === 'running' ? 'Fetching…' : 'UNAVAILABLE'} color={C.muted} prov="na" provTitle="No SLDC / DISCOM real-time feed connected" sub={demand.configured ? (demand.status === 'error' ? `Browser Use: ${demand.error}` : `Read ${state}'s live demand from Vidyut PRAVAH below`) : 'Connect an SLDC or DISCOM feed to show live MW'} />}
       <Kpi title="Surface temperature" value={lstLatest ? `${lstLatest.c}°C` : '—'} color={lstLatest ? spectralColor(lstLatest.c) : C.text} prov={lstLatest ? 'satellite' : 'na'} provTitle="NASA MODIS MOD11A1, ~10:30 IST clear-sky pass, 1 km" sub={lstLatest ? `MODIS day pass · ${lstLatest.date}` : modis.loaded ? 'no MODIS record for this city' : 'loading…'} />
       <Kpi title="Predicted peak demand" value={peakDay?.sim ? fmtMW(peakDay.sim.peak) : '—'} color={peakDay?.sim?.stress.color || C.text} prov={mwProv} provTitle="Model estimate from forecast maxima and stated assumptions" sub={peakDay?.sim ? `${shortWeekday(peakDay.date)} evening · ${peakDay.sim.changePct >= 0 ? '+' : ''}${peakDay.sim.changePct}% vs reference` : 'needs forecast'} />
       <Kpi title="Heat Impact Score" value={impact.score != null ? `${impact.score}/100` : '—'} color={impactColor} prov="rules" provTitle={IMPACT_WEIGHTS.map(w => `${w.label} ${Math.round(w.w * 100)}%`).join(' · ')} sub={`${impact.parts.filter(p => p.value != null).length} of ${impact.parts.length} components`}><Ring value={impact.score} color={impactColor} size={46} /></Kpi>
@@ -369,6 +391,17 @@ export default function HeatPowerWorkspace({ city, state, liveWeather, liveCityC
       {tab === 'overview' && (
         <>
           {kpis}
+          {demand.configured && (
+            <div data-testid="hp-demand-bar" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '7px 12px', fontSize: 11.5 }}>
+              <b style={{ color: C.cyan }}>⚡ Live state demand</b>
+              <span style={{ color: C.muted }}>Vidyut PRAVAH (Ministry of Power), read by a Browser Use agent · state total, not city</span>
+              {demand.status === 'ready' && demand.data && <span><b>{fmtMW(demand.data.demandMW)}</b> now · peak met {fmtMW(demand.data.peakMW)}{demand.data.asOf ? ` · ${demand.data.asOf}` : ''} <a href={demand.data.pageUrl} target="_blank" rel="noopener noreferrer" style={{ color: C.cyan }}>source</a></span>}
+              <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                <button type="button" data-testid="hp-demand-fetch" onClick={fetchDemand} disabled={demand.status === 'running'} style={{ ...btn(C.cyan), fontSize: 10.5, padding: '4px 10px' }}>{demand.status === 'running' ? 'Agent reading the portal…' : demand.status === 'ready' ? 'Refresh' : `Fetch ${state} demand`}</button>
+                {demand.status === 'ready' && (demand.data?.peakMW || demand.data?.demandMW) && <button type="button" data-testid="hp-demand-use" onClick={() => setCustom('referencePeakMW', demand.data.peakMW || demand.data.demandMW)} style={{ ...btn('transparent', C.text), fontSize: 10.5, padding: '4px 10px' }}>Use as reference peak</button>}
+              </span>
+            </div>
+          )}
           <div style={{ display: 'grid', gridTemplateColumns: cols('minmax(0, 1.55fr) minmax(0, 1fr)'), gap: 10, alignItems: 'start' }}>
             {mapCard(narrow ? 340 : 430)}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{alertList(3)}{simulator(false)}</div>

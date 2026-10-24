@@ -19,6 +19,35 @@ const addDays = (iso, n) => { const d = new Date(`${iso}T00:00:00Z`); d.setUTCDa
 const daysBetween = (a, b) => Math.round((new Date(`${b}T00:00:00Z`) - new Date(`${a}T00:00:00Z`)) / 86400000)
 const mean = a => (a.length ? Math.round((a.reduce((s, v) => s + v, 0) / a.length) * 10) / 10 : null)
 
+function PartnersPanel({ city, state }) {
+  const [st, setSt] = useState(null)
+  useEffect(() => { fetch('/api/integrations').then(r => r.json()).then(setSt).catch(() => setSt({})) }, [])
+  const mobileUrl = `/api/mobile?city=${encodeURIComponent(city || 'Lucknow')}&state=${encodeURIComponent(state || 'Uttar Pradesh')}`
+  const rows = [
+    ['Agent37', 'Primary engine for the AI Heat Co-Pilot (agent writes the heat action protocol)', st?.agent37, 'AGENT37_API_KEY + AGENT37_INSTANCE_ID'],
+    ['Hackyard LLM Gateway', 'Co-Pilot engine after Agent37; AGNI chat fallback (team credits)', st?.gateway, 'LLM_GATEWAY_URL + LLM_GATEWAY_KEY'],
+    ['Google Gemini', 'Co-Pilot and AGNI backup engine', st?.gemini, 'GEMINI_API_KEY'],
+    ['ElevenLabs', 'Hindi / English voice for the CAP alert (IVR, public address)', st?.elevenlabs, 'ELEVENLABS_API_KEY'],
+    ['Browser Use', 'Agent reads live state power demand from Vidyut PRAVAH (Heat + Power)', st?.browserUse, 'BROWSER_USE_API_KEY'],
+    ['FlutterFlow', 'Field-officer mobile app reads the open mobile API', true, mobileUrl],
+    ['Render', 'Second deployment from render.yaml (static site, API proxied to Vercel)', null, 'render.yaml in the repo']
+  ]
+  return (
+    <Section no="04" title="Technology partners" testId="ai-partners" right={<Prov k="rules" title="Status read from the server; keys are never sent to the browser" />}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+        <tbody>{rows.map(([n, what, on, how]) => (
+          <tr key={n} style={{ borderTop: `1px solid ${C.border}` }}>
+            <td style={{ padding: '5px 0', fontWeight: 800, whiteSpace: 'nowrap', verticalAlign: 'top' }}>{n}</td>
+            <td style={{ padding: '5px 8px', color: C.muted }}>{what}<div style={{ fontSize: 9.5, color: '#64748b' }}>{n === 'FlutterFlow' ? <a href={how} target="_blank" rel="noopener noreferrer" style={{ color: C.cyan }}>{how}</a> : how}</div></td>
+            <td style={{ padding: '5px 0', textAlign: 'right', whiteSpace: 'nowrap', verticalAlign: 'top' }}>
+              <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 5, border: `1px solid ${on ? C.green : on === null ? C.cyan : C.border}`, color: on ? C.green : on === null ? C.cyan : C.muted }}>{st == null && on !== true && on !== null ? '…' : on ? 'ACTIVE' : on === null ? 'CONFIG' : 'KEY NEEDED'}</span>
+            </td>
+          </tr>))}</tbody>
+      </table>
+    </Section>
+  )
+}
+
 export default function AIExportWorkspace({ city, state, liveWeather, lulcReal, cityCoordsData, isCoastal = false, cacheStatus = 'ready', userName = '', children }) {
   const [kind, setKind] = useState('weekly') // daily | weekly | custom
   const [from, setFrom] = useState(() => addDays(today(), -29))
@@ -183,6 +212,8 @@ export default function AIExportWorkspace({ city, state, liveWeather, lulcReal, 
           </Section>
         </div>
       </div>
+
+      <PartnersPanel city={city} state={state} />
 
       <DetailsDrawer testId="ai-details-toggle" what="AGNI chat, quick export & share, glossary, progress, team">{children}</DetailsDrawer>
     </div>

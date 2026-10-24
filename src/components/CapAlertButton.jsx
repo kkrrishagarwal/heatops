@@ -52,6 +52,31 @@ export default function CapAlertButton({ city, state, level, tempNow, tempMax, r
   const xml = useMemo(() => (open ? buildCapXml({ city, state, level, tempNow, tempMax, reasons }) : ''), [open, city, state, level, tempNow, tempMax, reasons])
   useEffect(() => { if (!open) return; const k = e => { if (e.key === 'Escape') setOpen(false) }; window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k) }, [open])
   const sms = `${level === 'cold' ? 'COLD' : 'HEAT'} ALERT ${[city, state].filter(Boolean).join(', ') || 'India'}${typeof tempMax === 'number' ? `: max ${tempMax}°C` : ''}. ${level === 'cold' ? 'Stay warm; use night shelters.' : 'Avoid 12-4 PM outdoors, drink water, check on elderly. Emergency 108.'} -BhaskarOps (DRAFT)`
+  const area = [city, state].filter(Boolean).join(', ') || 'भारत'
+  const smsHi = level === 'cold'
+    ? `शीतलहर चेतावनी — ${area}। गर्म कपड़े पहनें, बुज़ुर्गों और बच्चों को गर्म रखें, रैन बसेरों का उपयोग करें। — BhaskarOps (ड्राफ्ट)`
+    : `लू चेतावनी — ${area}${typeof tempMax === 'number' ? `: अधिकतम तापमान ${tempMax} डिग्री` : ''}। दोपहर 12 से 4 बजे तक बाहर न निकलें, बार-बार पानी पिएँ, बुज़ुर्गों का ध्यान रखें। आपात स्थिति में 108 पर कॉल करें। — BhaskarOps (ड्राफ्ट)`
+  const [voice, setVoice] = useState({ status: 'idle', note: '' })
+  // Voice preview: ElevenLabs via /api/voice-alert; if it is not configured or fails, the
+  // browser's own speech engine reads it and the note says which engine spoke.
+  const speak = async (text, lang) => {
+    setVoice({ status: 'loading', note: '' })
+    try {
+      const r = await fetch('/api/voice-alert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, lang }) })
+      if (r.ok && (r.headers.get('content-type') || '').includes('audio')) {
+        const url = URL.createObjectURL(await r.blob()); const a = new Audio(url); a.onended = () => URL.revokeObjectURL(url)
+        await a.play(); setVoice({ status: 'playing', note: `ElevenLabs voice · ${lang === 'hi' ? 'Hindi' : 'English'}` }); return
+      }
+      const d = await r.json().catch(() => ({}))
+      throw new Error(d.error || `HTTP ${r.status}`)
+    } catch (e) {
+      try {
+        const u = new SpeechSynthesisUtterance(text); u.lang = lang === 'hi' ? 'hi-IN' : 'en-IN'
+        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u)
+        setVoice({ status: 'playing', note: `Browser voice (ElevenLabs unavailable: ${e.message})` })
+      } catch { setVoice({ status: 'error', note: `No voice available: ${e.message}` }) }
+    }
+  }
   const download = () => { const b = new Blob([xml], { type: 'application/xml' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `cap-alert-${(city || state || 'india').replace(/\W+/g, '-')}.xml`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 1000) }
   return (
     <>
@@ -67,7 +92,13 @@ export default function CapAlertButton({ city, state, level, tempNow, tempMax, r
               Not transmitted. No SACHET / CAP or SMS gateway is connected, so this is a draft with status <b>Exercise</b> for the officer to review and forward through the authorised channel.
             </div>
             <div style={{ fontSize: 10, color: '#93A4B8', letterSpacing: '0.1em', fontWeight: 700 }}>SMS TEXT ({sms.length} characters)</div>
-            <div style={{ background: '#111827', borderRadius: 7, padding: '7px 9px', margin: '4px 0 10px' }} data-testid="cap-sms">{sms}</div>
+            <div style={{ background: '#111827', borderRadius: 7, padding: '7px 9px', margin: '4px 0 6px' }} data-testid="cap-sms">{sms}</div>
+            <div style={{ background: '#111827', borderRadius: 7, padding: '7px 9px', margin: '0 0 8px' }} data-testid="cap-sms-hi" lang="hi">{smsHi}</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '0 0 12px', flexWrap: 'wrap' }}>
+              <button type="button" data-testid="voice-hi" disabled={voice.status === 'loading'} onClick={() => speak(smsHi, 'hi')} style={{ background: '#A855F7', color: '#fff', border: 'none', borderRadius: 7, padding: '6px 12px', fontWeight: 800, cursor: 'pointer' }}>🔊 Hindi voice alert</button>
+              <button type="button" data-testid="voice-en" disabled={voice.status === 'loading'} onClick={() => speak(sms.replace(/-BhaskarOps \(DRAFT\)/, ''), 'en')} style={{ background: 'transparent', color: '#E6EDF7', border: '1px solid #1F2937', borderRadius: 7, padding: '6px 12px', fontWeight: 800, cursor: 'pointer' }}>🔊 English</button>
+              <span data-testid="voice-note" style={{ fontSize: 10.5, color: '#93A4B8' }}>{voice.status === 'loading' ? 'Generating voice…' : voice.note || 'Voice by ElevenLabs (IVR / public-address preview)'}</span>
+            </div>
             <div style={{ fontSize: 10, color: '#93A4B8', letterSpacing: '0.1em', fontWeight: 700 }}>CAP 1.2 XML</div>
             <pre style={{ background: '#060B14', border: '1px solid #1F2937', borderRadius: 7, padding: 9, fontSize: 10.5, overflowX: 'auto', whiteSpace: 'pre-wrap' }} data-testid="cap-xml">{xml}</pre>
             <div style={{ display: 'flex', gap: 8 }}>

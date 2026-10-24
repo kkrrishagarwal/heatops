@@ -1,0 +1,21 @@
+# Render Blueprint — a second, independent deployment of the BhaskarOps web app on Render
+# (Render credits). The static site is built from this repo; /api/* is proxied to the Vercel
+# serverless functions so both deployments share one backend and one set of secrets.
+services:
+  - type: web
+    name: bhaskarops
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: false
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://heatops.vercel.app/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html

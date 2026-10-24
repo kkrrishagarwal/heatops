@@ -24,6 +24,7 @@ const geminiUrl = model => `https://generativelanguage.googleapis.com/v1beta/mod
 const MAX_TOKENS = 900
 const GEMINI_TIMEOUT_MS = 12000 // fail before the frontend's 15s timeout fires
 
+import { gatewayChat, gatewayConfig } from './llmGateway.js'
 export class AskAIError extends Error {
   constructor(status, message, retryAfterSeconds = null) {
     super(message)
@@ -120,7 +121,19 @@ export async function handleAskAI({ question, context, history, clientKey }) {
     )
   }
 
-  return callGemini({ question, context, history: safeHistory })
+  try {
+    return await callGemini({ question, context, history: safeHistory })
+  } catch (err) {
+    // Fallback: the Hackyard LLM Gateway (team credits), when configured and Gemini fails.
+    if (!gatewayConfig() || err?.status === 400) throw err
+    const out = await gatewayChat({
+      system: 'You are AGNI, the heat-risk analyst inside BhaskarOps, an Indian government heat and power dashboard. Use ONLY the numbers in CONTEXT; if something is not there, say "no data". Never invent readings, deaths or costs. Stay on heat, climate, air quality, power and planning in India. Reply in the language the user writes in (Hindi and Hinglish included). Be brief and practical.',
+      messages: [...safeHistory.map(h => ({ role: h.role === 'model' ? 'assistant' : 'user', content: h.text })), { role: 'user', content: `CONTEXT: ${context || 'none'}\n\nQUESTION: ${question}` }],
+      maxTokens: 900
+    })
+    if (!out.ok) throw err
+    return { answer: out.text }
+  }
 }
 
 // Keep only well-formed {role, text} turns, alternating is not required by Gemini but
