@@ -8,6 +8,7 @@ const MAX_CHARS = 700
 const hits = new Map()
 
 export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); res.setHeader('Access-Control-Max-Age', '86400'); return res.status(204).end() }
   const key = (process.env.ELEVENLABS_API_KEY || '').trim()
   if (req.method === 'GET') { res.setHeader('Cache-Control', 'no-store'); return res.status(200).json({ configured: !!key, provider: 'ElevenLabs' }) }
   if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST'); return res.status(405).json({ error: 'Use GET or POST.' }) }

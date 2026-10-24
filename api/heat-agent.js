@@ -7,6 +7,7 @@ import { handleHeatAgent, pingHeatAgent, HeatAgentError } from './_lib/heatAgent
 import { getClientKey } from './_lib/askAI.js'
 
 export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); res.setHeader('Access-Control-Max-Age', '86400'); return res.status(204).end() }
   res.setHeader('Cache-Control', 'no-store')
   if (req.method === 'GET') return res.status(200).json(await pingHeatAgent())
   if (req.method !== 'POST') {
