@@ -8,17 +8,21 @@
 // Each run is capped at MAX_COST_USD; results are cached for 15 minutes per state to spend credits sparingly.
 const BASE = () => (process.env.BROWSER_USE_API_BASE || 'https://api.browser-use.com/api/v4').replace(/\/+$/, '')
 const MAX_COST_USD = 1
-const OUTPUT_SCHEMA = { type: 'object', properties: { state: { type: 'string' }, current_demand_mw: { type: ['number', 'null'] }, peak_demand_met_mw: { type: ['number', 'null'] }, as_of: { type: ['string', 'null'] }, page_url: { type: 'string' } }, required: ['state', 'current_demand_mw', 'peak_demand_met_mw', 'as_of', 'page_url'] }
+// The portal is slow and sometimes unreachable from outside India: route the agent's browser
+// through an Indian residential proxy (BROWSER_USE_PROXY_COUNTRY, default 'in'; set to 'none' to disable).
+const PROXY = (process.env.BROWSER_USE_PROXY_COUNTRY || 'in').toLowerCase() === 'none' ? null : (process.env.BROWSER_USE_PROXY_COUNTRY || 'in').toLowerCase()
+const OUTPUT_SCHEMA = { type: 'object', properties: { state: { type: 'string' }, current_demand_mw: { type: ['number', 'null'] }, peak_demand_met_mw: { type: ['number', 'null'] }, as_of: { type: ['string', 'null'] }, national_current_demand_mw: { type: ['number', 'null'] }, national_as_of: { type: ['string', 'null'] }, page_url: { type: 'string' } }, required: ['state', 'current_demand_mw', 'peak_demand_met_mw', 'as_of', 'national_current_demand_mw', 'national_as_of', 'page_url'] }
 const cache = new Map() // state → { at, data }
 const TTL = 15 * 60e3
 const slug = s => String(s).toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const headers = key => ({ 'Content-Type': 'application/json', 'X-Browser-Use-API-Key': key })
 
 function taskText(state) {
-  return `Open https://vidyutpravah.in/state-data/${slug(state)} (the Government of India "Vidyut PRAVAH" power portal). ` +
-    `Read the electricity figures shown for ${state}: the current demand met in MW and yesterday's peak demand met in MW, and the time the page says the data is for. ` +
-    `If the state page does not load, open https://vidyutpravah.in and read the same figures for ${state} from the map or list. ` +
-    `Return the figures in MW as numbers (convert GW to MW; strip commas). Use null for anything not shown on the page. Do not guess numbers that are not on the page.`
+  return `You are reading official electricity figures from the Government of India "Vidyut PRAVAH" portal, which is very slow and may never fire its page-load event. NEVER wait for a load event: navigate, wait a fixed 25 seconds, then read document.body.innerText (or take a screenshot) and work from whatever is visible; if the text is still empty, wait another 25 seconds once and read again. ` +
+    `Step 1: open https://vidyutpravah.in/state-data/${slug(state)} and read the "${state} State's Demand Met" box: "CURRENT : N MW" is current_demand_mw and "YESTERDAY : N MW" is peak_demand_met_mw; also read the "DATED ..." time-block text. ` +
+    `Step 2: if that page shows no figures, open https://vidyutpravah.in , find "${state}" in the state list or on the India map, hover or click it, and read its current demand from the tooltip or panel. ` +
+    `Step 3: on https://vidyutpravah.in always also read the all-India "DEMAND MET (CURRENT)" figure and the "DATED ..." time text near the top. ` +
+    `Report every figure in MW as a number (1 GW = 1000 MW; strip commas). Use null for anything not actually shown. Never guess or estimate.`
 }
 function parseOutput(out) {
   if (!out) return null
@@ -38,7 +42,7 @@ export default async function handler(req, res) {
   const task = typeof req.query?.task === 'string' ? req.query.task.replace(/[^\w-]/g, '').slice(0, 80) : ''
   try {
     if (!task) {
-      const r = await fetch(`${BASE()}/runs`, { method: 'POST', headers: headers(key), body: JSON.stringify({ task: taskText(state), outputSchema: OUTPUT_SCHEMA, maxCostUsd: MAX_COST_USD }) })
+      const r = await fetch(`${BASE()}/runs`, { method: 'POST', headers: headers(key), body: JSON.stringify({ task: taskText(state), outputSchema: OUTPUT_SCHEMA, maxCostUsd: MAX_COST_USD, keepAlive: 300, ...(PROXY ? { browserSettings: { proxyCountryCode: PROXY } } : {}) }) })
       const d = await r.json().catch(() => ({}))
       if (!r.ok || !d.id) return res.status(502).json({ error: `Browser Use did not start the run (HTTP ${r.status})`, detail: JSON.stringify(d).slice(0, 200) })
       return res.status(202).json({ status: 'running', task: d.id, state })
@@ -51,8 +55,8 @@ export default async function handler(req, res) {
     if (st !== 'completed') return res.status(502).json({ status: st || 'failed', error: d.error ? `Browser Use: ${String(d.error).slice(0, 160)}` : 'The Browser Use agent could not read the page.', task })
     const o = (d.output && typeof d.output === 'object') ? d.output : parseOutput(d.result)
     const num = v => (typeof v === 'number' && isFinite(v) ? Math.round(v) : (typeof v === 'string' && /\d/.test(v) ? Math.round(parseFloat(v.replace(/,/g, ''))) : null))
-    const data = { status: 'finished', state, demandMW: num(o?.current_demand_mw), peakMW: num(o?.peak_demand_met_mw), asOf: o?.as_of || null, pageUrl: o?.page_url || `https://vidyutpravah.in/state-data/${slug(state)}`, source: 'Vidyut PRAVAH (Ministry of Power) via Browser Use', fetchedAt: new Date().toISOString(), task }
-    if (data.demandMW == null && data.peakMW == null) return res.status(502).json({ ...data, status: 'empty', error: 'The page was read but no MW figure was found for this state.' })
+    const data = { status: 'finished', state, demandMW: num(o?.current_demand_mw), peakMW: num(o?.peak_demand_met_mw), asOf: o?.as_of || null, nationalMW: num(o?.national_current_demand_mw), nationalAsOf: o?.national_as_of || null, pageUrl: o?.page_url || `https://vidyutpravah.in/state-data/${slug(state)}`, source: 'Vidyut PRAVAH (Ministry of Power) via Browser Use', costUsd: typeof d.totalCostUsd === 'number' ? d.totalCostUsd : null, fetchedAt: new Date().toISOString(), task }
+    if (data.demandMW == null && data.peakMW == null && data.nationalMW == null) return res.status(502).json({ ...data, status: 'empty', error: 'The portal was read but no MW figure was shown (state page down and no national figure).' })
     cache.set(state, { at: Date.now(), data })
     return res.status(200).json(data)
   } catch (e) {
