@@ -158,7 +158,7 @@ export default function HeatPowerWorkspace({ city, state, liveWeather, liveCityC
   const overlay = useMemo(() => gridOverlay(gridData, show), [gridData, show])
   useEffect(() => { if (typeof coords?.lat !== 'number') return; const t = setTimeout(() => mapCtl.current?.flyTo(coords.lat, coords.lon, 10), 300); return () => clearTimeout(t) }, [coords, features, tab])
 
-  const gridStatus = grid.status === 'ready' && gridData ? (gridData.source === 'prebuilt' ? 'prebuilt' : 'live') : grid.status
+  const gridStatus = grid.status === 'ready' && gridData ? ({ extract: 'India extract', prebuilt: 'pre-built', live: 'live' }[gridData.source] || gridData.source) : grid.status
   const mapCard = (height) => (
     <Section no="01" title="Thermal & power-grid map" testId="hp-map" right={<span style={{ display: 'flex', gap: 4 }}><Prov k={heatLayer === 'lst' ? 'satellite' : demo ? 'demo' : 'live'} /><Prov k={gridData ? 'satellite' : 'na'} title="Grid geometry: OpenStreetMap (community-mapped), not live loading" /></span>}>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>

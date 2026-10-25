@@ -152,6 +152,26 @@ export function parseOverpassGrid(json) {
   return { substations, lines, industrial }
 }
 
+// Per-state extract files (public/data/grid/<state>.json, built offline from the Geofabrik
+// India PBF by scripts/buildGridFromPbf.py). Loaded once per state, then filtered to 15 km.
+const stateSlug = s => String(s || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const stateFiles = new Map()
+function loadStateGrid(state) {
+  const k = stateSlug(state)
+  if (!stateFiles.has(k)) stateFiles.set(k, fetch(`/data/grid/${k}.json`).then(r => (r.ok ? r.json() : null)).catch(() => null))
+  return stateFiles.get(k)
+}
+const km = (a, b, c, d) => { const dx = (d - b) * 111.32 * Math.cos(((a + c) / 2) * Math.PI / 180), dy = (c - a) * 110.57; return Math.hypot(dx, dy) }
+function clipStateGrid(g, lat, lon, radiusM = GRID_RADIUS_M) {
+  const R = radiusM / 1000
+  const toPts = arr => arr.map(([la, lo]) => ({ lat: la, lon: lo }))
+  return {
+    substations: g.substations.filter(s => km(lat, lon, s.lat, s.lon) <= R),
+    lines: g.lines.filter(l => l.path.some(([la, lo]) => km(lat, lon, la, lo) <= R)).map(l => ({ ...l, path: toPts(l.path) })),
+    industrial: g.industrial.filter(z => km(lat, lon, z.lat, z.lon) <= R).map(z => ({ ...z, ring: toPts(z.ring) }))
+  }
+}
+
 let gridManifest = null
 function loadGridManifest() {
   if (!gridManifest) gridManifest = fetch('/data/osm-grid.json').then(r => (r.ok ? r.json() : null)).catch(() => null)
@@ -162,6 +182,9 @@ export function fetchGrid({ city, state, lat, lon }) {
   const key = `${city}|${state}`
   if (gridCache.has(key)) return gridCache.get(key)
   const p = (async () => {
+    // 1st: the offline state extract (covers every city in the state, no network dependency)
+    const sg = await loadStateGrid(state)
+    if (sg?.lines) return { ...clipStateGrid(sg, lat, lon), source: 'extract', fetchedAt: sg.generatedAt }
     const m = await loadGridManifest()
     const pre = m?.cities?.[key]
     if (pre?.grid) return { ...pre.grid, source: 'prebuilt', fetchedAt: pre.fetchedAt }

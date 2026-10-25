@@ -1,0 +1,70 @@
+{
+ "source": "OpenStreetMap (Geofabrik india-latest.osm.pbf): power=substation, power=line, landuse=industrial",
+ "generatedAt": "2026-10-25T05:44:25Z",
+ "pbf": "ne.osm.pbf",
+ "states": {
+  "Arunachal Pradesh": {
+   "file": "arunachal-pradesh.json",
+   "substations": 46,
+   "lines": 33,
+   "industrial": 10,
+   "bytes": 72743
+  },
+  "Assam": {
+   "file": "assam.json",
+   "substations": 266,
+   "lines": 425,
+   "industrial": 190,
+   "bytes": 573875
+  },
+  "Manipur": {
+   "file": "manipur.json",
+   "substations": 44,
+   "lines": 83,
+   "industrial": 24,
+   "bytes": 91678
+  },
+  "Meghalaya": {
+   "file": "meghalaya.json",
+   "substations": 51,
+   "lines": 47,
+   "industrial": 38,
+   "bytes": 80162
+  },
+  "Mizoram": {
+   "file": "mizoram.json",
+   "substations": 38,
+   "lines": 39,
+   "industrial": 8,
+   "bytes": 25493
+  },
+  "Nagaland": {
+   "file": "nagaland.json",
+   "substations": 34,
+   "lines": 28,
+   "industrial": 9,
+   "bytes": 47538
+  },
+  "Sikkim": {
+   "file": "sikkim.json",
+   "substations": 22,
+   "lines": 64,
+   "industrial": 18,
+   "bytes": 35672
+  },
+  "Tripura": {
+   "file": "tripura.json",
+   "substations": 38,
+   "lines": 100,
+   "industrial": 75,
+   "bytes": 147299
+  },
+  "West Bengal": {
+   "file": "west-bengal.json",
+   "substations": 0,
+   "lines": 7,
+   "industrial": 0,
+   "bytes": 34864
+  }
+ }
+}

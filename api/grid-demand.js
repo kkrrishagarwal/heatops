@@ -22,7 +22,8 @@ function taskText(state) {
     `Step 1: open https://vidyutpravah.in/state-data/${slug(state)} and read the "${state} State's Demand Met" box: "CURRENT : N MW" is current_demand_mw and "YESTERDAY : N MW" is peak_demand_met_mw; also read the "DATED ..." time-block text. ` +
     `Step 2: if that page shows no figures, open https://vidyutpravah.in , find "${state}" in the state list or on the India map, hover or click it, and read its current demand from the tooltip or panel. ` +
     `Step 3: on https://vidyutpravah.in always also read the all-India "DEMAND MET (CURRENT)" figure and the "DATED ..." time text near the top. ` +
-    `Report every figure in MW as a number (1 GW = 1000 MW; strip commas). Use null for anything not actually shown. Never guess or estimate.`
+    `The portal publishes each 15-minute block a minute or two late: if a figure shows "-", "0" or is blank, wait 60 seconds, reload that page and read it again (do this up to 2 times). ` +
+    `Report every figure in MW as a number (1 GW = 1000 MW; strip commas). Use null for anything not actually shown or shown as "-" or 0. Never guess or estimate.`
 }
 function parseOutput(out) {
   if (!out) return null
@@ -54,10 +55,13 @@ export default async function handler(req, res) {
     if (['queued', 'dispatching', 'running'].includes(st)) return res.status(202).json({ status: 'running', task, state })
     if (st !== 'completed') return res.status(502).json({ status: st || 'failed', error: d.error ? `Browser Use: ${String(d.error).slice(0, 160)}` : 'The Browser Use agent could not read the page.', task })
     const o = (d.output && typeof d.output === 'object') ? d.output : parseOutput(d.result)
-    const num = v => (typeof v === 'number' && isFinite(v) ? Math.round(v) : (typeof v === 'string' && /\d/.test(v) ? Math.round(parseFloat(v.replace(/,/g, ''))) : null))
+    // Electricity demand is never 0 MW; a 0 means the portal had not published the block yet.
+    const num = v => { const n = typeof v === 'number' ? v : (typeof v === 'string' && /\d/.test(v) ? parseFloat(v.replace(/,/g, '')) : NaN); return Number.isFinite(n) && n > 0 ? Math.round(n) : null }
     const data = { status: 'finished', state, demandMW: num(o?.current_demand_mw), peakMW: num(o?.peak_demand_met_mw), asOf: o?.as_of || null, nationalMW: num(o?.national_current_demand_mw), nationalAsOf: o?.national_as_of || null, pageUrl: o?.page_url || `https://vidyutpravah.in/state-data/${slug(state)}`, source: 'Vidyut PRAVAH (Ministry of Power) via Browser Use', costUsd: typeof d.totalCostUsd === 'number' ? d.totalCostUsd : null, fetchedAt: new Date().toISOString(), task }
     if (data.demandMW == null && data.peakMW == null && data.nationalMW == null) return res.status(502).json({ ...data, status: 'empty', error: 'The portal was read but no MW figure was shown (state page down and no national figure).' })
-    cache.set(state, { at: Date.now(), data })
+    // Cache a full state reading for 15 min; a national-only reading for 3 min, so the next
+    // press retries the state page soon.
+    cache.set(state, { at: Date.now() - (data.demandMW == null && data.peakMW == null ? TTL - 3 * 60e3 : 0), data })
     return res.status(200).json(data)
   } catch (e) {
     return res.status(502).json({ error: `Could not reach Browser Use (${e.message}).` })
