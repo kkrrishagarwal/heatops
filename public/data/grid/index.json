@@ -1,8 +1,22 @@
 {
  "source": "OpenStreetMap (Geofabrik india-latest.osm.pbf): power=substation, power=line, landuse=industrial",
- "generatedAt": "2026-10-25T05:44:25Z",
- "pbf": "ne.osm.pbf",
+ "generatedAt": "2026-10-25T05:58:50Z",
+ "pbf": "india-latest.osm.pbf",
  "states": {
+  "Andaman and Nicobar Islands": {
+   "file": "andaman-and-nicobar-islands.json",
+   "substations": 2,
+   "lines": 5,
+   "industrial": 1,
+   "bytes": 2715
+  },
+  "Andhra Pradesh": {
+   "file": "andhra-pradesh.json",
+   "substations": 740,
+   "lines": 1772,
+   "industrial": 748,
+   "bytes": 1901402
+  },
   "Arunachal Pradesh": {
    "file": "arunachal-pradesh.json",
    "substations": 46,
@@ -17,6 +31,118 @@
    "industrial": 190,
    "bytes": 573875
   },
+  "Bihar": {
+   "file": "bihar.json",
+   "substations": 336,
+   "lines": 1291,
+   "industrial": 300,
+   "bytes": 1413734
+  },
+  "Chandigarh": {
+   "file": "chandigarh.json",
+   "substations": 34,
+   "lines": 41,
+   "industrial": 20,
+   "bytes": 37835
+  },
+  "Chhattisgarh": {
+   "file": "chhattisgarh.json",
+   "substations": 333,
+   "lines": 1380,
+   "industrial": 220,
+   "bytes": 1136488
+  },
+  "Dadra and Nagar Haveli and Daman and Diu": {
+   "file": "dadra-and-nagar-haveli-and-daman-and-diu.json",
+   "substations": 95,
+   "lines": 257,
+   "industrial": 121,
+   "bytes": 186780
+  },
+  "Delhi": {
+   "file": "delhi.json",
+   "substations": 329,
+   "lines": 696,
+   "industrial": 230,
+   "bytes": 344861
+  },
+  "Goa": {
+   "file": "goa.json",
+   "substations": 46,
+   "lines": 35,
+   "industrial": 228,
+   "bytes": 115756
+  },
+  "Gujarat": {
+   "file": "gujarat.json",
+   "substations": 2559,
+   "lines": 7648,
+   "industrial": 2004,
+   "bytes": 5935866
+  },
+  "Haryana": {
+   "file": "haryana.json",
+   "substations": 676,
+   "lines": 2200,
+   "industrial": 619,
+   "bytes": 1767277
+  },
+  "Himachal Pradesh": {
+   "file": "himachal-pradesh.json",
+   "substations": 146,
+   "lines": 390,
+   "industrial": 160,
+   "bytes": 356394
+  },
+  "Jammu and Kashmir": {
+   "file": "jammu-and-kashmir.json",
+   "substations": 148,
+   "lines": 252,
+   "industrial": 46,
+   "bytes": 303651
+  },
+  "Jharkhand": {
+   "file": "jharkhand.json",
+   "substations": 263,
+   "lines": 940,
+   "industrial": 315,
+   "bytes": 963047
+  },
+  "Karnataka": {
+   "file": "karnataka.json",
+   "substations": 1658,
+   "lines": 2524,
+   "industrial": 1498,
+   "bytes": 3082762
+  },
+  "Kerala": {
+   "file": "kerala.json",
+   "substations": 647,
+   "lines": 631,
+   "industrial": 293,
+   "bytes": 679571
+  },
+  "Ladakh": {
+   "file": "ladakh.json",
+   "substations": 21,
+   "lines": 62,
+   "industrial": 13,
+   "bytes": 61382
+  },
+  "Madhya Pradesh": {
+   "file": "madhya-pradesh.json",
+   "substations": 881,
+   "lines": 3268,
+   "industrial": 426,
+   "bytes": 2870579
+  },
+  "Maharashtra": {
+   "file": "maharashtra.json",
+   "substations": 1547,
+   "lines": 3804,
+   "industrial": 2140,
+   "bytes": 3787787
+  },
   "Manipur": {
    "file": "manipur.json",
    "substations": 44,
@@ -26,10 +152,10 @@
   },
   "Meghalaya": {
    "file": "meghalaya.json",
-   "substations": 51,
+   "substations": 53,
    "lines": 47,
-   "industrial": 38,
-   "bytes": 80162
+   "industrial": 39,
+   "bytes": 80728
   },
   "Mizoram": {
    "file": "mizoram.json",
@@ -45,12 +171,54 @@
    "industrial": 9,
    "bytes": 47538
   },
+  "Odisha": {
+   "file": "odisha.json",
+   "substations": 505,
+   "lines": 1635,
+   "industrial": 333,
+   "bytes": 1275134
+  },
+  "Puducherry": {
+   "file": "puducherry.json",
+   "substations": 61,
+   "lines": 75,
+   "industrial": 55,
+   "bytes": 83582
+  },
+  "Punjab": {
+   "file": "punjab.json",
+   "substations": 667,
+   "lines": 1481,
+   "industrial": 841,
+   "bytes": 1566425
+  },
+  "Rajasthan": {
+   "file": "rajasthan.json",
+   "substations": 974,
+   "lines": 3170,
+   "industrial": 564,
+   "bytes": 3167461
+  },
   "Sikkim": {
    "file": "sikkim.json",
-   "substations": 22,
-   "lines": 64,
-   "industrial": 18,
-   "bytes": 35672
+   "substations": 26,
+   "lines": 72,
+   "industrial": 25,
+   "bytes": 41803
+  },
+  "Tamil Nadu": {
+   "file": "tamil-nadu.json",
+   "substations": 1304,
+   "lines": 2867,
+   "industrial": 1909,
+   "bytes": 3476322
+  },
+  "Telangana": {
+   "file": "telangana.json",
+   "substations": 890,
+   "lines": 2160,
+   "industrial": 451,
+   "bytes": 1816885
   },
   "Tripura": {
    "file": "tripura.json",
@@ -59,12 +227,26 @@
    "industrial": 75,
    "bytes": 147299
   },
+  "Uttar Pradesh": {
+   "file": "uttar-pradesh.json",
+   "substations": 910,
+   "lines": 4144,
+   "industrial": 953,
+   "bytes": 3851369
+  },
+  "Uttarakhand": {
+   "file": "uttarakhand.json",
+   "substations": 138,
+   "lines": 238,
+   "industrial": 211,
+   "bytes": 337564
+  },
   "West Bengal": {
    "file": "west-bengal.json",
-   "substations": 0,
-   "lines": 7,
-   "industrial": 0,
-   "bytes": 34864
+   "substations": 409,
+   "lines": 1620,
+   "industrial": 738,
+   "bytes": 1527595
   }
  }
 }
